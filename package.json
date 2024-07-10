@@ -1,8 +1,7 @@
 {
-  "name": "my-electron-vite-typescript-app",
-  "productName": "my-electron-vite-typescript-app",
-  "version": "1.0.0",
-  "description": "My Electron application description",
+  "name": "links-akiya",
+  "productName": "links-akiya",
+  "version": "0.0.0",
   "main": ".vite/build/main.js",
   "scripts": {
     "start": "electron-forge start",
@@ -40,12 +39,6 @@
     "typescript": "^5.5.3",
     "vite": "^5.0.12"
   },
-  "keywords": [],
-  "author": {
-    "name": "kimizuy",
-    "email": "kimizuyamasaki@gmail.com"
-  },
-  "license": "MIT",
   "dependencies": {
     "better-sqlite3": "^11.1.2",
     "electron-squirrel-startup": "^1.0.1",
