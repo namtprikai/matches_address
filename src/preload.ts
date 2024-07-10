@@ -1,12 +1,40 @@
-// See the Electron documentation for details on how to use preload scripts:
-// https://www.electronjs.org/docs/latest/tutorial/process-model#preload-scripts
-import { ipcRenderer } from "electron";
+import { ipcRenderer, contextBridge } from "electron";
 
-ipcRenderer.on("load-native-addons", (_event, arg1) => {
-  document.body.innerHTML += `
-<div style="padding:10px; background-color:#efefef; border-radius:4px;">
-  <p>Native modules loaded successfully.</p>
-  <pre>${JSON.stringify(arg1, null, 2)}</pre>
-</div>
-`;
-});
+const allowedChannels = ["get-sqlite-rows"] as const;
+
+export type AllowedChannel = (typeof allowedChannels)[number];
+
+const api = {
+  on(
+    channel: AllowedChannel,
+    listener: Parameters<typeof ipcRenderer.on>[1]
+  ): void {
+    ipcRenderer.on(channel, listener);
+  },
+  off(
+    channel: AllowedChannel,
+    listener: Parameters<typeof ipcRenderer.off>[1]
+  ): void {
+    ipcRenderer.off(channel, listener);
+  },
+  send(
+    channel: AllowedChannel,
+    ...args: Parameters<typeof ipcRenderer.send>[1]
+  ): void {
+    ipcRenderer.send(channel, ...args);
+  },
+  async invoke(
+    channel: AllowedChannel,
+    ...args: Parameters<typeof ipcRenderer.invoke>[1]
+  ): ReturnType<typeof ipcRenderer.invoke> {
+    return await ipcRenderer.invoke(channel, ...args);
+  },
+};
+
+contextBridge.exposeInMainWorld("ipcRenderer", api);
+
+declare global {
+  interface Window {
+    ipcRenderer: typeof api;
+  }
+}
