@@ -22,16 +22,9 @@ const createWindow = (): void => {
     mainWindow.loadURL(MAIN_WINDOW_VITE_DEV_SERVER_URL);
   } else {
     mainWindow.loadFile(
-      path.join(__dirname, `../renderer/${MAIN_WINDOW_VITE_NAME}/index.html`),
+      path.join(__dirname, `../renderer/${MAIN_WINDOW_VITE_NAME}/index.html`)
     );
   }
-
-  // Open the DevTools.
-  mainWindow.webContents.openDevTools();
-
-  mainWindow.webContents.send("load-native-addons", {
-    better_sqlite3: Object.getOwnPropertyNames(better_sqlite3),
-  });
 };
 
 // This method will be called when Electron has finished
