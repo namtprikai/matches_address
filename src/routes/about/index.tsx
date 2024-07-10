@@ -3,7 +3,7 @@ export function About(): JSX.Element {
     <div>
       <h1>About</h1>
       <div>
-        <a href="/">Go to home page</a>
+        <a href="#">Go to home page</a>
       </div>
     </div>
   );

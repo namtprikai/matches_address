@@ -16,7 +16,7 @@ export function Home(): JSX.Element {
       <h1>Hello, world!</h1>
       <p>{message}</p>
       <div>
-        <a href="/about">Go to about page</a>
+        <a href="#about">Go to about page</a>
       </div>
     </div>
   );
