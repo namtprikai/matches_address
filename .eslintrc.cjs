@@ -27,7 +27,7 @@ module.exports = {
   },
   parser: "@typescript-eslint/parser",
   parserOptions: {
-    project: ["./tsconfig.json", "./tsconfig.node.json"],
+    project: ["./tsconfig.json"],
     tsconfigRootDir: __dirname,
   },
   plugins: ["eslint-comments"],
@@ -73,7 +73,7 @@ module.exports = {
   },
   overrides: [
     {
-      files: ["*.config.ts"],
+      files: ["*.config.ts", "forge.config.cts"],
       rules: {
         "import-x/no-default-export": "off",
       },
