@@ -1,14 +1,18 @@
 /** @type {import("eslint").Linter.Config} */
 module.exports = {
   root: true,
-  env: { browser: true, es2020: true },
+  env: {
+    browser: true,
+    node: true,
+  },
   extends: [
     "eslint:recommended",
     "plugin:@typescript-eslint/recommended",
     "plugin:react/recommended",
-    "plugin:react/jsx-runtime",
     "plugin:react-hooks/recommended",
+    "plugin:react/jsx-runtime",
     "plugin:import-x/recommended",
+    "plugin:import-x/electron",
     "plugin:import-x/typescript",
     "plugin:eslint-comments/recommended",
   ],
@@ -21,18 +25,13 @@ module.exports = {
       version: "detect",
     },
   },
-  ignorePatterns: ["dist", ".eslintrc.cjs", "dist-electron"],
   parser: "@typescript-eslint/parser",
   parserOptions: {
     project: ["./tsconfig.json", "./tsconfig.node.json"],
     tsconfigRootDir: __dirname,
   },
-  plugins: ["react-refresh", "eslint-comments"],
+  plugins: ["eslint-comments"],
   rules: {
-    "react-refresh/only-export-components": [
-      "warn",
-      { allowConstantExport: true },
-    ],
     "@typescript-eslint/array-type": "off",
     "@typescript-eslint/consistent-type-definitions": "off",
     "@typescript-eslint/consistent-type-imports": [
@@ -74,10 +73,11 @@ module.exports = {
   },
   overrides: [
     {
-      files: ["src/App.tsx", "vite.config.ts"],
+      files: ["*.config.ts"],
       rules: {
         "import-x/no-default-export": "off",
       },
     },
   ],
+  ignorePatterns: [".eslintrc.cjs"],
 };
