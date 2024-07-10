@@ -26,7 +26,6 @@
     "@types/react-dom": "^18.3.0",
     "@typescript-eslint/eslint-plugin": "^5.0.0",
     "@typescript-eslint/parser": "^5.0.0",
-    "better-sqlite3": "^11.1.2",
     "electron": "31.1.0",
     "eslint": "^8.0.1",
     "eslint-import-resolver-typescript": "^3.6.1",
@@ -47,6 +46,7 @@
   },
   "license": "MIT",
   "dependencies": {
+    "better-sqlite3": "^11.1.2",
     "electron-squirrel-startup": "^1.0.1",
     "vite-plugin-native": "^2.2.1"
   },

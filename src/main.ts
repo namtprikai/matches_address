@@ -1,6 +1,7 @@
 import { app, BrowserWindow } from "electron";
 import path from "path";
-import better_sqlite3 from "better-sqlite3";
+import { ipcMain } from "./utils/ipc-main";
+import { database } from "./utils/database";
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (require("electron-squirrel-startup")) {
@@ -30,9 +31,6 @@ const createWindow = (): void => {
   if (process.env.NODE_ENV === "development") {
     mainWindow.webContents.openDevTools();
   }
-
-  // eslint-disable-next-line no-console -- This is a debugging statement
-  console.log("better_sqlite3", Object.getOwnPropertyNames(better_sqlite3));
 };
 
 // This method will be called when Electron has finished
@@ -59,3 +57,20 @@ app.on("activate", () => {
 
 // In this file you can include the rest of your app's specific main process
 // code. You can also put them in separate files and import them here.
+
+ipcMain.handle("get-sqlite-rows", () => {
+  database.exec(
+    "CREATE TABLE IF NOT EXISTS test (id INTEGER PRIMARY KEY, name TEXT)"
+  );
+  if (database.prepare("SELECT * FROM test").all().length === 0) {
+    database
+      .prepare("INSERT INTO test (name) VALUES (?)")
+      .run("Hello, Better SQLite3!");
+  }
+  const rows = database.prepare("SELECT * FROM test").all() as {
+    id: number;
+    name: string;
+  }[];
+
+  return rows;
+});
