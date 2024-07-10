@@ -26,8 +26,10 @@ const createWindow = (): void => {
     );
   }
 
-  // Open the DevTools.
-  mainWindow.webContents.openDevTools();
+  // Open the DevTools when in development mode.
+  if (process.env.NODE_ENV === "development") {
+    mainWindow.webContents.openDevTools();
+  }
 
   // eslint-disable-next-line no-console -- This is a debugging statement
   console.log("better_sqlite3", Object.getOwnPropertyNames(better_sqlite3));
