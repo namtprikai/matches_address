@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
-import "./App.css";
 
-export function App(): JSX.Element {
+export function Home(): JSX.Element {
   const [message, setMessage] = useState<string>("");
 
   useEffect(() => {
@@ -16,6 +15,9 @@ export function App(): JSX.Element {
     <div>
       <h1>Hello, world!</h1>
       <p>{message}</p>
+      <div>
+        <a href="/about">Go to about page</a>
+      </div>
     </div>
   );
 }
