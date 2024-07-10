@@ -5,7 +5,7 @@ export function Home(): JSX.Element {
 
   useEffect(() => {
     window.ipcRenderer
-      .invoke("get-sqlite-rows")
+      .invoke("getSqliteRows")
       .then((rows: { id: number; name: string }[]) => {
         setMessage(rows.map((row) => row.name).join(", "));
       });

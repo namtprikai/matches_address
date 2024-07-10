@@ -1,7 +1,6 @@
-import { app, BrowserWindow } from "electron";
+import { app, BrowserWindow, ipcMain } from "electron";
 import path from "path";
-import { ipcMain } from "./utils/ipc-main";
-import { database } from "./utils/database";
+import { ipcMainHandlers } from "./utils/ipc-main-handlers";
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (require("electron-squirrel-startup")) {
@@ -57,20 +56,8 @@ app.on("activate", () => {
 
 // In this file you can include the rest of your app's specific main process
 // code. You can also put them in separate files and import them here.
-
-ipcMain.handle("get-sqlite-rows", () => {
-  database.exec(
-    "CREATE TABLE IF NOT EXISTS test (id INTEGER PRIMARY KEY, name TEXT)"
-  );
-  if (database.prepare("SELECT * FROM test").all().length === 0) {
-    database
-      .prepare("INSERT INTO test (name) VALUES (?)")
-      .run("Hello, Better SQLite3!");
-  }
-  const rows = database.prepare("SELECT * FROM test").all() as {
-    id: number;
-    name: string;
-  }[];
-
-  return rows;
+app.whenReady().then(() => {
+  Object.entries(ipcMainHandlers).forEach(([key, value]) => {
+    ipcMain.handle(key, value);
+  });
 });

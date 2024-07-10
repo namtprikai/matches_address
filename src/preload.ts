@@ -1,8 +1,7 @@
 import { ipcRenderer, contextBridge } from "electron";
+import { type IpcMainHandlersKey } from "./utils/ipc-main-handlers";
 
-const allowedChannels = ["get-sqlite-rows"] as const;
-
-export type AllowedChannel = (typeof allowedChannels)[number];
+type AllowedChannel = IpcMainHandlersKey;
 
 const api = {
   on(
