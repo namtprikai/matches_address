@@ -1,14 +1,14 @@
 import { createHashRouter } from "react-router-dom";
 import { Home } from "./home";
-import { ErrorPage } from "./error-page";
+import { Error } from "./error";
 import { About } from "./about";
-import { Root } from "./root";
+import { Layout } from "./layout";
 
 export const router = createHashRouter([
   {
     path: "/",
-    element: <Root />,
-    errorElement: <ErrorPage />,
+    element: <Layout />,
+    errorElement: <Error />,
     children: [
       {
         path: "/",

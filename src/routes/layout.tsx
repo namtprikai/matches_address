@@ -1,7 +1,7 @@
 import { Outlet } from "react-router-dom";
-import "./global.css";
+import "./index.css";
 
-export function Root(): JSX.Element {
+export function Layout(): JSX.Element {
   return (
     <div id="detail">
       <Outlet />
