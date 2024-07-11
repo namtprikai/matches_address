@@ -53,8 +53,8 @@ export function getDefineKeys(
 export function getBuildDefine(env: ConfigEnv<"build">): Record<string, any> {
   const { command, forgeConfig } = env;
   const names = forgeConfig.renderer
-    .filter(({ name }) => name != null)
-    .map(({ name }) => name);
+    .map((config) => config.name)
+    .filter((v): v is NonNullable<typeof v> => !!v);
   const defineKeys = getDefineKeys(names);
   const define = Object.entries(defineKeys).reduce((acc, [name, keys]) => {
     const { VITE_DEV_SERVER_URL, VITE_NAME } = keys;
@@ -83,7 +83,7 @@ export function pluginExposeRenderer(name: string): Plugin {
       process.viteDevServers[name] = server;
 
       server.httpServer?.once("listening", () => {
-        const addressInfo = server.httpServer.address() as AddressInfo;
+        const addressInfo = server.httpServer?.address() as AddressInfo;
         // Expose env constant for main process use.
         process.env[
           VITE_DEV_SERVER_URL
