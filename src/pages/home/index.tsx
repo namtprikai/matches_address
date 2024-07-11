@@ -6,19 +6,22 @@ export function Home(): JSX.Element {
   const [submitted, setSubmitted] = useState<{
     [key: string]: FormDataEntryValue;
   } | null>(null);
+  const getNames = async (): Promise<void> => {
+    const rows: { id: number; name: string }[] =
+      await window.ipcRenderer.invoke("getNames");
+    setMessages(rows.map((row) => row.name));
+  };
 
   useEffect(() => {
-    window.ipcRenderer
-      .invoke("getSqliteRows")
-      .then((rows: { id: number; name: string }[]) => {
-        setMessages(rows.map((row) => row.name));
-      });
+    getNames();
   }, []);
 
   const onSubmit = (e: FormEvent<HTMLFormElement>): void => {
     e.preventDefault();
     const data = Object.fromEntries(new FormData(e.currentTarget));
     setSubmitted(data);
+    window.ipcRenderer.invoke("saveName", data.name);
+    getNames();
   };
 
   return (

@@ -1,8 +1,13 @@
+import { type ipcMain } from "electron";
 import { database } from "./database";
 
+export type IpcMainHandlersKey = "getNames" | "saveName";
+
 // ipcMain.handle()のハンドラ関数を定義する
-export const ipcMainHandlers = {
-  getSqliteRows: (): {
+export const ipcMainHandlers: {
+  [K in IpcMainHandlersKey]: Parameters<typeof ipcMain.handle>[1];
+} = {
+  getNames: (): {
     id: number;
     name: string;
   }[] => {
@@ -21,6 +26,10 @@ export const ipcMainHandlers = {
 
     return rows;
   },
+  saveName: (_: unknown, text: string): void => {
+    database.exec(
+      "CREATE TABLE IF NOT EXISTS test (id INTEGER PRIMARY KEY, name TEXT)"
+    );
+    database.prepare("INSERT INTO test (name) VALUES (?)").run(text);
+  },
 };
-
-export type IpcMainHandlersKey = keyof typeof ipcMainHandlers;
