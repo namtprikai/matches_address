@@ -1,10 +1,11 @@
-import { createHashRouter } from "react-router-dom";
+import { createHashRouter, RouterProvider } from "react-router-dom";
 import { Home } from "./home";
 import { Error } from "./error";
 import { About } from "./about";
 import { Layout } from "./layout";
+import "./index.css";
 
-export const router = createHashRouter([
+const router = createHashRouter([
   {
     path: "/",
     element: <Layout />,
@@ -21,3 +22,7 @@ export const router = createHashRouter([
     ],
   },
 ]);
+
+export function App(): JSX.Element {
+  return <RouterProvider router={router} />;
+}
