@@ -1,20 +1,22 @@
 import { useEffect, useState } from "react";
 
 export function Home(): JSX.Element {
-  const [message, setMessage] = useState<string>("");
+  const [messages, setMessages] = useState<string[] | null>(null);
 
   useEffect(() => {
     window.ipcRenderer
       .invoke("getSqliteRows")
       .then((rows: { id: number; name: string }[]) => {
-        setMessage(rows.map((row) => row.name).join(", "));
+        setMessages(rows.map((row) => row.name));
       });
   }, []);
 
   return (
     <div>
       <h1>Hello, world!</h1>
-      <p>{message}</p>
+      {messages?.map((message, i) => (
+        <p key={i}>{message}</p>
+      ))}
       <div>
         <a href="#about">Go to about page</a>
       </div>
