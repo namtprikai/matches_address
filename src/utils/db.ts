@@ -2,13 +2,13 @@ import path from "path";
 import { existsSync, mkdirSync } from "fs";
 import Database from "better-sqlite3";
 
+const isDev = process.env.NODE_ENV === "development";
 const dbDirectory = path.resolve("./database");
-const dbPath =
-  process.env.NODE_ENV === "development"
-    ? path.join(dbDirectory, "database.db")
-    : path.resolve(process.resourcesPath, "database.db");
+const dbPath = isDev
+  ? path.join(dbDirectory, "database.db")
+  : path.resolve(process.resourcesPath, "database.db");
 
-if (!existsSync(dbDirectory)) {
+if (isDev && !existsSync(dbDirectory)) {
   mkdirSync(dbDirectory, { recursive: true });
 }
 
