@@ -1,5 +1,7 @@
 import { type ipcMain } from "electron";
-import { database } from "./database";
+import { existsSync } from "fs";
+import { type Database } from "better-sqlite3";
+import { database, databasePath } from "./database";
 
 export type IpcMainHandlersKey = "getNames" | "saveName";
 
@@ -11,12 +13,26 @@ export const ipcMainHandlers: {
     id: number;
     name: string;
   }[] => {
-    database.exec(
-      "CREATE TABLE IF NOT EXISTS test (id INTEGER PRIMARY KEY, name TEXT)"
-    );
+    const initTestTable = (): Database =>
+      database.exec(
+        "CREATE TABLE IF NOT EXISTS test (id INTEGER PRIMARY KEY, name TEXT)"
+      );
+
+    // 開発サーバーの起動ごとにデータが消えてしまうので、dbファイルが存在しない場合のみ初期化する
+    if (process.env.NODE_ENV === "development") {
+      if (!existsSync(databasePath)) {
+        initTestTable();
+      }
+    } else {
+      // 本番ビルドの場合はデータが消えないので初期化する
+      // たぶん本番では`CREATE TABLE IF NOT EXISTS {table_name}`がちゃんと動いているっぽい
+      initTestTable();
+    }
+
     if (database.prepare("SELECT * FROM test").all().length === 0) {
       database.prepare("INSERT INTO test (name) VALUES (?)").run("John Doe");
     }
+
     const rows = database.prepare("SELECT * FROM test").all() as {
       id: number;
       name: string;
