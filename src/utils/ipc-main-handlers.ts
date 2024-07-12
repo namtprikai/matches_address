@@ -15,9 +15,7 @@ export const ipcMainHandlers: {
       "CREATE TABLE IF NOT EXISTS test (id INTEGER PRIMARY KEY, name TEXT)"
     );
     if (database.prepare("SELECT * FROM test").all().length === 0) {
-      database
-        .prepare("INSERT INTO test (name) VALUES (?)")
-        .run("Hello, Better SQLite3!");
+      database.prepare("INSERT INTO test (name) VALUES (?)").run("John Doe");
     }
     const rows = database.prepare("SELECT * FROM test").all() as {
       id: number;
