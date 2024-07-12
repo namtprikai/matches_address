@@ -3,12 +3,6 @@ import { db } from "./db";
 
 export type IpcMainHandlersKey = "getNames" | "saveName";
 
-function initTestTable(): void {
-  db.exec(
-    "CREATE TABLE IF NOT EXISTS test (id INTEGER PRIMARY KEY, name TEXT)"
-  );
-}
-
 // ipcMain.handle()のハンドラ関数を定義する
 export const ipcMainHandlers: {
   [K in IpcMainHandlersKey]: Parameters<typeof ipcMain.handle>[1];
@@ -35,3 +29,9 @@ export const ipcMainHandlers: {
     db.prepare("INSERT INTO test (name) VALUES (?)").run(text);
   },
 };
+
+function initTestTable(): void {
+  db.exec(
+    "CREATE TABLE IF NOT EXISTS test (id INTEGER PRIMARY KEY, name TEXT)"
+  );
+}
