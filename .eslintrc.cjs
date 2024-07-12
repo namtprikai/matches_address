@@ -56,20 +56,20 @@ module.exports = {
         },
       },
     ],
-    "import-x/no-unresolved": "error",
-    "import-x/no-default-export": "error",
-    "import-x/order": "error",
-    "import-x/no-named-as-default": "off",
+    "@typescript-eslint/explicit-function-return-type": "error",
     "react/jsx-sort-props": [
       "error",
       {
         reservedFirst: ["key", "dangerouslySetInnerHTML", "ref"],
       },
     ],
-    "object-shorthand": "warn",
-    "@typescript-eslint/explicit-function-return-type": "error",
-    "no-console": ["error", { allow: ["info", "error", "warn"] }],
+    "import-x/no-unresolved": "error",
+    "import-x/no-default-export": "error",
+    "import-x/order": "error",
+    "import-x/no-named-as-default": "off",
     "eslint-comments/require-description": "error",
+    "object-shorthand": "warn",
+    "no-console": ["error", { allow: ["info", "error", "warn"] }],
   },
   overrides: [
     {
