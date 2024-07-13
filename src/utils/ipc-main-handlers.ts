@@ -24,7 +24,7 @@ export const ipcMainHandlers: {
 
     return rows;
   },
-  saveName: (_: unknown, text: string): void => {
+  saveName: (_, text: string): void => {
     initTestTable();
     db.prepare("INSERT INTO test (name) VALUES (?)").run(text);
   },
