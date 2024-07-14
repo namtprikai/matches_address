@@ -1,12 +1,8 @@
 import { type ipcMain } from "electron";
 import { db } from "./db";
 
-export type IpcMainHandlersKey = "getNames" | "saveName";
-
 // ipcMain.handle()のハンドラ関数を定義する
-export const ipcMainHandlers: {
-  [K in IpcMainHandlersKey]: Parameters<typeof ipcMain.handle>[1];
-} = {
+export const ipcMainHandlers = {
   getNames: (): {
     id: number;
     name: string;
@@ -24,10 +20,12 @@ export const ipcMainHandlers: {
 
     return rows;
   },
-  saveName: (_, text: string): void => {
+  saveName: (_: unknown, text: string): void => {
     initTestTable();
     db.prepare("INSERT INTO test (name) VALUES (?)").run(text);
   },
+} satisfies {
+  [key: string]: Parameters<typeof ipcMain.handle>[1];
 };
 
 function initTestTable(): void {

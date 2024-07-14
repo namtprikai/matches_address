@@ -36,8 +36,8 @@ app.whenReady().then(() => {
   createWindow();
 
   // ipcMain.handle()のハンドラ関数を登録する
-  Object.entries(ipcMainHandlers).forEach(([key, value]) => {
-    ipcMain.handle(key, value);
+  Object.entries(ipcMainHandlers).forEach(([channel, listener]) => {
+    ipcMain.handle(channel, listener);
   });
 
   app.on("activate", () => {

@@ -1,11 +1,17 @@
 import { ipcRenderer, contextBridge } from "electron";
-import { type IpcMainHandlersKey } from "./utils/ipc-main-handlers";
+import { type ipcMainHandlers } from "./utils/ipc-main-handlers";
 
-type AllowedChannel = IpcMainHandlersKey;
+type AllowedChannel = keyof typeof ipcMainHandlers;
 
 // セキュリティ対策でipcRendererの一部のAPIだけをラップして公開する
 // ref: https://github.com/electron-vite/electron-vite-react/blob/f3e8e2cf6892b5d15eb974d1c3a8218f5f0d501b/electron/preload/index.ts#L3
 const api = {
+  invoke<K extends AllowedChannel>(
+    channel: K,
+    ...args: Parameters<(typeof ipcMainHandlers)[K]>[1][]
+  ): Promise<Awaited<ReturnType<(typeof ipcMainHandlers)[K]>>> {
+    return ipcRenderer.invoke(channel, ...args);
+  },
   on(
     channel: AllowedChannel,
     listener: Parameters<typeof ipcRenderer.on>[1]
@@ -23,12 +29,6 @@ const api = {
     ...args: Parameters<typeof ipcRenderer.send>[1][]
   ): ReturnType<typeof ipcRenderer.send> {
     return ipcRenderer.send(channel, ...args);
-  },
-  invoke(
-    channel: AllowedChannel,
-    ...args: Parameters<typeof ipcRenderer.invoke>[1][]
-  ): ReturnType<typeof ipcRenderer.invoke> {
-    return ipcRenderer.invoke(channel, ...args);
   },
 };
 

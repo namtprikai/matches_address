@@ -6,8 +6,7 @@ export function Home(): JSX.Element {
   const [names, setNames] = useState<string[] | null>(null);
 
   const updateNames = async (): Promise<void> => {
-    const rows: { id: number; name: string }[] =
-      await window.ipcRenderer.invoke("getNames");
+    const rows = await window.ipcRenderer.invoke("getNames");
     setNames(rows.map((row) => row.name));
   };
 
@@ -18,7 +17,7 @@ export function Home(): JSX.Element {
   const onSubmit: FormProps["onSubmit"] = (e): void => {
     e.preventDefault();
     const data = Object.fromEntries(new FormData(e.currentTarget));
-    window.ipcRenderer.invoke("saveName", data.name);
+    window.ipcRenderer.invoke("saveName", data.name.toString());
     updateNames();
   };
 
