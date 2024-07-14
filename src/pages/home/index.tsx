@@ -14,7 +14,7 @@ export function Home(): JSX.Element {
     updateNames();
   }, []);
 
-  const onSubmit: FormProps["onSubmit"] = (e): void => {
+  const handleSubmit: FormProps["onSubmit"] = (e): void => {
     e.preventDefault();
     const data = Object.fromEntries(new FormData(e.currentTarget));
     window.ipcRenderer.invoke("saveName", data.name.toString());
@@ -27,7 +27,7 @@ export function Home(): JSX.Element {
       <div>
         <a href="#about">Go to about page</a>
       </div>
-      <Form maxWidth="size-3000" onSubmit={onSubmit}>
+      <Form maxWidth="size-3000" onSubmit={handleSubmit}>
         <TextField label="Name" name="name" />
         <ButtonGroup>
           <Button type="submit" variant="primary">
