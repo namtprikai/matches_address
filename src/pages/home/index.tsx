@@ -14,7 +14,7 @@ export function Home(): JSX.Element {
     updateNames();
   }, []);
 
-  const handleSubmit: FormProps["onSubmit"] = (e): void => {
+  const handleSubmit: FormProps["onSubmit"] = (e) => {
     e.preventDefault();
     const data = Object.fromEntries(new FormData(e.currentTarget));
     window.ipcRenderer.invoke("saveName", data.name.toString());
