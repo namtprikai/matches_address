@@ -3,10 +3,7 @@ import { db } from "./db";
 
 // ipcMain.handle()のハンドラ関数を定義する
 export const ipcMainHandlers = {
-  getNames: (): {
-    id: number;
-    name: string;
-  }[] => {
+  getNames: (): string[] => {
     initTestTable();
 
     if (db.prepare("SELECT * FROM test").all().length === 0) {
@@ -17,8 +14,9 @@ export const ipcMainHandlers = {
       id: number;
       name: string;
     }[];
+    const names = rows.map((row) => row.name);
 
-    return rows;
+    return names;
   },
   saveName: (_: unknown, text: string): void => {
     initTestTable();

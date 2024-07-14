@@ -6,8 +6,8 @@ export function Home(): JSX.Element {
   const [names, setNames] = useState<string[] | null>(null);
 
   const updateNames = async (): Promise<void> => {
-    const rows = await window.ipcRenderer.invoke("getNames");
-    setNames(rows.map((row) => row.name));
+    const result = await window.ipcRenderer.invoke("getNames");
+    setNames(result);
   };
 
   useEffect(() => {
