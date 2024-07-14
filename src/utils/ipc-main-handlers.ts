@@ -10,17 +10,16 @@ export const ipcMainHandlers = {
       db.prepare("INSERT INTO test (name) VALUES (?)").run("John Doe");
     }
 
-    const rows = db.prepare("SELECT * FROM test").all() as {
-      id: number;
-      name: string;
-    }[];
+    const rows = db
+      .prepare<[], { id: number; name: string }>("SELECT * FROM test")
+      .all();
     const names = rows.map((row) => row.name);
 
     return names;
   },
   saveName: (_: unknown, text: string): void => {
     initTestTable();
-    db.prepare("INSERT INTO test (name) VALUES (?)").run(text);
+    db.prepare<string>("INSERT INTO test (name) VALUES (?)").run(text);
   },
 } satisfies {
   [key: string]: Parameters<typeof ipcMain.handle>[1];
