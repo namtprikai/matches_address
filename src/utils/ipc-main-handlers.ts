@@ -17,9 +17,9 @@ export const ipcMainHandlers = {
 
     return names;
   },
-  saveName: (_: unknown, text: string): void => {
+  saveName: (_: unknown, name: string): void => {
     initTestTable();
-    db.prepare<string>("INSERT INTO test (name) VALUES (?)").run(text);
+    db.prepare<string>("INSERT INTO test (name) VALUES (?)").run(name);
   },
 } satisfies {
   [key: string]: Parameters<typeof ipcMain.handle>[1];
