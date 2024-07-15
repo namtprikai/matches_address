@@ -1,6 +1,7 @@
 {
   "name": "links-akiya",
   "productName": "links-akiya",
+  "description": "Links Akiya",
   "version": "0.0.0",
   "main": ".vite/build/main.js",
   "scripts": {
