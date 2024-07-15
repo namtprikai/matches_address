@@ -3,6 +3,7 @@ import { execFile } from "child_process";
 import path from "path";
 import { promisify } from "util";
 import { db, dbPath } from "./db";
+import { getErrorMessage } from "./get-error-message";
 
 const execFileAsync = promisify(execFile);
 
@@ -32,23 +33,38 @@ export const ipcMainHandlers = {
     initTestTable();
     db.prepare<string>("INSERT INTO test (name) VALUES (?)").run(name);
   },
-  helloFromPython: (_: unknown, name: string): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      execFile(binaryPath("hello"), [name], (error, stdout, stderr) => {
-        if (error) {
-          reject(`Error: ${error.message}`);
-          return;
-        }
-        if (stderr) {
-          reject(`Stderr: ${stderr}`);
-          return;
-        }
-        resolve(stdout);
-      });
-    });
+  helloFromPython: async (
+    _: unknown,
+    name: string
+  ): Promise<string | undefined> => {
+    try {
+      const { stdout, stderr } = await execFileAsync(binaryPath("hello"), [
+        name,
+      ]);
+
+      if (stderr) {
+        throw new Error(`Stderr: ${stderr}`);
+      }
+
+      return stdout;
+    } catch (error) {
+      console.error(getErrorMessage(error));
+      return undefined;
+    }
   },
   saveNameFromPython: async (_: unknown, name: string): Promise<void> => {
-    await execFileAsync(binaryPath("save_name"), [name, dbPath]);
+    try {
+      const { stderr } = await execFileAsync(binaryPath("save_name"), [
+        name,
+        dbPath,
+      ]);
+
+      if (stderr) {
+        throw new Error(`Stderr: ${stderr}`);
+      }
+    } catch (error) {
+      console.error(getErrorMessage(error));
+    }
   },
 } satisfies {
   [key: string]: Parameters<typeof ipcMain.handle>[1];
