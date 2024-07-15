@@ -36,7 +36,7 @@ jobs:
       - name: Rename file for Windows
         if: matrix.os == 'windows-latest'
         run: |
-          mv out/make/zip/darwin/arm64/links-akiya.exe out/links-akiya-windows.exe
+          mv out/make/links-akiya.exe out/links-akiya-windows.exe
 
       - name: Release Electron app for macOS
         if: matrix.os == 'macos-latest'
