@@ -9,7 +9,7 @@
     "make": "electron-forge make",
     "publish": "electron-forge publish",
     "lint": "eslint --ext .ts,.tsx .",
-    "build:python": "sh data-processing/build.sh"
+    "build:dp": "sh data-processing/build.sh"
   },
   "devDependencies": {
     "@adobe/react-spectrum": "^3.35.1",
