@@ -8,10 +8,10 @@ const execFileAsync = promisify(execFile);
 
 const binaryPath = (name: string): string => {
   const isDev = process.env.NODE_ENV === "development";
-  const binaryDirectory = path.resolve("./binaries");
+  const binaryDirectory = path.resolve("binaries", name);
   return isDev
-    ? path.join(binaryDirectory, name)
-    : path.resolve(process.resourcesPath, name);
+    ? binaryDirectory
+    : path.join(process.resourcesPath, binaryDirectory);
 };
 
 // ipcMain.handle()のハンドラ関数を定義する
