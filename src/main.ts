@@ -1,6 +1,6 @@
 import { app, BrowserWindow, ipcMain } from "electron";
 import path from "path";
-import { ipcMainHandlers } from "./utils/ipc-main-handlers";
+import { ipcMainListeners } from "./ipc-main-listeners";
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (require("electron-squirrel-startup")) {
@@ -36,7 +36,7 @@ void app.whenReady().then(() => {
   createWindow();
 
   // ipcMain.handle()のハンドラ関数を登録する
-  Object.entries(ipcMainHandlers).forEach(([channel, listener]) => {
+  Object.entries(ipcMainListeners).forEach(([channel, listener]) => {
     ipcMain.handle(channel, listener);
   });
 
