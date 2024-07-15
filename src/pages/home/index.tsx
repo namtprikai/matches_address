@@ -22,8 +22,11 @@ export function Home(): JSX.Element {
   };
 
   useEffect(() => {
-    sayHelloFromPython();
-    updateNames();
+    const asyncEffect = async (): Promise<void> => {
+      await sayHelloFromPython();
+      await updateNames();
+    };
+    asyncEffect().catch(console.error);
   }, []);
 
   const handleSubmit: FormProps["onSubmit"] = (e) => {
