@@ -36,7 +36,7 @@ jobs:
       - name: Rename file for Windows
         if: matrix.os == 'windows-latest'
         run: |
-          $foundFile = Get-ChildItem -Path out -Filter "links-akiya.zip" -Recurse
+          $foundFile = Get-ChildItem -Path "out/make/zip/win32" -Filter "*.zip" -Recurse
           if ($foundFile) {
               Write-Output "File found at: $($foundFile.FullName)"
           } else {
