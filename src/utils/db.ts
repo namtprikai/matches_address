@@ -4,7 +4,7 @@ import Database from "better-sqlite3";
 
 const isDev = process.env.NODE_ENV === "development";
 const dbDirectory = path.resolve("./database");
-const dbPath = isDev
+export const dbPath = isDev
   ? path.join(dbDirectory, "database.db")
   : path.resolve(process.resourcesPath, "database.db");
 

@@ -1,13 +1,18 @@
 import { type ipcMain } from "electron";
 import { execFile } from "child_process";
 import path from "path";
-import { db } from "./db";
+import { promisify } from "util";
+import { db, dbPath } from "./db";
 
-const isDev = process.env.NODE_ENV === "development";
-const binaryDirectory = path.resolve("./data-processing");
-const binaryPath = isDev
-  ? path.join(binaryDirectory, "dist", "hello")
-  : path.resolve(process.resourcesPath, "dist", "hello");
+const execFileAsync = promisify(execFile);
+
+const binaryPath = (name: string): string => {
+  const isDev = process.env.NODE_ENV === "development";
+  const binaryDirectory = path.resolve("./binaries");
+  return isDev
+    ? path.join(binaryDirectory, name)
+    : path.resolve(process.resourcesPath, name);
+};
 
 // ipcMain.handle()のハンドラ関数を定義する
 export const ipcMainHandlers = {
@@ -31,7 +36,7 @@ export const ipcMainHandlers = {
   },
   helloFromPython: (_: unknown, name: string): Promise<string> => {
     return new Promise((resolve, reject) => {
-      execFile(binaryPath, [name], (error, stdout, stderr) => {
+      execFile(binaryPath("hello"), [name], (error, stdout, stderr) => {
         if (error) {
           reject(`Error: ${error.message}`);
           return;
@@ -43,6 +48,9 @@ export const ipcMainHandlers = {
         resolve(stdout);
       });
     });
+  },
+  saveNameFromPython: async (_: unknown, name: string): Promise<void> => {
+    await execFileAsync(binaryPath("save_name"), [name, dbPath]);
   },
 } satisfies {
   [key: string]: Parameters<typeof ipcMain.handle>[1];

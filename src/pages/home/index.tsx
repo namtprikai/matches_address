@@ -22,9 +22,25 @@ export function Home(): JSX.Element {
 
   const handleSubmit: FormProps["onSubmit"] = (e) => {
     e.preventDefault();
-    const data = Object.fromEntries(new FormData(e.currentTarget));
-    window.ipcRenderer.invoke("saveName", data.name.toString());
-    updateNames();
+    const asyncSubmit = async (): Promise<void> => {
+      const data = Object.fromEntries(new FormData(e.currentTarget));
+      await window.ipcRenderer.invoke("saveName", data.name.toString());
+      await updateNames();
+    };
+    asyncSubmit().catch(console.error);
+  };
+
+  const handleSubmitPython: FormProps["onSubmit"] = (e) => {
+    e.preventDefault();
+    const asyncSubmit = async (): Promise<void> => {
+      const data = Object.fromEntries(new FormData(e.currentTarget));
+      await window.ipcRenderer.invoke(
+        "saveNameFromPython",
+        data.name.toString()
+      );
+      await updateNames();
+    };
+    asyncSubmit().catch(console.error);
   };
 
   return (
@@ -34,7 +50,18 @@ export function Home(): JSX.Element {
         <a href="#about">Go to about page</a>
       </div>
       <Form maxWidth="size-3000" onSubmit={handleSubmit}>
-        <TextField label="Name" name="name" />
+        <TextField label="Save name" name="name" />
+        <ButtonGroup>
+          <Button type="submit" variant="primary">
+            Submit
+          </Button>
+          <Button type="reset" variant="secondary">
+            Reset
+          </Button>
+        </ButtonGroup>
+      </Form>
+      <Form maxWidth="size-3000" onSubmit={handleSubmitPython}>
+        <TextField label="Save name from python" name="name" />
         <ButtonGroup>
           <Button type="submit" variant="primary">
             Submit
