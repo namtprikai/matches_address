@@ -39,3 +39,4 @@ jobs:
           prerelease: false
           files: |
             out/**/*.zip
+            out/**/*.exe
