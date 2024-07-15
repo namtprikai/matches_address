@@ -4,7 +4,7 @@ import { Home } from "./home";
 import { Error } from "./error";
 import { About } from "./about";
 import { Layout } from "./layout";
-import "./index.css";
+import "../styles/global.css";
 
 const router = createHashRouter([
   {
