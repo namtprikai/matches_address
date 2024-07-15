@@ -36,25 +36,29 @@ jobs:
       - name: Rename file for Windows
         if: matrix.os == 'windows-latest'
         run: |
-          find out -type f -name "links-akiya.exe"
-          mv out/make/links-akiya.exe out/links-akiya-windows.exe
+          $foundFile = Get-ChildItem -Path out -Filter "links-akiya.exe" -Recurse
+          if ($foundFile) {
+              Write-Output "File found at: $($foundFile.FullName)"
+          } else {
+              Write-Error "File not found"
+          }
 
-      - name: Release Electron app for macOS
-        if: matrix.os == 'macos-latest'
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: v0.0.${{ github.run_number }}
-          draft: false
-          prerelease: false
-          files: |
-            out/links-akiya-macos.zip
+      # - name: Release Electron app for macOS
+      #   if: matrix.os == 'macos-latest'
+      #   uses: softprops/action-gh-release@v2
+      #   with:
+      #     tag_name: v0.0.${{ github.run_number }}
+      #     draft: false
+      #     prerelease: false
+      #     files: |
+      #       out/links-akiya-macos.zip
 
-      - name: Release Electron app for Windows
-        if: matrix.os == 'windows-latest'
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: v0.0.${{ github.run_number }}
-          draft: false
-          prerelease: false
-          files: |
-            out/links-akiya-windows.exe
+      # - name: Release Electron app for Windows
+      #   if: matrix.os == 'windows-latest'
+      #   uses: softprops/action-gh-release@v2
+      #   with:
+      #     tag_name: v0.0.${{ github.run_number }}
+      #     draft: false
+      #     prerelease: false
+      #     files: |
+      #       out/links-akiya-windows.exe
