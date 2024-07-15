@@ -12,6 +12,12 @@ const api = {
   ): Promise<Awaited<ReturnType<(typeof ipcMainHandlers)[K]>>> {
     return ipcRenderer.invoke(channel, ...args);
   },
+  send<K extends AllowedChannel>(
+    channel: AllowedChannel,
+    ...args: Parameters<(typeof ipcMainHandlers)[K]>[1][]
+  ): ReturnType<typeof ipcRenderer.send> {
+    return ipcRenderer.send(channel, ...args);
+  },
   on(
     channel: AllowedChannel,
     listener: Parameters<typeof ipcRenderer.on>[1]
@@ -23,12 +29,6 @@ const api = {
     listener: Parameters<typeof ipcRenderer.off>[1]
   ): ReturnType<typeof ipcRenderer.off> {
     return ipcRenderer.off(channel, listener);
-  },
-  send(
-    channel: AllowedChannel,
-    ...args: Parameters<typeof ipcRenderer.send>[1][]
-  ): ReturnType<typeof ipcRenderer.send> {
-    return ipcRenderer.send(channel, ...args);
   },
 };
 
