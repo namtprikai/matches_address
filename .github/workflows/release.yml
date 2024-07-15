@@ -56,4 +56,4 @@ jobs:
           draft: false
           prerelease: false
           files: |
-            out/links-akiya-windows.exe
+            out/links-akiya-windows.zip
