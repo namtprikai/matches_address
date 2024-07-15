@@ -3,6 +3,7 @@
   "productName": "links-akiya",
   "description": "Links Akiya",
   "version": "0.0.0",
+  "license": "MIT",
   "main": ".vite/build/main.js",
   "scripts": {
     "start": "electron-forge start",
