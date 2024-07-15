@@ -11,7 +11,7 @@ jobs:
 
     strategy:
       matrix:
-        os: [macos-latest, windows-latest]
+        os: [windows-latest]
 
     steps:
       - name: Checkout code
@@ -36,6 +36,7 @@ jobs:
       - name: Rename file for Windows
         if: matrix.os == 'windows-latest'
         run: |
+          find out -type f -name "links-akiya.exe"
           mv out/make/links-akiya.exe out/links-akiya-windows.exe
 
       - name: Release Electron app for macOS
