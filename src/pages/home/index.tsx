@@ -18,7 +18,7 @@ export function Home(): JSX.Element {
 
   const sayHelloFromPython = async (): Promise<void> => {
     const result = await window.ipcRenderer.invoke("helloFromPython", "world");
-    console.log(result);
+    console.info(result);
   };
 
   useEffect(() => {
