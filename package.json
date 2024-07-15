@@ -2,6 +2,7 @@
   "name": "links-akiya",
   "productName": "links-akiya",
   "description": "Links Akiya",
+  "author": "Links Akiya",
   "version": "0.0.0",
   "license": "MIT",
   "main": ".vite/build/main.js",
