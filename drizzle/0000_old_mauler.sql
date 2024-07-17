@@ -1,4 +1,4 @@
 CREATE TABLE `users` (
-	`id` text,
+	`id` integer PRIMARY KEY NOT NULL,
 	`name` text
 );
