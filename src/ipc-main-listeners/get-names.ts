@@ -3,12 +3,12 @@ import { users } from "@/schema";
 import { db } from "@/utils/db";
 
 export const getNames: IpcMainListener = (): (string | null)[] => {
-  let allUsers = db.select().from(users).all();
+  db.insert(users)
+    .values({ id: 1, name: "John Doe" })
+    .onConflictDoNothing({ target: users.id })
+    .run();
 
-  if (allUsers.length === 0) {
-    void db.insert(users).values({ name: "John Doe" }).run();
-    allUsers = db.select().from(users).all();
-  }
+  const allUsers = db.select().from(users).all();
   const names = allUsers.map((row) => row.name);
 
   return names;
