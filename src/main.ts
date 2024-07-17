@@ -1,6 +1,8 @@
 import { app, BrowserWindow, ipcMain } from "electron";
 import path from "path";
+import { migrate } from "drizzle-orm/better-sqlite3/migrator";
 import { ipcMainListeners } from "./ipc-main-listeners";
+import { db } from "./utils/db";
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (require("electron-squirrel-startup")) {
@@ -33,6 +35,8 @@ const createWindow = (): void => {
 };
 
 void app.whenReady().then(() => {
+  migrate(db, { migrationsFolder: "drizzle" });
+
   createWindow();
 
   // ipcMain.handle()のハンドラ関数を登録する
