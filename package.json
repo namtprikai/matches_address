@@ -30,6 +30,8 @@
     "@types/react-dom": "^18.3.0",
     "@typescript-eslint/eslint-plugin": "^5.0.0",
     "@typescript-eslint/parser": "^5.0.0",
+    "drizzle-kit": "^0.23.0",
+    "drizzle-orm": "^0.32.0",
     "electron": "^31.2.0",
     "eslint": "^8.0.1",
     "eslint-import-resolver-typescript": "^3.6.1",
