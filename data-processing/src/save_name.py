@@ -8,14 +8,14 @@ def save_name(name, db_path):
 
     # テーブルが存在しない場合は作成
     cursor.execute('''
-    CREATE TABLE IF NOT EXISTS test (
+    CREATE TABLE IF NOT EXISTS users (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         name TEXT NOT NULL
     )
     ''')
 
     # 名前を挿入
-    cursor.execute('INSERT INTO test (name) VALUES (?)', (name,))
+    cursor.execute('INSERT INTO users (name) VALUES (?)', (name,))
 
     # 変更をコミットして接続を閉じる
     conn.commit()
