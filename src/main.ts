@@ -35,12 +35,11 @@ const createWindow = (): void => {
 };
 
 void app.whenReady().then(() => {
-  migrate(db, {
-    migrationsFolder:
-      process.env.NODE_ENV === "development"
-        ? "drizzle"
-        : path.join(process.resourcesPath, "drizzle"),
-  });
+  const migrationsFolder =
+    process.env.NODE_ENV === "development"
+      ? "drizzle"
+      : path.join(process.resourcesPath, "drizzle");
+  migrate(db, { migrationsFolder });
 
   createWindow();
 
