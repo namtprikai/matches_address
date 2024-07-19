@@ -1,17 +1,15 @@
-import { type IpcMainListener, initTestTable } from ".";
+import { type IpcMainListener } from ".";
+import { users } from "@/schema";
 import { db } from "@/utils/db";
 
-export const getNames: IpcMainListener = (): string[] => {
-  initTestTable();
+export const getNames: IpcMainListener = (): (string | null)[] => {
+  db.insert(users)
+    .values({ id: 1, name: "John Doe" })
+    .onConflictDoNothing({ target: users.id })
+    .run();
 
-  if (db.prepare("SELECT * FROM test").all().length === 0) {
-    db.prepare("INSERT INTO test (name) VALUES (?)").run("John Doe");
-  }
-
-  const rows = db
-    .prepare<[], { id: number; name: string }>("SELECT * FROM test")
-    .all();
-  const names = rows.map((row) => row.name);
+  const allUsers = db.select().from(users).all();
+  const names = allUsers.map((row) => row.name);
 
   return names;
 };
