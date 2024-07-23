@@ -1,12 +1,11 @@
 #!/bin/bash
 
-ROOT_DIR="data-processing"
-SRC_DIR="$ROOT_DIR/src"
-TEMP_DIR="binaries/.temp"
+SRC_DIR="./src"
+TEMP_DIR="./dist/.temp"
 
 # ビルドディレクトリのクリーニング
-rm -rf binaries
-mkdir -p binaries $TEMP_DIR
+rm -rf dist
+mkdir -p dist $TEMP_DIR
 
 # src ディレクトリ内のすべての .py ファイルをビルド
 for py_file in $SRC_DIR/*.py; do
@@ -17,7 +16,7 @@ for py_file in $SRC_DIR/*.py; do
     pyinstaller --onefile --distpath $TEMP_DIR/dist --workpath $TEMP_DIR/build --specpath $TEMP_DIR "$py_file"
 
     # ビルドされたバイナリを binaries ディレクトリに移動
-    mv "$TEMP_DIR/dist/$base_name" binaries/
+    mv "$TEMP_DIR/dist/$base_name" dist/
 done
 
 # 一時ファイルの削除

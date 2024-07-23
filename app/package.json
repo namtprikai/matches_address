@@ -11,8 +11,7 @@
     "package": "electron-forge package",
     "make": "electron-forge make",
     "publish": "electron-forge publish",
-    "lint": "eslint --ext .ts,.tsx .",
-    "build:dp": "sh data-processing/build.sh"
+    "lint": "eslint --ext .ts,.tsx ."
   },
   "devDependencies": {
     "@adobe/react-spectrum": "^3.35.1",
