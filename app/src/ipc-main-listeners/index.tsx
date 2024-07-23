@@ -19,7 +19,7 @@ export const execFileAsync = promisify(execFile);
 export const binaryPath = (name: string): string => {
   const isDev = process.env.NODE_ENV === "development";
   const _binaryPath = path.resolve(__dirname, "../../../ml/dist", name);
-  return isDev ? _binaryPath : path.join(process.resourcesPath, _binaryPath);
+  return isDev ? _binaryPath : path.join(process.resourcesPath, "dist", name);
 };
 
 export type IpcMainListener = Parameters<typeof ipcMain.handle>[1];
