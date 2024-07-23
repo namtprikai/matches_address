@@ -4,12 +4,12 @@
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
-      "outputs": ["ml/dist/**"]
+      "inputs": ["$TURBO_DEFAULT$", ".env*"],
+      "outputs": ["dist/**"]
     },
     "make": {
-      "dependsOn": ["build"],
-      "inputs": ["ml/dist/**"],
-      "outputs": ["app/out/**"]
+      "dependsOn": ["ml#build"],
+      "outputs": ["out/**"]
     },
     "lint": {
       "dependsOn": ["^lint"]
