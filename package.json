@@ -53,10 +53,8 @@
     "vite-plugin-native": "^2.2.1"
   },
   "engines": {
-    "node": "20.x",
-    "npm": "10.x",
-    "yarn": "use npm instead",
-    "pnpm": "use npm instead"
+    "node": "20.x"
   },
+  "packageManager": "npm@10.8.0",
   "enginesStrict": true
 }
