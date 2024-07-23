@@ -1,14 +1,14 @@
 {
-  "name": "links-akiya",
-  "productName": "links-akiya",
-  "description": "Links Akiya",
-  "author": "Links Akiya",
+  "name": "app",
+  "productName": "links-akiya-app",
+  "description": "空き家プロジェクト",
+  "author": "空き家プロジェクト",
   "version": "0.0.0",
   "license": "MIT",
   "main": ".vite/build/main.js",
   "scripts": {
-    "start": "electron-forge start",
     "package": "electron-forge package",
+    "dev": "electron-forge start",
     "make": "electron-forge make",
     "publish": "electron-forge publish",
     "lint": "eslint --ext .ts,.tsx ."

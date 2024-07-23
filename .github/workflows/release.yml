@@ -31,12 +31,12 @@ jobs:
       - name: Rename file for macOS
         if: matrix.os == 'macos-latest'
         run: |
-          mv out/make/zip/darwin/arm64/links-akiya-darwin-arm64-0.0.0.zip out/links-akiya-macos.zip
+          mv app/out/make/zip/darwin/arm64/links-akiya-darwin-arm64-0.0.0.zip out/links-akiya-macos.zip
 
       - name: Rename file for Windows
         if: matrix.os == 'windows-latest'
         run: |
-          mv out/make/zip/win32/x64/links-akiya-win32-x64-0.0.0.zip out/links-akiya-windows.zip
+          mv app/out/make/zip/win32/x64/links-akiya-win32-x64-0.0.0.zip out/links-akiya-windows.zip
 
       - name: Release Electron app for macOS
         if: matrix.os == 'macos-latest'
