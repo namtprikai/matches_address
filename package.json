@@ -1,60 +1,24 @@
 {
   "name": "links-akiya",
-  "productName": "links-akiya",
-  "description": "Links Akiya",
-  "author": "Links Akiya",
-  "version": "0.0.0",
-  "license": "MIT",
-  "main": ".vite/build/main.js",
+  "private": true,
   "scripts": {
-    "start": "electron-forge start",
-    "package": "electron-forge package",
-    "make": "electron-forge make",
-    "publish": "electron-forge publish",
-    "lint": "eslint --ext .ts,.tsx .",
-    "build:dp": "sh data-processing/build.sh"
+    "build": "turbo build",
+    "dev": "turbo dev",
+    "lint": "turbo lint",
+    "make": "turbo make",
+    "format": "prettier --write \"**/*.{ts,tsx,md}\""
   },
   "devDependencies": {
-    "@adobe/react-spectrum": "^3.35.1",
-    "@electron-forge/cli": "^7.4.0",
-    "@electron-forge/maker-deb": "^7.4.0",
-    "@electron-forge/maker-rpm": "^7.4.0",
-    "@electron-forge/maker-squirrel": "^7.4.0",
-    "@electron-forge/maker-zip": "^7.4.0",
-    "@electron-forge/plugin-auto-unpack-natives": "^7.4.0",
-    "@electron-forge/plugin-fuses": "^7.4.0",
-    "@electron-forge/plugin-vite": "^7.4.0",
-    "@electron/fuses": "^1.8.0",
-    "@types/better-sqlite3": "^7.6.11",
-    "@types/react": "^18.3.3",
-    "@types/react-dom": "^18.3.0",
-    "@typescript-eslint/eslint-plugin": "^5.0.0",
-    "@typescript-eslint/parser": "^5.0.0",
-    "drizzle-kit": "^0.23.0",
-    "drizzle-orm": "^0.32.0",
-    "electron": "^31.2.0",
-    "eslint": "^8.0.1",
-    "eslint-import-resolver-typescript": "^3.6.1",
-    "eslint-plugin-eslint-comments": "^3.2.0",
-    "eslint-plugin-import-x": "^0.5.3",
-    "eslint-plugin-react": "^7.34.3",
-    "eslint-plugin-react-hooks": "^4.6.2",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1",
-    "react-router-dom": "^6.24.1",
-    "ts-node": "^10.0.0",
-    "tsx": "^4.16.2",
-    "typescript": "5.1.6",
-    "vite": "^5.0.12"
-  },
-  "dependencies": {
-    "better-sqlite3": "^11.1.2",
-    "electron-squirrel-startup": "^1.0.1",
-    "vite-plugin-native": "^2.2.1"
+    "prettier": "^3.2.5",
+    "turbo": "^2.0.7",
+    "typescript": "^5.4.5"
   },
   "engines": {
-    "node": "20.x"
+    "node": ">=20"
   },
   "packageManager": "npm@10.8.0",
-  "enginesStrict": true
+  "workspaces": [
+    "app",
+    "ml"
+  ]
 }
