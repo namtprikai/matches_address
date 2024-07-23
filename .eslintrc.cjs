@@ -74,7 +74,7 @@ module.exports = {
   },
   overrides: [
     {
-      files: ["*.config.ts", "forge.config.cts"],
+      files: ["*.config.ts"],
       rules: {
         "import-x/no-default-export": "off",
       },
