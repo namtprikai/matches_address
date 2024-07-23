@@ -7,10 +7,8 @@
   "license": "MIT",
   "main": ".vite/build/main.js",
   "scripts": {
-    "package": "electron-forge package",
     "dev": "electron-forge start",
     "make": "electron-forge make",
-    "publish": "electron-forge publish",
     "lint": "eslint --ext .ts,.tsx ."
   },
   "devDependencies": {
