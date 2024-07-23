@@ -1,6 +1,6 @@
 #!/bin/bash
 
-SRC_DIR="./src"
+DEMO_DIR="./src/_demo"
 TEMP_DIR="./dist/.temp"
 
 # ビルドディレクトリのクリーニング
@@ -8,7 +8,7 @@ rm -rf dist
 mkdir -p dist $TEMP_DIR
 
 # src ディレクトリ内のすべての .py ファイルをビルド
-for py_file in $SRC_DIR/*.py; do
+for py_file in $DEMO_DIR/*.py; do
     # ファイル名のみを抽出（拡張子なし）
     base_name=$(basename "$py_file" .py)
 
