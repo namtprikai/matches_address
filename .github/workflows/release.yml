@@ -6,7 +6,7 @@ on:
       - main
 
 jobs:
-  build-and-release:
+  release:
     runs-on: ${{ matrix.os }}
 
     strategy:
