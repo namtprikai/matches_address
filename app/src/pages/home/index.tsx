@@ -45,7 +45,7 @@ export function Home(): JSX.Element {
       const data = Object.fromEntries(new FormData(e.currentTarget));
       await window.ipcRenderer.invoke(
         "saveNameFromPython",
-        data.name.toString()
+        data.name.toString(),
       );
       await updateNames();
     };
@@ -83,11 +83,7 @@ export function Home(): JSX.Element {
             </ButtonGroup>
           </Form>
         </Flex>
-        <div>
-          {names?.map((message, i) => (
-            <p key={i}>{message}</p>
-          ))}
-        </div>
+        <div>{names?.map((message, i) => <p key={i}>{message}</p>)}</div>
       </Flex>
     </div>
   );

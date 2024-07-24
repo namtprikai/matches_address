@@ -3,7 +3,7 @@ import { getErrorMessage } from "@/utils/get-error-message";
 
 export const helloFromPython: IpcMainListener = async (
   _: unknown,
-  name: string
+  name: string,
 ): Promise<string | undefined> => {
   try {
     const { stdout, stderr } = await execFileAsync(binaryPath("hello"), [name]);

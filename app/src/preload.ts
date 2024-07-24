@@ -20,13 +20,13 @@ const api = {
   },
   on(
     channel: AllowedChannel,
-    listener: Parameters<typeof ipcRenderer.on>[1]
+    listener: Parameters<typeof ipcRenderer.on>[1],
   ): ReturnType<typeof ipcRenderer.on> {
     return ipcRenderer.on(channel, listener);
   },
   off(
     channel: AllowedChannel,
-    listener: Parameters<typeof ipcRenderer.off>[1]
+    listener: Parameters<typeof ipcRenderer.off>[1],
   ): ReturnType<typeof ipcRenderer.off> {
     return ipcRenderer.off(channel, listener);
   },
