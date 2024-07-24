@@ -12,7 +12,9 @@ const config: ForgeConfig = {
     asar: true,
     extraResource: ["../ml/dist", "drizzle"],
   },
-  rebuildConfig: {},
+  rebuildConfig: {
+    force: true,
+  },
   makers: [
     new MakerSquirrel({}),
     new MakerZIP({}, ["darwin", "win32"]),
