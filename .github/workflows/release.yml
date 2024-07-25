@@ -38,7 +38,7 @@ jobs:
       # This is a workaround for native module NODE_MODULE_VERSION difference error
       # ref: https://github.com/electron/forge/issues/3603
       - name: Run dev server for 10 seconds
-        run: timeout 20s npm run dev || true
+        run: node timeout.js
 
       - name: Build and package
         run: npm run make
