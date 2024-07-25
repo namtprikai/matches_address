@@ -4,7 +4,7 @@ import { dbPath } from "@/utils/db";
 
 export const saveNameFromPython: IpcMainListener = async (
   _: unknown,
-  name: string
+  name: string,
 ): Promise<void> => {
   try {
     const { stderr } = await execFileAsync(binaryPath("save_name"), [
