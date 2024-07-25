@@ -1,5 +1,5 @@
 import { createHashRouter, RouterProvider } from "react-router-dom";
-import { defaultTheme, Provider as ThemeProvider } from "@adobe/react-spectrum";
+import { FluentProvider, webLightTheme } from '@fluentui/react-components';
 import { Home } from "./home";
 import { Error } from "./error";
 import { About } from "./about";
@@ -27,8 +27,8 @@ const router = createHashRouter([
 
 export function App(): JSX.Element {
   return (
-    <ThemeProvider theme={defaultTheme}>
+    <FluentProvider theme={webLightTheme}>
       <RouterProvider router={router} />
-    </ThemeProvider>
+    </FluentProvider>
   );
 }
