@@ -15,7 +15,7 @@ export const ipcMainListeners = {
   helloFromPython,
   saveNameFromPython,
   insertWorkbooks,
-  selectWorkbooks
+  selectWorkbooks,
 };
 
 export const execFileAsync = promisify(execFile);

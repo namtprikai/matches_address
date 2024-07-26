@@ -1,7 +1,4 @@
-import {
-  makeStyles,
-  tokens
-} from "@fluentui/react-components";
+import { makeStyles, tokens } from "@fluentui/react-components";
 import { Outlet } from "react-router-dom";
 import { Sidebar } from "../components/Sidebar";
 
@@ -13,7 +10,7 @@ const useStyles = makeStyles({
   content: {
     flex: "1",
     padding: tokens.spacingVerticalL,
-    backgroundColor: tokens.colorNeutralBackground3
+    backgroundColor: tokens.colorNeutralBackground3,
   },
 });
 

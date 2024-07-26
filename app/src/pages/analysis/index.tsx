@@ -1,9 +1,5 @@
-import { 
-  Card, 
-  makeStyles, 
-  tokens, 
- } from "@fluentui/react-components";
- import { ButtonCreateWorkbook } from "../../components/ButtonCreateWorkbook";
+import { Card, makeStyles, tokens } from "@fluentui/react-components";
+import { ButtonCreateWorkbook } from "../../components/ButtonCreateWorkbook";
 import { TableWorkbook } from "../../components/TableWorkbook";
 
 const useStyles = makeStyles({
@@ -17,8 +13,8 @@ const useStyles = makeStyles({
   },
   content: {
     display: "block",
-    minHeight: "300px"
-  }
+    minHeight: "300px",
+  },
 });
 
 export function Analysis(): JSX.Element {
@@ -32,7 +28,6 @@ export function Analysis(): JSX.Element {
         <ButtonCreateWorkbook />
         <TableWorkbook />
       </Card>
-      
     </div>
   );
 }

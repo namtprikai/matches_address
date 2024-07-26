@@ -52,30 +52,29 @@ export function Home(): JSX.Element {
       <div>
         <a href="#about">Go to about page</a>
       </div>
-          <form onSubmit={handleSubmit}>
-            <Field label="Save name">
-              <Input name="name" />
-            </Field>
-              <Button appearance="primary" type="submit">
-                Submit
-              </Button>
-              <Button appearance="secondary" type="reset">
-                Reset
-              </Button>
-          </form>
-          <form onSubmit={handleSubmitPython}>
-            <Field label="Save name from python">
-              <Input name="name" />
-            </Field>
-              <Button appearance="primary" type="submit">
-                Submit
-              </Button>
-              <Button appearance="secondary" type="reset">
-                Reset
-              </Button>
-          </form>
-        <div>{names?.map((message, i) => <p key={i}>{message}</p>)}</div>
-      
+      <form onSubmit={handleSubmit}>
+        <Field label="Save name">
+          <Input name="name" />
+        </Field>
+        <Button appearance="primary" type="submit">
+          Submit
+        </Button>
+        <Button appearance="secondary" type="reset">
+          Reset
+        </Button>
+      </form>
+      <form onSubmit={handleSubmitPython}>
+        <Field label="Save name from python">
+          <Input name="name" />
+        </Field>
+        <Button appearance="primary" type="submit">
+          Submit
+        </Button>
+        <Button appearance="secondary" type="reset">
+          Reset
+        </Button>
+      </form>
+      <div>{names?.map((message, i) => <p key={i}>{message}</p>)}</div>
     </div>
   );
 }

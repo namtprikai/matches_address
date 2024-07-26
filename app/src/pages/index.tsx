@@ -1,5 +1,9 @@
 import { createHashRouter, RouterProvider } from "react-router-dom";
-import { FluentProvider, createLightTheme, type BrandVariants} from '@fluentui/react-components';
+import {
+  FluentProvider,
+  createLightTheme,
+  type BrandVariants,
+} from "@fluentui/react-components";
 import { Home } from "./home";
 import { Error } from "./error";
 import { About } from "./about";
@@ -30,7 +34,7 @@ const router = createHashRouter([
   },
 ]);
 
-const myNewTheme: BrandVariants = { 
+const myNewTheme: BrandVariants = {
   10: "#020204",
   20: "#16151E",
   30: "#232235",
@@ -46,8 +50,8 @@ const myNewTheme: BrandVariants = {
   130: "#A7A5CE",
   140: "#B6B4D7",
   150: "#C6C4DF",
-  160: "#D5D4E8"
-  };
+  160: "#D5D4E8",
+};
 
 const theme = createLightTheme(myNewTheme);
 
