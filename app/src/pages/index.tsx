@@ -5,6 +5,7 @@ import { Error } from "./error";
 import { About } from "./about";
 import { Layout } from "./layout";
 import "../styles/global.css";
+import { Analysis } from "./analysis";
 
 // クライアントだけで動作するアプリケーションのため`createHashRouter`を使用する
 const router = createHashRouter([
@@ -20,6 +21,10 @@ const router = createHashRouter([
       {
         path: "about",
         element: <About />,
+      },
+      {
+        path: "analysis",
+        element: <Analysis />,
       },
     ],
   },

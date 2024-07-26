@@ -69,7 +69,7 @@ import {
       icon: ArrowTrendingLinesRegular,
       label: "分析",
       value: "3",
-      href: "#",
+      href: "#analysis",
     },
     {
       icon: DocumentBulletListRegular,
