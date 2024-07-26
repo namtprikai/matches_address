@@ -23,20 +23,20 @@ const useStyles = makeStyles({
   navDrawer: {
     width: "82px",
     height: "100vh",
-    padding: "24px 0"
+    padding: `${tokens.spacingVerticalXXL} ${tokens.spacingHorizontalNone}`
   },
   navDrawerBody: {
-    padding: `0 ${tokens.spacingHorizontalMNudge}`,
+    padding: `${tokens.spacingVerticalNone} ${tokens.spacingHorizontalMNudge}`,
   },
   content: {
     flex: "1",
-    padding: "16px",
+    padding: tokens.spacingVerticalL,
     display: "grid",
     justifyContent: "flex-start",
     alignItems: "flex-start",
   },
   navItem: {
-    padding: `${tokens.spacingVerticalS} 0`,
+    padding: `${tokens.spacingVerticalS} ${tokens.spacingHorizontalNone}`,
     ":after": {
       content: "none",
     }
@@ -44,15 +44,14 @@ const useStyles = makeStyles({
   menuItem: {
     display: "flex",
     flexFlow: "column",
-    gap: "4px",
+    gap: tokens.spacingVerticalXS,
     alignItems: "center",
     justifyContent: "center",
     width: "100%",
   },
   icon: {
-    fontSize: "24px",
-    width: "24px",
-    height: "24px",
+    width: tokens.spacingHorizontalXXL,
+    height: tokens.spacingVerticalXXL,
   },
   label: { 
     fontSize: tokens.fontSizeBase100
