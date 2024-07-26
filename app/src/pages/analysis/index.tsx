@@ -1,8 +1,9 @@
-import {
-  AddFilled
-} from "@fluentui/react-icons";
-import { Card, makeStyles, tokens } from "@fluentui/react-components";
-import { Button } from "../../components/Button";
+import { 
+  Card, 
+  makeStyles, 
+  tokens, 
+ } from "@fluentui/react-components";
+ import { ButtonCreateWorkbook } from "../..//components/ButtonCreateWorkbook";
 
 const useStyles = makeStyles({
   root: {
@@ -27,8 +28,9 @@ export function Analysis(): JSX.Element {
       <h2 className={styles.heading}>分析</h2>
 
       <Card className={styles.content}>
-        <Button icon={<AddFilled />} onClick={():void=>alert("create")}>新規ワークブック作成</Button>
+        <ButtonCreateWorkbook />
       </Card>
+      
     </div>
   );
 }

@@ -1,4 +1,4 @@
-import { Button, Field } from "@fluentui/react-components";
+import { Button, Field, Input } from "@fluentui/react-components";
 import { useEffect, useState } from "react";
 import { type FormProps } from "react-router-dom";
 
@@ -53,7 +53,9 @@ export function Home(): JSX.Element {
         <a href="#about">Go to about page</a>
       </div>
           <form onSubmit={handleSubmit}>
-            <Field label="Save name"  />
+            <Field label="Save name">
+              <Input name="name" />
+            </Field>
               <Button appearance="primary" type="submit">
                 Submit
               </Button>
@@ -62,7 +64,9 @@ export function Home(): JSX.Element {
               </Button>
           </form>
           <form onSubmit={handleSubmitPython}>
-            <Field label="Save name from python" />
+            <Field label="Save name from python">
+              <Input name="name" />
+            </Field>
               <Button appearance="primary" type="submit">
                 Submit
               </Button>
