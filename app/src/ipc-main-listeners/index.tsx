@@ -6,12 +6,16 @@ import { getNames } from "./get-names";
 import { saveName } from "./save-name";
 import { helloFromPython } from "./hello-from-python";
 import { saveNameFromPython } from "./save-name-from-python";
+import { insertWorkbooks } from "./insert-workbooks";
+import { selectWorkbooks } from "./select-workbooks";
 
 export const ipcMainListeners = {
   getNames,
   saveName,
   helloFromPython,
   saveNameFromPython,
+  insertWorkbooks,
+  selectWorkbooks
 };
 
 export const execFileAsync = promisify(execFile);

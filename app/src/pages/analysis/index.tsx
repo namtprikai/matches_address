@@ -3,7 +3,8 @@ import {
   makeStyles, 
   tokens, 
  } from "@fluentui/react-components";
- import { ButtonCreateWorkbook } from "../..//components/ButtonCreateWorkbook";
+ import { ButtonCreateWorkbook } from "../../components/ButtonCreateWorkbook";
+import { TableWorkbook } from "../../components/TableWorkbook";
 
 const useStyles = makeStyles({
   root: {
@@ -29,6 +30,7 @@ export function Analysis(): JSX.Element {
 
       <Card className={styles.content}>
         <ButtonCreateWorkbook />
+        <TableWorkbook />
       </Card>
       
     </div>
