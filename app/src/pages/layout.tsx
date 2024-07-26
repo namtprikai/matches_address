@@ -13,9 +13,7 @@ const useStyles = makeStyles({
   content: {
     flex: "1",
     padding: tokens.spacingVerticalL,
-    display: "grid",
-    justifyContent: "flex-start",
-    alignItems: "flex-start",
+    backgroundColor: tokens.colorNeutralBackground3
   },
 });
 
