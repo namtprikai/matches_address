@@ -54,7 +54,7 @@ export const ButtonCreateWorkbook = (): JSX.Element => {
               </DialogTrigger>
             }
           >
-            ワークブック名 <Button onClick={():void=>navigate(`analysis/workbook/1`)}>トップ</Button>
+            ワークブック名
           </DialogTitle>
           <DialogContent>
             <form id="create-workbook" onSubmit={handleSubmit}>
