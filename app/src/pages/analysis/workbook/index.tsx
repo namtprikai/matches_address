@@ -1,6 +1,6 @@
 import { Card, makeStyles, tokens } from "@fluentui/react-components";
-import { ButtonCreateWorkbook } from "../../components/ButtonCreateWorkbook";
-import { TableWorkbook } from "../../components/TableWorkbook";
+import { ButtonCreateWorkbook } from "../../../components/ButtonCreateWorkbook";
+import { TableWorkbook } from "../../../components/TableWorkbook";
 
 const useStyles = makeStyles({
   root: {
@@ -17,7 +17,7 @@ const useStyles = makeStyles({
   },
 });
 
-export function Analysis(): JSX.Element {
+export function Workbook(): JSX.Element {
   const styles = useStyles();
 
   return (

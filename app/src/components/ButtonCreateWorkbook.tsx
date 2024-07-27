@@ -10,7 +10,7 @@ import {
   Input,
   makeStyles,
 } from "@fluentui/react-components";
-import { type FormProps } from "react-router-dom";
+import { useNavigate, type FormProps } from "react-router-dom";
 import { Button } from "../components/Button";
 
 const useStyles = makeStyles({
@@ -21,18 +21,19 @@ const useStyles = makeStyles({
 
 export const ButtonCreateWorkbook = (): JSX.Element => {
   const styles = useStyles();
+  const navigate = useNavigate();
 
   /** フォーム制御についてはあとで考える */
   const handleSubmit: FormProps["onSubmit"] = (e) => {
     e.preventDefault();
     const asyncSubmit = async (): Promise<void> => {
       const data = Object.fromEntries(new FormData(e.currentTarget));
-      await window.ipcRenderer.invoke("insertWorkbooks", {
+      const res = await window.ipcRenderer.invoke("insertWorkbooks", {
         title: data.title.toString(),
       });
+      navigate(`#analysis/workbook/${res.id}/edit`);
     };
-    asyncSubmit().catch(console.error);
-
+    asyncSubmit().catch(console.error);    
   };
 
   return (
@@ -53,7 +54,7 @@ export const ButtonCreateWorkbook = (): JSX.Element => {
               </DialogTrigger>
             }
           >
-            ワークブック名
+            ワークブック名 <Button onClick={():void=>navigate(`analysis/workbook/1`)}>トップ</Button>
           </DialogTitle>
           <DialogContent>
             <form id="create-workbook" onSubmit={handleSubmit}>
@@ -61,11 +62,11 @@ export const ButtonCreateWorkbook = (): JSX.Element => {
             </form>
           </DialogContent>
           <DialogActions>
-            <DialogTrigger>
+            {/* <DialogTrigger> */}
               <Button appearance="primary" form="create-workbook" type="submit">
                 保存
               </Button>
-            </DialogTrigger>
+            {/* </DialogTrigger> */}
           </DialogActions>
         </DialogBody>
       </DialogSurface>

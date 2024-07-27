@@ -9,7 +9,9 @@ import { Error } from "./error";
 import { About } from "./about";
 import { Layout } from "./layout";
 import "../styles/global.css";
-import { Analysis } from "./analysis";
+import { Workbook } from "./analysis/workbook";
+import { EditWorkbook } from "./analysis/workbook/edit";
+import { DetailWorkbook } from "./analysis/workbook/detail";
 
 // クライアントだけで動作するアプリケーションのため`createHashRouter`を使用する
 const router = createHashRouter([
@@ -27,8 +29,16 @@ const router = createHashRouter([
         element: <About />,
       },
       {
-        path: "analysis",
-        element: <Analysis />,
+        path: "analysis/workbook",
+        element: <Workbook />,
+      },
+      {
+        path: "analysis/workbook/:id",
+        element: <DetailWorkbook />,
+      },
+      {
+        path: "analysis/workbook/:id/edit",
+        element: <EditWorkbook />,
       },
     ],
   },

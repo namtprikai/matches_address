@@ -62,7 +62,7 @@ const menuItems = [
     icon: ArrowTrendingLinesRegular,
     label: "分析",
     value: "3",
-    href: "#analysis",
+    href: "#analysis/workbook",
   },
   {
     icon: DocumentBulletListRegular,

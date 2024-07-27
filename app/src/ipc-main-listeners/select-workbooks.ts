@@ -8,8 +8,7 @@ export const selectWorkbooks: IpcMainListener = (): {
   title: string | null;
   created_at: string | null;
 }[] => {
-  const allUsers = db.select().from(workbooks).all();
-  console.log({ allUsers });
+  const all = db.select().from(workbooks).all();
 
-  return allUsers;
+  return all;
 };
