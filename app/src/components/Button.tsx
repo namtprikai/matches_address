@@ -2,7 +2,6 @@ import {
   type ButtonProps,
   Button as FUIButton,
   makeStyles,
-  mergeClasses,
   tokens,
 } from "@fluentui/react-components";
 import { forwardRef } from "react";
