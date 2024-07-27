@@ -27,12 +27,12 @@ export const ButtonCreateWorkbook = (): JSX.Element => {
     e.preventDefault();
     const asyncSubmit = async (): Promise<void> => {
       const data = Object.fromEntries(new FormData(e.currentTarget));
-      console.log("submit");
       await window.ipcRenderer.invoke("insertWorkbooks", {
-        title: "ワークブック1",
+        title: data.title.toString(),
       });
     };
     asyncSubmit().catch(console.error);
+
   };
 
   return (
@@ -57,13 +57,15 @@ export const ButtonCreateWorkbook = (): JSX.Element => {
           </DialogTitle>
           <DialogContent>
             <form id="create-workbook" onSubmit={handleSubmit}>
-              <Input className={styles.input} name="name" />
+              <Input className={styles.input} name="title" />
             </form>
           </DialogContent>
           <DialogActions>
-            <Button appearance="primary" form="create-workbook" type="submit">
-              保存
-            </Button>
+            <DialogTrigger>
+              <Button appearance="primary" form="create-workbook" type="submit">
+                保存
+              </Button>
+            </DialogTrigger>
           </DialogActions>
         </DialogBody>
       </DialogSurface>

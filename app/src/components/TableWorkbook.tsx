@@ -10,7 +10,6 @@ export const TableWorkbook = (): JSX.Element => {
   const [data, setData] = useState<Workbook[]>([]);
   const fetchData = async (): Promise<void> => {
     const result = await window.ipcRenderer.invoke("selectWorkbooks");
-    console.log({ result });
     setData(result);
   };
 
