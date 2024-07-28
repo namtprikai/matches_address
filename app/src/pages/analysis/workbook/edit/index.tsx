@@ -6,6 +6,11 @@ import {
   DrawerHeaderTitle,
   InlineDrawer,
   makeStyles,
+  type SelectTabData,
+  type SelectTabEvent,
+  Tab,
+  TabList,
+  type TabValue,
   tokens,
 } from "@fluentui/react-components";
 import { useEffect, useState } from "react";
@@ -51,6 +56,13 @@ export function EditWorkbook(): JSX.Element {
       fetchData(id).catch(console.error);
     }, [id]);
 
+    const [selectedValue, setSelectedValue] =
+    useState<TabValue>("conditions");
+
+    const onTabSelect = (event: SelectTabEvent, data: SelectTabData) => {
+      setSelectedValue(data.value);
+    };
+
 
     return (
       <div className={styles.root}>
@@ -67,6 +79,24 @@ export function EditWorkbook(): JSX.Element {
         </InlineDrawer>
         <div className={styles.content}>
           <h2 className={styles.heading}>{workbook?.title}</h2>
+
+          <TabList onTabSelect={onTabSelect} selectedValue={selectedValue}>
+            <Button appearance="subtle" icon={<AddFilled />} shape="square">シートを追加</Button>
+            <Tab id="Arrivals" value="arrivals">
+              Arrivals
+            </Tab>
+            <Tab id="Departures" value="departures">
+              Departures
+            </Tab>
+            <Tab id="Conditions" value="conditions">
+              Conditions
+            </Tab>
+          </TabList>
+          <div >
+            {selectedValue === "arrivals" && <>arrivals</>}
+            {selectedValue === "departures" && <>departures</>}
+            {selectedValue === "conditions" && <>conditions</>}
+          </div>
           <a href={`#analysis/workbook/${id}`}><Button>詳細に戻る</Button></a>
         </div>
       </div>
