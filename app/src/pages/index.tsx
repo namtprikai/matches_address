@@ -1,10 +1,17 @@
 import { createHashRouter, RouterProvider } from "react-router-dom";
-import { FluentProvider, createLightTheme, type BrandVariants} from '@fluentui/react-components';
+import {
+  FluentProvider,
+  createLightTheme,
+  type BrandVariants,
+} from "@fluentui/react-components";
 import { Home } from "./home";
 import { Error } from "./error";
 import { About } from "./about";
 import { Layout } from "./layout";
 import "../styles/global.css";
+import { Workbook } from "./analysis/workbook";
+import { EditWorkbook } from "./analysis/workbook/edit";
+import { DetailWorkbook } from "./analysis/workbook/detail";
 
 // クライアントだけで動作するアプリケーションのため`createHashRouter`を使用する
 const router = createHashRouter([
@@ -21,11 +28,23 @@ const router = createHashRouter([
         path: "about",
         element: <About />,
       },
+      {
+        path: "analysis/workbook",
+        element: <Workbook />,
+      },
+      {
+        path: "analysis/workbook/:id",
+        element: <DetailWorkbook />,
+      },
+      {
+        path: "analysis/workbook/:id/edit",
+        element: <EditWorkbook />,
+      },
     ],
   },
 ]);
 
-const myNewTheme: BrandVariants = { 
+const myNewTheme: BrandVariants = {
   10: "#020204",
   20: "#16151E",
   30: "#232235",
@@ -41,8 +60,8 @@ const myNewTheme: BrandVariants = {
   130: "#A7A5CE",
   140: "#B6B4D7",
   150: "#C6C4DF",
-  160: "#D5D4E8"
-  };
+  160: "#D5D4E8",
+};
 
 const theme = createLightTheme(myNewTheme);
 
