@@ -1,11 +1,5 @@
+import { Button, Field } from "@fluentui/react-components";
 import { useEffect, useState } from "react";
-import {
-  Form,
-  TextField,
-  ButtonGroup,
-  Button,
-  Flex,
-} from "@adobe/react-spectrum";
 import { type FormProps } from "react-router-dom";
 
 export function Home(): JSX.Element {
@@ -58,33 +52,26 @@ export function Home(): JSX.Element {
       <div>
         <a href="#about">Go to about page</a>
       </div>
-      <Flex gap="size-400" justifyContent="center" marginTop="size-400">
-        <Flex direction="column" gap="size-200">
-          <Form maxWidth="size-3000" onSubmit={handleSubmit}>
-            <TextField label="Save name" name="name" />
-            <ButtonGroup>
-              <Button type="submit" variant="primary">
+          <form onSubmit={handleSubmit}>
+            <Field label="Save name"  />
+              <Button appearance="primary" type="submit">
                 Submit
               </Button>
-              <Button type="reset" variant="secondary">
+              <Button appearance="secondary" type="reset">
                 Reset
               </Button>
-            </ButtonGroup>
-          </Form>
-          <Form maxWidth="size-3000" onSubmit={handleSubmitPython}>
-            <TextField label="Save name from python" name="name" />
-            <ButtonGroup>
-              <Button type="submit" variant="primary">
+          </form>
+          <form onSubmit={handleSubmitPython}>
+            <Field label="Save name from python" />
+              <Button appearance="primary" type="submit">
                 Submit
               </Button>
-              <Button type="reset" variant="secondary">
+              <Button appearance="secondary" type="reset">
                 Reset
               </Button>
-            </ButtonGroup>
-          </Form>
-        </Flex>
+          </form>
         <div>{names?.map((message, i) => <p key={i}>{message}</p>)}</div>
-      </Flex>
+      
     </div>
   );
 }
