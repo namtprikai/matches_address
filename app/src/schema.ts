@@ -31,3 +31,10 @@ export const result_views = sqliteTable("result_views", {
   created_at: text("created_at").default(sql`(CURRENT_TIMESTAMP)`),
   updated_at: text("updated_at").default(sql`(CURRENT_TIMESTAMP)`),
 });
+
+export const data_set_results = sqliteTable("data_set_results", {
+  id: integer("id").primaryKey(),
+  title: text("title"),
+  created_at: text("created_at").default(sql`(CURRENT_TIMESTAMP)`),
+  updated_at: text("updated_at").default(sql`(CURRENT_TIMESTAMP)`),
+});

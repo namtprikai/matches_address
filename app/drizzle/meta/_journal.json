@@ -29,6 +29,20 @@
       "when": 1722154057456,
       "tag": "0003_brainy_black_bolt",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1722154720801,
+      "tag": "0004_lucky_hellfire_club",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "6",
+      "when": 1722154818230,
+      "tag": "0005_magical_jean_grey",
+      "breakpoints": true
     }
   ]
 }
