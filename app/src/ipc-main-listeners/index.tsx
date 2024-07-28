@@ -11,6 +11,8 @@ import { selectWorkbooks } from "./select-workbooks";
 import { selectWorkbook } from "./select-workbook";
 import { selectResultSheets } from "./select-result-sheets";
 import { insertResultSheets } from "./insert-result-sheets";
+import { selectDataSetResults } from "./select-data-set-results";
+import { insertDataSetResults } from "./insert-data-set-results";
 
 export const ipcMainListeners = {
   getNames,
@@ -22,6 +24,8 @@ export const ipcMainListeners = {
   selectWorkbook,
   selectResultSheets,
   insertResultSheets,
+  selectDataSetResults,
+  insertDataSetResults
 };
 
 export const execFileAsync = promisify(execFile);
