@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { AddFilled } from "@fluentui/react-icons";
 import { useParams } from "react-router-dom";
 import {
@@ -6,17 +7,14 @@ import {
   DrawerHeaderTitle,
   InlineDrawer,
   makeStyles,
-  type SelectTabData,
-  type SelectTabEvent,
   Tab,
   TabList,
-  type TabValue,
   tokens,
 } from "@fluentui/react-components";
-import {  useState } from "react";
 import { Button } from "../../../../components/Button";
 import { useFetchWorkbook } from "../../../../hooks/useFetchWorkbook";
 import { useFetchResultSheets } from "../../../../hooks/useFetchResultSheets";
+import { useTabs } from "../../../../hooks/useTabs";
 
 const useStyles = makeStyles({
     root: {
@@ -33,6 +31,9 @@ const useStyles = makeStyles({
       backgroundColor: tokens.colorNeutralBackground3,
       minHeight: "100vh",
     },
+    resultsheets: {
+      padding: tokens.spacingVerticalL,
+    }
   });
 
 export function EditWorkbook(): JSX.Element {
@@ -41,6 +42,12 @@ export function EditWorkbook(): JSX.Element {
 
     const { data: workbook } = useFetchWorkbook({ id });
     const { data: resultsheets, refetch: fetchResultSheets } = useFetchResultSheets({ id });
+    const {onTabSelect, selectedValue, setSelectedValue} = useTabs();
+
+    /** fixme: シート追加したあとも0番目に戻ってしまうの微妙かも */
+    useEffect(() => {
+      setSelectedValue(resultsheets[0]?.id);
+    },[resultsheets, setSelectedValue]);
 
     const addResultSheet = async (workbookId : string | undefined): Promise<void> => {
       if(!workbookId) return;
@@ -50,14 +57,6 @@ export function EditWorkbook(): JSX.Element {
       });
       await fetchResultSheets(workbookId).catch(console.error);
     }
-
-    const [selectedValue, setSelectedValue] =
-    useState<TabValue>(resultsheets.length > 0 ? resultsheets[0].id : "");
-
-    const onTabSelect = (event: SelectTabEvent, data: SelectTabData): void => {
-      setSelectedValue(data.value);
-    };
-
 
     return (
       <div className={styles.root}>
@@ -86,12 +85,8 @@ export function EditWorkbook(): JSX.Element {
           <div>
             {
               resultsheets.map((item) => (
-                <div key={item.id} hidden={selectedValue !== item.id}>
-                  {item.title}
-                  <div style={{
-                    height: "400px",
-                    width: "100%",
-                  }} />
+                <div key={item.id} className={styles.resultsheets} hidden={selectedValue !== item.id}>
+                  コンテンツ: {item.title}
                 </div>
               ))
             }
