@@ -6,7 +6,8 @@
     "dev": "turbo dev",
     "lint": "turbo lint",
     "make": "turbo make",
-    "format": "prettier --write \"**/*.{ts,tsx,md}\""
+    "format": "prettier --write \"**/*.{ts,tsx,md}\"",
+    "generate:migration": "npx drizzle-kit generate"
   },
   "devDependencies": {
     "prettier": "^3.2.5",
