@@ -17,4 +17,4 @@ export const result_sheets = sqliteTable("result_sheets", {
   workbook_id: integer("workbook_id"),
   title: text("title"),
   created_at: text("created_at").default(sql`(CURRENT_TIMESTAMP)`),
-}); 
+});

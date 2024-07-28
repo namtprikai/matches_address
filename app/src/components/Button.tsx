@@ -19,7 +19,7 @@ const useStyles = makeStyles({
 });
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
-  ({shape = "circular", ...props}, ref) => {
+  ({ shape = "circular", ...props }, ref) => {
     const styles = useStyles();
 
     if (props.appearance === "secondary") {

@@ -10,8 +10,12 @@ export const insertResultSheets: IpcMainListener = (
 ): {
   id: number | bigint;
 } => {
-  const res = db.insert(result_sheets).values({ workbook_id, title }).returning().run();
+  const res = db
+    .insert(result_sheets)
+    .values({ workbook_id, title })
+    .returning()
+    .run();
   return {
-    id: res.lastInsertRowid
-  }
+    id: res.lastInsertRowid,
+  };
 };
