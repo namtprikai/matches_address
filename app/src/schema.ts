@@ -18,3 +18,16 @@ export const result_sheets = sqliteTable("result_sheets", {
   title: text("title"),
   created_at: text("created_at").default(sql`(CURRENT_TIMESTAMP)`),
 });
+
+export const result_views = sqliteTable("result_views", {
+  id: integer("id").primaryKey(),
+  sheet_id: integer("sheet_id"),
+  data_set_result_id: integer("data_set_result_id"),
+
+  title: text("title"),
+  unit: text("unit", { enum: ["building", "area"] }),
+  style: text("style", { enum: ["map","bar", "line", "pie"] }),
+  
+  created_at: text("created_at").default(sql`(CURRENT_TIMESTAMP)`),
+  updated_at: text("updated_at").default(sql`(CURRENT_TIMESTAMP)`),
+});
