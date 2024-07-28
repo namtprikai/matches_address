@@ -17,6 +17,7 @@ import { useFetchWorkbook } from "../../../../hooks/useFetchWorkbook";
 import { useFetchResultSheets } from "../../../../hooks/useFetchResultSheets";
 import { useTabs } from "../../../../hooks/useTabs";
 import { useFetchDataSetResults } from "../../../../hooks/useFetchDataSetResults";
+import { Resultsheet } from "../../../../components/Resultsheet";
 
 const useStyles = makeStyles({
   root: {
@@ -51,7 +52,8 @@ export function EditWorkbook(): JSX.Element {
   const { data: workbook } = useFetchWorkbook({ id });
   const { data: resultsheets, refetch: fetchResultSheets } =
     useFetchResultSheets({ id });
-  const { data: dataSetResults, refetch: fetchDataSetResults } = useFetchDataSetResults();
+  const { data: dataSetResults, refetch: fetchDataSetResults } =
+    useFetchDataSetResults();
   const { onTabSelect, selectedValue, setSelectedValue } = useTabs();
 
   /** fixme: シート追加したあとも0番目に戻ってしまうの微妙かも */
@@ -75,7 +77,7 @@ export function EditWorkbook(): JSX.Element {
       title: `分析結果${dataSetResults.length + 1}`,
     });
     await fetchDataSetResults().catch(console.error);
-  }
+  };
 
   return (
     <div className={styles.root}>
@@ -91,18 +93,16 @@ export function EditWorkbook(): JSX.Element {
 
         <DrawerBody>
           <div className={styles.drawerBody}>
-            <div><SearchBox /></div>
+            <div>
+              <SearchBox />
+            </div>
             <span className={styles.heading}>データセット一覧</span>
             <div>
-              {
-                dataSetResults.map((item) => (
-                  <div key={item.id}>
-                    <Button appearance="subtle">
-                    {item.title}
-                  </Button>
-                  </div>
-                ))
-              }
+              {dataSetResults.map((item) => (
+                <div key={item.id}>
+                  <Button appearance="subtle">{item.title}</Button>
+                </div>
+              ))}
             </div>
             <div>
               <Button
@@ -141,7 +141,7 @@ export function EditWorkbook(): JSX.Element {
               className={styles.resultsheets}
               hidden={selectedValue !== item.id}
             >
-              コンテンツ: {item.title}
+              <Resultsheet resultsheet={item} />
             </div>
           ))}
         </div>
