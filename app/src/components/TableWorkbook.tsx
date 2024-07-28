@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 
+/** [TODO]スキーマから生成できないか確認する */
 type Workbook = {
   id: number;
   title: string | null;

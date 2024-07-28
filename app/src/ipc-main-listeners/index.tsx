@@ -8,6 +8,7 @@ import { helloFromPython } from "./hello-from-python";
 import { saveNameFromPython } from "./save-name-from-python";
 import { insertWorkbooks } from "./insert-workbooks";
 import { selectWorkbooks } from "./select-workbooks";
+import { selectWorkbook } from "./select-workbook";
 
 export const ipcMainListeners = {
   getNames,
@@ -16,6 +17,7 @@ export const ipcMainListeners = {
   saveNameFromPython,
   insertWorkbooks,
   selectWorkbooks,
+  selectWorkbook,
 };
 
 export const execFileAsync = promisify(execFile);

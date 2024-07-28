@@ -8,12 +8,17 @@ import {
   makeStyles,
   tokens,
 } from "@fluentui/react-components";
+import { useEffect, useState } from "react";
 import { Button } from "../../../../components/Button";
 
 const useStyles = makeStyles({
     root: {
       overflow: "hidden",
       display: "flex",
+    },
+    heading: {
+      fontSize: tokens.fontSizeBase500,
+      lineHeight: tokens.lineHeightBase600,
     },
     content: {
       flex: "1",
@@ -23,10 +28,29 @@ const useStyles = makeStyles({
     },
   });
 
+  /** [TODO]スキーマから生成できないか確認する */
+type Workbook = {
+  id: number;
+  title: string | null;
+  created_at: string | null;
+};
+
 export function EditWorkbook(): JSX.Element {
     const styles = useStyles();
-
     const { id } = useParams();
+
+    const [workbook, setWorkbook] = useState<Workbook>();
+
+    const fetchData = async (workbookId : string): Promise<void> => {
+      const result = await window.ipcRenderer.invoke("selectWorkbook", { id: Number(workbookId) });
+      setWorkbook(result);
+    };
+  
+    useEffect(() => {
+      if(!id) return;
+      fetchData(id).catch(console.error);
+    }, [id]);
+
 
     return (
       <div className={styles.root}>
@@ -42,7 +66,7 @@ export function EditWorkbook(): JSX.Element {
           </DrawerBody>
         </InlineDrawer>
         <div className={styles.content}>
-          <h2>編集: {id}</h2>
+          <h2 className={styles.heading}>{workbook?.title}</h2>
           <a href={`#analysis/workbook/${id}`}><Button>詳細に戻る</Button></a>
         </div>
       </div>
