@@ -1,11 +1,7 @@
 import { useEffect, useState } from "react";
+import { workbooks } from "@/schema";
 
-/** [TODO]スキーマから生成できないか確認する */
-type Workbook = {
-  id: number;
-  title: string | null;
-  created_at: string | null;
-};
+type Workbook = typeof workbooks.$inferSelect;
 
 export const TableWorkbook = (): JSX.Element => {
   const [data, setData] = useState<Workbook[]>([]);

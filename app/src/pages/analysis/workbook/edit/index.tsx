@@ -13,8 +13,10 @@ import {
   type TabValue,
   tokens,
 } from "@fluentui/react-components";
-import { useEffect, useState } from "react";
+import {  useState } from "react";
 import { Button } from "../../../../components/Button";
+import { useFetchWorkbook } from "../../../../hooks/useFetchWorkbook";
+import { useFetchResultSheets } from "../../../../hooks/useFetchResultSheets";
 
 const useStyles = makeStyles({
     root: {
@@ -33,49 +35,12 @@ const useStyles = makeStyles({
     },
   });
 
-  /** [TODO]スキーマから生成できないか確認する */
-type Workbook = {
-  id: number;
-  title: string | null;
-  created_at: string | null;
-};
-
-type ResultSheet = {
-  id: number;
-  workbook_id: number | null;
-  title: string | null;
-  created_at: string | null;
-}
-
 export function EditWorkbook(): JSX.Element {
     const styles = useStyles();
     const { id } = useParams();
 
-    /** Workbook */
-    const [workbook, setWorkbook] = useState<Workbook>();
-
-    const fetchWorkbook = async (workbookId : string): Promise<void> => {
-      const result = await window.ipcRenderer.invoke("selectWorkbook", { id: Number(workbookId) });
-      setWorkbook(result);
-    };
-  
-    useEffect(() => {
-      if(!id) return;
-      fetchWorkbook(id).catch(console.error);
-    }, [id]);
-
-    /** ResultSheet */
-    const [resultsheets, setResultSheets] = useState<ResultSheet[]>([]);
-
-    const fetchResultSheets = async (workbookId : string): Promise<void> => {
-      const result = await window.ipcRenderer.invoke("selectResultSheets", { workbookId: Number(workbookId) });
-      setResultSheets(result)
-    }
-
-    useEffect(()=>{
-      if(!id) return;
-      fetchResultSheets(id).catch(console.error);
-    },[id]);
+    const { data: workbook } = useFetchWorkbook({ id });
+    const { data: resultsheets, refetch: fetchResultSheets } = useFetchResultSheets({ id });
 
     const addResultSheet = async (workbookId : string | undefined): Promise<void> => {
       if(!workbookId) return;
