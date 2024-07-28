@@ -40,26 +40,56 @@ type Workbook = {
   created_at: string | null;
 };
 
+type ResultSheet = {
+  id: number;
+  workbook_id: number | null;
+  title: string | null;
+  created_at: string | null;
+}
+
 export function EditWorkbook(): JSX.Element {
     const styles = useStyles();
     const { id } = useParams();
 
+    /** Workbook */
     const [workbook, setWorkbook] = useState<Workbook>();
 
-    const fetchData = async (workbookId : string): Promise<void> => {
+    const fetchWorkbook = async (workbookId : string): Promise<void> => {
       const result = await window.ipcRenderer.invoke("selectWorkbook", { id: Number(workbookId) });
       setWorkbook(result);
     };
   
     useEffect(() => {
       if(!id) return;
-      fetchData(id).catch(console.error);
+      fetchWorkbook(id).catch(console.error);
     }, [id]);
 
-    const [selectedValue, setSelectedValue] =
-    useState<TabValue>("conditions");
+    /** ResultSheet */
+    const [resultsheets, setResultSheets] = useState<ResultSheet[]>([]);
 
-    const onTabSelect = (event: SelectTabEvent, data: SelectTabData) => {
+    const fetchResultSheets = async (workbookId : string): Promise<void> => {
+      const result = await window.ipcRenderer.invoke("selectResultSheets", { workbookId: Number(workbookId) });
+      setResultSheets(result)
+    }
+
+    useEffect(()=>{
+      if(!id) return;
+      fetchResultSheets(id).catch(console.error);
+    },[id]);
+
+    const addResultSheet = async (workbookId : string | undefined): Promise<void> => {
+      if(!workbookId) return;
+      await window.ipcRenderer.invoke("insertResultSheets", {
+        title: `シート${resultsheets.length + 1}`,
+        workbook_id: Number(workbookId),
+      });
+      await fetchResultSheets(workbookId).catch(console.error);
+    }
+
+    const [selectedValue, setSelectedValue] =
+    useState<TabValue>(resultsheets.length > 0 ? resultsheets[0].id : "");
+
+    const onTabSelect = (event: SelectTabEvent, data: SelectTabData): void => {
       setSelectedValue(data.value);
     };
 
@@ -81,21 +111,25 @@ export function EditWorkbook(): JSX.Element {
           <h2 className={styles.heading}>{workbook?.title}</h2>
 
           <TabList onTabSelect={onTabSelect} selectedValue={selectedValue}>
-            <Button appearance="subtle" icon={<AddFilled />} shape="square">シートを追加</Button>
-            <Tab id="Arrivals" value="arrivals">
-              Arrivals
-            </Tab>
-            <Tab id="Departures" value="departures">
-              Departures
-            </Tab>
-            <Tab id="Conditions" value="conditions">
-              Conditions
-            </Tab>
+            <Button appearance="subtle" icon={<AddFilled />} onClick={():Promise<void>=>addResultSheet(id)} shape="square">シートを追加</Button>
+            {resultsheets.map((item) => (
+              <Tab key={item.id} id={item.title || ""} value={item.id}>
+                {item.title}
+              </Tab>
+            ))}
           </TabList>
-          <div >
-            {selectedValue === "arrivals" && <>arrivals</>}
-            {selectedValue === "departures" && <>departures</>}
-            {selectedValue === "conditions" && <>conditions</>}
+          <div>
+            {
+              resultsheets.map((item) => (
+                <div key={item.id} hidden={selectedValue !== item.id}>
+                  {item.title}
+                  <div style={{
+                    height: "400px",
+                    width: "100%",
+                  }} />
+                </div>
+              ))
+            }
           </div>
           <a href={`#analysis/workbook/${id}`}><Button>詳細に戻る</Button></a>
         </div>
