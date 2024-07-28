@@ -15,6 +15,13 @@
       "when": 1722047365537,
       "tag": "0001_heavy_moon_knight",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1722135839404,
+      "tag": "0002_shocking_malice",
+      "breakpoints": true
     }
   ]
 }
