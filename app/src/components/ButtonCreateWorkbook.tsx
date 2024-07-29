@@ -33,7 +33,7 @@ export const ButtonCreateWorkbook = (): JSX.Element => {
       });
       navigate(`#analysis/workbook/${res.id}/edit`);
     };
-    asyncSubmit().catch(console.error);    
+    asyncSubmit().catch(console.error);
   };
 
   return (
@@ -63,9 +63,9 @@ export const ButtonCreateWorkbook = (): JSX.Element => {
           </DialogContent>
           <DialogActions>
             {/* <DialogTrigger> */}
-              <Button appearance="primary" form="create-workbook" type="submit">
-                保存
-              </Button>
+            <Button appearance="primary" form="create-workbook" type="submit">
+              保存
+            </Button>
             {/* </DialogTrigger> */}
           </DialogActions>
         </DialogBody>

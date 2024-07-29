@@ -21,7 +21,7 @@ export const ipcMainListeners = {
   selectWorkbooks,
   selectWorkbook,
   selectResultSheets,
-  insertResultSheets
+  insertResultSheets,
 };
 
 export const execFileAsync = promisify(execFile);

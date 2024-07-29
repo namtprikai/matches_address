@@ -18,7 +18,9 @@ export const TableWorkbook = (): JSX.Element => {
     <div>
       {data.map((item) => (
         <div key={item.id}>
-          <a href={`#analysis/workbook/${item.id}`}>{item.title} - 作成日:{item.created_at}</a>
+          <a href={`#analysis/workbook/${item.id}`}>
+            {item.title} - 作成日:{item.created_at}
+          </a>
         </div>
       ))}
     </div>
