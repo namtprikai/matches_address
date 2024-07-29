@@ -7,6 +7,7 @@ import {
   DrawerHeaderTitle,
   InlineDrawer,
   makeStyles,
+  SearchBox,
   Tab,
   TabList,
   tokens,
@@ -15,6 +16,8 @@ import { Button } from "../../../../components/Button";
 import { useFetchWorkbook } from "../../../../hooks/useFetchWorkbook";
 import { useFetchResultSheets } from "../../../../hooks/useFetchResultSheets";
 import { useTabs } from "../../../../hooks/useTabs";
+import { useFetchDataSetResults } from "../../../../hooks/useFetchDataSetResults";
+import { Resultsheet } from "../../../../components/Resultsheet";
 
 const useStyles = makeStyles({
   root: {
@@ -22,14 +25,20 @@ const useStyles = makeStyles({
     display: "flex",
   },
   heading: {
-    fontSize: tokens.fontSizeBase500,
+    fontSize: tokens.fontSizeBase400,
     lineHeight: tokens.lineHeightBase600,
+    fontWeight: tokens.fontWeightSemibold,
   },
   content: {
     flex: "1",
     padding: tokens.spacingVerticalL,
     backgroundColor: tokens.colorNeutralBackground3,
     minHeight: "100vh",
+  },
+  drawerBody: {
+    display: "grid",
+    gap: tokens.spacingVerticalXXL,
+    padding: `${tokens.spacingVerticalXXL} ${tokens.spacingHorizontalNone}`,
   },
   resultsheets: {
     padding: tokens.spacingVerticalL,
@@ -43,6 +52,8 @@ export function EditWorkbook(): JSX.Element {
   const { data: workbook } = useFetchWorkbook({ id });
   const { data: resultsheets, refetch: fetchResultSheets } =
     useFetchResultSheets({ id });
+  const { data: dataSetResults, refetch: fetchDataSetResults } =
+    useFetchDataSetResults();
   const { onTabSelect, selectedValue, setSelectedValue } = useTabs();
 
   /** fixme: シート追加したあとも0番目に戻ってしまうの微妙かも */
@@ -61,19 +72,48 @@ export function EditWorkbook(): JSX.Element {
     await fetchResultSheets(workbookId).catch(console.error);
   };
 
+  const addDataSetResult = async (): Promise<void> => {
+    await window.ipcRenderer.invoke("insertDataSetResults", {
+      title: `分析結果${dataSetResults.length + 1}`,
+    });
+    await fetchDataSetResults().catch(console.error);
+  };
+
   return (
     <div className={styles.root}>
       <InlineDrawer open>
         <DrawerHeader>
           <DrawerHeaderTitle
             action={<Button icon={<AddFilled />} shape="square" />}
+            className={styles.heading}
           >
             ビューを追加
           </DrawerHeaderTitle>
         </DrawerHeader>
 
         <DrawerBody>
-          <p>Drawer content</p>
+          <div className={styles.drawerBody}>
+            <div>
+              <SearchBox />
+            </div>
+            <span className={styles.heading}>データセット一覧</span>
+            <div>
+              {dataSetResults.map((item) => (
+                <div key={item.id}>
+                  <Button appearance="subtle">{item.title}</Button>
+                </div>
+              ))}
+            </div>
+            <div>
+              <Button
+                appearance="subtle"
+                onClick={addDataSetResult}
+                size="small"
+              >
+                データセットを追加(開発用)
+              </Button>
+            </div>
+          </div>
         </DrawerBody>
       </InlineDrawer>
       <div className={styles.content}>
@@ -101,7 +141,7 @@ export function EditWorkbook(): JSX.Element {
               className={styles.resultsheets}
               hidden={selectedValue !== item.id}
             >
-              コンテンツ: {item.title}
+              <Resultsheet resultsheet={item} />
             </div>
           ))}
         </div>
