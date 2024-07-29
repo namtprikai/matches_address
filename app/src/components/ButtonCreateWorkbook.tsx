@@ -31,7 +31,7 @@ export const ButtonCreateWorkbook = (): JSX.Element => {
       const res = await window.ipcRenderer.invoke("insertWorkbooks", {
         title: data.title.toString(),
       });
-      navigate(`#analysis/workbook/${res.id}/edit`);
+      navigate(`/analysis/workbook/${res.id}/edit`);
     };
     asyncSubmit().catch(console.error);
   };
