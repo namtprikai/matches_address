@@ -36,6 +36,12 @@ const router = createHashRouter([
         path: "analysis/workbook/:id",
         element: <DetailWorkbook />,
       },
+    ],
+  },
+  {
+    path: "/",
+    errorElement: <Error />,
+    children: [
       {
         path: "analysis/workbook/:id/edit",
         element: <EditWorkbook />,

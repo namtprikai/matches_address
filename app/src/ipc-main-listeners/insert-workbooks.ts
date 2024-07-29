@@ -2,9 +2,11 @@ import { type IpcMainListener } from ".";
 import { workbooks } from "@/schema";
 import { db } from "@/utils/db";
 
+type InsertWorkbook = typeof workbooks.$inferInsert;
+
 export const insertWorkbooks: IpcMainListener = (
   _: unknown,
-  { title }: { title: string },
+  {title}: InsertWorkbook,
 ): {
   id: number | bigint;
 } => {

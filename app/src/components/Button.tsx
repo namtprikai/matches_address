@@ -2,15 +2,11 @@ import {
   type ButtonProps,
   Button as FUIButton,
   makeStyles,
-  mergeClasses,
   tokens,
 } from "@fluentui/react-components";
 import { forwardRef } from "react";
 
 const useStyles = makeStyles({
-  root: {
-    borderRadius: tokens.borderRadiusCircular,
-  },
   secondary: {
     backgroundColor: tokens.colorNeutralForeground2,
     color: tokens.colorNeutralForegroundInverted,
@@ -23,7 +19,7 @@ const useStyles = makeStyles({
 });
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
-  (props, ref) => {
+  ({shape = "circular", ...props}, ref) => {
     const styles = useStyles();
 
     if (props.appearance === "secondary") {
@@ -31,12 +27,13 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         <FUIButton
           {...props}
           ref={ref}
-          className={mergeClasses(styles.root, styles.secondary)}
+          className={styles.secondary}
+          shape={shape}
         />
       );
     }
 
-    return <FUIButton {...props} ref={ref} className={styles.root} />;
+    return <FUIButton {...props} ref={ref} shape={shape} />;
   },
 );
 

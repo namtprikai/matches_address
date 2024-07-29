@@ -11,3 +11,10 @@ export const workbooks = sqliteTable("workbooks", {
   title: text("title"),
   created_at: text("created_at").default(sql`(CURRENT_TIMESTAMP)`),
 });
+
+export const result_sheets = sqliteTable("result_sheets", {
+  id: integer("id").primaryKey(),
+  workbook_id: integer("workbook_id"),
+  title: text("title"),
+  created_at: text("created_at").default(sql`(CURRENT_TIMESTAMP)`),
+}); 
