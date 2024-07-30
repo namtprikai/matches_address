@@ -4,7 +4,7 @@ import { type FormProps } from "react-router-dom";
 
 export function Home(): JSX.Element {
   const [names, setNames] = useState<string[] | null>(null);
-  console.log("github protection test");
+  console.log("github protection test2");
 
   const updateNames = async (): Promise<void> => {
     const result = await window.ipcRenderer.invoke("getNames");
