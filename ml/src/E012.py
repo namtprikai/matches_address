@@ -5,13 +5,10 @@
 
 import os
 import re
-import tempfile
 import unicodedata
-import zipfile
+import argparse
 
 import chardet
-import geopandas as gpd
-import gradio as gr
 import pandas as pd
 
 class DataProcessor:
@@ -205,14 +202,14 @@ class EachFileProcessor(DataProcessor):
     def process_geocoding(self):
         self.process_file("geocoding")
 
-def process_data(suido_stauts_file, juki_file, touki_file, akiya_result_file, geocoding_file):
+def process_data(input_files):
     # 入力ファイルのパスを設定
     input_paths = {
-        "suido_status": suido_stauts_file.name,
-        "juki": juki_file.name,
-        "touki": touki_file.name,
-        "akiya_result": akiya_result_file.name,
-        "geocoding": geocoding_file.name
+        "suido_status": input_files["suido_status"],
+        "juki": input_files["juki"],
+        "touki": input_files["touki"],
+        "akiya_result": input_files["akiya_result"],
+        "geocoding": input_files["geocoding"]
     }
     
     # 出力ファイルのパスを設定
@@ -243,34 +240,28 @@ def process_data(suido_stauts_file, juki_file, touki_file, akiya_result_file, ge
 
     print("All process completed!")
     
-    return [
-        output_paths["suido_status"],
-        output_paths["juki"],
-        output_paths["touki"],
-        output_paths["akiya_result"],
-        output_paths["geocoding"]
-        ]
+    return output_paths
 
 if __name__ == "__main__":
-    # Gradioインターフェースを作成
-    iface = gr.Interface(
-        fn=process_data,
-        inputs=[
-            gr.File(label="Suido Status Data"),
-            gr.File(label="Juki Data"),
-            gr.File(label="Touki Data"),
-            gr.File(label="Akiya Result Data"),
-            gr.File(label="Geocoding Data")
-        ],
-        outputs=[
-            gr.File(label="Processed Suido Status Data"),
-            gr.File(label="Processed Juki Data"),
-            gr.File(label="Processed Touki Data"),
-            gr.File(label="Processed Akiya Result Data"),
-            gr.File(label="Processed Geocoding Data")
-        ],
-        title="E012 - データクレンジング機能",
-        description="アップロードされた住所カラムに該当するすべての列の名寄せ（住所の正規化）をする機能"
-    )
+    parser = argparse.ArgumentParser(description="Process and clean various data files.")
+    parser.add_argument("--suido_status", required=True, help="Path to the Suido Status data file")
+    parser.add_argument("--juki", required=True, help="Path to the Juki data file")
+    parser.add_argument("--touki", required=True, help="Path to the Touki data file")
+    parser.add_argument("--akiya_result", required=True, help="Path to the Akiya Result data file")
+    parser.add_argument("--geocoding", required=True, help="Path to the Geocoding data file")
     
-    iface.launch()
+    args = parser.parse_args()
+    
+    input_files = {
+        "suido_status": args.suido_status,
+        "juki": args.juki,
+        "touki": args.touki,
+        "akiya_result": args.akiya_result,
+        "geocoding": args.geocoding
+    }
+    
+    output_files = process_data(input_files)
+    
+    print("Processed files:")
+    for key, path in output_files.items():
+        print(f"{key}: {path}")
