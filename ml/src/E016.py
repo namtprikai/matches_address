@@ -11,19 +11,9 @@
 from typing import List, Tuple
 import io
 
-import gradio as gr
 import pandas as pd
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
-
-# カスタムCSS
-CUSTOM_CSS = """
-#csv label {
-    font-size: 20px;
-    font-weight: bold;
-    color: lightblue;
-}
-"""
 
 OUTPUT_PATH = "matched_data.csv"
 
@@ -130,48 +120,29 @@ def embedding_address(main_csv: io.BytesIO, sub_csv: io.BytesIO, main_column: st
     
     return OUTPUT_PATH, f"{complete_match_ratio}\n{threshold_match_ratio}"
 
-# ドロップダウンの選択肢を更新する
-def update_column_dropdowns_and_radio_buttons(main_csv: io.BytesIO, sub_csv: io.BytesIO) -> Tuple[gr.Dropdown, gr.Dropdown, gr.Radio]:
-    if main_csv is None or sub_csv is None:
-        return gr.update(), gr.update(), gr.update()
-    main_columns = get_column_names(main_csv)
-    sub_columns = get_column_names(sub_csv)
-    file_names = [main_csv.name.split('/')[-1], sub_csv.name.split('/')[-1]]
-    return gr.update(choices=main_columns), gr.update(choices=sub_columns), gr.update(choices=file_names, value=file_names[0])
+if __name__ == "__main__":
+    import argparse
 
-# Gradioインターフェースの設定
-with gr.Blocks(css=CUSTOM_CSS) as e016:
-    file_input_1 = gr.File(label="csvファイルを入力してください", elem_id="csv")
-    file_input_2 = gr.File(label="csvファイルを入力してください", elem_id="csv")
-    
-    column_dropdown_1 = gr.Dropdown(label="結合元の基準にする列を選択してください")
-    column_dropdown_2 = gr.Dropdown(label="結合対象の基準にする列を選択してください")
-    
-    merge_base = gr.Radio(choices=[], label="結合の基準にするファイルを選択してください")
-    
-    ngram_size = gr.Radio([1, 2, 3], value=2, label="N-gram Size")
-    similarity_threshold = gr.Slider(0.0, 1.0, value=0.5, label="Similarity Threshold", step=0.05)
-    
-    match_button = gr.Button("名寄せ実行")
-    
-    output_file = gr.File(label="Matched Data CSV")
-    results_text = gr.Textbox(label="結果")
+    parser = argparse.ArgumentParser(description="住所名寄せプログラム")
+    parser.add_argument("main_csv", type=str, help="結合元のCSVファイル")
+    parser.add_argument("sub_csv", type=str, help="結合対象のCSVファイル")
+    parser.add_argument("main_column", type=str, help="結合元の基準にする列")
+    parser.add_argument("sub_column", type=str, help="結合対象の基準にする列")
+    parser.add_argument("merge_base", type=str, help="結合の基準にするファイル名")
+    parser.add_argument("--ngram", type=int, default=2, help="N-gramサイズ")
+    parser.add_argument("--threshold", type=float, default=0.5, help="類似度の閾値")
 
-    file_input_1.change(update_column_dropdowns_and_radio_buttons, inputs=[file_input_1, file_input_2], outputs=[column_dropdown_1, column_dropdown_2, merge_base])
-    file_input_2.change(update_column_dropdowns_and_radio_buttons, inputs=[file_input_1, file_input_2], outputs=[column_dropdown_1, column_dropdown_2, merge_base])
+    args = parser.parse_args()
     
-    match_button.click(
-        embedding_address,
-        inputs=[
-            file_input_1, 
-            file_input_2, 
-            column_dropdown_1, 
-            column_dropdown_2,
-            merge_base,
-            ngram_size,
-            similarity_threshold
-        ],
-        outputs=[output_file, results_text]
+    output_file, results = embedding_address(
+        args.main_csv,
+        args.sub_csv,
+        args.main_column,
+        args.sub_column,
+        args.merge_base,
+        args.ngram,
+        args.threshold
     )
 
-e016.launch()
+    print(f"出力ファイル: {output_file}")
+    print(f"結果: {results}")
