@@ -1,6 +1,6 @@
+import { workbooks } from "../schema";
+import { db } from "../utils/db";
 import { type IpcMainListener } from ".";
-import { workbooks } from "@/schema";
-import { db } from "@/utils/db";
 
 type InsertWorkbook = typeof workbooks.$inferInsert;
 

@@ -1,4 +1,4 @@
-import { result_sheets } from "@/schema";
+import { type result_sheets } from "../schema";
 
 type Props = {
   resultsheet: typeof result_sheets.$inferSelect;

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { data_set_results } from "@/schema";
+import { type data_set_results } from "../schema";
 
 type DataSetResult = typeof data_set_results.$inferSelect;
 

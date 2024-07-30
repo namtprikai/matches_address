@@ -8,10 +8,6 @@
 
     // モジュール解決
     "moduleResolution": "node",
-    "baseUrl": ".",
-    "paths": {
-      "@/*": ["./src/*"]
-    },
     "resolveJsonModule": true,
     "esModuleInterop": true,
 
