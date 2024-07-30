@@ -16,7 +16,6 @@ import numpy as np
 import pandas as pd
 import lightgbm as lgb
 import optuna
-import gradio as gr
 
 from memory_profiler import profile
 from sklearn.metrics import accuracy_score, confusion_matrix, precision_score, recall_score, f1_score
@@ -106,9 +105,7 @@ def prepare_learning_data(df):
     # Prepare the learning data by selecting specific columns and filtering rows
     learning_data = df.copy()
     learning_data = learning_data[CONSTANTS['explanatory_variables']]
-    #learning_data = learning_data[learning_data['空き家基盤データflg'] == 1]
     learning_data = learning_data[learning_data['juki_suido_touki_akiya_flag'] == 1]
-    #learning_data.drop(columns=['空き家基盤データflg'], inplace=True)
     learning_data.drop(columns=['juki_suido_touki_akiya_flag'], inplace=True)
     learning_data.reset_index(drop=True, inplace=True)
     return learning_data
@@ -176,7 +173,7 @@ def split_data(df, params):
 # - 出力：「D014　学習済みモデル【pkl】」
 
 @profile
-def train_lgb_with_optuna(train_df, params, progress):
+def train_lgb_with_optuna(train_df, params):
     """
     Train LightGBM models with K-Fold cross-validation and Optuna for hyperparameter tuning 
    
@@ -225,7 +222,6 @@ def train_lgb_with_optuna(train_df, params, progress):
         # Perform cross-validation with these parameters
         accuracy_list = []
         for fold, (train_index, val_index) in enumerate(kf.split(X_train)):
-            progress((0.3 + 0.5 * (fold / params['n_splits'])), desc=f"Training fold {fold+1}/{params['n_splits']}")
             # Split data into training and validation sets for this fold
             X_tr, X_val = X_train.iloc[train_index], X_train.iloc[val_index]
             y_tr, y_val = y_train.iloc[train_index], y_train.iloc[val_index]
@@ -236,6 +232,7 @@ def train_lgb_with_optuna(train_df, params, progress):
                 
             # Make predictions on the validation set
             preds = model.predict(X_val)
+
             # Calculate accuracy
             accuracy = accuracy_score(y_val, preds)
             accuracy_list.append(accuracy)
@@ -514,30 +511,22 @@ def save_metrics_and_importances(score_dict, feature_importances_dict_train, fea
     with open('./data/feature_importances_dict_test.json', 'w') as f:
         json.dump(feature_importances_dict_test, f)
 
-def train_and_evaluate(input_file, test_size, n_splits, undersample, undersample_ratio, threshold, hyperparameter_flag, n_trials, 
-                       lambda_l1, lambda_l2, num_leaves, feature_fraction, bagging_fraction, bagging_freq, min_data_in_leaf, progress=gr.Progress()):
-    """
-    Main function to train and evaluate the model
-    """
-    
+def main(folder_path, file_name, test_size, n_splits, undersample, undersample_ratio, threshold, hyperparameter_flag, n_trials, lambda_l1, lambda_l2, num_leaves, feature_fraction, bagging_fraction, bagging_freq, min_data_in_leaf):
     setup_directory()
     
-    progress(0, desc="Loading data...")
-    df = load_csv(os.path.dirname(input_file.name), os.path.basename(input_file.name))
-    
-    progress(0.1, desc="Preparing learning data...")
+    df = load_csv(folder_path, file_name)
     learning_data = prepare_learning_data(df)
     
     params = {
         'test_size': float(test_size),
         'n_splits': int(n_splits),
-        'undersample': undersample,
+        'undersample': bool(undersample),
         'undersample_ratio': float(undersample_ratio),
         'threshold': float(threshold),
-        'hyperparameter_flag': hyperparameter_flag,
+        'hyperparameter_flag': bool(hyperparameter_flag),
         'n_trials': int(n_trials),
-        'lambda_l1': int(lambda_l1),
-        'lambda_l2': int(lambda_l2),
+        'lambda_l1': float(lambda_l1),
+        'lambda_l2': float(lambda_l2),
         'num_leaves': int(num_leaves),
         'feature_fraction': float(feature_fraction),
         'bagging_fraction': float(bagging_fraction),
@@ -545,66 +534,41 @@ def train_and_evaluate(input_file, test_size, n_splits, undersample, undersample
         'min_data_in_leaf': int(min_data_in_leaf),
     }
     
-    progress(0.2, desc="Splitting data...")
+    print("Splitting data...")
     train_df, test_df = split_data(learning_data, params)
     
-    progress(0.3, desc="Training model...")
-    models, oof_pred, feature_importances_dict_train = train_lgb_with_optuna(train_df, params, progress)
+    print("Training models...")
+    lgbm_models, oof_pred, feature_importances_dict_train = train_lgb_with_optuna(train_df, params)
     
-    progress(0.8, desc="Evaluating model...")
-    pred, score_dict, feature_importances_dict_test, feature_importance_plot = evaluate_models_on_test(test_df, models, params)
+    print("Evaluating models on test data...")
+    pred, score_dict, feature_importances_dict_test, feature_importance_plot = evaluate_models_on_test(test_df, lgbm_models, params)
     
-    progress(0.9, desc="Saving results...")
-    output_file = 'D902.csv'
-    updated_df = merge_and_save_results(df, pred, output_file)
+    print("Merging and saving results...")
+    merged_df = merge_and_save_results(df, pred, './data/D902_akiya判定結果データ.csv')
     
-    # Save evaluation metrics and feature importances
+    print("Saving metrics and importances...")
     save_metrics_and_importances(score_dict, feature_importances_dict_train, feature_importances_dict_test)
     
-    # Create a string with the evaluation results
-    result_str = (
-        #f"Feature Importance: {feature_importances_dict_test}\n" 
-        f"Confusion Matrix: {score_dict['cm']}\n"
-        f"Accuracy: {score_dict['accuracy']:.4f}\n"
-        f"Precision: {score_dict['precision']:.4f}\n"
-        f"Recall: {score_dict['recall']:.4f}\n"
-        f"F1 Score: {score_dict['f1']:.4f}\n"
-        f"Specificity: {score_dict['specificity']:.4f}\n"
-        )
+    print("Training and evaluation completed!")
     
-    # Update progress to complete
-    progress(1.0, desc="Completed!")
-
-    return result_str, "feature_importances.png", output_file
+    return merged_df, score_dict, feature_importances_dict_train, feature_importances_dict_test, feature_importance_plot
 
 if __name__ == "__main__":
-    iface = gr.Interface(
-        fn=train_and_evaluate,
-        inputs=[
-            gr.File(label="【D901】家屋単位GISデータ（CSV）"),
-            gr.Slider(0.1, 0.9, value=0.3, label="Test Size"),
-            gr.Slider(2, 10, step=1, value=3, label="Number of Splits"),
-            gr.Checkbox(label="Use Undersampling"),
-            gr.Slider(1.0, 5.0, value=3.0, label="Undersample Ratio"),
-            gr.Slider(0.1, 0.9, value=0.3, label="Threshold"),
-            gr.Checkbox(label="Use Hyperparameter Tuning"),
-            gr.Slider(10, 100, step=1, value=100, label="Number of Trials for Hyperparameter Tuning"),
-            gr.Slider(0, 1000, step=0.01, value=0, label="L1 Regularization"),
-            gr.Slider(0, 1000, step=0.01, value=0, label="L2 Regularization"),
-            gr.Slider(2, 256, step=1, value=31, label="Number of Leaves"),
-            gr.Slider(0.5, 1.0, value=1.0, label="Feature Fraction"),
-            gr.Slider(0.5, 1.0, value=1.0, label="Bagging Fraction"),
-            gr.Slider(0, 10, step=1, value=0, label="Bagging Frequency"),
-            gr.Slider(1, 50, step=1, value=20, label="Minimum Data in Leaf"),
-        ],
-        outputs=[
-            gr.Textbox(label="分析結果"),
-            gr.Image(label="特徴量重要度"),
-            gr.File(label="【D902】空き家判定結果データ")
-        ],
-        title="E021 - 空き家学習機能",
-        description="自治体保有データや都市計画情報などを用いて、空き家実績データに基づく建物ごとの空き家予測モデルを構築する機能"
-    )
+    folder_path = "path/to/your/folder"
+    file_name = "your_file.csv"
+    test_size = 0.2
+    n_splits = 5
+    undersample = True
+    undersample_ratio = 1.0
+    threshold = 0.5
+    hyperparameter_flag = True
+    n_trials = 100
+    lambda_l1 = 1e-8
+    lambda_l2 = 1e-8
+    num_leaves = 31
+    feature_fraction = 0.9
+    bagging_fraction = 0.8
+    bagging_freq = 5
+    min_data_in_leaf = 20
     
-    # Launch the Gradio interface
-    iface.launch()
+    main(folder_path, file_name, test_size, n_splits, undersample, undersample_ratio, threshold, hyperparameter_flag, n_trials, lambda_l1, lambda_l2, num_leaves, feature_fraction, bagging_fraction, bagging_freq, min_data_in_leaf)
