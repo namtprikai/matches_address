@@ -9,7 +9,7 @@ import numpy as np
 import pandas as pd
 import geopandas as gpd
 import glob
-import gradio as gr
+import argparse
 from sklearn.metrics import accuracy_score, confusion_matrix, precision_score, recall_score, f1_score
 
 # Set pandas display options
@@ -41,7 +41,7 @@ def load_csv(folder_path, file_name, encodings=['utf-8', 'shift_jis', 'cp932']):
     Parameters:
     folder_path (str): Path to the folder containing the CSV file
     file_name (str): Name of the CSV file to be loaded
-　  encodings (list): List of encodings to try
+    encodings (list): List of encodings to try
 
     Returns:
     DataFrame: DataFrame containing the data from the CSV file
@@ -135,7 +135,7 @@ def predict(models, new_data, required_features, threshold):
     test_preds = (test_preds_proba >= threshold).astype(int)
     return test_preds, test_preds_proba
 
-def process_and_predict(input_folder, input_file, model_directory, threshold, output_file, required_features, outcome_variable, progress=gr.Progress()):
+def process_and_predict(input_folder, input_file, model_directory, threshold, output_file, required_features, outcome_variable):
     """
     Process input data, make predictions, and save results
 
@@ -152,10 +152,10 @@ def process_and_predict(input_folder, input_file, model_directory, threshold, ou
     Returns:
     tuple: (str, str) - (Result message, Path to the output file)
     """
-    progress(0, desc="Setting up directory...")
+    print("Setting up directory...")  
     setup_directory(os.path.expanduser('~'))
 
-    progress(0.2, desc="Loading input data...")
+    print("Loading input data...")
     input_data = load_csv(input_folder, input_file)
 
     # Ensure the 'geometry' column is not included in the prediction input
@@ -164,18 +164,18 @@ def process_and_predict(input_folder, input_file, model_directory, threshold, ou
 
     input_data["閉栓フラグ_suido_residence"] = input_data["閉栓フラグ_suido_residence"].map({"True": True, "False": False}).astype("boolean")
     
-    progress(0.4, desc="Loading trained models...")
+    print("Loading trained models...")
     models = load_models(model_directory)
 
-    progress(0.6, desc="Checking features...")
+    print("Checking features...")
     input_data, features_match, message = check_features(input_data, required_features, outcome_variable)
     if not features_match:
         return message, None
 
-    progress(0.8, desc="Predicting...")
+    print("Predicting...")
     test_preds, test_preds_proba = predict(models, input_data, required_features, threshold)
 
-    progress(0.9, desc="Saving results...")
+    print("Saving results...")
     # Re-add the 'geometry' column to the output if needed
     input_data['geometry'] = geometry_data
     input_data['predicted_label'] = test_preds
@@ -187,41 +187,30 @@ def process_and_predict(input_folder, input_file, model_directory, threshold, ou
         # If Shift-JIS fails, use CP932 encoding
         input_data.to_csv(output_file, index=False, encoding='cp932')
 
-    progress(1.0, desc="Completed!")
     return f"Predictions saved to {output_file}", output_file
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="E022 - 空き家分類機能")
+    parser.add_argument("input_file", help="Path to the input CSV file (D901)")
+    parser.add_argument("model_directory", help="Path to the directory containing trained model files")
+    parser.add_argument("--threshold", type=float, default=0.3, help="Threshold for binary classification (default: 0.3)")
+    parser.add_argument("--output_file", default="D902.csv", help="Path to save the output CSV file (default: D902.csv)")
+    args = parser.parse_args()
+
     REQUIRED_FEATURES = [
         '世帯人数', '15歳未満人数', '15歳以上64歳以下人数', '65歳以上人数', '15歳未満構成比', 
         '15歳以上64歳以下構成比', '65歳以上構成比', '男女比', '住定期間', '最大使用水量_suido_residence', 
         '閉栓フラグ_suido_residence', '構造名称_touki_residence', '登記日付_touki_residence' 
     ]
     OUTCOME_VARIABLE = 'akiya_result_cleaned_flag'
-    DEFAULT_THRESHOLD = 0.3
-    OUTPUT_FILE = 'D902.csv'
 
-    # Gradio interface
-    iface = gr.Interface(
-        fn=lambda input_file, model_directory, threshold: process_and_predict(
-            os.path.dirname(input_file.name),
-            os.path.basename(input_file.name),
-            model_directory,
-            threshold,
-            OUTPUT_FILE,
-            REQUIRED_FEATURES,
-            OUTCOME_VARIABLE
-        ),
-        inputs=[
-            gr.File(label="【D901】家屋単位GISデータ【CSV】"),
-            gr.Textbox(label="モデル", placeholder="モデルファイルが格納されているディレクトリーまでのパスを入力してください。"),
-            gr.Slider(0.1, 0.9, step=0.1, value=DEFAULT_THRESHOLD, label="閾値"),
-        ],
-        outputs=[
-            gr.Textbox(label="メッセージ"),
-            gr.File(label="【D902】空き家判定結果データ【CSV】"),
-        ],
-        title="E022 - 空き家分類機能",
-        description="判定用データをインプットとして建物単位で空き家を確率的に判定するための分類用機械学習アルゴリズム（トレーニング済み）を実行する機能"
+    result = process_and_predict(
+    os.path.dirname(args.input_file),
+    os.path.basename(args.input_file),
+    args.model_directory,
+    args.threshold,
+    args.output_file,
+    REQUIRED_FEATURES,
+    OUTCOME_VARIABLE
     )
-    
-    iface.launch() 
+    print(result)
