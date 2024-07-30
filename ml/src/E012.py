@@ -5,8 +5,13 @@
 
 import os
 import re
+import tempfile
 import unicodedata
+import zipfile
+
 import chardet
+import geopandas as gpd
+import gradio as gr
 import pandas as pd
 
 class DataProcessor:
@@ -121,6 +126,9 @@ class DataProcessor:
             except Exception as e:
                 print(f"Error saving file {path} with cp932 encoding: {e}")
 
+    def process(self):
+        raise NotImplementedError("Subclasses must implement this method")
+
 # データのクリーンアップ用のクラス
 class CleanData:
     # 単独カタカナの置換
@@ -197,7 +205,25 @@ class EachFileProcessor(DataProcessor):
     def process_geocoding(self):
         self.process_file("geocoding")
 
-def process_data(input_paths, output_paths):
+def process_data(suido_stauts_file, juki_file, touki_file, akiya_result_file, geocoding_file):
+    # 入力ファイルのパスを設定
+    input_paths = {
+        "suido_status": suido_stauts_file.name,
+        "juki": juki_file.name,
+        "touki": touki_file.name,
+        "akiya_result": akiya_result_file.name,
+        "geocoding": geocoding_file.name
+    }
+    
+    # 出力ファイルのパスを設定
+    output_paths = {
+        "suido_status": "suido_status_cleaned.csv",
+        "juki": "juki_cleaned.csv",
+        "touki": "touki_cleaned.csv",
+        "akiya_result": "akiya_result_cleaned.csv",
+        "geocoding": "geocoding_cleaned.csv"
+    }
+    
     processor = EachFileProcessor(input_paths, output_paths)
     
     print("Process Suido Status Data...")
@@ -226,27 +252,25 @@ def process_data(input_paths, output_paths):
         ]
 
 if __name__ == "__main__":
-    # 入力ファイルのパスを設定
-    input_paths = {
-        "suido_status": "path/to/suido_status.csv",
-        "juki": "path/to/juki.csv",
-        "touki": "path/to/touki.csv",
-        "akiya_result": "path/to/akiya_result.csv",
-        "geocoding": "path/to/geocoding.csv"
-    }
+    # Gradioインターフェースを作成
+    iface = gr.Interface(
+        fn=process_data,
+        inputs=[
+            gr.File(label="Suido Status Data"),
+            gr.File(label="Juki Data"),
+            gr.File(label="Touki Data"),
+            gr.File(label="Akiya Result Data"),
+            gr.File(label="Geocoding Data")
+        ],
+        outputs=[
+            gr.File(label="Processed Suido Status Data"),
+            gr.File(label="Processed Juki Data"),
+            gr.File(label="Processed Touki Data"),
+            gr.File(label="Processed Akiya Result Data"),
+            gr.File(label="Processed Geocoding Data")
+        ],
+        title="E012 - データクレンジング機能",
+        description="アップロードされた住所カラムに該当するすべての列の名寄せ（住所の正規化）をする機能"
+    )
     
-    # 出力ファイルのパスを設定
-    output_paths = {
-        "suido_status": "suido_status_cleaned.csv",
-        "juki": "juki_cleaned.csv",
-        "touki": "touki_cleaned.csv",
-        "akiya_result": "akiya_result_cleaned.csv",
-        "geocoding": "geocoding_cleaned.csv"
-    }
-    
-    # データ処理を実行
-    processed_files = process_data(input_paths, output_paths)
-    
-    print("Processed files:")
-    for file_path in processed_files:
-        print(file_path)
+    iface.launch()
