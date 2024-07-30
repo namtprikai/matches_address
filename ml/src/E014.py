@@ -4,26 +4,13 @@ E014
 """
 
 import io
+import sys
+import argparse
 from typing import List, Tuple
 
-import gradio as gr
 import pandas as pd
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
-
-# カスタムCSS
-CUSTOM_CSS = """
-#csv label {
-    font-size: 20px;
-    font-weight: bold;
-    color: lightblue;
-}
-#title {
-    font-size: 24px;
-    font-weight: bold;
-}
-
-"""
 
 OUTPUT_PATH = "juki_suido_touki_akiya_geocoded.csv"
 
@@ -102,6 +89,7 @@ def embedding_address(main_csv: io.BytesIO, sub_csv: io.BytesIO, main_column: st
         else:
             main_df.at[i, f'名寄せ元情報_{sub_csv_name}'] = ""
             main_df.at[i, sub_flag_name] = 0  # 名寄せできなかった行のflagを0にする
+
     result_df = pd.concat([df_merge, main_df], axis=0, ignore_index=True)
 
     # flag情報を最後に持ってくる
@@ -127,53 +115,32 @@ def embedding_address(main_csv: io.BytesIO, sub_csv: io.BytesIO, main_column: st
     # 結果の表示
     threshold_match_ratio = f'緯度経度付与率: {(merged_rows + ngram_rows) / data_rows * 100:.2f}%'
     
-    return OUTPUT_PATH, f"{threshold_match_ratio}"
+    return OUTPUT_PATH, threshold_match_ratio
 
-# ドロップダウンの選択肢を更新する
-def update_column_dropdowns_and_radio_buttons(main_csv: io.BytesIO, sub_csv: io.BytesIO) -> Tuple[gr.Dropdown, gr.Dropdown, gr.Radio]:
-    if main_csv is None or sub_csv is None:
-        return gr.update(), gr.update(), gr.update()
-    main_columns = get_column_names(main_csv)
-    sub_columns = get_column_names(sub_csv)
-    file_names = [main_csv.name.split('/')[-1], sub_csv.name.split('/')[-1]]
-    return gr.update(choices=main_columns), gr.update(choices=sub_columns), gr.update(choices=file_names, value=file_names[0])
+def main():
+    parser = argparse.ArgumentParser(description='E014: 緯度経度付与システム')
+    parser.add_argument('main_csv', help='結合元のCSVファイルパス')
+    parser.add_argument('sub_csv', help='結合対象のCSVファイルパス')
+    parser.add_argument('main_column', help='結合元の基準にする列名')
+    parser.add_argument('sub_column', help='結合対象の基準にする列名')
+    parser.add_argument('merge_base', help='結合の基準にするファイル名')
+    parser.add_argument('--ngram', type=int, default=2, help='N-gram Size (default: 2)')
+    parser.add_argument('--threshold', type=float, default=0.5, help='Similarity Threshold (default: 0.5)')
 
-iface = gr.Blocks(css=CUSTOM_CSS)
+    args = parser.parse_args()
 
-with iface:
-    gr.Markdown(value="E014: 緯度経度付与システム", elem_id="title")
-
-    file_input_1 = gr.File(label="csvファイルを入力してください", elem_id="csv")
-    file_input_2 = gr.File(label="csvファイルを入力してください", elem_id="csv")
-
-    column_dropdown_1 = gr.Dropdown(label="結合元の基準にする列を選択してください")
-    column_dropdown_2 = gr.Dropdown(label="結合対象の基準にする列を選択してください")
-
-    merge_base = gr.Radio(choices=[], label="結合の基準にするファイルを選択してください")
-
-    ngram_size = gr.Radio([1, 2, 3], value=2, label="N-gram Size")
-    similarity_threshold = gr.Slider(0.0, 1.0, value=0.5, label="Similarity Threshold", step=0.05)
-
-    match_button = gr.Button("名寄せ実行")
-
-    output_file = gr.File(label="Matched Data CSV")
-    results_text = gr.Textbox(label="結果")
-
-    file_input_1.change(update_column_dropdowns_and_radio_buttons, inputs=[file_input_1, file_input_2], outputs=[column_dropdown_1, column_dropdown_2, merge_base])
-    file_input_2.change(update_column_dropdowns_and_radio_buttons, inputs=[file_input_1, file_input_2], outputs=[column_dropdown_1, column_dropdown_2, merge_base])
-
-    match_button.click(
-        embedding_address,
-        inputs=[
-            file_input_1, 
-            file_input_2, 
-            column_dropdown_1, 
-            column_dropdown_2,
-            merge_base,
-            ngram_size,
-            similarity_threshold
-        ],
-        outputs=[output_file, results_text]
+    output_file, results = embedding_address(
+        args.main_csv,
+        args.sub_csv,
+        args.main_column,
+        args.sub_column,
+        args.merge_base,
+        args.ngram,
+        args.threshold
     )
 
-iface.launch()
+    print(f"出力ファイル: {output_file}")
+    print(results)
+
+if __name__ == "__main__":
+    main()
