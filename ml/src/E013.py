@@ -4,10 +4,8 @@
 """
 
 import os
-import tempfile
+import argparse
 from datetime import datetime
-
-import gradio as gr
 import numpy as np
 import pandas as pd
 from dateutil.relativedelta import relativedelta
@@ -308,23 +306,7 @@ class TatemonoProcessor(DataProcessor):
         self.save_csv(df_tatemono, self.OUTPUT_PATHS["tatemono"])
 
 # すべてのデータを処理する関数を作成
-def process_all_data(suido_use_file, suido_status_file, juki_file, tatemono_file, base_date, search_period):
-    
-    # 入力ファイルのパスを設定
-    input_paths = {
-        "suido_use": suido_use_file.name,
-        "suido_status": suido_status_file.name,
-        "juki": juki_file.name,
-        "tatemono": tatemono_file.name
-    }
-        
-    # 出力ファイルのパスを設定
-    output_paths = {
-        "suido": "suido_residence.csv",
-        "juki": "juki_residence.csv",
-        "tatemono": "touki_residence.csv"
-    }
-
+def process_all_data(input_paths, output_paths, base_date, search_period):
     print("Processing Suido data...")
     SuidoProcessor(input_paths, output_paths, base_date, search_period).process()
 
@@ -336,27 +318,31 @@ def process_all_data(suido_use_file, suido_status_file, juki_file, tatemono_file
 
     print("All processes completed.")
     
-    return [output_paths["suido"], output_paths["juki"], output_paths["tatemono"]]
-
 if __name__ == "__main__":
-    # Gradioのインターフェースを作成
-    iface = gr.Interface(
-        fn=process_all_data,
-        inputs=[
-            gr.File(label="Suido Use Data"),
-            gr.File(label="Suido Status Data"),
-            gr.File(label="Juki Data"),
-            gr.File(label="Tatemono Data"),
-            gr.Number(label="Base Date (YYYYMMDD)"),
-            gr.Number(label="Search Period (Year)")
-        ],
-        outputs=[
-            gr.File(label="Processed Suido Data"),
-            gr.File(label="Processed Juki Data"),
-            gr.File(label="Processes Tatemono Data")
-        ],
-        title="E013 - 住居単位データ作成機能",
-        description="水道栓、水道使用量、住民基本台帳、登記簿・固定資産台帳を住居単位のデータへ集計する機能"
-    )
-    
-    iface.launch()
+    parser = argparse.ArgumentParser(description="E013 - 住居単位データ作成機能")
+    parser.add_argument("--suido_use", required=True, help="Path to Suido Use Data")
+    parser.add_argument("--suido_status", required=True, help="Path to Suido Status Data")
+    parser.add_argument("--juki", required=True, help="Path to Juki Data")
+    parser.add_argument("--tatemono", required=True, help="Path to Tatemono Data")
+    parser.add_argument("--base_date", type=int, required=True, help="Base Date (YYYYMMDD)")
+    parser.add_argument("--search_period", type=int, required=True, help="Search Period (Year)")
+    parser.add_argument("--output_dir", default=".", help="Output directory")
+
+    args = parser.parse_args()
+
+    # 入力ファイルのパスを設定
+    input_paths = {
+        "suido_use": args.suido_use,
+        "suido_status": args.suido_status,
+        "juki": args.juki,
+        "tatemono": args.tatemono
+    }
+        
+    # 出力ファイルのパスを設定
+    output_paths = {
+        "suido": os.path.join(args.output_dir, "suido_residence.csv"),
+        "juki": os.path.join(args.output_dir, "juki_residence.csv"),
+        "tatemono": os.path.join(args.output_dir, "touki_residence.csv")
+    }
+
+    process_all_data(input_paths, output_paths, args.base_date, args.search_period)
