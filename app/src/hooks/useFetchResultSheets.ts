@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { result_sheets } from "@/schema";
+import { type result_sheets } from "../schema";
 
 type ResultSheet = typeof result_sheets.$inferSelect;
 

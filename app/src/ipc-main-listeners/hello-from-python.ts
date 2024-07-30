@@ -1,5 +1,5 @@
+import { getErrorMessage } from "../utils/get-error-message";
 import { binaryPath, execFileAsync, type IpcMainListener } from ".";
-import { getErrorMessage } from "@/utils/get-error-message";
 
 export const helloFromPython: IpcMainListener = async (
   _: unknown,

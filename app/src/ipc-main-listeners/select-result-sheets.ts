@@ -1,7 +1,7 @@
 import { sql } from "drizzle-orm";
+import { result_sheets } from "../schema";
+import { db } from "../utils/db";
 import { type IpcMainListener } from ".";
-import { result_sheets } from "@/schema";
-import { db } from "@/utils/db";
 
 type ResultSheet = typeof result_sheets.$inferSelect;
 

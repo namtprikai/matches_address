@@ -1,6 +1,6 @@
+import { dbPath } from "../utils/db";
+import { getErrorMessage } from "../utils/get-error-message";
 import { type IpcMainListener, execFileAsync, binaryPath } from ".";
-import { getErrorMessage } from "@/utils/get-error-message";
-import { dbPath } from "@/utils/db";
 
 export const saveNameFromPython: IpcMainListener = async (
   _: unknown,

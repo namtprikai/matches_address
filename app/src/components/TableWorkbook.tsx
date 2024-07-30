@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { workbooks } from "@/schema";
+import { type workbooks } from "../schema";
 
 type Workbook = typeof workbooks.$inferSelect;
 

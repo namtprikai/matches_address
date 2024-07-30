@@ -1,7 +1,7 @@
 import { sql } from "drizzle-orm";
+import { workbooks } from "../schema";
+import { db } from "../utils/db";
 import { type IpcMainListener } from ".";
-import { workbooks } from "@/schema";
-import { db } from "@/utils/db";
 
 type Workbook = typeof workbooks.$inferSelect;
 
