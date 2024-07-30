@@ -16,11 +16,11 @@ import math
 import os
 import random
 import string
+import argparse
 
 import numpy as np
 import pandas as pd
 import geopandas as gpd
-import gradio as gr
 
 from pyproj import Transformer
 from shapely import wkt
@@ -438,25 +438,16 @@ def save_geodataframe(gdf, output_path, output_type):
         # サポートされていない出力形式が指定された場合、例外を発生させる
         raise ValueError(f"Unsupported output type: {output_type}")
 
-def process_data(tatemono_path, water_supply_path, ken, sikuchoson, option, output_type):
+def main(tatemono_path, water_supply_path, ken, sikuchoson, option, output_type):
     """
-    建物データと水道データを処理して結果を保存する
-    引数:
-    tatemono_path (str): 建物データのファイルパス
-    water_supply_path (str): 水道データのファイルパス
-    ken (str): 県の名前
-    sikuchoson (str): 市区町村の名前
-    option (str): オプション設定
-    output_type (str): 出力形式（'gpkg'または'csv'）
-    戻り値:
-    tuple: 出力ファイルのパスと結合率
+    メイン関数。建物データと水道データを処理して結果を保存する。
     """
     # 作業ディレクトリを設定
     links04_path = setup_directory()
 
     # 建物データと水道データを読み込み、処理
     tatemono = load_and_process_data(tatemono_path)
-    water_supply = load_and_process_data(water_supply_path, is_tatemono=True)
+    water_supply = load_and_process_data(water_supply_path, is_tatemono=False)
     
     # 座標系を設定
     crs = get_transformer(ken, sikuchoson)
@@ -476,45 +467,18 @@ def process_data(tatemono_path, water_supply_path, ken, sikuchoson, option, outp
     output_path = os.path.join(links04_path, f"D901.{output_type}")
     save_geodataframe(tatemono_use_point, output_path, output_type)
     
-    return output_path, join_ratio
-
-def gradio_interface(tatemono_file, water_supply_file, ken, sikuchoson, join_option, output_format):
-    """
-    Gradioインターフェース用の関数。建物データと水道データを処理し、結果を出力する。
-    引数:
-    tatemono_file (File): 建物データのファイル
-    water_supply_file (File): 水道データのファイル
-    ken (str): 県の名前
-    sikuchoson (str): 市区町村の名前
-    join_option (str): 結合オプション（"交差結合"または"最近傍結合"）
-    output_format (str): 出力形式（'gpkg'または'csv'）
-    戻り値:
-    tuple: 出力ファイルのパスと結合率のメッセージ
-    """
-    # 結合オプションを設定（0: 交差結合、1: 最近傍結合）
-    option = 0 if join_option == "交差結合" else 1
-    # データ処理を実行
-    output_path, join_ratio = process_data(tatemono_file.name, water_supply_file.name, ken, sikuchoson, option, output_format)
-    # 結果を返す
-    return output_path, f"結合率: {join_ratio}%"
-
-iface = gr.Interface(
-    fn=gradio_interface,
-    inputs=[
-        gr.File(label="【D401】テキストマッチングデータ (CSV)"),
-        gr.File(label="【D101、D102、D106】空き家基盤データ (CSV)"),
-        gr.Textbox(label="都道府県", value="愛知県"),
-        gr.Textbox(label="市区町村", value="豊田市"),
-        gr.Radio(["交差結合", "最近傍結合"], label="結合方式"),
-        gr.Radio(["csv", "gpkg"], label="出力形式")
-    ],
-    outputs=[
-        gr.File(label="出力ファイル"),
-        gr.Textbox(label="結合率")
-    ],
-    title="E015 - 空間結合機能",
-    description="２つ以上の地理的な位置情報を持つ異なるインプットデータに対して、地理的な重なり関係から結合処理を行う機能。"
-)
+    print(f"出力ファイル: {output_path}")
+    print(f"結合率: {join_ratio}%")
 
 if __name__ == "__main__":
-    iface.launch()
+    parser = argparse.ArgumentParser(description="E015 - 空間結合機能")
+    parser.add_argument("tatemono_path", help="建物データのファイルパス")
+    parser.add_argument("water_supply_path", help="水道データのファイルパス")
+    parser.add_argument("ken", help="県の名前")
+    parser.add_argument("sikuchoson", help="市区町村の名前")
+    parser.add_argument("--option", type=int, choices=[0, 1], default=0, help="結合オプション (0: 交差結合, 1: 最近傍結合)")
+    parser.add_argument("--output_type", choices=["csv", "gpkg"], default="csv", help="出力形式")
+
+    args = parser.parse_args()
+
+    main(args.tatemono_path, args.water_supply_path, args.ken, args.sikuchoson, args.option, args.output_type)
