@@ -12,18 +12,18 @@ import { Style, Fill, Stroke } from "ol/style";
 import Polygon from "ol/geom/Polygon";
 import Overlay from "ol/Overlay";
 import { toStringHDMS } from "ol/coordinate";
+import { Popup } from "./popup";
 
 export function MapComponent(): JSX.Element {
   const mapRef = useRef<HTMLDivElement | null>(null);
   const popupRef = useRef<HTMLDivElement | null>(null);
-  const popupCloserRef = useRef<HTMLAnchorElement | null>(null);
   const [hdms, setHdms] = useState("");
 
   useEffect(() => {
     const mapEl = mapRef.current;
     const popupEl = popupRef.current;
-    const popupCloserEl = popupCloserRef.current;
-    if (!mapEl || !popupEl || !popupCloserEl) return;
+
+    if (!mapEl || !popupEl) return;
 
     const popupOverlay = new Overlay({
       element: popupEl,
@@ -48,7 +48,7 @@ export function MapComponent(): JSX.Element {
       overlays: [popupOverlay],
       view: new View({
         center: fromLonLat([139.767, 35.6814]),
-        zoom: 10,
+        zoom: 12,
       }),
     });
 
@@ -104,47 +104,13 @@ export function MapComponent(): JSX.Element {
       }
     });
 
-    // ポップアップを閉じる処理
-    popupCloserEl.onclick = () => {
-      popupOverlay.setPosition(undefined);
-      popupCloserEl.blur();
-      return false;
-    };
-
     return () => map.setTarget(undefined);
   }, []);
 
   return (
     <div>
       <div ref={mapRef} style={{ width: "100%", height: "400px" }} />
-      <div
-        ref={popupRef}
-        style={{
-          position: "absolute",
-          backgroundColor: "white",
-          boxShadow: "0 1px 4px rgba(0,0,0,0.2)",
-          padding: "15px",
-          borderRadius: "10px",
-          border: "1px solid #cccccc",
-          bottom: "12px",
-          left: "-50px",
-          minWidth: "280px",
-        }}
-      >
-        <a
-          ref={popupCloserRef}
-          href="#"
-          style={{
-            textDecoration: "none",
-            position: "absolute",
-            top: "2px",
-            right: "8px",
-          }}
-        >
-          ×
-        </a>
-        <div>{hdms}</div>
-      </div>
+      <Popup ref={popupRef} data={{ hdms }} />
     </div>
   );
 }
