@@ -1,7 +1,7 @@
 import { getErrorMessage } from "../utils/get-error-message";
 import { binaryPath, execFileAsync, type IpcMainListener } from ".";
 
-export const helloFromPython: IpcMainListener = async (
+export const helloFromPython = (async (
   _: unknown,
   name: string,
 ): Promise<string | undefined> => {
@@ -17,4 +17,4 @@ export const helloFromPython: IpcMainListener = async (
     console.error(getErrorMessage(error));
     return undefined;
   }
-};
+}) satisfies IpcMainListener;

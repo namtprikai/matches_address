@@ -4,7 +4,7 @@ import { type IpcMainListener } from ".";
 
 type InsertDataSetResult = typeof data_set_results.$inferInsert;
 
-export const insertDataSetResults: IpcMainListener = (
+export const insertDataSetResults = ((
   _: unknown,
   { title }: InsertDataSetResult,
 ): {
@@ -14,4 +14,4 @@ export const insertDataSetResults: IpcMainListener = (
   return {
     id: res.lastInsertRowid,
   };
-};
+}) satisfies IpcMainListener;

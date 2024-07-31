@@ -4,7 +4,7 @@ import { type IpcMainListener } from ".";
 
 type InsertWorkbook = typeof workbooks.$inferInsert;
 
-export const insertWorkbooks: IpcMainListener = (
+export const insertWorkbooks = ((
   _: unknown,
   { title }: InsertWorkbook,
 ): {
@@ -14,4 +14,4 @@ export const insertWorkbooks: IpcMainListener = (
   return {
     id: res.lastInsertRowid,
   };
-};
+}) satisfies IpcMainListener;

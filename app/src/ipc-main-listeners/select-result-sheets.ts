@@ -5,7 +5,7 @@ import { type IpcMainListener } from ".";
 
 type ResultSheet = typeof result_sheets.$inferSelect;
 
-export const selectResultSheets: IpcMainListener = (
+export const selectResultSheets = ((
   _: unknown,
   { workbookId }: { workbookId: number },
 ): ResultSheet[] => {
@@ -16,4 +16,4 @@ export const selectResultSheets: IpcMainListener = (
     .all();
 
   return all;
-};
+}) satisfies IpcMainListener;

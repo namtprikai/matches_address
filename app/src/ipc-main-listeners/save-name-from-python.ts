@@ -2,7 +2,7 @@ import { dbPath } from "../utils/db";
 import { getErrorMessage } from "../utils/get-error-message";
 import { type IpcMainListener, execFileAsync, binaryPath } from ".";
 
-export const saveNameFromPython: IpcMainListener = async (
+export const saveNameFromPython = (async (
   _: unknown,
   name: string,
 ): Promise<void> => {
@@ -18,4 +18,4 @@ export const saveNameFromPython: IpcMainListener = async (
   } catch (error) {
     console.error(getErrorMessage(error));
   }
-};
+}) satisfies IpcMainListener;
