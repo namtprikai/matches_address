@@ -6,6 +6,8 @@ export const useOnClickOutside = (
 ): void => {
   useEffect(() => {
     const listener = (event: MouseEvent | TouchEvent): void => {
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment -- @fixme 
+        // @ts-ignore
       if (!ref.current || ref.current.contains(event.target)) {
         return;
       }
