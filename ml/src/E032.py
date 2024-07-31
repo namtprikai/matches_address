@@ -5,12 +5,12 @@
 """
 
 import os
+import sys
 import shutil
-import tempfile
+import argparse
 
 import chardet
 import geopandas as gpd
-import gradio as gr
 import numpy as np
 import pandas as pd
 from shapely.geometry import MultiPolygon, Polygon
@@ -217,7 +217,7 @@ class Summarization:
         None
         """
         # データを読み込む
-        akiya_pred_df = self.read_file(self.INPUT_PATHS["akiya_pred"], encoding="shift_jis")
+        akiya_pred_df = self.read_file(self.INPUT_PATHS["akiya_pred"])
         city_block_gdf = self.read_file(self.INPUT_PATHS["city_block"]["shp"])
         
         # GeoDataFrameに変換
@@ -252,98 +252,28 @@ class Summarization:
         # 出力
         self.save_csv(summerized_df, self.OUTPUT_PATH, encoding="shift_jis")
         
-def move_uploaded_file(file, save_dir):
-    """
-    アップロードされたファイルを移動するヘルパー関数
-    
-    Parameters
-    ----------
-    file : gradio.File
-        アップロードされたファイルオブジェクト
-    save_dir : str
-        ファイルを保存するディレクトリのパス
-    
-    Returns
-    -------
-    file_path : str
-        移動後のファイルパス
-    """
-    # 保存先のディレクトリを作成
-    if not os.path.exists(save_dir):
-        os.makedirs(save_dir)
-    
-    # ファイルを一時ディレクトリに移動
-    file_name = os.path.basename(file.name)
-    file_path = os.path.join(save_dir, file_name)
-    shutil.move(file.name, file_path)
-    
-    return file_path
+def main():
+    parser = argparse.ArgumentParser(description="Process summarization of vacant houses data.")
+    parser.add_argument("akiya_pred_path", help="Path to the vacant houses prediction file (CSV)")
+    parser.add_argument("shp_path", help="Path to the city block shapefile (.shp)")
+    parser.add_argument("dbf_path", help="Path to the city block DBF file (.dbf)")
+    parser.add_argument("prj_path", help="Path to the city block projection file (.prj)")
+    parser.add_argument("shx_path", help="Path to the city block shapefile index (.shx)")
+    parser.add_argument("output_path", help="Path for the output CSV file")
 
-def process_summarization(akiya_pred_file, shp_file, dbf_file, prj_file, shx_file):
-    """
-    Gradioインターフェースから呼び出される関数
-    
-    Parameters
-    ----------
-    akiya_pred_file : gradio.File
-        空き家予測結果のファイル
-    shp_file : gradio.File
-        小地域データのshpファイル
-    dbf_file : gradio.File
-        小地域データのdbfファイル
-    prj_file : gradio.File
-        小地域データのprjファイル
-    shx_file : gradio.File
-        小地域データのshxファイル
-    
-    Returns
-    -------
-    output_path : str
-        生成された集計結果ファイルのパス
-    """
-    # 現在のディレクトリ直下に一時ディレクトリを作成
-    temp_dir = os.path.join(os.getcwd(), "temp_files")
-    os.makedirs(temp_dir, exist_ok=True)
+    args = parser.parse_args()
 
-    # ファイルを一時ディレクトリに移動
-    akiya_pred_path = move_uploaded_file(akiya_pred_file, temp_dir)
-    shp_path = move_uploaded_file(shp_file, temp_dir)
-    dbf_path = move_uploaded_file(dbf_file, temp_dir)
-    prj_path = move_uploaded_file(prj_file, temp_dir)
-    shx_path = move_uploaded_file(shx_file, temp_dir)
-    
     input_paths = {
-        "akiya_pred": akiya_pred_path,
+        "akiya_pred": args.akiya_pred_path,
         "city_block": {
-            "shp": shp_path,
-            "dbf": dbf_path,
-            "prj": prj_path,
-            "shx": shx_path
+            "shp": args.shp_path,
+            "dbf": args.dbf_path,
+            "prj": args.prj_path,
+            "shx": args.shx_path
         }
     }
-    
-    # 出力ファイルのパスを設定
-    output_path = os.path.join(temp_dir, "D903.csv")
-    
-    # 集計処理を実行
-    Summarization(input_paths, output_path).process()
-    
-    return output_path
+
+    Summarization(input_paths, args.output_path).process()
 
 if __name__ == "__main__":
-    # gradioインターフェースの作成
-    iface = gr.Interface(
-        fn=process_summarization,
-        inputs=[
-            gr.File(label="【D902】空き家判定結果データ"),
-            gr.File(label="【D013】国勢調査小地域データ（町丁・字等) - .shp"),
-            gr.File(label="【D013】国勢調査小地域データ（町丁・字等) - .dbf"),
-            gr.File(label="【D013】国勢調査小地域データ（町丁・字等) - .prj"),
-            gr.File(label="【D013】国勢調査小地域データ（町丁・字等) - .shx")
-        ],
-        outputs=gr.File(label="【D903】地域別集計データ"),
-        title="E032 - 地域集計機能",
-        description="建物単位の空き家判定結果を指定の地域区分（小地域単位など）で再集計した結果を出力する機能"
-    )
-    
-    iface.launch() 
+    main()
