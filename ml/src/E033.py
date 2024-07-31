@@ -3,43 +3,17 @@
 * E002による判定結果及び集計結果をGISデータ形式（GeoJSON等の標準形式）及びテキスト形式（CSV等）で出力する機能。アセットのエクスポート機能を提供する。なお、エクスポート時に出力座標系を選択できるようにする。 
 """
 
+import argparse
 import json
 import logging
 import os
 
 import chardet
 import geopandas as gpd
-import gradio as gr
 import pandas as pd
 from osgeo import gdal
 from shapely import wkt
 from shapely.geometry import MultiPolygon, Polygon
-
-# 一般的な座標系のリスト
-COMMON_CRS = [
-    "EPSG:4326 (WGS84)",
-    "EPSG:3857 (Webメルカトル)",
-    "EPSG:2443 (日本測地系2000 / 平面直角座標系 I)",
-    "EPSG:2444 (日本測地系2000 / 平面直角座標系 II)",
-    "EPSG:2445 (日本測地系2000 / 平面直角座標系 III)",
-    "EPSG:2446 (日本測地系2000 / 平面直角座標系 IV)",
-    "EPSG:2447 (日本測地系2000 / 平面直角座標系 V)",
-    "EPSG:2448 (日本測地系2000 / 平面直角座標系 VI)",
-    "EPSG:2449 (日本測地系2000 / 平面直角座標系 VII)",
-    "EPSG:2450 (日本測地系2000 / 平面直角座標系 VIII)",
-    "EPSG:2451 (日本測地系2000 / 平面直角座標系 IX)",
-    "EPSG:2452 (日本測地系2000 / 平面直角座標系 X)",
-    "EPSG:2453 (日本測地系2000 / 平面直角座標系 XI)",
-    "EPSG:2454 (日本測地系2000 / 平面直角座標系 XII)",
-    "EPSG:2455 (日本測地系2000 / 平面直角座標系 XIII)",
-    "EPSG:2456 (日本測地系2000 / 平面直角座標系 XIV)",
-    "EPSG:2457 (日本測地系2000 / 平面直角座標系 XV)",
-    "EPSG:2458 (日本測地系2000 / 平面直角座標系 XVI)",
-    "EPSG:2459 (日本測地系2000 / 平面直角座標系 ⅩVII)",
-    "EPSG:2460 (日本測地系2000 / 平面直角座標系 ⅩVIII)",
-    "EPSG:2461 (日本測地系2000 / 平面直角座標系 ⅩIX)",
-    "カスタム"
-]
 
 # ログ設定
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -191,8 +165,8 @@ def export_data(gdf, output_path, output_format):
             try:
                 # CSVファイルをエクスポート
                 gdf.to_csv(output_path, index=False, encoding=encoding)
-                print(f"CSV exported using {encoding} encoding.")
-                return encoding
+                logging.info(f"CSV exported using {encoding} encoding.")
+                return output_path
             except UnicodeEncodeError:
                 # エンコーディングが失敗した場合、次のエンコーディングを試す
                 print(f"Failed to encode using {encoding}. Trying next encoding.")
@@ -214,45 +188,42 @@ def export_data(gdf, output_path, output_format):
         
         # 一時ファイルを削除
         os.remove(temp_path)
+        return output_path
     else:
         raise ValueError("Unsupported output format. Use 'csv' or 'geojson'.")
-    
-    return output_path
 
-def main(params):
+def main(input_file, output_format, target_crs):
     """
     メイン処理を行う関数
 
     Parameters
     ----------
-    params : dict
-        処理に必要なパラメータを含む辞書
-        - input_file: 入力ファイルのパス
-        - output_format: 出力形式（'csv' または 'geojson'）
-        - target_crs: 変換後の座標系（オプション）
+    input_file : str
+        入力ファイルのパス
+    output_format : str
+        出力形式（'csv' または 'geojson'）
+    target_crs : str
+        変換後の座標系（EPSG:xxxx形式）
 
     Returns
     -------
     str
-        処理結果のメッセージ
+        出力ファイルのパス
     """
     try:
         logging.info("Starting main processing")
-        # 入力ファイルのパスを取得
-        input_path = params['input_file'].name
         
         # 出力ファイルのパスを生成
-        output_dir = os.path.dirname(input_path)
-        output_filename = f"output.{params['output_format'].lower()}"
+        output_dir = os.path.dirname(input_file)
+        output_filename = f"output.{output_format.lower()}"
         output_path = os.path.join(output_dir, output_filename)
 
-        logging.info(f"Reading input data from {input_path}")
+        logging.info(f"Reading input data from {input_file}")
         # データの読み込み
-        gdf = read_input_data(input_path)
+        gdf = read_input_data(input_file)
         
-        if params.get('target_crs'):
-            logging.info(f"Target CRS specified: {params['target_crs']}")
-            target_crs = params['target_crs'].split()[0]  # Extract EPSG code
+        if target_crs:
+            logging.info(f"Target CRS specified: {target_crs}")
             if gdf.crs.to_string().upper() != target_crs.upper():
                 logging.info(f"Converting CRS from {gdf.crs} to {target_crs}")
                 # 入力データの座標系と目標の座標系が異なる場合、変換を実行
@@ -264,83 +235,25 @@ def main(params):
         
         logging.info(f"Exporting data to {output_path}")
         # データのエクスポート
-        output_file_path = export_data(gdf, output_path, params['output_format'])
+        output_file_path = export_data(gdf, output_path, output_format)
 
         logging.info("Processing completed successfully")
         return output_file_path
     except Exception as e:
         # エラーが発生した場合のログ記録と返値
         logging.error(f"An error occurred: {str(e)}")
-        return f"An error occurred: {str(e)}"
-
-def gradio_interface(input_file, output_format, crs_choice, custom_crs):
-    """
-    Gradioインターフェース用の関数
-
-    Parameters
-    ----------
-    input_file : file
-        入力ファイル（Gradioのファイルオブジェクト）
-    output_format : str
-        出力形式（'CSV' または 'GeoJSON'）
-    crs_choice : str
-        選択された座標系
-    custom_crs : str
-        カスタム座標系（crs_choiceが'カスタム'の場合に使用）
-
-    Returns
-    -------
-    str
-        処理結果のメッセージ
-    """
-    # 受け取ったパラメータをログに記録
-    logging.info(f"Received input: output_format={output_format}, crs_choice={crs_choice}, custom_crs={custom_crs}")
-    
-    # 座標系の選択に応じてtarget_crsを設定
-    if crs_choice == "カスタム":
-        target_crs = custom_crs
-    else:
-        # crs_choiceから座標系のコードを抽出（例: "EPSG:4326 WGS84" -> "EPSG:4326"）
-        target_crs = crs_choice.split(" ")[0]
-
-    # main関数に渡すパラメータを準備
-    params = {
-        'input_file': input_file,
-        'output_format': output_format,
-        'target_crs': target_crs
-    }
-    
-    # main関数の呼び出しとパラメータをログに記録
-    logging.info(f"Calling main function with params: {params}")
-    result = main(params)
-
-    # 処理結果の確認とログ記録
-    if isinstance(result, str) and result.startswith("An error occurred:"):
-        # エラーが発生した場合
-        logging.error(f"Error in processing: {result}")
-        return None, result
-    else:
-        # エラーが発生した場合
-        logging.info(f"Processing completed. Result: {result}")
-        return result, "処理が完了しました。"
+        raise
 
 if __name__ == '__main__':
-    # Gradioインターフェースの定義
-    iface = gr.Interface(
-        fn=gradio_interface,
-        inputs=[
-            gr.File(label="【D902】空き家判定結果データ"),
-            gr.Radio(["CSV", "GeoJSON"], label="出力データ形式"),
-            gr.Dropdown(choices=COMMON_CRS, label="変換後の座標系を選択", type="value"),
-            gr.Textbox(label="カスタム座標系 (例: EPSG:2249)", placeholder="EPSG:xxxx")
-        ],
-        outputs=[
-            gr.File(label="変換後データ"),
-            gr.Textbox(label="処理メッセージ")
-        ],
-        title="E033 - データ出力機能",
-        description="E002による判定結果及び集計結果をGISデータ形式で出力する機能。エクスポート時に座標系を選択できます。"
-    )
+    parser = argparse.ArgumentParser(description="E033 - データ出力機能")
+    parser.add_argument('input_file', help='入力ファイルのパス')
+    parser.add_argument('output_format', choices=['csv', 'geojson'], help='出力データ形式')
+    parser.add_argument('--target_crs', help='変換後の座標系 (例: EPSG:4326)')
     
-    # Gradioインターフェースの起動
-    iface.launch()
+    args = parser.parse_args()
+    
+    try:
+        result = main(args.input_file, args.output_format, args.target_crs)
+        print(f"処理が完了しました。出力ファイル: {result}")
+    except Exception as e:
+        print(f"エラーが発生しました: {str(e)}")
