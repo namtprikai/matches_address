@@ -6,7 +6,7 @@ import { getNames } from "./get-names";
 import { saveName } from "./save-name";
 import { helloFromPython } from "./hello-from-python";
 import { saveNameFromPython } from "./save-name-from-python";
-import { insertWorkbooks } from "./insert-workbooks";
+import { createWorkbooks } from "./create-workbooks";
 import { selectWorkbooks } from "./select-workbooks";
 import { selectWorkbook } from "./select-workbook";
 import { selectResultSheets } from "./select-result-sheets";
@@ -19,7 +19,7 @@ export const ipcMainListeners = {
   saveName,
   helloFromPython,
   saveNameFromPython,
-  insertWorkbooks,
+  createWorkbooks,
   selectWorkbooks,
   selectWorkbook,
   selectResultSheets,
