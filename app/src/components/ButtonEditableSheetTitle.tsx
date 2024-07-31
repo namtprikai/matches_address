@@ -52,10 +52,10 @@ export const ButtonEditableSheetTitle = ({
       <form ref={ref} onSubmit={handleSubmit}>
         <Input
           className={styles.input}
-          defaultValue={resultSheet.title || ""}
           name="title"
           onChange={(e): void => setTitle(e.target.value)}
           size="small"
+          value={title}
         />
       </form>
     );
