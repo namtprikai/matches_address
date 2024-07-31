@@ -5,7 +5,7 @@ import { type IpcMainListener } from ".";
 
 type Workbook = typeof workbooks.$inferSelect;
 
-export const selectWorkbook: IpcMainListener = (
+export const selectWorkbook = ((
   _: unknown,
   { id }: { id: number },
 ): Workbook | undefined => {
@@ -16,4 +16,4 @@ export const selectWorkbook: IpcMainListener = (
     .get();
 
   return data;
-};
+}) satisfies IpcMainListener;

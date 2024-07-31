@@ -4,8 +4,8 @@ import { type IpcMainListener } from ".";
 
 type DataSetResult = typeof data_set_results.$inferSelect;
 
-export const selectDataSetResults: IpcMainListener = (): DataSetResult[] => {
+export const selectDataSetResults = ((): DataSetResult[] => {
   const all = db.select().from(data_set_results).all();
 
   return all;
-};
+}) satisfies IpcMainListener;

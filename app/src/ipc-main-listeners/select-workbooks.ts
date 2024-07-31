@@ -4,8 +4,8 @@ import { type IpcMainListener } from ".";
 
 type Workbook = typeof workbooks.$inferSelect;
 
-export const selectWorkbooks: IpcMainListener = (): Workbook[] => {
+export const selectWorkbooks = ((): Workbook[] => {
   const all = db.select().from(workbooks).all();
 
   return all;
-};
+}) satisfies IpcMainListener;
