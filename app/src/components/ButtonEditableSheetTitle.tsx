@@ -1,7 +1,8 @@
 import { Input, makeStyles, tokens } from "@fluentui/react-components";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { type FormProps } from "react-router-dom";
 import { type result_sheets } from "../schema";
+import { useOnClickOutside } from "../hooks/useOnClickOutside";
 import { Button } from "./Button";
 
 type ResultSheet = typeof result_sheets.$inferSelect;
@@ -14,6 +15,9 @@ const useStyles = makeStyles({
   root: {
     padding: tokens.spacingVerticalNone,
   },
+  input: {
+    width: "96px",
+  },
 });
 
 export const ButtonEditableSheetTitle = ({
@@ -23,28 +27,34 @@ export const ButtonEditableSheetTitle = ({
   const [isEditing, setIsEditing] = useState(false);
 
   const [title, setTitle] = useState(resultSheet.title || "");
-
-  const handleSubmit: FormProps["onSubmit"] = (e) => {
-    e.preventDefault();
+  const updateTitle = (): void => {
     const asyncSubmit = async (): Promise<void> => {
-      const data = Object.fromEntries(new FormData(e.currentTarget));
       await window.ipcRenderer.invoke("updateResultSheets", {
         resultSheetId: resultSheet.id,
-        value: { title: data.title.toString() },
+        value: { title },
       });
-      setTitle(data.title.toString());
     };
     asyncSubmit()
       .catch(console.error)
       .finally(() => setIsEditing(false));
   };
 
+  const handleSubmit: FormProps["onSubmit"] = (e) => {
+    e.preventDefault();
+    updateTitle();
+  };
+
+  const ref = useRef(null);
+  useOnClickOutside(ref, () => updateTitle());
+
   if (isEditing) {
     return (
-      <form onSubmit={handleSubmit}>
+      <form ref={ref} onSubmit={handleSubmit}>
         <Input
+          className={styles.input}
           defaultValue={resultSheet.title || ""}
           name="title"
+          onChange={(e): void => setTitle(e.target.value)}
           size="small"
         />
       </form>
