@@ -22,21 +22,31 @@ export const ButtonEditableSheetTitle = ({
   const styles = useStyles();
   const [isEditing, setIsEditing] = useState(false);
 
+  const [title, setTitle] = useState(resultSheet.title || "");
+
   const handleSubmit: FormProps["onSubmit"] = (e) => {
     e.preventDefault();
     const asyncSubmit = async (): Promise<void> => {
       const data = Object.fromEntries(new FormData(e.currentTarget));
-    //   await window.ipcRenderer.invoke("", {
-    //     title: data.title.toString(),
-    //   });
+      await window.ipcRenderer.invoke("updateResultSheets", {
+        resultSheetId: resultSheet.id,
+        value: { title: data.title.toString() },
+      });
+      setTitle(data.title.toString());
     };
-    asyncSubmit().catch(console.error);
+    asyncSubmit()
+      .catch(console.error)
+      .finally(() => setIsEditing(false));
   };
 
   if (isEditing) {
     return (
       <form onSubmit={handleSubmit}>
-        <Input defaultValue={resultSheet.title || ""} size="small" />
+        <Input
+          defaultValue={resultSheet.title || ""}
+          name="title"
+          size="small"
+        />
       </form>
     );
   }
@@ -51,7 +61,7 @@ export const ButtonEditableSheetTitle = ({
       onDoubleClick={(): void => setIsEditing(true)}
       shape="square"
     >
-      {resultSheet.title}
+      {title}
     </Button>
   );
 };
