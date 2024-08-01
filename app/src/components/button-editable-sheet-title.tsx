@@ -2,8 +2,8 @@ import { Input, makeStyles, tokens } from "@fluentui/react-components";
 import { useRef, useState } from "react";
 import { type FormProps } from "react-router-dom";
 import { type result_sheets } from "../schema";
-import { useOnClickOutside } from "../hooks/useOnClickOutside";
-import { Button } from "./Button";
+import { useOnClickOutside } from "../hooks/use-on-click-outside";
+import { Button } from "./button";
 
 type ResultSheet = typeof result_sheets.$inferSelect;
 

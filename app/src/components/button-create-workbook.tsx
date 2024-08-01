@@ -11,7 +11,7 @@ import {
   makeStyles,
 } from "@fluentui/react-components";
 import { useNavigate, type FormProps } from "react-router-dom";
-import { Button } from "../components/Button";
+import { Button } from "./button";
 
 const useStyles = makeStyles({
   input: {

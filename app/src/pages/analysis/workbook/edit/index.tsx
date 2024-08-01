@@ -12,13 +12,13 @@ import {
   TabList,
   tokens,
 } from "@fluentui/react-components";
-import { Button } from "../../../../components/Button";
-import { useFetchWorkbook } from "../../../../hooks/useFetchWorkbook";
-import { useFetchResultSheets } from "../../../../hooks/useFetchResultSheets";
-import { useTabs } from "../../../../hooks/useTabs";
-import { useFetchDataSetResults } from "../../../../hooks/useFetchDataSetResults";
-import { Resultsheet } from "../../../../components/Resultsheet";
-import { ButtonEditableSheetTitle } from "../../../../components/ButtonEditableSheetTitle";
+import { Button } from "../../../../components/button";
+import { useFetchWorkbook } from "../../../../hooks/use-fetch-workbook";
+import { useFetchResultSheets } from "../../../../hooks/use-fetch-result-sheets";
+import { useTabs } from "../../../../hooks/use-tabs";
+import { useFetchDataSetResults } from "../../../../hooks/use-fetch-data-set-results";
+import { Resultsheet } from "../../../../components/result-sheet";
+import { ButtonEditableSheetTitle } from "../../../../components/button-editable-sheet-title";
 
 const useStyles = makeStyles({
   root: {

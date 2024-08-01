@@ -1,10 +1,10 @@
 import { useEffect } from "react";
 import { makeStyles, Tab, TabList, tokens } from "@fluentui/react-components";
 import { useParams } from "react-router-dom";
-import { Button } from "../../../../components/Button";
-import { useFetchWorkbook } from "../../../../hooks/useFetchWorkbook";
-import { useFetchResultSheets } from "../../../../hooks/useFetchResultSheets";
-import { useTabs } from "../../../../hooks/useTabs";
+import { Button } from "../../../../components/button";
+import { useFetchWorkbook } from "../../../../hooks/use-fetch-workbook";
+import { useFetchResultSheets } from "../../../../hooks/use-fetch-result-sheets";
+import { useTabs } from "../../../../hooks/use-tabs";
 
 const useStyles = makeStyles({
   root: {},
