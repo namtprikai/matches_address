@@ -27,6 +27,7 @@ export const Resultsheet = ({ resultsheet: { id } }: Props): JSX.Element => {
   return (
     <div>
       <div>
+        {resultViews.length === 0 && <p>ビューがありません</p>}
         {resultViews.map((resultView) => (
           <Card key={resultView.id}>{resultView.title}</Card>
         ))}
