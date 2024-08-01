@@ -13,8 +13,13 @@ import Polygon from "ol/geom/Polygon";
 import Overlay from "ol/Overlay";
 import { toStringHDMS } from "ol/coordinate";
 import { Popup } from "./popup";
+import { type VacancyLevels } from "./vacancy-level-checkbox";
 
-export function MapComponent(): JSX.Element {
+interface Props {
+  vacancyLevels: VacancyLevels;
+}
+
+export function MapComponent({ vacancyLevels }: Props): JSX.Element {
   const mapRef = useRef<HTMLDivElement | null>(null);
   const popupRef = useRef<HTMLDivElement | null>(null);
   const [hdms, setHdms] = useState("");
@@ -47,45 +52,44 @@ export function MapComponent(): JSX.Element {
       ],
       overlays: [popupOverlay],
       view: new View({
-        center: fromLonLat([139.767, 35.6814]),
+        center: fromLonLat([137.1513, 35.0816]),
         zoom: 12,
       }),
     });
 
-    // ポリゴンの追加
-    const polygonCoordinates = [
-      [139.75, 35.68],
-      [139.78, 35.68],
-      [139.78, 35.7],
-      [139.75, 35.7],
-      [139.75, 35.68],
-    ].map((coord) => fromLonLat(coord));
+    // レベルごとのレイヤーを作成
+    Object.entries(vacancyLevels).forEach(([level, isVisible]) => {
+      if (isVisible) {
+        const coordinates = polygonData[level as keyof typeof polygonData].map(
+          (coord) => fromLonLat(coord),
+        );
+        const polygonFeature = new Feature({
+          geometry: new Polygon([coordinates]),
+        });
 
-    const polygonFeature = new Feature({
-      geometry: new Polygon([polygonCoordinates]),
+        polygonFeature.setStyle(
+          new Style({
+            fill: new Fill({
+              color: colors[level as keyof typeof colors],
+            }),
+            stroke: new Stroke({
+              color: colors[level as keyof typeof colors].replace("0.2", "1"),
+              width: 2,
+            }),
+          }),
+        );
+
+        const vectorSource = new VectorSource({
+          features: [polygonFeature],
+        });
+
+        const vectorLayer = new VectorLayer({
+          source: vectorSource,
+        });
+
+        map.addLayer(vectorLayer);
+      }
     });
-
-    polygonFeature.setStyle(
-      new Style({
-        fill: new Fill({
-          color: "rgba(255, 0, 0, 0.2)",
-        }),
-        stroke: new Stroke({
-          color: "#ff0000",
-          width: 2,
-        }),
-      }),
-    );
-
-    const vectorSource = new VectorSource({
-      features: [polygonFeature],
-    });
-
-    const vectorLayer = new VectorLayer({
-      source: vectorSource,
-    });
-
-    map.addLayer(vectorLayer);
 
     // ポリゴンレイヤーをクリックしたらポップアップを表示する
     map.on("singleclick", (event) => {
@@ -105,7 +109,7 @@ export function MapComponent(): JSX.Element {
     });
 
     return () => map.setTarget(undefined);
-  }, []);
+  }, [vacancyLevels]);
 
   return (
     <div>
@@ -114,3 +118,35 @@ export function MapComponent(): JSX.Element {
     </div>
   );
 }
+
+// レベルごとのポリゴンデータ（サンプル）
+const polygonData = {
+  low: [
+    [137.13, 35.07],
+    [137.15, 35.07],
+    [137.15, 35.08],
+    [137.13, 35.08],
+    [137.13, 35.07],
+  ],
+  medium: [
+    [137.15, 35.07],
+    [137.17, 35.07],
+    [137.17, 35.08],
+    [137.15, 35.08],
+    [137.15, 35.07],
+  ],
+  high: [
+    [137.14, 35.08],
+    [137.16, 35.08],
+    [137.16, 35.09],
+    [137.14, 35.09],
+    [137.14, 35.08],
+  ],
+};
+
+// レベルごとの色設定
+const colors = {
+  low: "rgba(0, 255, 0, 0.2)",
+  medium: "rgba(255, 255, 0, 0.2)",
+  high: "rgba(255, 0, 0, 0.2)",
+};

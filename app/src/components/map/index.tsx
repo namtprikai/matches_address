@@ -1,15 +1,27 @@
+import { useState } from "react";
+import {
+  VacancyLevelCheckbox,
+  type VacancyLevels,
+} from "./vacancy-level-checkbox";
 import { MapComponent } from "./map-component";
 
 export function Map(): JSX.Element {
+  const [vacancyLevels, setVacancyLevels] = useState<VacancyLevels>({
+    low: true,
+    medium: true,
+    high: true,
+  });
+
   return (
     <div>
       <div>
         <div>
           <div>空き家率</div>
           <div>
-            <button>✅0~30%</button>
-            <button>✅30~80%</button>
-            <button>✅80%~</button>
+            <VacancyLevelCheckbox
+              onChange={setVacancyLevels}
+              vacancyLevels={vacancyLevels}
+            />
           </div>
         </div>
         <div>
@@ -17,7 +29,7 @@ export function Map(): JSX.Element {
           <div>ドロップダウン</div>
         </div>
       </div>
-      <MapComponent />
+      <MapComponent vacancyLevels={vacancyLevels} />
     </div>
   );
 }
