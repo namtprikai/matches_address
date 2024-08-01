@@ -18,6 +18,7 @@ import { useFetchResultSheets } from "../../../../hooks/useFetchResultSheets";
 import { useTabs } from "../../../../hooks/useTabs";
 import { useFetchDataSetResults } from "../../../../hooks/useFetchDataSetResults";
 import { Resultsheet } from "../../../../components/Resultsheet";
+import { ButtonEditableSheetTitle } from "../../../../components/ButtonEditableSheetTitle";
 
 const useStyles = makeStyles({
   root: {
@@ -130,7 +131,7 @@ export function EditWorkbook(): JSX.Element {
           </Button>
           {resultsheets.map((item) => (
             <Tab key={item.id} id={item.title || ""} value={item.id}>
-              {item.title}
+              <ButtonEditableSheetTitle resultSheet={item} />
             </Tab>
           ))}
         </TabList>
