@@ -11,7 +11,7 @@ import {
   makeStyles,
 } from "@fluentui/react-components";
 import { useNavigate, type FormProps } from "react-router-dom";
-import { Button } from "../components/Button";
+import { Button } from "./button";
 
 const useStyles = makeStyles({
   input: {
@@ -28,7 +28,7 @@ export const ButtonCreateWorkbook = (): JSX.Element => {
     e.preventDefault();
     const asyncSubmit = async (): Promise<void> => {
       const data = Object.fromEntries(new FormData(e.currentTarget));
-      const res = await window.ipcRenderer.invoke("insertWorkbooks", {
+      const res = await window.ipcRenderer.invoke("createWorkbooks", {
         title: data.title.toString(),
       });
       navigate(`/analysis/workbook/${res.id}/edit`);

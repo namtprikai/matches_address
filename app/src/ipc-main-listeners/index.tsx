@@ -6,26 +6,28 @@ import { getNames } from "./get-names";
 import { saveName } from "./save-name";
 import { helloFromPython } from "./hello-from-python";
 import { saveNameFromPython } from "./save-name-from-python";
-import { insertWorkbooks } from "./insert-workbooks";
+import { createWorkbooks } from "./create-workbooks";
 import { selectWorkbooks } from "./select-workbooks";
 import { selectWorkbook } from "./select-workbook";
 import { selectResultSheets } from "./select-result-sheets";
 import { insertResultSheets } from "./insert-result-sheets";
 import { selectDataSetResults } from "./select-data-set-results";
 import { insertDataSetResults } from "./insert-data-set-results";
+import { updateResultSheets } from "./update-result-sheets";
 
 export const ipcMainListeners = {
   getNames,
   saveName,
   helloFromPython,
   saveNameFromPython,
-  insertWorkbooks,
+  createWorkbooks,
   selectWorkbooks,
   selectWorkbook,
   selectResultSheets,
   insertResultSheets,
   selectDataSetResults,
   insertDataSetResults,
+  updateResultSheets,
 };
 
 export const execFileAsync = promisify(execFile);
