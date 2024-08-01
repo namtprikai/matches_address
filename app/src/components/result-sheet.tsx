@@ -1,19 +1,36 @@
-import { useEffect } from "react";
-import { type result_sheets } from "../schema";
+import { useEffect, useState } from "react";
+import { Card } from "@fluentui/react-components";
+import { type result_views, type result_sheets } from "../schema";
 import { Button } from "./button";
+
+type ResultViews = typeof result_views.$inferSelect;
 
 type Props = {
   resultsheet: typeof result_sheets.$inferSelect;
 };
 
-export const Resultsheet = ({ resultsheet }: Props): JSX.Element => {
+export const Resultsheet = ({ resultsheet: { id } }: Props): JSX.Element => {
+  const [resultViews, setResultViews] = useState<ResultViews[]>([]);
 
-  useEffect(()=>{
-    // todo: fetch
-  },[resultsheet])
+  const fetchResultSheets = async (sheetId: number): Promise<void> => {
+    const result = await window.ipcRenderer.invoke("selectResultViews", {
+      sheetId,
+    });
+    setResultViews(result);
+  };
+
+  useEffect(() => {
+    if (!id) return;
+    fetchResultSheets(id).catch(console.error);
+  }, [id]);
 
   return (
     <div>
+      <div>
+        {resultViews.map((resultView) => (
+          <Card key={resultView.id}>{resultView.title}</Card>
+        ))}
+      </div>
       <Button appearance="primary">保存</Button>
     </div>
   );
