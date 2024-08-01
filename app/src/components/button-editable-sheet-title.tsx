@@ -64,7 +64,7 @@ export const ButtonEditableSheetTitle = ({
   return (
     <Button
       appearance="subtle"
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment -- 期待通りの動作をしているため無視。本来はaかbuttonのみ許容するよう。
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment -- block要素にするのが目的。期待通りの動作をしているため無視。本来はaかbuttonのみ許容するよう。
       /* @ts-ignore */
       as="div"
       className={styles.root}
