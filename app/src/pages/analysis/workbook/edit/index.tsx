@@ -1,3 +1,4 @@
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect } from "react";
 import { AddFilled } from "@fluentui/react-icons";
 import { useParams } from "react-router-dom";
@@ -12,6 +13,8 @@ import {
   TabList,
   tokens,
 } from "@fluentui/react-components";
+import { z } from "zod";
+import { useFieldArray, useForm } from "react-hook-form";
 import { Button } from "../../../../components/button";
 import { useFetchWorkbook } from "../../../../hooks/use-fetch-workbook";
 import { useFetchResultSheets } from "../../../../hooks/use-fetch-result-sheets";
@@ -19,6 +22,17 @@ import { useTabs } from "../../../../hooks/use-tabs";
 import { useFetchDataSetResults } from "../../../../hooks/use-fetch-data-set-results";
 import { Resultsheet } from "../../../../components/result-sheet";
 import { ButtonEditableSheetTitle } from "../../../../components/button-editable-sheet-title";
+import { result_sheet_schema } from "../../../../zod/result-sheet";
+
+/** 仮schema・実装しながら考える
+ * - シートを配列で持つ
+ * - ビューを配列で持つ
+ * - シートは常に永続化されている
+ */
+const form_schema = z.object({
+  resultsheets: z.array(result_sheet_schema),
+});
+type FormType = z.infer<typeof form_schema>;
 
 const useStyles = makeStyles({
   root: {
@@ -57,10 +71,25 @@ export function EditWorkbook(): JSX.Element {
     useFetchDataSetResults();
   const { onTabSelect, selectedValue, setSelectedValue } = useTabs();
 
+  const { control, register, setValue } = useForm<FormType>({
+    resolver: zodResolver(form_schema),
+  });
+  const { fields, append, prepend, remove, swap, move, insert } = useFieldArray(
+    {
+      control,
+      name: "resultsheets",
+    },
+  );
+
   /** fixme: シート追加したあとも0番目に戻ってしまうの微妙かも */
   useEffect(() => {
     setSelectedValue(resultsheets[0]?.id);
   }, [resultsheets, setSelectedValue]);
+
+  /** fetchしてきたシート情報をformにセット */
+  useEffect(() => {
+    setValue("resultsheets", resultsheets);
+  }, [resultsheets, setSelectedValue, setValue]);
 
   const addResultSheet = async (
     workbookId: string | undefined,
@@ -129,7 +158,7 @@ export function EditWorkbook(): JSX.Element {
           >
             シートを追加
           </Button>
-          {resultsheets.map((item) => (
+          {fields.map((item) => (
             <Tab key={item.id} id={item.title || ""} value={item.id}>
               <ButtonEditableSheetTitle resultSheet={item} />
             </Tab>
