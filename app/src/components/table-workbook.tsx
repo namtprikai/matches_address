@@ -27,8 +27,22 @@ export const TableWorkbook = (): JSX.Element => {
     <Table>
       <TableHeader>
         <TableHeaderCell>名前</TableHeaderCell>
-        <TableHeaderCell>作成日</TableHeaderCell>
-        <TableHeaderCell>更新日</TableHeaderCell>
+        <TableHeaderCell
+          style={{
+            tableLayout: "fixed",
+            width: "160px",
+          }}
+        >
+          作成日
+        </TableHeaderCell>
+        <TableHeaderCell
+          style={{
+            tableLayout: "fixed",
+            width: "160px",
+          }}
+        >
+          更新日
+        </TableHeaderCell>
       </TableHeader>
       <TableBody>
         {data.map((item) => (
