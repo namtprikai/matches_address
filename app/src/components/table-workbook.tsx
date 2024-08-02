@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Table, TableBody, TableCell, TableHeader, TableHeaderCell, TableRow } from "@fluentui/react-components";
 import { type workbooks } from "../schema";
 
 type Workbook = typeof workbooks.$inferSelect;
@@ -15,14 +16,33 @@ export const TableWorkbook = (): JSX.Element => {
   }, []);
 
   return (
-    <div>
-      {data.map((item) => (
-        <div key={item.id}>
-          <a href={`#analysis/workbook/${item.id}`}>
-            {item.title} - 作成日:{item.created_at}
-          </a>
-        </div>
-      ))}
-    </div>
+      <Table>
+        <TableHeader>
+          <TableHeaderCell>
+            名前
+          </TableHeaderCell>
+          <TableHeaderCell>
+            作成日
+          </TableHeaderCell>
+          <TableHeaderCell>
+            更新日
+          </TableHeaderCell>
+        </TableHeader>
+        <TableBody>
+          {data.map((item) => (
+            <TableRow key={item.id}>
+              <TableCell>
+                {item.title}
+              </TableCell>
+              <TableCell>
+                {item.created_at}
+              </TableCell>
+              <TableCell>
+                {item.updated_at}
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
   );
 };
