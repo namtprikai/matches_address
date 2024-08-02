@@ -6,6 +6,7 @@ import {
   TableHeader,
   TableHeaderCell,
   TableRow,
+  tokens,
 } from "@fluentui/react-components";
 import dayjs from "dayjs";
 import { type workbooks } from "../schema";
@@ -30,6 +31,18 @@ const StyleOfCreatedAtCell: CSSProperties = {
   fontSize: "12px",
 };
 
+const StyleOfTableHeader: CSSProperties = {
+  backgroundColor: tokens.colorNeutralBackground3,
+};
+
+const StyleOfTableHeaderRow: CSSProperties = {
+  border: "none",
+};
+
+const StyleOfTableHeaderCell: CSSProperties = {
+  fontWeight: 600,
+};
+
 export const TableWorkbook = (): JSX.Element => {
   const [data, setData] = useState<Workbook[]>([]);
   const fetchData = async (): Promise<void> => {
@@ -43,14 +56,26 @@ export const TableWorkbook = (): JSX.Element => {
 
   return (
     <Table>
-      <TableHeader>
-        <TableHeaderCell>名前</TableHeaderCell>
-        <TableHeaderCell style={StyleOfCreatedAtHeaderCell}>
-          作成日
-        </TableHeaderCell>
-        <TableHeaderCell style={StyleOfUpdatedAtHeaderCell}>
-          更新日
-        </TableHeaderCell>
+      <TableHeader style={StyleOfTableHeader}>
+        <TableRow style={StyleOfTableHeaderRow}>
+          <TableHeaderCell style={StyleOfTableHeaderCell}>名前</TableHeaderCell>
+          <TableHeaderCell
+            style={{
+              ...StyleOfCreatedAtHeaderCell,
+              ...StyleOfTableHeaderCell,
+            }}
+          >
+            作成日
+          </TableHeaderCell>
+          <TableHeaderCell
+            style={{
+              ...StyleOfUpdatedAtHeaderCell,
+              ...StyleOfTableHeaderCell,
+            }}
+          >
+            更新日
+          </TableHeaderCell>
+        </TableRow>
       </TableHeader>
       <TableBody>
         {data.map((item) => (
