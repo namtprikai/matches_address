@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { type CSSProperties, useEffect, useState } from "react";
 import {
   Table,
   TableBody,
@@ -11,6 +11,24 @@ import dayjs from "dayjs";
 import { type workbooks } from "../schema";
 
 type Workbook = typeof workbooks.$inferSelect;
+
+const StyleOfUpdatedAtHeaderCell: CSSProperties = {
+  tableLayout: "fixed",
+  width: "140px",
+};
+
+const StyleOfUpdatedAtCell: CSSProperties = {
+  fontSize: "12px",
+};
+
+const StyleOfCreatedAtHeaderCell: CSSProperties = {
+  tableLayout: "fixed",
+  width: "140px",
+};
+
+const StyleOfCreatedAtCell: CSSProperties = {
+  fontSize: "12px",
+};
 
 export const TableWorkbook = (): JSX.Element => {
   const [data, setData] = useState<Workbook[]>([]);
@@ -27,20 +45,10 @@ export const TableWorkbook = (): JSX.Element => {
     <Table>
       <TableHeader>
         <TableHeaderCell>名前</TableHeaderCell>
-        <TableHeaderCell
-          style={{
-            tableLayout: "fixed",
-            width: "160px",
-          }}
-        >
+        <TableHeaderCell style={StyleOfCreatedAtHeaderCell}>
           作成日
         </TableHeaderCell>
-        <TableHeaderCell
-          style={{
-            tableLayout: "fixed",
-            width: "160px",
-          }}
-        >
+        <TableHeaderCell style={StyleOfUpdatedAtHeaderCell}>
           更新日
         </TableHeaderCell>
       </TableHeader>
@@ -48,10 +56,10 @@ export const TableWorkbook = (): JSX.Element => {
         {data.map((item) => (
           <TableRow key={item.id}>
             <TableCell>{item.title}</TableCell>
-            <TableCell>
+            <TableCell style={StyleOfCreatedAtCell}>
               {dayjs(item.created_at).format("YYYY/MM/DD HH:mm")}
             </TableCell>
-            <TableCell>
+            <TableCell style={StyleOfUpdatedAtCell}>
               {dayjs(item.updated_at).format("YYYY/MM/DD HH:mm")}
             </TableCell>
           </TableRow>
