@@ -7,6 +7,7 @@ import {
   TableHeaderCell,
   TableRow,
 } from "@fluentui/react-components";
+import dayjs from "dayjs";
 import { type workbooks } from "../schema";
 
 type Workbook = typeof workbooks.$inferSelect;
@@ -33,8 +34,12 @@ export const TableWorkbook = (): JSX.Element => {
         {data.map((item) => (
           <TableRow key={item.id}>
             <TableCell>{item.title}</TableCell>
-            <TableCell>{item.created_at}</TableCell>
-            <TableCell>{item.updated_at}</TableCell>
+            <TableCell>
+              {dayjs(item.created_at).format("YYYY/MM/DD HH:mm")}
+            </TableCell>
+            <TableCell>
+              {dayjs(item.updated_at).format("YYYY/MM/DD HH:mm")}
+            </TableCell>
           </TableRow>
         ))}
       </TableBody>
