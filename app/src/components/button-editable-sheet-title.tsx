@@ -71,7 +71,7 @@ export const ButtonEditableSheetTitle = ({
       onDoubleClick={(): void => setIsEditing(true)}
       shape="square"
     >
-      {title}
+      {resultSheet.id}-{title}
     </Button>
   );
 };

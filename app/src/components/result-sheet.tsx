@@ -1,35 +1,31 @@
-import { useEffect, useState } from "react";
 import { Card } from "@fluentui/react-components";
-import { type result_views, type result_sheets } from "../schema";
+import { useFieldArray, useFormContext } from "react-hook-form";
+import { type z } from "zod";
+import { type result_sheets } from "../schema";
+import { type form_workbook_edit_schema } from "../zod/form_workbook_edit";
 import { Button } from "./button";
 
-type ResultViews = typeof result_views.$inferSelect;
+type FormType = z.infer<typeof form_workbook_edit_schema>;
 
 type Props = {
-  resultsheet: typeof result_sheets.$inferSelect;
+  resultsheetId: (typeof result_sheets.$inferSelect)["id"];
 };
 
-export const Resultsheet = ({ resultsheet: { id } }: Props): JSX.Element => {
-  const [resultViews, setResultViews] = useState<ResultViews[]>([]);
-
-  const fetchResultSheets = async (sheetId: number): Promise<void> => {
-    const result = await window.ipcRenderer.invoke("selectResultViews", {
-      sheetId,
-    });
-    setResultViews(result);
-  };
-
-  useEffect(() => {
-    if (!id) return;
-    fetchResultSheets(id).catch(console.error);
-  }, [id]);
-
+export const Resultsheet = ({ resultsheetId }: Props): JSX.Element => {
+  const { control } = useFormContext<FormType>();
+  const { fields } = useFieldArray({
+    control,
+    name: `resultsheetsWithViews.${resultsheetId}.result_views`,
+  });
   return (
     <div>
       <div>
-        {resultViews.length === 0 && <p>ビューがありません</p>}
-        {resultViews.map((resultView) => (
-          <Card key={resultView.id}>{`ID:${resultView.data_set_result_id} / title:${resultView.title || "--"}`}</Card>
+        hi
+        {fields.length === 0 && <p>ビューがありません</p>}
+        {fields.map((resultView) => (
+          <Card
+            key={resultView.id}
+          >{`ID:${resultView.data_set_result_id} / title:${resultView.title || "--"}`}</Card>
         ))}
       </div>
       <Button appearance="primary">保存</Button>
