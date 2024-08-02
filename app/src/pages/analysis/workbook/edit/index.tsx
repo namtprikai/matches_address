@@ -22,7 +22,7 @@ import { useTabs } from "../../../../hooks/use-tabs";
 import { useFetchDataSetResults } from "../../../../hooks/use-fetch-data-set-results";
 import { Resultsheet } from "../../../../components/result-sheet";
 import { ButtonEditableSheetTitle } from "../../../../components/button-editable-sheet-title";
-import { result_sheet_schema } from "../../../../zod/result-sheet";
+import { result_view_schema } from "../../../../zod/result-view";
 
 /** 仮schema・実装しながら考える
  * - シートを配列で持つ
@@ -30,7 +30,13 @@ import { result_sheet_schema } from "../../../../zod/result-sheet";
  * - シートは常に永続化されている
  */
 const form_schema = z.object({
-  resultsheets: z.array(result_sheet_schema),
+  resultsheetsWithViews: z.array(
+    z.object({
+      sheet_id: z.number(),
+      sheet_title: z.string(),
+      result_views: z.array(result_view_schema),
+    }),
+  ),
 });
 type FormType = z.infer<typeof form_schema>;
 
@@ -77,7 +83,7 @@ export function EditWorkbook(): JSX.Element {
   const { fields, append, prepend, remove, swap, move, insert } = useFieldArray(
     {
       control,
-      name: "resultsheets",
+      name: "resultsheetsWithViews",
     },
   );
 
@@ -88,7 +94,14 @@ export function EditWorkbook(): JSX.Element {
 
   /** fetchしてきたシート情報をformにセット */
   useEffect(() => {
-    setValue("resultsheets", resultsheets);
+    setValue(
+      "resultsheetsWithViews",
+      resultsheets.map((sheet) => ({
+        sheet_id: sheet.id,
+        sheet_title: sheet.title || "",
+        result_views: [],
+      })),
+    );
   }, [resultsheets, setSelectedValue, setValue]);
 
   const addResultSheet = async (
@@ -107,6 +120,19 @@ export function EditWorkbook(): JSX.Element {
       title: `分析結果${dataSetResults.length + 1}`,
     });
     await fetchDataSetResults().catch(console.error);
+  };
+
+  const addResultView = async ({
+    sheetId,
+    dataSetResultId,
+  }: {
+    sheetId: number;
+    dataSetResultId: number;
+  }): Promise<void> => {
+    await window.ipcRenderer.invoke("insertResultViews", {
+      sheet_id: sheetId,
+      data_set_result_id: dataSetResultId,
+    });
   };
 
   return (
@@ -130,7 +156,17 @@ export function EditWorkbook(): JSX.Element {
             <div>
               {dataSetResults.map((item) => (
                 <div key={item.id}>
-                  <Button appearance="subtle">{item.title}</Button>
+                  <Button
+                    appearance="subtle"
+                    onClick={(): void => {
+                      addResultView({
+                        sheetId: selectedValue as number,
+                        dataSetResultId: item.id,
+                      }).catch(console.error);
+                    }}
+                  >
+                    {item.title}
+                  </Button>
                 </div>
               ))}
             </div>
@@ -159,8 +195,14 @@ export function EditWorkbook(): JSX.Element {
             シートを追加
           </Button>
           {fields.map((item) => (
-            <Tab key={item.id} id={item.title || ""} value={item.id}>
-              <ButtonEditableSheetTitle resultSheet={item} />
+            <Tab
+              key={item.id}
+              id={item.sheet_title || ""}
+              value={item.sheet_id}
+            >
+              <ButtonEditableSheetTitle
+                resultSheet={{ id: item.sheet_id, title: item.sheet_title }}
+              />
             </Tab>
           ))}
         </TabList>

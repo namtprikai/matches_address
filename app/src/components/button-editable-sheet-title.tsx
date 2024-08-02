@@ -8,7 +8,7 @@ import { Button } from "./button";
 type ResultSheet = typeof result_sheets.$inferSelect;
 
 type Props = {
-  resultSheet: ResultSheet;
+  resultSheet: Pick<ResultSheet, "id" | "title">;
 };
 
 const useStyles = makeStyles({

@@ -29,7 +29,7 @@ export const Resultsheet = ({ resultsheet: { id } }: Props): JSX.Element => {
       <div>
         {resultViews.length === 0 && <p>ビューがありません</p>}
         {resultViews.map((resultView) => (
-          <Card key={resultView.id}>{resultView.title}</Card>
+          <Card key={resultView.id}>{`ID:${resultView.data_set_result_id} / title:${resultView.title || "--"}`}</Card>
         ))}
       </div>
       <Button appearance="primary">保存</Button>

@@ -15,6 +15,7 @@ import { selectDataSetResults } from "./select-data-set-results";
 import { insertDataSetResults } from "./insert-data-set-results";
 import { updateResultSheets } from "./update-result-sheets";
 import { selectResultViews } from "./select-result-views";
+import { insertResultViews } from "./insert-result-views";
 
 export const ipcMainListeners = {
   getNames,
@@ -30,6 +31,7 @@ export const ipcMainListeners = {
   insertDataSetResults,
   updateResultSheets,
   selectResultViews,
+  insertResultViews,
 };
 
 export const execFileAsync = promisify(execFile);
