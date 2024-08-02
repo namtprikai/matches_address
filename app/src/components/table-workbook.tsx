@@ -6,9 +6,11 @@ import {
   TableHeader,
   TableHeaderCell,
   TableRow,
+  Link as FUILink,
   tokens,
 } from "@fluentui/react-components";
 import dayjs from "dayjs";
+import { Link } from "react-router-dom";
 import { type workbooks } from "../schema";
 
 type Workbook = typeof workbooks.$inferSelect;
@@ -80,7 +82,18 @@ export const TableWorkbook = (): JSX.Element => {
       <TableBody>
         {data.map((item) => (
           <TableRow key={item.id}>
-            <TableCell>{item.title}</TableCell>
+            <TableCell>
+              <Link to={`/analysis/workbook/${item.id}`}>
+                <FUILink
+                  as="span"
+                  style={{
+                    fontWeight: 600,
+                  }}
+                >
+                  {item.title}
+                </FUILink>
+              </Link>
+            </TableCell>
             <TableCell style={StyleOfCreatedAtCell}>
               {dayjs(item.created_at).format("YYYY/MM/DD HH:mm")}
             </TableCell>
