@@ -22,8 +22,17 @@ import { useTabs } from "../../../../hooks/use-tabs";
 import { useFormWorkbookEdit } from "../../../../hooks/use-form-workbook-edit";
 import { TabListResultSheet } from "../../../../components/tab-list-result-sheet";
 import { useFetchDataSetResults } from "../../../../hooks/use-fetch-data-set-results";
-import { result_views } from "../../../../schema";
+import { type data_set_results, result_views } from "../../../../schema";
 import { LanguegeMap } from "../../../../lang";
+
+/** 開発用 */
+const addDataSetResult = async (
+  dataSetResults: (typeof data_set_results.$inferSelect)[],
+): Promise<void> => {
+  await window.ipcRenderer.invoke("insertDataSetResults", {
+    title: `分析結果${dataSetResults.length + 1}`,
+  });
+};
 
 const useStyles = makeStyles({
   root: {
@@ -125,6 +134,7 @@ export function EditWorkbook(): JSX.Element {
                 </div>
                 <span className={styles.heading}>データセット一覧</span>
                 {isAddView && (
+                  <>
                   <div>
                     {dataSetResults.map((item) => (
                       <div key={item.id}>
@@ -146,6 +156,18 @@ export function EditWorkbook(): JSX.Element {
                       </div>
                     ))}
                   </div>
+                  <div>
+        <Button
+          appearance="subtle"
+          onClick={(): void => {
+            addDataSetResult(dataSetResults).catch;
+          }}
+          size="small"
+        >
+          データセットを追加(開発用)
+        </Button>
+      </div>
+                  </>
                 )}
                 {!isAddView && (
                   <>
