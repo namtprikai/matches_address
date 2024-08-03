@@ -54,6 +54,7 @@ export const useFormWorkbookEdit = ({
     sheetId: watch(`resultsheetsWithViews.${selectedIndex}.sheet_id`),
   });
   useEffect(() => {
+    setValue( `resultsheetsWithViews.${selectedIndex}.is_add_view`, resultViews.length === 0);
     setValue(
       `resultsheetsWithViews.${selectedIndex}.result_views`,
       resultViews.map((view) => ({
