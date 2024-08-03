@@ -135,38 +135,38 @@ export function EditWorkbook(): JSX.Element {
                 <span className={styles.heading}>データセット一覧</span>
                 {isAddView && (
                   <>
-                  <div>
-                    {dataSetResults.map((item) => (
-                      <div key={item.id}>
-                        <Button
-                          appearance="subtle"
-                          onClick={(): void => {
-                            resultViewsMethods.append({
-                              sheet_id: watch(
-                                `resultsheetsWithViews.${selectedValue}.sheet_id`,
-                              ),
-                              data_set_result_id: item.id,
-                              title: "",
-                              unit: "area",
-                            });
-                          }}
-                        >
-                          {item.title}
-                        </Button>
-                      </div>
-                    ))}
-                  </div>
-                  <div>
-        <Button
-          appearance="subtle"
-          onClick={(): void => {
-            addDataSetResult(dataSetResults).catch;
-          }}
-          size="small"
-        >
-          データセットを追加(開発用)
-        </Button>
-      </div>
+                    <div>
+                      {dataSetResults.map((item) => (
+                        <div key={item.id}>
+                          <Button
+                            appearance="subtle"
+                            onClick={(): void => {
+                              resultViewsMethods.append({
+                                sheet_id: watch(
+                                  `resultsheetsWithViews.${selectedValue}.sheet_id`,
+                                ),
+                                data_set_result_id: item.id,
+                                title: "",
+                                unit: "area",
+                              });
+                            }}
+                          >
+                            {item.title}
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                    <div>
+                      <Button
+                        appearance="subtle"
+                        onClick={(): void => {
+                          addDataSetResult(dataSetResults).catch;
+                        }}
+                        size="small"
+                      >
+                        データセットを追加(開発用)
+                      </Button>
+                    </div>
                   </>
                 )}
                 {!isAddView && (

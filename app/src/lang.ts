@@ -12,13 +12,13 @@ const RESULT_VIEWS_STYLE: {
 
 type ResultViewsUnit = (typeof result_views.unit.enumValues)[number];
 const RESULT_VIEWS_UNIT: {
-    [key in ResultViewsUnit]: string;
-  } = {
-    building: "建物",
-    area: "地域",
-  };
+  [key in ResultViewsUnit]: string;
+} = {
+  building: "建物",
+  area: "地域",
+};
 
 export const LanguegeMap = {
   RESULT_VIEWS_STYLE,
-  RESULT_VIEWS_UNIT
+  RESULT_VIEWS_UNIT,
 };
