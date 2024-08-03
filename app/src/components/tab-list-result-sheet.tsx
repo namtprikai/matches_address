@@ -40,7 +40,7 @@ export const TabListResultSheet = ({
   workbookId,
   setSelectedValue,
 }: Props): JSX.Element => {
-  const { control,watch } = useFormContext<FormType>();
+  const { control, watch } = useFormContext<FormType>();
 
   const { fields, append } = useFieldArray({
     control,
@@ -57,14 +57,14 @@ export const TabListResultSheet = ({
       <Button
         appearance="subtle"
         icon={<AddFilled />}
-        onClick={async(): Promise<void> =>{
-          await addResultSheet({ workbookId, fieldsLength: fields.length })
+        onClick={async (): Promise<void> => {
+          await addResultSheet({ workbookId, fieldsLength: fields.length });
           append({
             sheet_id: watch(`resultsheetsWithViews.${selectedValue}.sheet_id`),
             sheet_title: `シート${fields.length + 1}`,
             result_views: [],
             is_add_view: true,
-          })
+          });
         }}
         shape="square"
       >

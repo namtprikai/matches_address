@@ -1,4 +1,4 @@
-import { AddFilled } from "@fluentui/react-icons";
+import { AddFilled, ArrowDownloadFilled } from "@fluentui/react-icons";
 import { useParams } from "react-router-dom";
 import {
   DrawerBody,
@@ -9,6 +9,10 @@ import {
   tokens,
   SearchBox,
   Card,
+  Field,
+  Input,
+  CardHeader,
+  Subtitle2,
 } from "@fluentui/react-components";
 import { FormProvider, useFieldArray } from "react-hook-form";
 import { Button } from "../../../../components/button";
@@ -46,6 +50,12 @@ const useStyles = makeStyles({
     display: "grid",
     gap: tokens.spacingVerticalXXL,
     padding: `${tokens.spacingVerticalXXL} ${tokens.spacingHorizontalNone}`,
+  },
+  resultViews: {
+    display: "grid",
+    gap: tokens.spacingVerticalXXL,
+    padding: `${tokens.spacingVerticalXXL} ${tokens.spacingHorizontalNone}`,
+    gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))",
   },
 });
 
@@ -134,10 +144,17 @@ export function EditWorkbook(): JSX.Element {
                     ))}
                   </div>
                 )}
-                {!isAddView && <>入力モード！</>}
+                {!isAddView && (
+                  <>
+                    <Field label="データセット">
+                      <Input />
+                    </Field>
+                  </>
+                )}
               </div>
             </DrawerBody>
           </InlineDrawer>
+
           <div className={styles.content}>
             <div className={styles.headingWithAction}>
               <h2 className={styles.heading}>{workbook?.title}</h2>
@@ -157,12 +174,24 @@ export function EditWorkbook(): JSX.Element {
                   {/** ここをコンポーネント切り出すと、ステートが同期しなくなる。謎 */}
                   <div>
                     <div>
-                      {resultViewsMethods.fields.length === 0 && <p>ビューがありません</p>}
-                      {resultViewsMethods.fields.map((resultView) => (
-                        <Card
-                          key={resultView.id}
-                        >{`ID:${resultView.data_set_result_id} / title:${resultView.title || "--"}`}</Card>
-                      ))}
+                      {resultViewsMethods.fields.length === 0 && (
+                        <p>ビューがありません</p>
+                      )}
+                      <div className={styles.resultViews}>
+                        {resultViewsMethods.fields.map((resultView) => (
+                          <Card key={resultView.id} className="">
+                            <CardHeader
+                              action={<Button appearance="subtle" icon={<ArrowDownloadFilled />} />}
+                              header={
+                                <Subtitle2>{`ID:${resultView.data_set_result_id} - ${resultView.title || "タイトル未入力"}`}</Subtitle2>
+                              }
+                            />
+                            <div>
+                              <img alt="dummy" src="https://placehold.co/1220x760" />
+                            </div>
+                          </Card>
+                        ))}
+                      </div>
                     </div>
                   </div>
                 </div>
