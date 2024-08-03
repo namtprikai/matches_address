@@ -40,7 +40,7 @@ export const DrawerDataSet = ({ selectedValue }: Props): JSX.Element => {
   const { data: dataSetResults } = useFetchDataSetResults();
 
   const isAddView = watch(
-    `resultsheetsWithViews.${selectedValue as number}.is_add_view`,
+    `resultsheetsWithViews.${selectedValue}.is_add_view`,
   );
 
   return (
@@ -53,7 +53,7 @@ export const DrawerDataSet = ({ selectedValue }: Props): JSX.Element => {
                 icon={<AddFilled />}
                 onClick={(): void => {
                   setValue(
-                    `resultsheetsWithViews.${selectedValue as number}.is_add_view`,
+                    `resultsheetsWithViews.${selectedValue}.is_add_view`,
                     true,
                   );
                 }}

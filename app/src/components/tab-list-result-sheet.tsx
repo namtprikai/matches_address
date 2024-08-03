@@ -30,7 +30,7 @@ type FormType = z.infer<typeof form_workbook_edit_schema>;
 type Props = {
   selectedValue: number;
   onTabSelect?: SelectTabEventHandler | undefined;
-  setSelectedValue: React.Dispatch<unknown>;
+  setSelectedValue: React.Dispatch<number>;
   workbookId: string | undefined;
 };
 
@@ -48,7 +48,8 @@ export const TabListResultSheet = ({
   });
 
   useEffect(() => {
-    setSelectedValue(fields[0]?.sheet_id);
+    if(fields.length === 0) return;
+    setSelectedValue(0);
   }, [fields, setSelectedValue]);
 
   return (
@@ -63,8 +64,8 @@ export const TabListResultSheet = ({
       >
         シートを追加
       </Button>
-      {fields.map((item) => (
-        <Tab key={item.id} id={item.sheet_title || ""} value={item.sheet_id}>
+      {fields.map((item, index) => (
+        <Tab key={item.id} id={item.sheet_title || ""} value={index}>
           <ButtonEditableSheetTitle
             resultSheet={{ id: item.sheet_id, title: item.sheet_title }}
           />

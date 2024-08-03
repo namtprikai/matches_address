@@ -10,10 +10,10 @@ type FormType = z.infer<typeof form_workbook_edit_schema>;
 
 export const useFormWorkbookEdit = ({
   workbookId,
-  selectedSheetId,
+  selectedIndex,
 }: {
   workbookId: string | undefined;
-  selectedSheetId: number;
+  selectedIndex: number;
 }): {
   formMethods: UseFormReturn<FormType>;
   onSubmit: (e?: React.BaseSyntheticEvent) => Promise<void>;
@@ -23,14 +23,14 @@ export const useFormWorkbookEdit = ({
   });
   const {
     setValue,
-    watch,
     handleSubmit,
     formState: { errors },
+    watch
   } = formMethods;
 
   console.log(
     "form:resultsheetsWithViews",
-    formMethods.getValues("resultsheetsWithViews"),
+    formMethods.watch(`resultsheetsWithViews.${selectedIndex}.result_views`),
   );
   console.log("form:errors", errors);
 
@@ -51,11 +51,11 @@ export const useFormWorkbookEdit = ({
 
   /** view情報 */
   const { data: resultViews } = useFetchResultViews({
-    sheetId: selectedSheetId,
+    sheetId: watch(`resultsheetsWithViews.${selectedIndex}.sheet_id`),
   });
   useEffect(() => {
     setValue(
-      `resultsheetsWithViews.${selectedSheetId}.result_views`,
+      `resultsheetsWithViews.${selectedIndex}.result_views`,
       resultViews.map((view) => ({
         sheet_id:
           view.sheet_id || 0 /** @fixme ここで || 0 とかせずにすむ方法求む */,
@@ -66,7 +66,7 @@ export const useFormWorkbookEdit = ({
         unit: view.unit || "area",
       })),
     );
-  }, [resultViews, selectedSheetId, setValue]);
+  }, [resultViews, selectedIndex, setValue]);
 
   const onSubmit = handleSubmit(async (data) => {
     // await window.ipcRenderer.invoke("insertResultViews", {

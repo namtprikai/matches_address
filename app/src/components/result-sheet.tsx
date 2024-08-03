@@ -1,21 +1,20 @@
 import { Card } from "@fluentui/react-components";
 import { useFieldArray, useFormContext } from "react-hook-form";
 import { type z } from "zod";
-import { type result_sheets } from "../schema";
 import { type form_workbook_edit_schema } from "../zod/form_workbook_edit";
 import { Button } from "./button";
 
 type FormType = z.infer<typeof form_workbook_edit_schema>;
 
 type Props = {
-  resultsheetId: (typeof result_sheets.$inferSelect)["id"];
+  fieldIndex: number;
 };
 
-export const Resultsheet = ({ resultsheetId }: Props): JSX.Element => {
+export const Resultsheet = ({ fieldIndex }: Props): JSX.Element => {
   const { control } = useFormContext<FormType>();
   const { fields } = useFieldArray({
     control,
-    name: `resultsheetsWithViews.${resultsheetId}.result_views`,
+    name: `resultsheetsWithViews.${fieldIndex}.result_views`,
   });
   return (
     <div>

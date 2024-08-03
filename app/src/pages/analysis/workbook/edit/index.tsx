@@ -41,12 +41,12 @@ export function EditWorkbook(): JSX.Element {
 
   const { data: workbook } = useFetchWorkbook({ id });
 
-  const tabs = useTabs();
+  const tabs = useTabs<number>();
   const { selectedValue } = tabs;
 
   const { formMethods, onSubmit } = useFormWorkbookEdit({
     workbookId: id,
-    selectedSheetId: selectedValue,
+    selectedIndex: selectedValue,
   });
 
   const { control } = formMethods;
@@ -54,6 +54,8 @@ export function EditWorkbook(): JSX.Element {
     control,
     name: "resultsheetsWithViews",
   });
+
+  console.log("selectedValue",selectedValue)
 
   return (
     <FormProvider {...formMethods}>
@@ -70,13 +72,13 @@ export function EditWorkbook(): JSX.Element {
 
             <TabListResultSheet {...tabs} workbookId={id} />
             <div>
-              {fields.map((item) => (
+              {fields.map((item, index) => (
                 <div
                   key={item.id}
                   className={styles.resultsheets}
-                  hidden={selectedValue !== item.sheet_id}
+                  hidden={selectedValue !== index}
                 >
-                  <Resultsheet resultsheetId={item.sheet_id} />
+                  <Resultsheet fieldIndex={index} />
                 </div>
               ))}
             </div>
