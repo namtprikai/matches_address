@@ -134,7 +134,10 @@ export function EditWorkbook(): JSX.Element {
           <div className={styles.content}>
             <div className={styles.headingWithAction}>
               <h2 className={styles.heading}>{workbook?.title}</h2>
-              <Button appearance="primary">保存</Button>
+              <div>h: {selectedValue as number}</div>
+              <Button appearance="primary" type="submit">
+                保存
+              </Button>
             </div>
 
             <TabList onTabSelect={onTabSelect} selectedValue={selectedValue}>
@@ -163,9 +166,8 @@ export function EditWorkbook(): JSX.Element {
                 <div
                   key={item.id}
                   className={styles.resultsheets}
-                  hidden={selectedValue !== item.id}
+                  hidden={selectedValue !== item.sheet_id}
                 >
-                  {/** @todo なぜかデータ表示しない。データのとりかたを変える必要がある？（たぶんない） */}
                   <Resultsheet resultsheetId={item.sheet_id} />
                 </div>
               ))}

@@ -21,7 +21,18 @@ export const useFormWorkbookEdit = ({
   const formMethods = useForm<FormType>({
     resolver: zodResolver(form_workbook_edit_schema),
   });
-  const { setValue, watch, handleSubmit } = formMethods;
+  const {
+    setValue,
+    watch,
+    handleSubmit,
+    formState: { errors },
+  } = formMethods;
+
+  console.log(
+    "form:resultsheetsWithViews",
+    formMethods.getValues("resultsheetsWithViews"),
+  );
+  console.log("form:errors", errors);
 
   /** データの取得系のロジック */
   /** fetchしてきたシート情報をformにセット */
@@ -40,7 +51,7 @@ export const useFormWorkbookEdit = ({
 
   /** view情報 */
   const { data: resultViews } = useFetchResultViews({
-    sheetId: watch(`resultsheetsWithViews.${selectedSheetId}.sheet_id`),
+    sheetId: selectedSheetId,
   });
   useEffect(() => {
     setValue(

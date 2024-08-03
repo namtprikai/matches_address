@@ -20,7 +20,6 @@ export const Resultsheet = ({ resultsheetId }: Props): JSX.Element => {
   return (
     <div>
       <div>
-        hi
         {fields.length === 0 && <p>ビューがありません</p>}
         {fields.map((resultView) => (
           <Card
