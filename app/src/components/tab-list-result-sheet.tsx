@@ -6,6 +6,7 @@ import {
 } from "@fluentui/react-components";
 import { useFieldArray, useFormContext } from "react-hook-form";
 import { type z } from "zod";
+import { useEffect } from "react";
 import { type form_workbook_edit_schema } from "../zod/form_workbook_edit";
 import { Button } from "./button";
 import { ButtonEditableSheetTitle } from "./button-editable-sheet-title";
@@ -29,6 +30,7 @@ type FormType = z.infer<typeof form_workbook_edit_schema>;
 type Props = {
   selectedValue: number;
   onTabSelect?: SelectTabEventHandler | undefined;
+  setSelectedValue: React.Dispatch<unknown>;
   workbookId: string | undefined;
 };
 
@@ -36,6 +38,7 @@ export const TabListResultSheet = ({
   onTabSelect,
   selectedValue,
   workbookId,
+  setSelectedValue
 }: Props): JSX.Element => {
   const { control } = useFormContext<FormType>();
 
@@ -43,6 +46,10 @@ export const TabListResultSheet = ({
     control,
     name: "resultsheetsWithViews",
   });
+
+  useEffect(() => {
+    setSelectedValue(fields[0]?.sheet_id);
+  }, [fields, setSelectedValue]);
 
   return (
     <TabList onTabSelect={onTabSelect} selectedValue={selectedValue}>
