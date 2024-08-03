@@ -21,18 +21,7 @@ export const useFormWorkbookEdit = ({
   const formMethods = useForm<FormType>({
     resolver: zodResolver(form_workbook_edit_schema),
   });
-  const {
-    setValue,
-    handleSubmit,
-    formState: { errors },
-    watch
-  } = formMethods;
-
-  console.log(
-    "form:resultsheetsWithViews",
-    formMethods.watch(`resultsheetsWithViews.${selectedIndex}.result_views`),
-  );
-  console.log("form:errors", errors);
+  const { setValue, handleSubmit, watch } = formMethods;
 
   /** データの取得系のロジック */
   /** fetchしてきたシート情報をformにセット */
@@ -54,7 +43,10 @@ export const useFormWorkbookEdit = ({
     sheetId: watch(`resultsheetsWithViews.${selectedIndex}.sheet_id`),
   });
   useEffect(() => {
-    setValue( `resultsheetsWithViews.${selectedIndex}.is_add_view`, resultViews.length === 0);
+    setValue(
+      `resultsheetsWithViews.${selectedIndex}.is_add_view`,
+      resultViews.length === 0,
+    );
     setValue(
       `resultsheetsWithViews.${selectedIndex}.result_views`,
       resultViews.map((view) => ({
@@ -69,7 +61,7 @@ export const useFormWorkbookEdit = ({
     );
   }, [resultViews, selectedIndex, setValue]);
 
-  const onSubmit = handleSubmit(async (data) => {
+  const onSubmit = handleSubmit(async () => {
     // await window.ipcRenderer.invoke("insertResultViews", {
     //   sheet_id: sheetId,
     //   data_set_result_id: dataSetResultId,

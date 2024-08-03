@@ -8,7 +8,7 @@ type FormType = z.infer<typeof form_workbook_edit_schema>;
 
 type Props = {
   dataSetResults: (typeof data_set_results.$inferSelect)[];
-  selectedValue: number;
+  selectedIndex: number;
 };
 
 /** 開発用 */
@@ -22,12 +22,12 @@ const addDataSetResult = async (
 
 export const DataSetResults = ({
   dataSetResults,
-  selectedValue,
+  selectedIndex,
 }: Props): JSX.Element => {
-  const { control } = useFormContext<FormType>();
+  const { control, watch } = useFormContext<FormType>();
   const { append } = useFieldArray({
     control,
-    name: `resultsheetsWithViews.${selectedValue}.result_views`,
+    name: `resultsheetsWithViews.${selectedIndex}.result_views`,
   });
 
   return (
@@ -39,7 +39,9 @@ export const DataSetResults = ({
               appearance="subtle"
               onClick={(): void => {
                 append({
-                  sheet_id: selectedValue,
+                  sheet_id: watch(
+                    `resultsheetsWithViews.${selectedIndex}.sheet_id`,
+                  ),
                   data_set_result_id: item.id,
                   title: "",
                   unit: "area",

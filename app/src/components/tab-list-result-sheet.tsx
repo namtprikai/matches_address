@@ -38,7 +38,7 @@ export const TabListResultSheet = ({
   onTabSelect,
   selectedValue,
   workbookId,
-  setSelectedValue
+  setSelectedValue,
 }: Props): JSX.Element => {
   const { control } = useFormContext<FormType>();
 
@@ -48,7 +48,7 @@ export const TabListResultSheet = ({
   });
 
   useEffect(() => {
-    if(fields.length === 0) return;
+    if (fields.length === 0) return;
     setSelectedValue(0);
   }, [fields, setSelectedValue]);
 

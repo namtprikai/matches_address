@@ -55,8 +55,6 @@ export function EditWorkbook(): JSX.Element {
     name: "resultsheetsWithViews",
   });
 
-  console.log("selectedValue",selectedValue)
-
   return (
     <FormProvider {...formMethods}>
       <form onSubmit={onSubmit}>

@@ -39,9 +39,7 @@ export const DrawerDataSet = ({ selectedValue }: Props): JSX.Element => {
   const { watch, setValue } = useFormContext<FormType>();
   const { data: dataSetResults } = useFetchDataSetResults();
 
-  const isAddView = watch(
-    `resultsheetsWithViews.${selectedValue}.is_add_view`,
-  );
+  const isAddView = watch(`resultsheetsWithViews.${selectedValue}.is_add_view`);
 
   return (
     <InlineDrawer open>
@@ -76,7 +74,7 @@ export const DrawerDataSet = ({ selectedValue }: Props): JSX.Element => {
           {isAddView && (
             <DataSetResults
               dataSetResults={dataSetResults}
-              selectedValue={selectedValue as number}
+              selectedIndex={selectedValue as number}
             />
           )}
           {!isAddView && <>入力モード！</>}
