@@ -58,14 +58,16 @@ export const useFormWorkbookEdit = ({
   }, [resultViews, selectedIndex, setValue]);
 
   /** データセット追加モードの切り替え */
-  const watchResultViews = watch(`resultsheetsWithViews.${selectedIndex}.result_views`);
-  useEffect(()=>{
-    if(!watchResultViews) return;
+  const watchResultViews = watch(
+    `resultsheetsWithViews.${selectedIndex}.result_views`,
+  );
+  useEffect(() => {
+    if (!watchResultViews) return;
     setValue(
       `resultsheetsWithViews.${selectedIndex}.is_add_view`,
       watchResultViews.length === 0,
     );
-  },[selectedIndex, setValue, watchResultViews])
+  }, [selectedIndex, setValue, watchResultViews]);
 
   const onSubmit = handleSubmit(async () => {
     // await window.ipcRenderer.invoke("insertResultViews", {

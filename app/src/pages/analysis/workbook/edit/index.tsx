@@ -13,6 +13,7 @@ import {
   Input,
   CardHeader,
   Subtitle2,
+  Select,
 } from "@fluentui/react-components";
 import { FormProvider, useFieldArray } from "react-hook-form";
 import { Button } from "../../../../components/button";
@@ -21,6 +22,8 @@ import { useTabs } from "../../../../hooks/use-tabs";
 import { useFormWorkbookEdit } from "../../../../hooks/use-form-workbook-edit";
 import { TabListResultSheet } from "../../../../components/tab-list-result-sheet";
 import { useFetchDataSetResults } from "../../../../hooks/use-fetch-data-set-results";
+import { result_views } from "../../../../schema";
+import { LanguegeMap } from "../../../../lang";
 
 const useStyles = makeStyles({
   root: {
@@ -147,8 +150,35 @@ export function EditWorkbook(): JSX.Element {
                 {!isAddView && (
                   <>
                     <Field label="データセット">
-                      <Input />
+                      <Input
+                        disabled
+                        placeholder="選択中のデータセット名が入る"
+                      />
                     </Field>
+                    <Field label="ビューのタイトル">
+                      <Input placeholder="選択中のビューのタイトルを入力する" />
+                    </Field>
+                    <fieldset>
+                      <legend>パラメーター</legend>
+                      <Field label="スタイル">
+                        <Select>
+                          {result_views.style.enumValues.map((item) => (
+                            <option key={item} value={item}>
+                              {LanguegeMap["RESULT_VIEWS_STYLE"][item]}
+                            </option>
+                          ))}
+                        </Select>
+                      </Field>
+                      <Field label="集計単位">
+                        <Select>
+                          {result_views.unit.enumValues.map((item) => (
+                            <option key={item} value={item}>
+                              {LanguegeMap["RESULT_VIEWS_UNIT"][item]}
+                            </option>
+                          ))}
+                        </Select>
+                      </Field>
+                    </fieldset>
                   </>
                 )}
               </div>
@@ -181,13 +211,21 @@ export function EditWorkbook(): JSX.Element {
                         {resultViewsMethods.fields.map((resultView) => (
                           <Card key={resultView.id} className="">
                             <CardHeader
-                              action={<Button appearance="subtle" icon={<ArrowDownloadFilled />} />}
+                              action={
+                                <Button
+                                  appearance="subtle"
+                                  icon={<ArrowDownloadFilled />}
+                                />
+                              }
                               header={
                                 <Subtitle2>{`ID:${resultView.data_set_result_id} - ${resultView.title || "タイトル未入力"}`}</Subtitle2>
                               }
                             />
                             <div>
-                              <img alt="dummy" src="https://placehold.co/1220x760" />
+                              <img
+                                alt="dummy"
+                                src="https://placehold.co/1220x760"
+                              />
                             </div>
                           </Card>
                         ))}
