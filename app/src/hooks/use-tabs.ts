@@ -6,7 +6,7 @@ import {
 import { useState } from "react";
 
 export const useTabs = (): {
-  selectedValue: unknown;
+  selectedValue: number;
   onTabSelect: (event: SelectTabEvent, data: SelectTabData) => void;
   setSelectedValue: React.Dispatch<unknown>;
 } => {
@@ -17,7 +17,7 @@ export const useTabs = (): {
   };
 
   return {
-    selectedValue,
+    selectedValue: selectedValue as number,
     onTabSelect,
     setSelectedValue,
   };
