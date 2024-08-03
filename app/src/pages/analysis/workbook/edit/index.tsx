@@ -129,13 +129,13 @@ export function EditWorkbook(): JSX.Element {
 
             <DrawerBody>
               <div className={styles.drawerBody}>
-                <div>
-                  <SearchBox />
-                </div>
-                <span className={styles.heading}>データセット一覧</span>
                 {isAddView && (
                   <>
                     <div>
+                    <div>
+                  <SearchBox />
+                </div>
+                <span className={styles.heading}>データセット一覧</span>
                       {dataSetResults.map((item) => (
                         <div key={item.id}>
                           <Button
