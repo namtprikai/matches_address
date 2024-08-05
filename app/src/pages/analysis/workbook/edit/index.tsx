@@ -132,10 +132,10 @@ export function EditWorkbook(): JSX.Element {
                 {isAddView && (
                   <>
                     <div>
-                    <div>
-                  <SearchBox />
-                </div>
-                <span className={styles.heading}>データセット一覧</span>
+                      <div>
+                        <SearchBox />
+                      </div>
+                      <span className={styles.heading}>データセット一覧</span>
                       {dataSetResults.map((item) => (
                         <div key={item.id}>
                           <Button

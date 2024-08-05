@@ -12,6 +12,6 @@ export const insertResultViews = (async (
   const res = await db
     .insert(result_views)
     .values({ sheet_id, data_set_result_id, title: "" })
-    .returning()
+    .returning();
   return res;
 }) satisfies IpcMainListener;
