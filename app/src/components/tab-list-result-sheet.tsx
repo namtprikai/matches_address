@@ -44,7 +44,7 @@ export const TabListResultSheet = ({
 
   const { fields, append } = useFieldArray({
     control,
-    name: "resultsheetsWithViews",
+    name: "resultSheetsWithViews",
   });
 
   useEffect(() => {
@@ -60,7 +60,7 @@ export const TabListResultSheet = ({
         onClick={async (): Promise<void> => {
           await addResultSheet({ workbookId, fieldsLength: fields.length });
           append({
-            sheet_id: watch(`resultsheetsWithViews.${selectedValue}.sheet_id`),
+            sheet_id: watch(`resultSheetsWithViews.${selectedValue}.sheet_id`),
             sheet_title: `シート${fields.length + 1}`,
             result_views: [],
             is_add_view: true,

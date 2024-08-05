@@ -8,7 +8,7 @@ export const useFetchResultSheets = ({
 }: {
   id: string | undefined;
 }): { data: ResultSheet[]; refetch: (workbookId: string) => Promise<void> } => {
-  const [resultsheets, setResultSheets] = useState<ResultSheet[]>([]);
+  const [resultSheets, setResultSheets] = useState<ResultSheet[]>([]);
 
   const fetchResultSheets = async (workbookId: string): Promise<void> => {
     const result = await window.ipcRenderer.invoke("selectResultSheets", {
@@ -22,5 +22,5 @@ export const useFetchResultSheets = ({
     fetchResultSheets(id).catch(console.error);
   }, [id]);
 
-  return { data: resultsheets, refetch: fetchResultSheets };
+  return { data: resultSheets, refetch: fetchResultSheets };
 };

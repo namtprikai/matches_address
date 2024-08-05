@@ -25,26 +25,26 @@ export const useFormWorkbookEdit = ({
 
   /** データの取得系のロジック */
   /** fetchしてきたシート情報をformにセット */
-  const { data: resultsheets } = useFetchResultSheets({ id: workbookId });
+  const { data: resultSheets } = useFetchResultSheets({ id: workbookId });
   useEffect(() => {
     setValue(
-      "resultsheetsWithViews",
-      resultsheets.map((sheet) => ({
+      "resultSheetsWithViews",
+      resultSheets.map((sheet) => ({
         sheet_id: sheet.id,
         sheet_title: sheet.title || "",
         result_views: [],
         is_add_view: true,
       })),
     );
-  }, [resultsheets, setValue]);
+  }, [resultSheets, setValue]);
 
   /** view情報 */
   const { data: resultViews } = useFetchResultViews({
-    sheetId: watch(`resultsheetsWithViews.${selectedIndex}.sheet_id`),
+    sheetId: watch(`resultSheetsWithViews.${selectedIndex}.sheet_id`),
   });
   useEffect(() => {
     setValue(
-      `resultsheetsWithViews.${selectedIndex}.result_views`,
+      `resultSheetsWithViews.${selectedIndex}.result_views`,
       resultViews.map((view) => ({
         sheet_id:
           view.sheet_id || 0 /** @fixme ここで || 0 とかせずにすむ方法求む */,
@@ -59,12 +59,12 @@ export const useFormWorkbookEdit = ({
 
   /** データセット追加モードの切り替え */
   const watchResultViews = watch(
-    `resultsheetsWithViews.${selectedIndex}.result_views`,
+    `resultSheetsWithViews.${selectedIndex}.result_views`,
   );
   useEffect(() => {
     if (!watchResultViews) return;
     setValue(
-      `resultsheetsWithViews.${selectedIndex}.is_add_view`,
+      `resultSheetsWithViews.${selectedIndex}.is_add_view`,
       watchResultViews.length === 0,
     );
   }, [selectedIndex, setValue, watchResultViews]);
