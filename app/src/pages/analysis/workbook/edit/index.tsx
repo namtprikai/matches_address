@@ -120,21 +120,23 @@ export function EditWorkbook(): JSX.Element {
       <div className={styles.content}>
         <h2 className={styles.heading}>{workbook?.title}</h2>
 
-        <TabList onTabSelect={onTabSelect} selectedValue={selectedValue}>
-          <Button
-            appearance="subtle"
-            icon={<AddFilled />}
-            onClick={(): Promise<void> => addResultSheet(id)}
-            shape="square"
-          >
-            シートを追加
-          </Button>
-          {resultsheets.map((item) => (
-            <Tab key={item.id} id={item.title || ""} value={item.id}>
-              <ButtonEditableSheetTitle resultSheet={item} />
-            </Tab>
-          ))}
-        </TabList>
+        {selectedValue ? (
+          <TabList onTabSelect={onTabSelect} selectedValue={selectedValue}>
+            <Button
+              appearance="subtle"
+              icon={<AddFilled />}
+              onClick={(): Promise<void> => addResultSheet(id)}
+              shape="square"
+            >
+              シートを追加
+            </Button>
+            {resultsheets.map((item) => (
+              <Tab key={item.id} id={item.title || ""} value={item.id}>
+                <ButtonEditableSheetTitle resultSheet={item} />
+              </Tab>
+            ))}
+          </TabList>
+        ) : null}
         <div>
           {resultsheets.map((item) => (
             <div
