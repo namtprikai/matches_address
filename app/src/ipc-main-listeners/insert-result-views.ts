@@ -8,11 +8,10 @@ type SelectResultViews = typeof result_views.$inferSelect;
 export const insertResultViews = (async (
   _: unknown,
   { sheet_id, data_set_result_id }: InsertResultViews,
-): Promise<SelectResultViews> => {
+): Promise<SelectResultViews[]> => {
   const res = await db
     .insert(result_views)
     .values({ sheet_id, data_set_result_id, title: "" })
     .returning()
-    .get();
   return res;
 }) satisfies IpcMainListener;
