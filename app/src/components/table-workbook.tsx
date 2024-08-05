@@ -23,14 +23,14 @@ const useStyles = makeStyles({
     width: "140px",
   },
   updatedAtCell: {
-    fontSize: "12px",
+    fontSize: tokens.fontSizeBase200,
   },
   createdAtHeaderCell: {
     tableLayout: "fixed",
     width: "140px",
   },
   createdAtCell: {
-    fontSize: "12px",
+    fontSize: tokens.fontSizeBase200,
   },
   tableHeader: {
     backgroundColor: tokens.colorNeutralBackground3,
@@ -39,7 +39,7 @@ const useStyles = makeStyles({
     border: "none",
   },
   tableHeaderCell: {
-    fontWeight: 600,
+    fontWeight: tokens.fontWeightSemibold,
   },
 });
 
