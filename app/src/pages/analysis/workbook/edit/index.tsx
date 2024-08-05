@@ -23,7 +23,7 @@ import { useFormWorkbookEdit } from "../../../../hooks/use-form-workbook-edit";
 import { TabListResultSheet } from "../../../../components/tab-list-result-sheet";
 import { useFetchDataSetResults } from "../../../../hooks/use-fetch-data-set-results";
 import { type data_set_results, result_views } from "../../../../schema";
-import { LanguegeMap } from "../../../../lang";
+import { LanguageMap } from "../../../../lang";
 
 /** 開発用 */
 const addDataSetResult = async (
@@ -186,7 +186,7 @@ export function EditWorkbook(): JSX.Element {
                         <Select>
                           {result_views.style.enumValues.map((item) => (
                             <option key={item} value={item}>
-                              {LanguegeMap["RESULT_VIEWS_STYLE"][item]}
+                              {LanguageMap["RESULT_VIEWS_STYLE"][item]}
                             </option>
                           ))}
                         </Select>
@@ -195,7 +195,7 @@ export function EditWorkbook(): JSX.Element {
                         <Select>
                           {result_views.unit.enumValues.map((item) => (
                             <option key={item} value={item}>
-                              {LanguegeMap["RESULT_VIEWS_UNIT"][item]}
+                              {LanguageMap["RESULT_VIEWS_UNIT"][item]}
                             </option>
                           ))}
                         </Select>

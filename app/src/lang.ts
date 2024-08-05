@@ -18,7 +18,7 @@ const RESULT_VIEWS_UNIT: {
   area: "地域",
 };
 
-export const LanguegeMap = {
+export const LanguageMap = {
   RESULT_VIEWS_STYLE,
   RESULT_VIEWS_UNIT,
 };
