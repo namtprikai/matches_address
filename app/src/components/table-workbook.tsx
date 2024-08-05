@@ -11,9 +11,9 @@ import {
   makeStyles,
   mergeClasses,
 } from "@fluentui/react-components";
-import dayjs from "dayjs";
 import { Link } from "react-router-dom";
 import { type workbooks } from "../schema";
+import { formatDate } from "../utils/format-date";
 
 type Workbook = typeof workbooks.$inferSelect;
 
@@ -97,10 +97,10 @@ export const TableWorkbook = (): JSX.Element => {
               </Link>
             </TableCell>
             <TableCell className={styles.createdAtCell}>
-              {dayjs(item.created_at).format("YYYY/MM/DD HH:mm")}
+              {formatDate(item.created_at)}
             </TableCell>
             <TableCell className={styles.updatedAtCell}>
-              {dayjs(item.updated_at).format("YYYY/MM/DD HH:mm")}
+              {formatDate(item.updated_at)}
             </TableCell>
           </TableRow>
         ))}
