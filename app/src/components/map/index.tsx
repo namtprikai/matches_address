@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Dropdown, Option } from "@fluentui/react-components";
 import {
   VacancyLevelCheckbox,
   type VacancyLevels,
@@ -26,7 +27,15 @@ export function Map(): JSX.Element {
         </div>
         <div>
           <div>表示期間</div>
-          <div>ドロップダウン</div>
+          <div>
+            <Dropdown>
+              {[2024, 2023, 2022, 2021].map((year) => (
+                <Option key={year} text={year.toString()}>
+                  {year}
+                </Option>
+              ))}
+            </Dropdown>
+          </div>
         </div>
       </div>
       <MapComponent vacancyLevels={vacancyLevels} />
