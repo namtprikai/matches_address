@@ -5,10 +5,10 @@ import {
 } from "@fluentui/react-components";
 import { useState } from "react";
 
-export const useTabs = (): {
-  selectedValue: unknown;
+export const useTabs = <T>(): {
+  selectedValue: T;
   onTabSelect: (event: SelectTabEvent, data: SelectTabData) => void;
-  setSelectedValue: React.Dispatch<unknown>;
+  setSelectedValue: React.Dispatch<T>;
 } => {
   const [selectedValue, setSelectedValue] = useState<TabValue>("");
 
@@ -17,7 +17,7 @@ export const useTabs = (): {
   };
 
   return {
-    selectedValue,
+    selectedValue: selectedValue as T,
     onTabSelect,
     setSelectedValue,
   };

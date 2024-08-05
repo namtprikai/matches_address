@@ -1,5 +1,4 @@
-import { useEffect } from "react";
-import { AddFilled } from "@fluentui/react-icons";
+import { AddFilled, ArrowDownloadFilled } from "@fluentui/react-icons";
 import { useParams } from "react-router-dom";
 import {
   DrawerBody,
@@ -7,18 +6,33 @@ import {
   DrawerHeaderTitle,
   InlineDrawer,
   makeStyles,
-  SearchBox,
-  Tab,
-  TabList,
   tokens,
+  SearchBox,
+  Card,
+  Field,
+  Input,
+  CardHeader,
+  Subtitle2,
+  Select,
 } from "@fluentui/react-components";
+import { FormProvider, useFieldArray } from "react-hook-form";
 import { Button } from "../../../../components/button";
 import { useFetchWorkbook } from "../../../../hooks/use-fetch-workbook";
-import { useFetchResultSheets } from "../../../../hooks/use-fetch-result-sheets";
 import { useTabs } from "../../../../hooks/use-tabs";
+import { useFormWorkbookEdit } from "../../../../hooks/use-form-workbook-edit";
+import { TabListResultSheet } from "../../../../components/tab-list-result-sheet";
 import { useFetchDataSetResults } from "../../../../hooks/use-fetch-data-set-results";
-import { Resultsheet } from "../../../../components/result-sheet";
-import { ButtonEditableSheetTitle } from "../../../../components/button-editable-sheet-title";
+import { type data_set_results, result_views } from "../../../../schema";
+import { LanguageMap } from "../../../../lang";
+
+/** 開発用 */
+const addDataSetResult = async (
+  dataSetResults: (typeof data_set_results.$inferSelect)[],
+): Promise<void> => {
+  await window.ipcRenderer.invoke("insertDataSetResults", {
+    title: `分析結果${dataSetResults.length + 1}`,
+  });
+};
 
 const useStyles = makeStyles({
   root: {
@@ -30,19 +44,30 @@ const useStyles = makeStyles({
     lineHeight: tokens.lineHeightBase600,
     fontWeight: tokens.fontWeightSemibold,
   },
+  headingWithAction: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
   content: {
     flex: "1",
     padding: tokens.spacingVerticalL,
     backgroundColor: tokens.colorNeutralBackground3,
     minHeight: "100vh",
   },
+  resultSheets: {
+    padding: tokens.spacingVerticalL,
+  },
   drawerBody: {
     display: "grid",
     gap: tokens.spacingVerticalXXL,
     padding: `${tokens.spacingVerticalXXL} ${tokens.spacingHorizontalNone}`,
   },
-  resultsheets: {
-    padding: tokens.spacingVerticalL,
+  resultViews: {
+    display: "grid",
+    gap: tokens.spacingVerticalXXL,
+    padding: `${tokens.spacingVerticalXXL} ${tokens.spacingHorizontalNone}`,
+    gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))",
   },
 });
 
@@ -51,107 +76,193 @@ export function EditWorkbook(): JSX.Element {
   const { id } = useParams();
 
   const { data: workbook } = useFetchWorkbook({ id });
-  const { data: resultsheets, refetch: fetchResultSheets } =
-    useFetchResultSheets({ id });
-  const { data: dataSetResults, refetch: fetchDataSetResults } =
-    useFetchDataSetResults();
-  const { onTabSelect, selectedValue, setSelectedValue } = useTabs();
+  const { data: dataSetResults } = useFetchDataSetResults();
 
-  /** fixme: シート追加したあとも0番目に戻ってしまうの微妙かも */
-  useEffect(() => {
-    setSelectedValue(resultsheets[0]?.id);
-  }, [resultsheets, setSelectedValue]);
+  const tabs = useTabs<number>();
+  const { selectedValue } = tabs;
 
-  const addResultSheet = async (
-    workbookId: string | undefined,
-  ): Promise<void> => {
-    if (!workbookId) return;
-    await window.ipcRenderer.invoke("insertResultSheets", {
-      title: `シート${resultsheets.length + 1}`,
-      workbook_id: Number(workbookId),
-    });
-    await fetchResultSheets(workbookId).catch(console.error);
-  };
+  const { formMethods, onSubmit } = useFormWorkbookEdit({
+    workbookId: id,
+    selectedIndex: selectedValue,
+  });
 
-  const addDataSetResult = async (): Promise<void> => {
-    await window.ipcRenderer.invoke("insertDataSetResults", {
-      title: `分析結果${dataSetResults.length + 1}`,
-    });
-    await fetchDataSetResults().catch(console.error);
-  };
+  const { control, setValue, watch } = formMethods;
+  const { fields } = useFieldArray({
+    control,
+    name: "resultSheetsWithViews",
+  });
+
+  const resultViewsMethods = useFieldArray({
+    control,
+    name: `resultSheetsWithViews.${selectedValue}.result_views`,
+  });
+
+  const isAddView = watch(`resultSheetsWithViews.${selectedValue}.is_add_view`);
 
   return (
-    <div className={styles.root}>
-      <InlineDrawer open>
-        <DrawerHeader>
-          <DrawerHeaderTitle
-            action={<Button icon={<AddFilled />} shape="square" />}
-            className={styles.heading}
-          >
-            ビューを追加
-          </DrawerHeaderTitle>
-        </DrawerHeader>
+    <FormProvider {...formMethods}>
+      <form onSubmit={onSubmit}>
+        <div className={styles.root}>
+          {/** ここをコンポーネント切り出すと、ステートが同期しなくなる。謎 */}
+          <InlineDrawer open>
+            <DrawerHeader>
+              <DrawerHeaderTitle
+                action={
+                  isAddView ? undefined : (
+                    <Button
+                      icon={<AddFilled />}
+                      onClick={(): void => {
+                        setValue(
+                          `resultSheetsWithViews.${selectedValue}.is_add_view`,
+                          true,
+                        );
+                      }}
+                      shape="square"
+                    />
+                  )
+                }
+                className={styles.heading}
+              >
+                ビューを追加
+              </DrawerHeaderTitle>
+            </DrawerHeader>
 
-        <DrawerBody>
-          <div className={styles.drawerBody}>
-            <div>
-              <SearchBox />
+            <DrawerBody>
+              <div className={styles.drawerBody}>
+                {isAddView && (
+                  <>
+                    <div>
+                      <div>
+                        <SearchBox />
+                      </div>
+                      <span className={styles.heading}>データセット一覧</span>
+                      {dataSetResults.map((item) => (
+                        <div key={item.id}>
+                          <Button
+                            appearance="subtle"
+                            onClick={(): void => {
+                              resultViewsMethods.append({
+                                sheet_id: watch(
+                                  `resultSheetsWithViews.${selectedValue}.sheet_id`,
+                                ),
+                                data_set_result_id: item.id,
+                                title: "",
+                                unit: "area",
+                              });
+                            }}
+                          >
+                            {item.title}
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                    <div>
+                      <Button
+                        appearance="subtle"
+                        onClick={(): void => {
+                          addDataSetResult(dataSetResults).catch;
+                        }}
+                        size="small"
+                      >
+                        データセットを追加(開発用)
+                      </Button>
+                    </div>
+                  </>
+                )}
+                {!isAddView && (
+                  <>
+                    <Field label="データセット">
+                      <Input
+                        disabled
+                        placeholder="選択中のデータセット名が入る"
+                      />
+                    </Field>
+                    <Field label="ビューのタイトル">
+                      <Input placeholder="選択中のビューのタイトルを入力する" />
+                    </Field>
+                    <fieldset>
+                      <legend>パラメーター</legend>
+                      <Field label="スタイル">
+                        <Select>
+                          {result_views.style.enumValues.map((item) => (
+                            <option key={item} value={item}>
+                              {LanguageMap["RESULT_VIEWS_STYLE"][item]}
+                            </option>
+                          ))}
+                        </Select>
+                      </Field>
+                      <Field label="集計単位">
+                        <Select>
+                          {result_views.unit.enumValues.map((item) => (
+                            <option key={item} value={item}>
+                              {LanguageMap["RESULT_VIEWS_UNIT"][item]}
+                            </option>
+                          ))}
+                        </Select>
+                      </Field>
+                    </fieldset>
+                  </>
+                )}
+              </div>
+            </DrawerBody>
+          </InlineDrawer>
+
+          <div className={styles.content}>
+            <div className={styles.headingWithAction}>
+              <h2 className={styles.heading}>{workbook?.title}</h2>
+              <Button appearance="primary" type="submit">
+                保存
+              </Button>
             </div>
-            <span className={styles.heading}>データセット一覧</span>
+
+            <TabListResultSheet {...tabs} workbookId={id} />
             <div>
-              {dataSetResults.map((item) => (
-                <div key={item.id}>
-                  <Button appearance="subtle">{item.title}</Button>
+              {fields.map((item, index) => (
+                <div
+                  key={item.id}
+                  className={styles.resultSheets}
+                  hidden={selectedValue !== index}
+                >
+                  {/** ここをコンポーネント切り出すと、ステートが同期しなくなる。謎 */}
+                  <div>
+                    <div>
+                      {resultViewsMethods.fields.length === 0 && (
+                        <p>ビューがありません</p>
+                      )}
+                      <div className={styles.resultViews}>
+                        {resultViewsMethods.fields.map((resultView) => (
+                          <Card key={resultView.id} className="">
+                            <CardHeader
+                              action={
+                                <Button
+                                  appearance="subtle"
+                                  icon={<ArrowDownloadFilled />}
+                                />
+                              }
+                              header={
+                                <Subtitle2>{`ID:${resultView.data_set_result_id} - ${resultView.title || "タイトル未入力"}`}</Subtitle2>
+                              }
+                            />
+                            <div>
+                              <img
+                                alt="dummy"
+                                src="https://placehold.co/1220x760"
+                              />
+                            </div>
+                          </Card>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
                 </div>
               ))}
             </div>
-            <div>
-              <Button
-                appearance="subtle"
-                onClick={addDataSetResult}
-                size="small"
-              >
-                データセットを追加(開発用)
-              </Button>
-            </div>
+            <a href={`#analysis/workbook/${id}`}>
+              <Button>詳細に戻る</Button>
+            </a>
           </div>
-        </DrawerBody>
-      </InlineDrawer>
-      <div className={styles.content}>
-        <h2 className={styles.heading}>{workbook?.title}</h2>
-
-        {selectedValue ? (
-          <TabList onTabSelect={onTabSelect} selectedValue={selectedValue}>
-            <Button
-              appearance="subtle"
-              icon={<AddFilled />}
-              onClick={(): Promise<void> => addResultSheet(id)}
-              shape="square"
-            >
-              シートを追加
-            </Button>
-            {resultsheets.map((item) => (
-              <Tab key={item.id} id={item.title || ""} value={item.id}>
-                <ButtonEditableSheetTitle resultSheet={item} />
-              </Tab>
-            ))}
-          </TabList>
-        ) : null}
-        <div>
-          {resultsheets.map((item) => (
-            <div
-              key={item.id}
-              className={styles.resultsheets}
-              hidden={selectedValue !== item.id}
-            >
-              <Resultsheet resultsheet={item} />
-            </div>
-          ))}
         </div>
-        <a href={`#analysis/workbook/${id}`}>
-          <Button>詳細に戻る</Button>
-        </a>
-      </div>
-    </div>
+      </form>
+    </FormProvider>
   );
 }
