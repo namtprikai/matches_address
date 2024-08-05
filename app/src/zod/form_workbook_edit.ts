@@ -8,7 +8,7 @@ import { result_view_schema } from "../zod/result-view";
  * - 送信用の状態と一緒にUIのステートも持たせている
  */
 export const form_workbook_edit_schema = z.object({
-  resultsheetsWithViews: z.array(
+  resultSheetsWithViews: z.array(
     z.object({
       is_add_view: z
         .boolean()
