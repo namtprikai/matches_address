@@ -45,13 +45,15 @@ export function DetailWorkbook(): JSX.Element {
         </a>
       </div>
 
-      <TabList onTabSelect={onTabSelect} selectedValue={selectedValue}>
-        {resultsheets.map((item) => (
-          <Tab key={item.id} id={item.title || ""} value={item.id}>
-            {item.title}
-          </Tab>
-        ))}
-      </TabList>
+      {selectedValue ? (
+        <TabList onTabSelect={onTabSelect} selectedValue={selectedValue}>
+          {resultsheets.map((item) => (
+            <Tab key={item.id} id={item.title || ""} value={item.id}>
+              {item.title}
+            </Tab>
+          ))}
+        </TabList>
+      ) : null}
       <div>
         {resultsheets.map((item) => (
           <div

@@ -12,6 +12,7 @@ import "../styles/global.css";
 import { Workbook } from "./analysis/workbook";
 import { EditWorkbook } from "./analysis/workbook/edit";
 import { DetailWorkbook } from "./analysis/workbook/detail";
+import { Dataset } from "./dataset";
 
 // クライアントだけで動作するアプリケーションのため`createHashRouter`を使用する
 const router = createHashRouter([
@@ -35,6 +36,10 @@ const router = createHashRouter([
       {
         path: "analysis/workbook/:id",
         element: <DetailWorkbook />,
+      },
+      {
+        path: "dataset",
+        element: <Dataset />,
       },
     ],
   },

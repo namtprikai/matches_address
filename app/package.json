@@ -50,6 +50,7 @@
     "@fluentui/react-nav-preview": "^0.5.3",
     "@hookform/resolvers": "^3.9.0",
     "better-sqlite3": "^11.1.2",
+    "dayjs": "^1.11.12",
     "electron-squirrel-startup": "^1.0.1",
     "react-hook-form": "^7.52.1",
     "vite-plugin-native": "^2.2.1",
