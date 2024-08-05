@@ -5,6 +5,6 @@ CREATE TABLE `result_views` (
 	`title` text,
 	`unit` text,
 	`style` text,
-	`created_at` text DEFAULT (CURRENT_TIMESTAMP),
-	`updated_at` text DEFAULT (CURRENT_TIMESTAMP)
+	`created_at` text DEFAULT (CURRENT_TIMESTAMP) NOT NULL,
+	`updated_at` text DEFAULT (CURRENT_TIMESTAMP) NOT NULL
 );
