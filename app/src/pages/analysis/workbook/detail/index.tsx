@@ -13,7 +13,7 @@ const useStyles = makeStyles({
     fontSize: tokens.fontSizeBase500,
     lineHeight: tokens.lineHeightBase600,
   },
-  resultsheets: {
+  resultSheets: {
     padding: tokens.spacingVerticalL,
   },
   headingWithAction: {
@@ -29,12 +29,12 @@ export function DetailWorkbook(): JSX.Element {
   const { id } = useParams();
 
   const { data: workbook } = useFetchWorkbook({ id });
-  const { data: resultsheets } = useFetchResultSheets({ id });
+  const { data: resultSheets } = useFetchResultSheets({ id });
   const { onTabSelect, selectedValue, setSelectedValue } = useTabs();
 
   useEffect(() => {
-    setSelectedValue(resultsheets[0]?.id);
-  }, [resultsheets, setSelectedValue]);
+    setSelectedValue(resultSheets[0]?.id);
+  }, [resultSheets, setSelectedValue]);
 
   return (
     <div>
@@ -46,17 +46,17 @@ export function DetailWorkbook(): JSX.Element {
       </div>
 
       <TabList onTabSelect={onTabSelect} selectedValue={selectedValue}>
-        {resultsheets.map((item) => (
+        {resultSheets.map((item) => (
           <Tab key={item.id} id={item.title || ""} value={item.id}>
             {item.title}
           </Tab>
         ))}
       </TabList>
       <div>
-        {resultsheets.map((item) => (
+        {resultSheets.map((item) => (
           <div
             key={item.id}
-            className={styles.resultsheets}
+            className={styles.resultSheets}
             hidden={selectedValue !== item.id}
           >
             <ResultSheet sheetId={item.id} />

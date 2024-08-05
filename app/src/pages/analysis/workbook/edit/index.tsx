@@ -55,7 +55,7 @@ const useStyles = makeStyles({
     backgroundColor: tokens.colorNeutralBackground3,
     minHeight: "100vh",
   },
-  resultsheets: {
+  resultSheets: {
     padding: tokens.spacingVerticalL,
   },
   drawerBody: {
@@ -89,15 +89,15 @@ export function EditWorkbook(): JSX.Element {
   const { control, setValue, watch } = formMethods;
   const { fields } = useFieldArray({
     control,
-    name: "resultsheetsWithViews",
+    name: "resultSheetsWithViews",
   });
 
   const resultViewsMethods = useFieldArray({
     control,
-    name: `resultsheetsWithViews.${selectedValue}.result_views`,
+    name: `resultSheetsWithViews.${selectedValue}.result_views`,
   });
 
-  const isAddView = watch(`resultsheetsWithViews.${selectedValue}.is_add_view`);
+  const isAddView = watch(`resultSheetsWithViews.${selectedValue}.is_add_view`);
 
   return (
     <FormProvider {...formMethods}>
@@ -113,7 +113,7 @@ export function EditWorkbook(): JSX.Element {
                       icon={<AddFilled />}
                       onClick={(): void => {
                         setValue(
-                          `resultsheetsWithViews.${selectedValue}.is_add_view`,
+                          `resultSheetsWithViews.${selectedValue}.is_add_view`,
                           true,
                         );
                       }}
@@ -143,7 +143,7 @@ export function EditWorkbook(): JSX.Element {
                             onClick={(): void => {
                               resultViewsMethods.append({
                                 sheet_id: watch(
-                                  `resultsheetsWithViews.${selectedValue}.sheet_id`,
+                                  `resultSheetsWithViews.${selectedValue}.sheet_id`,
                                 ),
                                 data_set_result_id: item.id,
                                 title: "",
@@ -220,7 +220,7 @@ export function EditWorkbook(): JSX.Element {
               {fields.map((item, index) => (
                 <div
                   key={item.id}
-                  className={styles.resultsheets}
+                  className={styles.resultSheets}
                   hidden={selectedValue !== index}
                 >
                   {/** ここをコンポーネント切り出すと、ステートが同期しなくなる。謎 */}
