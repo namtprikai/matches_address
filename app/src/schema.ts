@@ -10,6 +10,7 @@ export const workbooks = sqliteTable("workbooks", {
   id: integer("id").primaryKey(),
   title: text("title"),
   created_at: text("created_at").default(sql`(CURRENT_TIMESTAMP)`),
+  updated_at: text("updated_at").default(sql`(CURRENT_TIMESTAMP)`).$onUpdate(() => sql`(CURRENT_TIMESTAMP)`),
 });
 
 export const result_sheets = sqliteTable("result_sheets", {
@@ -17,6 +18,7 @@ export const result_sheets = sqliteTable("result_sheets", {
   workbook_id: integer("workbook_id"),
   title: text("title"),
   created_at: text("created_at").default(sql`(CURRENT_TIMESTAMP)`),
+  updated_at: text("updated_at").default(sql`(CURRENT_TIMESTAMP)`).$onUpdate(() => sql`(CURRENT_TIMESTAMP)`),
 });
 
 export const result_views = sqliteTable("result_views", {
@@ -29,12 +31,12 @@ export const result_views = sqliteTable("result_views", {
   style: text("style", { enum: ["map", "bar", "line", "pie"] }),
 
   created_at: text("created_at").default(sql`(CURRENT_TIMESTAMP)`),
-  updated_at: text("updated_at").default(sql`(CURRENT_TIMESTAMP)`),
+  updated_at: text("updated_at").default(sql`(CURRENT_TIMESTAMP)`).$onUpdate(() => sql`(CURRENT_TIMESTAMP)`),
 });
 
 export const data_set_results = sqliteTable("data_set_results", {
   id: integer("id").primaryKey(),
   title: text("title"),
   created_at: text("created_at").default(sql`(CURRENT_TIMESTAMP)`),
-  updated_at: text("updated_at").default(sql`(CURRENT_TIMESTAMP)`),
+  updated_at: text("updated_at").default(sql`(CURRENT_TIMESTAMP)`).$onUpdate(() => sql`(CURRENT_TIMESTAMP)`),
 });
