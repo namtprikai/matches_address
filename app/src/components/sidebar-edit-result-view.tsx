@@ -50,7 +50,7 @@ export const SidebarEditResultView = (): JSX.Element => {
   }): Promise<void> => {
     await window.ipcRenderer.invoke("insertResultViews", {
       data_set_result_id: dataSetResultId,
-      sheet_id: 0. /** @todo 選択中のシートID */
+      sheet_id: 0 /** @todo 選択中のシートID */,
     });
     /** @todo ビューの更新 */
   };
