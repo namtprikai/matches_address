@@ -1,11 +1,11 @@
 import { useState } from "react";
-import { Dropdown, Option } from "@fluentui/react-components";
 import {
   VacancyLevelCheckbox,
   type VacancyLevels,
 } from "./vacancy-level-checkbox";
 import { MapComponent } from "./map-component";
 import { _dummyBuildingData } from "./_dummy-data";
+import { DisplayPeriodDropdown } from "./display-period-dropdown";
 
 export function Map(): JSX.Element {
   const [vacancyLevels, setVacancyLevels] = useState<VacancyLevels>({
@@ -24,7 +24,7 @@ export function Map(): JSX.Element {
           <div>空き家率</div>
           <div>
             <VacancyLevelCheckbox
-              onChange={setVacancyLevels}
+              setVacancyLevels={setVacancyLevels}
               vacancyLevels={vacancyLevels}
             />
           </div>
@@ -32,18 +32,11 @@ export function Map(): JSX.Element {
         <div>
           <div>表示期間</div>
           <div>
-            <Dropdown
-              defaultValue={selectedYear.toString()}
-              onOptionSelect={(_, data) =>
-                setSelectedYear(Number(data.optionText))
-              }
-            >
-              {_dummyBuildingData.map(({ year }) => (
-                <Option key={year} text={year.toString()}>
-                  {year}
-                </Option>
-              ))}
-            </Dropdown>
+            <DisplayPeriodDropdown
+              selectedYear={selectedYear}
+              setSelectedYear={setSelectedYear}
+              years={_dummyBuildingData.map((data) => data.year)}
+            />
           </div>
         </div>
       </div>
