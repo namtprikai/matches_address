@@ -11,10 +11,13 @@ import {
   Input,
   Select,
 } from "@fluentui/react-components";
+import { useAtom } from "jotai";
+import { useState } from "react";
 import { useFetchDataSetResults } from "../hooks/use-fetch-data-set-results";
 import { type data_set_results, result_views } from "../schema";
 import { LanguageMap } from "../lang";
 import { Button } from "./button";
+import { resultViewsAtom } from "./result-sheet";
 
 /** 開発用 */
 const addDataSetResult = async (
@@ -42,6 +45,9 @@ export const SidebarEditResultView = (): JSX.Element => {
   const styles = useStyles();
   const { data: dataSetResults } = useFetchDataSetResults();
 
+  const [resultViews, refresh] = useAtom(resultViewsAtom);
+  const [isAddView, setIsAddView] = useState(resultViews.length === 0);
+
   /** ビューをデータセット情報と一緒に追加 */
   const addResultView = async ({
     dataSetResultId,
@@ -52,10 +58,8 @@ export const SidebarEditResultView = (): JSX.Element => {
       data_set_result_id: dataSetResultId,
       sheet_id: 0 /** @todo 選択中のシートID */,
     });
-    /** @todo ビューの更新 */
+    refresh();
   };
-
-  const isAddView = true;
 
   return (
     <InlineDrawer open>
@@ -66,7 +70,7 @@ export const SidebarEditResultView = (): JSX.Element => {
               <Button
                 icon={<AddFilled />}
                 onClick={(): void => {
-                  //
+                  setIsAddView(true);
                 }}
                 shape="square"
               />
@@ -92,7 +96,9 @@ export const SidebarEditResultView = (): JSX.Element => {
                     <Button
                       appearance="subtle"
                       onClick={(): void => {
-                        addResultView({ dataSetResultId: item.id }).catch;
+                        addResultView({ dataSetResultId: item.id })
+                          .catch()
+                          .finally(() => setIsAddView(false));
                       }}
                     >
                       {item.title}

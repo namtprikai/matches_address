@@ -6,7 +6,10 @@ import {
   makeStyles,
   Subtitle2,
 } from "@fluentui/react-components";
+import { atom, useAtom } from "jotai";
+import { atomWithRefresh } from "jotai/utils";
 import { useFetchResultViews } from "../hooks/use-fetch-result-views";
+import { type result_views } from "../schema";
 
 const useStyles = makeStyles({
   resultViews: {
@@ -16,12 +19,31 @@ const useStyles = makeStyles({
   },
 });
 
+type ResultViews = typeof result_views.$inferSelect;
+
+const selectedSheetIdAtom = atom(0);
+const resultViewsAtomssssss = atom<ResultViews[]>([]);
+
+export const resultViewsAtom = atomWithRefresh(
+  async (get, { signal }): Promise<ResultViews[]> => {
+    const selectedSheetId = get(selectedSheetIdAtom);
+    const result = await window.ipcRenderer.invoke("selectResultViews", {
+      sheetId: selectedSheetId,
+    });
+    return result;
+  },
+);
+
 type Props = { sheetId: number };
 export const ResultSheet = ({ sheetId }: Props): JSX.Element => {
   const styles = useStyles();
-  const { data } = useFetchResultViews({ sheetId });
+  // const { data } = useFetchResultViews({ sheetId });
+
+  const [data, refreshPosts] = useAtom(resultViewsAtom);
+
   return (
     <div>
+      <button onClick={refreshPosts}>refresh</button>
       {data.length === 0 && <p>ビューがありません</p>}
       <div className={styles.resultViews}>
         {data.map((resultView) => (
