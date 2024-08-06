@@ -6,6 +6,7 @@ import {
 } from "@fluentui/react-components";
 import { useEffect } from "react";
 import { type result_sheets } from "../schema";
+import { useFetchResultSheets } from "../hooks/use-fetch-result-sheets";
 import { Button } from "./button";
 import { ButtonEditableSheetTitle } from "./button-editable-sheet-title";
 
@@ -38,7 +39,7 @@ export const TabListResultSheet = ({
   workbookId,
   setSelectedValue,
 }: Props): JSX.Element => {
-  const resultSheets: ResultSheet[] = [];
+  const { data: resultSheets } = useFetchResultSheets({ id: workbookId });
 
   useEffect(() => {
     if (resultSheets.length === 0) return;

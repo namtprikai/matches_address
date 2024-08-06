@@ -41,6 +41,20 @@ const useStyles = makeStyles({
 export const SidebarEditResultView = (): JSX.Element => {
   const styles = useStyles();
   const { data: dataSetResults } = useFetchDataSetResults();
+
+  /** ビューをデータセット情報と一緒に追加 */
+  const addResultView = async ({
+    dataSetResultId,
+  }: {
+    dataSetResultId: number;
+  }): Promise<void> => {
+    await window.ipcRenderer.invoke("insertResultViews", {
+      data_set_result_id: dataSetResultId,
+      sheet_id: 0. /** @todo 選択中のシートID */
+    });
+    /** @todo ビューの更新 */
+  };
+
   const isAddView = true;
 
   return (
@@ -78,7 +92,7 @@ export const SidebarEditResultView = (): JSX.Element => {
                     <Button
                       appearance="subtle"
                       onClick={(): void => {
-                        //
+                        addResultView({ dataSetResultId: item.id }).catch;
                       }}
                     >
                       {item.title}
