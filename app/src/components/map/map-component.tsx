@@ -52,7 +52,7 @@ export function MapComponent({
   const [map, setMap] = useState<Map | null>(null);
   const [popupData, setPopupData] = useState<Building["info"] | null>(null);
 
-  useEffect(() => {
+  useEffect(function initializeMap() {
     const mapEl = mapRef.current;
     const popupEl = popupRef.current;
     if (!mapEl || !popupEl) return;
@@ -89,88 +89,91 @@ export function MapComponent({
     return () => initialMap.setTarget(undefined);
   }, []);
 
-  useEffect(() => {
-    if (!map) return;
+  useEffect(
+    function updateMap() {
+      if (!map) return;
 
-    // Remove existing vector layers
-    map
-      .getLayers()
-      .getArray()
-      .filter((layer) => layer instanceof VectorLayer)
-      .forEach((layer) => map.removeLayer(layer));
+      // Remove existing vector layers
+      map
+        .getLayers()
+        .getArray()
+        .filter((layer) => layer instanceof VectorLayer)
+        .forEach((layer) => map.removeLayer(layer));
 
-    const yearData = data.find((value) => value.year === selectedYear);
-    const filteredData = yearData?.buildings.filter((building) => {
-      const vacancyRate = parseInt(building.info.vacancyRate);
-      if (vacancyRate >= 80) {
-        return vacancyLevels.high;
-      } else if (vacancyRate >= 30) {
-        return vacancyLevels.medium;
-      } else {
-        return vacancyLevels.low;
-      }
-    });
-    if (!filteredData) return;
-
-    const features = filteredData.map((building: Building) => {
-      const coordinates = building.coordinates.map((coord) =>
-        fromLonLat(coord),
-      );
-      const polygonFeature = new Feature({
-        geometry: new Polygon([coordinates]),
+      const yearData = data.find((value) => value.year === selectedYear);
+      const filteredData = yearData?.buildings.filter((building) => {
+        const vacancyRate = parseInt(building.info.vacancyRate);
+        if (vacancyRate >= 80) {
+          return vacancyLevels.high;
+        } else if (vacancyRate >= 30) {
+          return vacancyLevels.medium;
+        } else {
+          return vacancyLevels.low;
+        }
       });
-      polygonFeature.setProperties({ buildingInfo: building.info });
+      if (!filteredData) return;
 
-      const occupancyRate = parseInt(building.info.vacancyRate);
-      let color;
-      if (occupancyRate >= 80) {
-        color = "rgba(0, 255, 0, 0.2)";
-      } else if (occupancyRate >= 30) {
-        color = "rgba(255, 255, 0, 0.2)";
-      } else {
-        color = "rgba(255, 0, 0, 0.2)";
-      }
+      const features = filteredData.map((building: Building) => {
+        const coordinates = building.coordinates.map((coord) =>
+          fromLonLat(coord),
+        );
+        const polygonFeature = new Feature({
+          geometry: new Polygon([coordinates]),
+        });
+        polygonFeature.setProperties({ buildingInfo: building.info });
 
-      polygonFeature.setStyle(
-        new Style({
-          fill: new Fill({ color }),
-          stroke: new Stroke({
-            color: color.replace("0.2", "1"),
-            width: 2,
+        const occupancyRate = parseInt(building.info.vacancyRate);
+        let color;
+        if (occupancyRate >= 80) {
+          color = "rgba(0, 255, 0, 0.2)";
+        } else if (occupancyRate >= 30) {
+          color = "rgba(255, 255, 0, 0.2)";
+        } else {
+          color = "rgba(255, 0, 0, 0.2)";
+        }
+
+        polygonFeature.setStyle(
+          new Style({
+            fill: new Fill({ color }),
+            stroke: new Stroke({
+              color: color.replace("0.2", "1"),
+              width: 2,
+            }),
           }),
-        }),
-      );
+        );
 
-      return polygonFeature;
-    });
+        return polygonFeature;
+      });
 
-    const vectorSource = new VectorSource({ features });
-    const vectorLayer = new VectorLayer({ source: vectorSource });
-    map.addLayer(vectorLayer);
+      const vectorSource = new VectorSource({ features });
+      const vectorLayer = new VectorLayer({ source: vectorSource });
+      map.addLayer(vectorLayer);
 
-    // ポリゴンレイヤーをクリックしたらポップアップを表示する
-    map.on("singleclick", (event) => {
-      const feature = map.forEachFeatureAtPixel(
-        event.pixel,
-        (feature) => feature,
-      );
-      if (feature) {
-        const buildingInfo = feature.get("buildingInfo") as Building["info"];
-        setPopupData(buildingInfo);
-        map.getOverlays().item(0).setPosition(event.coordinate);
-      } else {
-        map.getOverlays().item(0).setPosition(undefined);
-        setPopupData(null);
-      }
-    });
-  }, [
-    data,
-    map,
-    selectedYear,
-    vacancyLevels.high,
-    vacancyLevels.low,
-    vacancyLevels.medium,
-  ]);
+      // ポリゴンレイヤーをクリックしたらポップアップを表示する
+      map.on("singleclick", (event) => {
+        const feature = map.forEachFeatureAtPixel(
+          event.pixel,
+          (feature) => feature,
+        );
+        if (feature) {
+          const buildingInfo = feature.get("buildingInfo") as Building["info"];
+          setPopupData(buildingInfo);
+          map.getOverlays().item(0).setPosition(event.coordinate);
+        } else {
+          map.getOverlays().item(0).setPosition(undefined);
+          setPopupData(null);
+        }
+      });
+    },
+    [
+      data,
+      map,
+      selectedYear,
+      vacancyLevels.high,
+      vacancyLevels.low,
+      vacancyLevels.medium,
+    ],
+  );
 
   return (
     <div>
