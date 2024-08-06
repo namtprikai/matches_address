@@ -4,12 +4,12 @@ import {
   Tab,
   TabList,
 } from "@fluentui/react-components";
-import { useFieldArray, useFormContext } from "react-hook-form";
-import { type z } from "zod";
 import { useEffect } from "react";
-import { type form_workbook_edit_schema } from "../zod/form_workbook_edit";
+import { type result_sheets } from "../schema";
 import { Button } from "./button";
 import { ButtonEditableSheetTitle } from "./button-editable-sheet-title";
+
+type ResultSheet = typeof result_sheets.$inferSelect;
 
 const addResultSheet = async ({
   workbookId,
@@ -25,8 +25,6 @@ const addResultSheet = async ({
   });
 };
 
-type FormType = z.infer<typeof form_workbook_edit_schema>;
-
 type Props = {
   selectedValue: number;
   onTabSelect?: SelectTabEventHandler | undefined;
@@ -40,17 +38,12 @@ export const TabListResultSheet = ({
   workbookId,
   setSelectedValue,
 }: Props): JSX.Element => {
-  const { control, watch } = useFormContext<FormType>();
-
-  const { fields, append } = useFieldArray({
-    control,
-    name: "resultSheetsWithViews",
-  });
+  const resultSheets: ResultSheet[] = [];
 
   useEffect(() => {
-    if (fields.length === 0) return;
+    if (resultSheets.length === 0) return;
     setSelectedValue(0);
-  }, [fields, setSelectedValue]);
+  }, [resultSheets.length, setSelectedValue]);
 
   return (
     <TabList onTabSelect={onTabSelect} selectedValue={selectedValue}>
@@ -58,22 +51,19 @@ export const TabListResultSheet = ({
         appearance="subtle"
         icon={<AddFilled />}
         onClick={async (): Promise<void> => {
-          await addResultSheet({ workbookId, fieldsLength: fields.length });
-          append({
-            sheet_id: watch(`resultSheetsWithViews.${selectedValue}.sheet_id`),
-            sheet_title: `シート${fields.length + 1}`,
-            result_views: [],
-            is_add_view: true,
+          await addResultSheet({
+            workbookId,
+            fieldsLength: resultSheets.length,
           });
         }}
         shape="square"
       >
         シートを追加
       </Button>
-      {fields.map((item, index) => (
-        <Tab key={item.id} id={item.sheet_title || ""} value={index}>
+      {resultSheets.map((item, index) => (
+        <Tab key={item.id} id={item.title || ""} value={index}>
           <ButtonEditableSheetTitle
-            resultSheet={{ id: item.sheet_id, title: item.sheet_title }}
+            resultSheet={{ id: item.id, title: item.title }}
           />
         </Tab>
       ))}
