@@ -46,12 +46,12 @@ export type VacancyLevels = Record<VacancyLevel, boolean>;
 
 interface Props {
   vacancyLevels: VacancyLevels;
-  onChange: (vacancyLevels: VacancyLevels) => void;
+  setVacancyLevels: (vacancyLevels: VacancyLevels) => void;
 }
 
 export function VacancyLevelCheckbox({
   vacancyLevels,
-  onChange,
+  setVacancyLevels: onChange,
 }: Props): JSX.Element {
   const styles = useStyles();
 
