@@ -12,23 +12,45 @@ import { Style, Fill, Stroke } from "ol/style";
 import Polygon from "ol/geom/Polygon";
 import Overlay from "ol/Overlay";
 import { type VacancyLevels } from "./vacancy-level-checkbox";
-import { _dummyData } from "./_dummy-data";
 
-// レベルごとの色設定
-const colors = {
-  low: "rgba(0, 255, 0, 0.2)",
-  medium: "rgba(255, 255, 0, 0.2)",
-  high: "rgba(255, 0, 0, 0.2)",
-};
+export type BuildingData = {
+  year: number;
+  buildings: Building[];
+}[];
 
-interface Props {
-  vacancyLevels: VacancyLevels;
+interface Building {
+  info: {
+    vacancyRate: string;
+    address: string;
+    totalPopulation: number;
+    ageGroups: {
+      under14: number;
+      between15And64: number;
+      over65: number;
+    };
+    waterUsage: string;
+    waterStatus: string;
+    constructionDate: string;
+    structureName: string;
+  };
+  coordinates: number[][];
 }
 
-export function MapComponent({ vacancyLevels }: Props): JSX.Element {
+interface Props {
+  data: BuildingData;
+  vacancyLevels: VacancyLevels;
+  selectedYear: number;
+}
+
+export function MapComponent({
+  data,
+  selectedYear,
+  vacancyLevels,
+}: Props): JSX.Element {
   const mapRef = useRef<HTMLDivElement | null>(null);
   const popupRef = useRef<HTMLDivElement | null>(null);
-  const [popupData, setPopupData] = useState<BuildingInfo | null>(null);
+  const [map, setMap] = useState<Map | null>(null);
+  const [popupData, setPopupData] = useState<Building["info"] | null>(null);
 
   useEffect(() => {
     const mapEl = mapRef.current;
@@ -44,7 +66,7 @@ export function MapComponent({ vacancyLevels }: Props): JSX.Element {
       },
     });
 
-    const map = new Map({
+    const initialMap = new Map({
       target: mapEl,
       layers: [
         new TileLayer({
@@ -62,44 +84,69 @@ export function MapComponent({ vacancyLevels }: Props): JSX.Element {
       }),
     });
 
-    // レベルごとのレイヤーを作成
-    Object.entries(vacancyLevels).forEach(([level, isVisible]) => {
-      if (isVisible) {
-        const features = _dummyData[level as keyof typeof _dummyData].map(
-          ({ buildingInfo, coordinates }) => {
-            const polygonFeature = new Feature({
-              geometry: new Polygon([
-                coordinates.map((coord) => fromLonLat(coord)),
-              ]),
-            });
-            polygonFeature.setProperties({ buildingInfo });
-            polygonFeature.setStyle(
-              new Style({
-                fill: new Fill({
-                  color: colors[level as keyof typeof colors],
-                }),
-                stroke: new Stroke({
-                  color: colors[level as keyof typeof colors].replace(
-                    "0.2",
-                    "1",
-                  ),
-                  width: 2,
-                }),
-              }),
-            );
-            return polygonFeature;
-          },
-        );
+    setMap(initialMap);
 
-        const vectorSource = new VectorSource({
-          features,
-        });
-        const vectorLayer = new VectorLayer({
-          source: vectorSource,
-        });
-        map.addLayer(vectorLayer);
+    return () => initialMap.setTarget(undefined);
+  }, []);
+
+  useEffect(() => {
+    if (!map) return;
+
+    // Remove existing vector layers
+    map
+      .getLayers()
+      .getArray()
+      .filter((layer) => layer instanceof VectorLayer)
+      .forEach((layer) => map.removeLayer(layer));
+
+    const yearData = data.find((value) => value.year === selectedYear);
+    const filteredData = yearData?.buildings.filter((building) => {
+      const vacancyRate = parseInt(building.info.vacancyRate);
+      if (vacancyRate >= 80) {
+        return vacancyLevels.high;
+      } else if (vacancyRate >= 30) {
+        return vacancyLevels.medium;
+      } else {
+        return vacancyLevels.low;
       }
     });
+    if (!filteredData) return;
+
+    const features = filteredData.map((building: Building) => {
+      const coordinates = building.coordinates.map((coord) =>
+        fromLonLat(coord),
+      );
+      const polygonFeature = new Feature({
+        geometry: new Polygon([coordinates]),
+      });
+      polygonFeature.setProperties({ buildingInfo: building.info });
+
+      const occupancyRate = parseInt(building.info.vacancyRate);
+      let color;
+      if (occupancyRate >= 80) {
+        color = "rgba(0, 255, 0, 0.2)";
+      } else if (occupancyRate >= 30) {
+        color = "rgba(255, 255, 0, 0.2)";
+      } else {
+        color = "rgba(255, 0, 0, 0.2)";
+      }
+
+      polygonFeature.setStyle(
+        new Style({
+          fill: new Fill({ color }),
+          stroke: new Stroke({
+            color: color.replace("0.2", "1"),
+            width: 2,
+          }),
+        }),
+      );
+
+      return polygonFeature;
+    });
+
+    const vectorSource = new VectorSource({ features });
+    const vectorLayer = new VectorLayer({ source: vectorSource });
+    map.addLayer(vectorLayer);
 
     // ポリゴンレイヤーをクリックしたらポップアップを表示する
     map.on("singleclick", (event) => {
@@ -108,122 +155,108 @@ export function MapComponent({ vacancyLevels }: Props): JSX.Element {
         (feature) => feature,
       );
       if (feature) {
-        const coordinate = event.coordinate;
-        const buildingInfo = feature.get("buildingInfo") as BuildingInfo;
+        const buildingInfo = feature.get("buildingInfo") as Building["info"];
         setPopupData(buildingInfo);
-        popupOverlay.setPosition(coordinate);
+        map.getOverlays().item(0).setPosition(event.coordinate);
       } else {
-        popupOverlay.setPosition(undefined);
+        map.getOverlays().item(0).setPosition(undefined);
         setPopupData(null);
       }
     });
-
-    return () => map.setTarget(undefined);
-  }, [vacancyLevels]);
+  }, [
+    data,
+    map,
+    selectedYear,
+    vacancyLevels.high,
+    vacancyLevels.low,
+    vacancyLevels.medium,
+  ]);
 
   return (
     <div>
       <div ref={mapRef} style={{ width: "100%", height: "400px" }} />
-      <Popup ref={popupRef} data={popupData} />
+      <Popup ref={popupRef} buildingInfo={popupData} />
     </div>
   );
 }
 
-interface BuildingInfo {
-  occupancyRate: string;
-  address: string;
-  householdInfo: {
-    totalPopulation: number;
-    ageGroups: {
-      under14: number;
-      between15And64: number;
-      over65: number;
-    };
-  };
-  waterInfo: {
-    usage: string;
-    status: string;
-  };
-  buildingInfo: {
-    constructionDate: string;
-    structureName: string;
-  };
-}
 interface PopupProps {
-  data: BuildingInfo | null;
+  buildingInfo: Building["info"] | null;
 }
 
-const Popup = forwardRef<HTMLDivElement, PopupProps>(({ data }, ref) => {
-  return (
-    <div
-      ref={ref}
-      style={{
-        position: "absolute",
-        backgroundColor: "white",
-        boxShadow: "0 1px 4px rgba(0,0,0,0.2)",
-        padding: "15px",
-        borderRadius: "10px",
-        border: "1px solid #cccccc",
-        bottom: "4px",
-        left: "8px",
-        minWidth: "280px",
-      }}
-      tabIndex={-1}
-    >
-      <div>
-        <span>{data?.occupancyRate}</span>
-        <span>×</span>
+const Popup = forwardRef<HTMLDivElement, PopupProps>(
+  ({ buildingInfo }, ref) => {
+    return (
+      <div
+        ref={ref}
+        style={{
+          position: "absolute",
+          backgroundColor: "white",
+          boxShadow: "0 1px 4px rgba(0,0,0,0.2)",
+          padding: "15px",
+          borderRadius: "10px",
+          border: "1px solid #cccccc",
+          bottom: "4px",
+          left: "8px",
+          minWidth: "280px",
+        }}
+        tabIndex={-1}
+      >
+        <div>
+          <span>{buildingInfo?.vacancyRate}</span>
+          <span>×</span>
+        </div>
+        <div>{buildingInfo?.address}</div>
+        <div>
+          <h3>世帯情報</h3>
+          <div>
+            <span>世帯人数</span>
+            <span>{buildingInfo?.totalPopulation}人</span>
+          </div>
+          <div>
+            <span>〜14歳</span>
+            <span>{buildingInfo?.ageGroups.under14}人</span>
+          </div>
+          <div>
+            <span>15-64歳</span>
+            <span>{buildingInfo?.ageGroups.between15And64}人</span>
+          </div>
+          <div>
+            <span>65歳〜</span>
+            <span>{buildingInfo?.ageGroups.over65}人</span>
+          </div>
+        </div>
+        <div>
+          <h3>水道情報</h3>
+          <div>
+            <span>水道使用量</span>
+            <span>{buildingInfo?.waterUsage}</span>
+          </div>
+          <div>
+            <span>水道使用状況</span>
+            <span>{buildingInfo?.waterStatus}</span>
+          </div>
+        </div>
+        <div>
+          <h3>建物情報</h3>
+          <div>
+            <span>築年月</span>
+            <span>{buildingInfo?.constructionDate}</span>
+          </div>
+          <div>
+            <span>構造名称</span>
+            <span>{buildingInfo?.structureName}</span>
+          </div>
+        </div>
+        <div>
+          <h3>その他</h3>
+          <div>
+            <span>災害避難経路等の情報表示</span>
+          </div>
+        </div>
       </div>
-      <div>{data?.address}</div>
-      <div>
-        <h3>世帯情報</h3>
-        <div>
-          <span>世帯人数</span>
-          <span>{data?.householdInfo.totalPopulation}人</span>
-        </div>
-        <div>
-          <span>〜14歳</span>
-          <span>{data?.householdInfo.ageGroups.under14}人</span>
-        </div>
-        <div>
-          <span>15-64歳</span>
-          <span>{data?.householdInfo.ageGroups.between15And64}人</span>
-        </div>
-        <div>
-          <span>65歳〜</span>
-          <span>{data?.householdInfo.ageGroups.over65}人</span>
-        </div>
-      </div>
-      <div>
-        <h3>水道情報</h3>
-        <div>
-          <span>水道使用量</span>
-          <span>{data?.waterInfo.usage}</span>
-        </div>
-        <div>
-          <span>水道使用状況</span>
-          <span>{data?.waterInfo.status}</span>
-        </div>
-      </div>
-      <div>
-        <h3>建物情報</h3>
-        <div>
-          <span>築年月</span>
-          <span>{data?.buildingInfo.constructionDate}</span>
-        </div>
-        <div>
-          <span>構造名称</span>
-          <span>{data?.buildingInfo.structureName}</span>
-        </div>
-      </div>
-      <div>
-        <h3>その他</h3>
-        <div>
-          <span>災害避難経路等の情報表示</span>
-        </div>
-      </div>
-    </div>
-  );
-});
+    );
+  },
+);
 
 Popup.displayName = "Popup";

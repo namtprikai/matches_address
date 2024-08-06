@@ -5,6 +5,7 @@ import {
   type VacancyLevels,
 } from "./vacancy-level-checkbox";
 import { MapComponent } from "./map-component";
+import { _dummyBuildingData } from "./_dummy-data";
 
 export function Map(): JSX.Element {
   const [vacancyLevels, setVacancyLevels] = useState<VacancyLevels>({
@@ -12,6 +13,9 @@ export function Map(): JSX.Element {
     medium: true,
     high: true,
   });
+  const [selectedYear, setSelectedYear] = useState<number>(
+    _dummyBuildingData[0].year,
+  );
 
   return (
     <div>
@@ -28,8 +32,13 @@ export function Map(): JSX.Element {
         <div>
           <div>表示期間</div>
           <div>
-            <Dropdown>
-              {[2024, 2023, 2022, 2021].map((year) => (
+            <Dropdown
+              defaultValue={selectedYear.toString()}
+              onOptionSelect={(_, data) =>
+                setSelectedYear(Number(data.optionText))
+              }
+            >
+              {_dummyBuildingData.map(({ year }) => (
                 <Option key={year} text={year.toString()}>
                   {year}
                 </Option>
@@ -38,7 +47,11 @@ export function Map(): JSX.Element {
           </div>
         </div>
       </div>
-      <MapComponent vacancyLevels={vacancyLevels} />
+      <MapComponent
+        data={_dummyBuildingData}
+        selectedYear={selectedYear}
+        vacancyLevels={vacancyLevels}
+      />
     </div>
   );
 }
