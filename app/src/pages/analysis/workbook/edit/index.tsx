@@ -1,12 +1,14 @@
 import { useParams } from "react-router-dom";
 import { makeStyles, tokens } from "@fluentui/react-components";
+import { useAtom } from "jotai";
 import { Button } from "../../../../components/button";
 import { useFetchWorkbook } from "../../../../hooks/use-fetch-workbook";
 import { useTabs } from "../../../../hooks/use-tabs";
 import { TabListResultSheet } from "../../../../components/tab-list-result-sheet";
-import { useFetchResultSheets } from "../../../../hooks/use-fetch-result-sheets";
 import { SidebarEditResultView } from "../../../../components/sidebar-edit-result-view";
 import { ResultSheet } from "../../../../components/result-sheet";
+import { resultSheetsAtom } from "../../../../state/result-sheets-atom";
+import { selectedWorkbookIdAtom } from "../../../../state/selected-workbook-id-atom";
 
 const useStyles = makeStyles({
   root: {
@@ -34,9 +36,13 @@ const useStyles = makeStyles({
 export function EditWorkbook(): JSX.Element {
   const styles = useStyles();
   const { id } = useParams();
+  const [, setSelectedWorkbookId] = useAtom(selectedWorkbookIdAtom);
+  setSelectedWorkbookId(Number(id));
 
   const { data: workbook } = useFetchWorkbook({ id });
-  const { data: resultSheets } = useFetchResultSheets({ id });
+  
+  const [resultSheets] = useAtom(resultSheetsAtom)
+
 
   const tabs = useTabs<number>();
   const { selectedValue } = tabs;

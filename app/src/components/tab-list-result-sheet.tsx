@@ -7,8 +7,8 @@ import {
 } from "@fluentui/react-components";
 import { useEffect } from "react";
 import { useAtom } from "jotai";
-import { useFetchResultSheets } from "../hooks/use-fetch-result-sheets";
 import { selectedSheetIdAtom } from "../state/selected-sheet-id-atom";
+import { resultSheetsAtom } from "../state/result-sheets-atom";
 import { Button } from "./button";
 import { ButtonEditableSheetTitle } from "./button-editable-sheet-title";
 
@@ -53,10 +53,8 @@ export const TabListResultSheet = ({
   setSelectedValue,
 }: Props): JSX.Element => {
   const styles = useStyles();
-  const { data: resultSheets, refetch } = useFetchResultSheets({
-    id: workbookId,
-  });
-  const [_, setResultSheetId] = useAtom(selectedSheetIdAtom);
+  const [resultSheets, refresh] = useAtom(resultSheetsAtom);
+  const [, setResultSheetId] = useAtom(selectedSheetIdAtom);
 
   useEffect(() => {
     if (resultSheets.length === 0) return;
@@ -77,7 +75,7 @@ export const TabListResultSheet = ({
             fieldsLength: resultSheets.length,
           });
           if (!workbookId) return;
-          refetch(workbookId).catch(console.error);
+          refresh();
         }}
         shape="square"
       >
