@@ -74,7 +74,7 @@ export const TabListResultSheet = (): JSX.Element => {
       >
         シートを追加
       </Button>
-      <TabList
+      {selectedResultSheetId && <TabList
         className={styles.tabList}
         onTabSelect={onTabSelect}
         selectedValue={selectedResultSheetId}
@@ -86,7 +86,7 @@ export const TabListResultSheet = (): JSX.Element => {
             />
           </Tab>
         ))}
-      </TabList>
+      </TabList>}
     </div>
   );
 };

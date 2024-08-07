@@ -7,6 +7,7 @@ type ResultViews = typeof result_views.$inferSelect;
 export const resultViewsAtom = atomWithRefresh(
   async (get): Promise<ResultViews[]> => {
     const selectedSheetId = get(selectedSheetIdAtom);
+    if(!selectedSheetId) return [];
     const result = await window.ipcRenderer.invoke("selectResultViews", {
       sheetId: selectedSheetId,
     });

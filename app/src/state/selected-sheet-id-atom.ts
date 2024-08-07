@@ -1,3 +1,3 @@
 import { atom } from "jotai";
 
-export const selectedSheetIdAtom = atom(0);
+export const selectedSheetIdAtom = atom<number>();
