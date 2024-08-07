@@ -7,18 +7,15 @@ import {
   makeStyles,
   tokens,
   SearchBox,
-  Field,
-  Input,
-  Select,
 } from "@fluentui/react-components";
 import { useAtom } from "jotai";
 import { useEffect, useState } from "react";
 import { useFetchDataSetResults } from "../hooks/use-fetch-data-set-results";
-import { type data_set_results, result_views } from "../schema";
-import { LanguageMap } from "../lang";
+import { type data_set_results } from "../schema";
 import { resultViewsAtom } from "../state/result-views-atom";
 import { selectedSheetIdAtom } from "../state/selected-sheet-id-atom";
 import { Button } from "./button";
+import { EditResultViewFileds } from "./edit-result-view-fileds";
 
 /** 開発用 */
 const addDataSetResult = async (
@@ -129,37 +126,7 @@ export const SidebarEditResultView = (): JSX.Element => {
               </div>
             </>
           )}
-          {!isAddView && (
-            <>
-              <Field label="データセット">
-                <Input disabled placeholder="選択中のデータセット名が入る" />
-              </Field>
-              <Field label="ビューのタイトル">
-                <Input placeholder="選択中のビューのタイトルを入力する" />
-              </Field>
-              <fieldset>
-                <legend>パラメーター</legend>
-                <Field label="スタイル">
-                  <Select>
-                    {result_views.style.enumValues.map((item) => (
-                      <option key={item} value={item}>
-                        {LanguageMap["RESULT_VIEWS_STYLE"][item]}
-                      </option>
-                    ))}
-                  </Select>
-                </Field>
-                <Field label="集計単位">
-                  <Select>
-                    {result_views.unit.enumValues.map((item) => (
-                      <option key={item} value={item}>
-                        {LanguageMap["RESULT_VIEWS_UNIT"][item]}
-                      </option>
-                    ))}
-                  </Select>
-                </Field>
-              </fieldset>
-            </>
-          )}
+          {!isAddView && <EditResultViewFileds />}
         </div>
       </DrawerBody>
     </InlineDrawer>
