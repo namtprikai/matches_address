@@ -13,7 +13,7 @@ export const useTabs = <T>(): {
   setSelectedValue: React.Dispatch<T>;
 } => {
   const [selectedValue, setSelectedValue] = useState<TabValue>("");
-  const [_, setResultSheetId] = useAtom(selectedSheetIdAtom);
+  const [, setResultSheetId] = useAtom(selectedSheetIdAtom);
 
   const onTabSelect = (_: SelectTabEvent, data: SelectTabData): void => {
     setSelectedValue(data.value);
