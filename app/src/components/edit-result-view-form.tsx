@@ -3,7 +3,6 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useAtom } from "jotai";
-import { useEffect } from "react";
 import { result_views } from "../schema";
 import { LanguageMap } from "../lang";
 import { selectedResultViewIdAtom } from "../state/selected-result-view-id-atom";
@@ -18,13 +17,11 @@ const schema = z.object({
 type EditResultViewFormType = z.infer<typeof schema>;
 
 export const EditResultViewForm = (): JSX.Element => {
-  const { register, handleSubmit, formState: {errors}, reset } = useForm<EditResultViewFormType>({
+  const { register, handleSubmit, reset } = useForm<EditResultViewFormType>({
     resolver: zodResolver(schema),
   });
   const [selectedResultViewId] = useAtom(selectedResultViewIdAtom);
   const [, refresh] = useAtom(resultViewsAtom);
-
-  console.log({errors});
 
   const onSubmit = handleSubmit(async (data) => {
     if (!selectedResultViewId) return;
@@ -38,7 +35,7 @@ export const EditResultViewForm = (): JSX.Element => {
     });
     refresh();
     reset({
-      title: ""
+      title: "",
     });
   });
 
