@@ -1,10 +1,10 @@
 import { Suspense } from "react";
-import { EditWorkbookForm } from "../../../../components/edit-workbook-form";
+import { EditWorkbook as EditWorkbookComponent } from "../../../../components/edit-workbook";
 
 export function EditWorkbook(): JSX.Element {
   return (
     <Suspense fallback={<></>}>
-      <EditWorkbookForm />
+      <EditWorkbookComponent />
     </Suspense>
   );
 }

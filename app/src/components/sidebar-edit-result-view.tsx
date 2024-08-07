@@ -15,7 +15,7 @@ import { type data_set_results } from "../schema";
 import { resultViewsAtom } from "../state/result-views-atom";
 import { selectedSheetIdAtom } from "../state/selected-sheet-id-atom";
 import { Button } from "./button";
-import { EditResultViewFileds } from "./edit-result-view-fileds";
+import { EditResultViewForm } from "./edit-result-view-form";
 
 /** 開発用 */
 const addDataSetResult = async (
@@ -126,7 +126,7 @@ export const SidebarEditResultView = (): JSX.Element => {
               </div>
             </>
           )}
-          {!isAddView && <EditResultViewFileds />}
+          {!isAddView && <EditResultViewForm />}
         </div>
       </DrawerBody>
     </InlineDrawer>

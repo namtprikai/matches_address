@@ -28,7 +28,7 @@ const useStyles = makeStyles({
   },
 });
 
-export const EditWorkbookForm = (): JSX.Element => {
+export const EditWorkbook = (): JSX.Element => {
   const styles = useStyles();
   const { id } = useParams();
   const [, setSelectedWorkbookId] = useAtom(selectedWorkbookIdAtom);

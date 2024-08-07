@@ -2,7 +2,7 @@ import { Field, Input, Select } from "@fluentui/react-components";
 import { result_views } from "../schema";
 import { LanguageMap } from "../lang";
 
-export const EditResultViewFileds = (): JSX.Element => {
+export const EditResultViewForm = (): JSX.Element => {
   return (
     <>
       <Field label="データセット">
