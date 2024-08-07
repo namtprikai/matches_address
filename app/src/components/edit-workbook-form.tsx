@@ -2,9 +2,9 @@ import { useParams } from "react-router-dom";
 import { makeStyles, tokens } from "@fluentui/react-components";
 import { useAtom } from "jotai";
 import { useFetchWorkbook } from "../hooks/use-fetch-workbook";
-import { useTabs } from "../hooks/use-tabs";
 import { resultSheetsAtom } from "../state/result-sheets-atom";
 import { selectedWorkbookIdAtom } from "../state/selected-workbook-id-atom";
+import { selectedSheetIdAtom } from "../state/selected-sheet-id-atom";
 import { Button } from "./button";
 import { TabListResultSheet } from "./tab-list-result-sheet";
 import { SidebarEditResultView } from "./sidebar-edit-result-view";
@@ -42,9 +42,7 @@ export const EditWorkbookForm = (): JSX.Element => {
   const { data: workbook } = useFetchWorkbook({ id });
 
   const [resultSheets] = useAtom(resultSheetsAtom);
-
-  const tabs = useTabs<number>();
-  const { selectedValue } = tabs;
+  const [selectedResultSheetId] = useAtom(selectedSheetIdAtom);
 
   const onSubmit = (): void => {
     //
@@ -63,10 +61,10 @@ export const EditWorkbookForm = (): JSX.Element => {
             </Button>
           </div>
 
-          <TabListResultSheet {...tabs} workbookId={id} />
+          <TabListResultSheet />
           <div>
             {resultSheets.map((item) => (
-              <div key={item.id} hidden={selectedValue !== item.id}>
+              <div key={item.id} hidden={selectedResultSheetId !== item.id}>
                 <ResultSheet />
               </div>
             ))}

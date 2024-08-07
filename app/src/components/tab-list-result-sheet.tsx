@@ -1,14 +1,16 @@
 import { AddFilled } from "@fluentui/react-icons";
 import {
   makeStyles,
-  type SelectTabEventHandler,
+  type SelectTabData,
+  type SelectTabEvent,
   Tab,
   TabList,
 } from "@fluentui/react-components";
-import { useEffect } from "react";
 import { useAtom } from "jotai";
-import { selectedSheetIdAtom } from "../state/selected-sheet-id-atom";
+import { startTransition, useEffect } from "react";
 import { resultSheetsAtom } from "../state/result-sheets-atom";
+import { selectedSheetIdAtom } from "../state/selected-sheet-id-atom";
+import { selectedWorkbookIdAtom } from "../state/selected-workbook-id-atom";
 import { Button } from "./button";
 import { ButtonEditableSheetTitle } from "./button-editable-sheet-title";
 
@@ -39,30 +41,20 @@ const useStyles = makeStyles({
   },
 });
 
-type Props = {
-  selectedValue: number;
-  onTabSelect?: SelectTabEventHandler | undefined;
-  setSelectedValue: React.Dispatch<number>;
-  workbookId: string | undefined;
-};
-
-export const TabListResultSheet = ({
-  onTabSelect,
-  selectedValue,
-  workbookId,
-  setSelectedValue,
-}: Props): JSX.Element => {
+export const TabListResultSheet = (): JSX.Element => {
   const styles = useStyles();
   const [resultSheets, refresh] = useAtom(resultSheetsAtom);
-  const [, setResultSheetId] = useAtom(selectedSheetIdAtom);
+  const [workbookId] = useAtom(selectedWorkbookIdAtom);
+  const [selectedResultSheetId, setSelectedResultSheetId] = useAtom(selectedSheetIdAtom);
+
+  const onTabSelect = (_: SelectTabEvent, data: SelectTabData): void => {
+    startTransition(() => setSelectedResultSheetId(data.value as number));
+  };
 
   useEffect(() => {
     if (resultSheets.length === 0) return;
-
-    /** @todo きもいからあとで直す */
-    setSelectedValue(resultSheets[0].id);
-    setResultSheetId(resultSheets[0].id);
-  }, [resultSheets, setResultSheetId, setSelectedValue]);
+    setSelectedResultSheetId(resultSheets[0].id);
+  }, [resultSheets, setSelectedResultSheetId]);
 
   return (
     <div className={styles.root}>
@@ -71,7 +63,7 @@ export const TabListResultSheet = ({
         icon={<AddFilled />}
         onClick={async (): Promise<void> => {
           await addResultSheet({
-            workbookId,
+            workbookId: String(workbookId),
             fieldsLength: resultSheets.length,
           });
           if (!workbookId) return;
@@ -84,7 +76,7 @@ export const TabListResultSheet = ({
       <TabList
         className={styles.tabList}
         onTabSelect={onTabSelect}
-        selectedValue={selectedValue}
+        selectedValue={selectedResultSheetId}
       >
         {resultSheets.map((item) => (
           <Tab key={item.id} id={item.title || ""} value={item.id}>
