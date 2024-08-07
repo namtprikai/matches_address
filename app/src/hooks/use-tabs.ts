@@ -3,7 +3,9 @@ import {
   type SelectTabEvent,
   type TabValue,
 } from "@fluentui/react-components";
-import { useState } from "react";
+import { startTransition, useState } from "react";
+import { useAtom } from "jotai";
+import { selectedSheetIdAtom } from "../state/selected-sheet-id-atom";
 
 export const useTabs = <T>(): {
   selectedValue: T;
@@ -11,9 +13,11 @@ export const useTabs = <T>(): {
   setSelectedValue: React.Dispatch<T>;
 } => {
   const [selectedValue, setSelectedValue] = useState<TabValue>("");
+  const [selectedSheetId, setResultSheetId] = useAtom(selectedSheetIdAtom);
 
   const onTabSelect = (_: SelectTabEvent, data: SelectTabData): void => {
     setSelectedValue(data.value);
+    startTransition(() => setResultSheetId(data.value as number));
   };
 
   return {

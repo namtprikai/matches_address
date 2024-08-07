@@ -60,9 +60,9 @@ export function EditWorkbook(): JSX.Element {
 
           <TabListResultSheet {...tabs} workbookId={id} />
           <div>
-            {resultSheets.map((item, index) => (
-              <div key={item.id} hidden={selectedValue !== index}>
-                <ResultSheet sheetId={item.id} />
+            {resultSheets.map((item) => (
+              <div key={item.id} hidden={selectedValue !== item.id}>
+                <ResultSheet />
               </div>
             ))}
           </div>

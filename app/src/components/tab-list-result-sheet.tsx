@@ -5,8 +5,10 @@ import {
   TabList,
 } from "@fluentui/react-components";
 import { useEffect } from "react";
+import { useAtom } from "jotai";
 import { type result_sheets } from "../schema";
 import { useFetchResultSheets } from "../hooks/use-fetch-result-sheets";
+import { selectedSheetIdAtom } from "../state/selected-sheet-id-atom";
 import { Button } from "./button";
 import { ButtonEditableSheetTitle } from "./button-editable-sheet-title";
 
@@ -40,11 +42,13 @@ export const TabListResultSheet = ({
   setSelectedValue,
 }: Props): JSX.Element => {
   const { data: resultSheets } = useFetchResultSheets({ id: workbookId });
+  const [selectedSheetId, setResultSheetId] = useAtom(selectedSheetIdAtom);
 
   useEffect(() => {
     if (resultSheets.length === 0) return;
-    setSelectedValue(0);
-  }, [resultSheets.length, setSelectedValue]);
+    setSelectedValue(resultSheets[0].id);
+    setResultSheetId(resultSheets[0].id);
+  }, [resultSheets, setSelectedValue]);
 
   return (
     <TabList onTabSelect={onTabSelect} selectedValue={selectedValue}>
@@ -61,8 +65,8 @@ export const TabListResultSheet = ({
       >
         シートを追加
       </Button>
-      {resultSheets.map((item, index) => (
-        <Tab key={item.id} id={item.title || ""} value={index}>
+      {resultSheets.map((item) => (
+        <Tab key={item.id} id={item.title || ""} value={item.id}>
           <ButtonEditableSheetTitle
             resultSheet={{ id: item.id, title: item.title }}
           />

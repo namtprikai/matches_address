@@ -12,12 +12,13 @@ import {
   Select,
 } from "@fluentui/react-components";
 import { useAtom } from "jotai";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useFetchDataSetResults } from "../hooks/use-fetch-data-set-results";
 import { type data_set_results, result_views } from "../schema";
 import { LanguageMap } from "../lang";
+import { resultViewsAtom } from "../state/result-views-atom";
+import { selectedSheetIdAtom } from "../state/selected-sheet-id-atom";
 import { Button } from "./button";
-import { resultViewsAtom } from "./result-sheet";
 
 /** 開発用 */
 const addDataSetResult = async (
@@ -46,7 +47,10 @@ export const SidebarEditResultView = (): JSX.Element => {
   const { data: dataSetResults } = useFetchDataSetResults();
 
   const [resultViews, refresh] = useAtom(resultViewsAtom);
+  const [selectedSheetId] = useAtom(selectedSheetIdAtom);
   const [isAddView, setIsAddView] = useState(resultViews.length === 0);
+
+  console.log("SidebarEditResultView",{resultViews, selectedSheetId, isAddView})
 
   /** ビューをデータセット情報と一緒に追加 */
   const addResultView = async ({
@@ -56,10 +60,18 @@ export const SidebarEditResultView = (): JSX.Element => {
   }): Promise<void> => {
     await window.ipcRenderer.invoke("insertResultViews", {
       data_set_result_id: dataSetResultId,
-      sheet_id: 0 /** @todo 選択中のシートID */,
+      sheet_id: selectedSheetId,
     });
     refresh();
   };
+
+  useEffect(()=>{
+    if(resultViews.length === 0) {
+      setIsAddView(true)
+    } else {
+      setIsAddView(false)
+    }
+  },[resultViews.length])
 
   return (
     <InlineDrawer open>
