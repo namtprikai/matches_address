@@ -61,7 +61,7 @@ export function DetailWorkbook(): JSX.Element {
             className={styles.resultSheets}
             hidden={selectedValue !== item.id}
           >
-            <ResultSheet sheetId={item.id} />
+            {/* <ResultSheet sheetId={item.id} /> */}
           </div>
         ))}
       </div>
