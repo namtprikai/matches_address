@@ -20,11 +20,6 @@ const useStyles = makeStyles({
     lineHeight: tokens.lineHeightBase600,
     fontWeight: tokens.fontWeightSemibold,
   },
-  headingWithAction: {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
   content: {
     flex: "1",
     padding: tokens.spacingVerticalL,
@@ -44,36 +39,25 @@ export const EditWorkbookForm = (): JSX.Element => {
   const [resultSheets] = useAtom(resultSheetsAtom);
   const [selectedResultSheetId] = useAtom(selectedSheetIdAtom);
 
-  const onSubmit = (): void => {
-    //
-  };
-
   return (
-    <form onSubmit={onSubmit}>
-      <div className={styles.root}>
-        <SidebarEditResultView />
+    <div className={styles.root}>
+      <SidebarEditResultView />
 
-        <div className={styles.content}>
-          <div className={styles.headingWithAction}>
-            <h2 className={styles.heading}>{workbook?.title}</h2>
-            <Button appearance="primary" type="submit">
-              保存
-            </Button>
-          </div>
+      <div className={styles.content}>
+        <h2 className={styles.heading}>{workbook?.title}</h2>
 
-          <TabListResultSheet />
-          <div>
-            {resultSheets.map((item) => (
-              <div key={item.id} hidden={selectedResultSheetId !== item.id}>
-                <PreviewResultSheet />
-              </div>
-            ))}
-          </div>
-          <a href={`#analysis/workbook/${id}`}>
-            <Button>詳細に戻る</Button>
-          </a>
+        <TabListResultSheet />
+        <div>
+          {resultSheets.map((item) => (
+            <div key={item.id} hidden={selectedResultSheetId !== item.id}>
+              <PreviewResultSheet />
+            </div>
+          ))}
         </div>
+        <a href={`#analysis/workbook/${id}`}>
+          <Button>詳細に戻る</Button>
+        </a>
       </div>
-    </form>
+    </div>
   );
 };
