@@ -40,9 +40,8 @@ export function EditWorkbook(): JSX.Element {
   setSelectedWorkbookId(Number(id));
 
   const { data: workbook } = useFetchWorkbook({ id });
-  
-  const [resultSheets] = useAtom(resultSheetsAtom)
 
+  const [resultSheets] = useAtom(resultSheetsAtom);
 
   const tabs = useTabs<number>();
   const { selectedValue } = tabs;
