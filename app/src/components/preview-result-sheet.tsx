@@ -45,7 +45,7 @@ export const PreviewResultSheet = (): JSX.Element => {
               <Button appearance="subtle" icon={<ArrowDownloadFilled />} />
             }
             header={
-              <Subtitle2>{`ID:${data[0].data_set_result_id} - ${data[0].title || "タイトル未入力"}`}</Subtitle2>
+              <Subtitle2>{`ID:${data[0].id} - ${data[0].title || "タイトル未入力"}`}</Subtitle2>
             }
           />
           <div>
@@ -66,7 +66,7 @@ export const PreviewResultSheet = (): JSX.Element => {
                     />
                   }
                   header={
-                    <Subtitle2>{`ID:${resultView.data_set_result_id} - ${resultView.title || "タイトル未入力"}`}</Subtitle2>
+                    <Subtitle2>{`ID:${resultView.id} - ${resultView.title || "タイトル未入力"}`}</Subtitle2>
                   }
                 />
                 <div>
