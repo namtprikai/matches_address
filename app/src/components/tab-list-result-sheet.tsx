@@ -45,7 +45,8 @@ export const TabListResultSheet = (): JSX.Element => {
   const styles = useStyles();
   const [resultSheets, refresh] = useAtom(resultSheetsAtom);
   const [workbookId] = useAtom(selectedWorkbookIdAtom);
-  const [selectedResultSheetId, setSelectedResultSheetId] = useAtom(selectedSheetIdAtom);
+  const [selectedResultSheetId, setSelectedResultSheetId] =
+    useAtom(selectedSheetIdAtom);
 
   const onTabSelect = (_: SelectTabEvent, data: SelectTabData): void => {
     startTransition(() => setSelectedResultSheetId(data.value as number));

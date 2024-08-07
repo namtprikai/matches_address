@@ -8,7 +8,7 @@ import { selectedSheetIdAtom } from "../state/selected-sheet-id-atom";
 import { Button } from "./button";
 import { TabListResultSheet } from "./tab-list-result-sheet";
 import { SidebarEditResultView } from "./sidebar-edit-result-view";
-import { ResultSheet } from "./result-sheet";
+import { PreviewResultSheet } from "./preview-result-sheet";
 
 const useStyles = makeStyles({
   root: {
@@ -65,7 +65,7 @@ export const EditWorkbookForm = (): JSX.Element => {
           <div>
             {resultSheets.map((item) => (
               <div key={item.id} hidden={selectedResultSheetId !== item.id}>
-                <ResultSheet />
+                <PreviewResultSheet />
               </div>
             ))}
           </div>
@@ -76,4 +76,4 @@ export const EditWorkbookForm = (): JSX.Element => {
       </div>
     </form>
   );
-}
+};
