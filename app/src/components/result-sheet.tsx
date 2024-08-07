@@ -57,21 +57,27 @@ export const ResultSheet = ({ sheetId }: Props): JSX.Element => {
         </Card>
       </div>
       <div className={styles.resultViews}>
-        {data.map((resultView, index) => index !== 0 && (
-          <Card key={resultView.id}>
-            <CardHeader
-              action={
-                <Button appearance="subtle" icon={<ArrowDownloadFilled />} />
-              }
-              header={
-                <Subtitle2>{`ID:${resultView.data_set_result_id} - ${resultView.title || "タイトル未入力"}`}</Subtitle2>
-              }
-            />
-            <div>
-              <img alt="dummy" src="https://placehold.co/1220x760" />
-            </div>
-          </Card>
-        ))}
+        {data.map(
+          (resultView, index) =>
+            index !== 0 && (
+              <Card key={resultView.id}>
+                <CardHeader
+                  action={
+                    <Button
+                      appearance="subtle"
+                      icon={<ArrowDownloadFilled />}
+                    />
+                  }
+                  header={
+                    <Subtitle2>{`ID:${resultView.data_set_result_id} - ${resultView.title || "タイトル未入力"}`}</Subtitle2>
+                  }
+                />
+                <div>
+                  <img alt="dummy" src="https://placehold.co/1220x760" />
+                </div>
+              </Card>
+            ),
+        )}
       </div>
     </div>
   );
