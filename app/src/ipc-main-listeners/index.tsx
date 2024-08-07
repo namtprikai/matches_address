@@ -33,7 +33,7 @@ export const ipcMainListeners = {
   updateResultSheets,
   selectResultViews,
   insertResultViews,
-  updateResultViews
+  updateResultViews,
 };
 
 export const execFileAsync = promisify(execFile);

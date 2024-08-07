@@ -2,11 +2,15 @@ import { Field, Input, Select } from "@fluentui/react-components";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useAtom } from "jotai";
+import { useEffect } from "react";
 import { result_views } from "../schema";
 import { LanguageMap } from "../lang";
+import { selectedResultViewIdAtom } from "../state/selected-result-view-id-atom";
+import { resultViewsAtom } from "../state/result-views-atom";
 
 const schema = z.object({
-  title: z.string().min(1).max(255),
+  title: z.string().max(255).optional(),
   unit: z.enum(result_views.unit.enumValues).default("building"),
   style: z.enum(result_views.style.enumValues).default("map"),
 });
@@ -14,12 +18,28 @@ const schema = z.object({
 type EditResultViewFormType = z.infer<typeof schema>;
 
 export const EditResultViewForm = (): JSX.Element => {
-  const { register, handleSubmit } = useForm<EditResultViewFormType>({
+  const { register, handleSubmit, formState: {errors}, reset } = useForm<EditResultViewFormType>({
     resolver: zodResolver(schema),
   });
+  const [selectedResultViewId] = useAtom(selectedResultViewIdAtom);
+  const [, refresh] = useAtom(resultViewsAtom);
+
+  console.log({errors});
 
   const onSubmit = handleSubmit(async (data) => {
-    console.log("onSubmit", { data });
+    if (!selectedResultViewId) return;
+    await window.ipcRenderer.invoke("updateResultViews", {
+      resultViewId: selectedResultViewId,
+      value: {
+        title: data.title?.length === 0 ? undefined : data.title,
+        style: data.style,
+        unit: data.unit,
+      },
+    });
+    refresh();
+    reset({
+      title: ""
+    });
   });
 
   return (
@@ -32,13 +52,13 @@ export const EditResultViewForm = (): JSX.Element => {
         <Input
           placeholder="選択中のビューのタイトルを入力する"
           {...register("title")}
-          required
+          onBlur={onSubmit}
         />
       </Field>
       <fieldset>
         <legend>パラメーター</legend>
         <Field label="スタイル">
-          <Select {...register("style")}>
+          <Select {...register("style")} onBlur={onSubmit}>
             {result_views.style.enumValues.map((item) => (
               <option key={item} value={item}>
                 {LanguageMap["RESULT_VIEWS_STYLE"][item]}
@@ -47,7 +67,7 @@ export const EditResultViewForm = (): JSX.Element => {
           </Select>
         </Field>
         <Field label="集計単位">
-          <Select {...register("unit")}>
+          <Select {...register("unit")} onBlur={onSubmit}>
             {result_views.unit.enumValues.map((item) => (
               <option key={item} value={item}>
                 {LanguageMap["RESULT_VIEWS_UNIT"][item]}

@@ -11,8 +11,7 @@ export const updateResultViews = (async (
   {
     resultViewId,
     value: { title, style, unit },
-  }
-  : { resultViewId: number; value: InsertResultViews },
+  }: { resultViewId: number; value: InsertResultViews },
 ): Promise<SelectResultViews[]> => {
   const res = await db
     .update(result_views)
