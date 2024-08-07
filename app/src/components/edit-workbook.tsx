@@ -4,7 +4,7 @@ import { useAtom } from "jotai";
 import { useFetchWorkbook } from "../hooks/use-fetch-workbook";
 import { resultSheetsAtom } from "../state/result-sheets-atom";
 import { selectedWorkbookIdAtom } from "../state/selected-workbook-id-atom";
-import { selectedSheetIdAtom } from "../state/selected-sheet-id-atom";
+import { selectedResultSheetIdAtom } from "../state/selected-result-sheet-id-atom";
 import { Button } from "./button";
 import { TabListResultSheet } from "./tab-list-result-sheet";
 import { SidebarEditResultView } from "./sidebar-edit-result-view";
@@ -37,7 +37,7 @@ export const EditWorkbook = (): JSX.Element => {
   const { data: workbook } = useFetchWorkbook({ id });
 
   const [resultSheets] = useAtom(resultSheetsAtom);
-  const [selectedResultSheetId] = useAtom(selectedSheetIdAtom);
+  const [selectedResultSheetId] = useAtom(selectedResultSheetIdAtom);
 
   return (
     <div className={styles.root}>

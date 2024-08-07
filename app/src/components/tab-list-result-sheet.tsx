@@ -9,7 +9,7 @@ import {
 import { useAtom } from "jotai";
 import { startTransition, useEffect } from "react";
 import { resultSheetsAtom } from "../state/result-sheets-atom";
-import { selectedSheetIdAtom } from "../state/selected-sheet-id-atom";
+import { selectedResultSheetIdAtom } from "../state/selected-result-sheet-id-atom";
 import { selectedWorkbookIdAtom } from "../state/selected-workbook-id-atom";
 import { Button } from "./button";
 import { ButtonEditableSheetTitle } from "./button-editable-sheet-title";
@@ -46,7 +46,7 @@ export const TabListResultSheet = (): JSX.Element => {
   const [resultSheets, refresh] = useAtom(resultSheetsAtom);
   const [workbookId] = useAtom(selectedWorkbookIdAtom);
   const [selectedResultSheetId, setSelectedResultSheetId] =
-    useAtom(selectedSheetIdAtom);
+    useAtom(selectedResultSheetIdAtom);
 
   const onTabSelect = (_: SelectTabEvent, data: SelectTabData): void => {
     startTransition(() => setSelectedResultSheetId(data.value as number));

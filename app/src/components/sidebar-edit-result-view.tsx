@@ -13,7 +13,7 @@ import { useEffect, useState } from "react";
 import { useFetchDataSetResults } from "../hooks/use-fetch-data-set-results";
 import { type data_set_results } from "../schema";
 import { resultViewsAtom } from "../state/result-views-atom";
-import { selectedSheetIdAtom } from "../state/selected-sheet-id-atom";
+import { selectedResultSheetIdAtom } from "../state/selected-result-sheet-id-atom";
 import { Button } from "./button";
 import { EditResultViewForm } from "./edit-result-view-form";
 
@@ -44,7 +44,7 @@ export const SidebarEditResultView = (): JSX.Element => {
   const { data: dataSetResults } = useFetchDataSetResults();
 
   const [resultViews, refresh] = useAtom(resultViewsAtom);
-  const [selectedSheetId] = useAtom(selectedSheetIdAtom);
+  const [selectedResultSheetId] = useAtom(selectedResultSheetIdAtom);
   const [isAddView, setIsAddView] = useState(resultViews.length === 0);
 
   /** ビューをデータセット情報と一緒に追加 */
@@ -55,7 +55,7 @@ export const SidebarEditResultView = (): JSX.Element => {
   }): Promise<void> => {
     await window.ipcRenderer.invoke("insertResultViews", {
       data_set_result_id: dataSetResultId,
-      sheet_id: selectedSheetId,
+      sheet_id: selectedResultSheetId,
     });
     refresh();
   };
