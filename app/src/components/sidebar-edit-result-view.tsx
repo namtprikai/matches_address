@@ -50,12 +50,6 @@ export const SidebarEditResultView = (): JSX.Element => {
   const [selectedSheetId] = useAtom(selectedSheetIdAtom);
   const [isAddView, setIsAddView] = useState(resultViews.length === 0);
 
-  console.log("SidebarEditResultView", {
-    resultViews,
-    selectedSheetId,
-    isAddView,
-  });
-
   /** ビューをデータセット情報と一緒に追加 */
   const addResultView = async ({
     dataSetResultId,
@@ -66,7 +60,6 @@ export const SidebarEditResultView = (): JSX.Element => {
       data_set_result_id: dataSetResultId,
       sheet_id: selectedSheetId,
     });
-    console.log("addResultView: selectedSheetId", selectedSheetId);
     refresh();
   };
 
