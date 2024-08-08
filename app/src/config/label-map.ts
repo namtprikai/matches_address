@@ -1,7 +1,10 @@
 import { type data_set_detail_buildings } from "../@types/anlysis";
 
-export const DataSetDetailBuidings: {
-    [key in keyof data_set_detail_buildings]: string;
+// unionにする
+type BaseTypes = data_set_detail_buildings;
+
+export const Label: {
+    [key in keyof BaseTypes]: string;
 } = {
     household_id: "世帯番号",
     residence_id: "住居ID",
@@ -22,4 +25,4 @@ export const DataSetDetailBuidings: {
     geometry: "geometry",
     predicted_label: "予想ラベル",
     predicted_probability: "予想確率",
-} as const
+};
