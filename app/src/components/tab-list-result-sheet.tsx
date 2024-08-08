@@ -45,8 +45,9 @@ export const TabListResultSheet = (): JSX.Element => {
   const styles = useStyles();
   const [resultSheets, refresh] = useAtom(resultSheetsAtom);
   const [workbookId] = useAtom(selectedWorkbookIdAtom);
-  const [selectedResultSheetId, setSelectedResultSheetId] =
-    useAtom(selectedResultSheetIdAtom);
+  const [selectedResultSheetId, setSelectedResultSheetId] = useAtom(
+    selectedResultSheetIdAtom,
+  );
 
   const onTabSelect = (_: SelectTabEvent, data: SelectTabData): void => {
     startTransition(() => setSelectedResultSheetId(data.value as number));
@@ -74,19 +75,21 @@ export const TabListResultSheet = (): JSX.Element => {
       >
         シートを追加
       </Button>
-      {selectedResultSheetId && <TabList
-        className={styles.tabList}
-        onTabSelect={onTabSelect}
-        selectedValue={selectedResultSheetId}
-      >
-        {resultSheets.map((item) => (
-          <Tab key={item.id} id={item.title || ""} value={item.id}>
-            <ButtonEditableSheetTitle
-              resultSheet={{ id: item.id, title: item.title }}
-            />
-          </Tab>
-        ))}
-      </TabList>}
+      {selectedResultSheetId && (
+        <TabList
+          className={styles.tabList}
+          onTabSelect={onTabSelect}
+          selectedValue={selectedResultSheetId}
+        >
+          {resultSheets.map((item) => (
+            <Tab key={item.id} id={item.title || ""} value={item.id}>
+              <ButtonEditableSheetTitle
+                resultSheet={{ id: item.id, title: item.title }}
+              />
+            </Tab>
+          ))}
+        </TabList>
+      )}
     </div>
   );
 };
