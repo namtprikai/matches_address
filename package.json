@@ -20,8 +20,5 @@
   "workspaces": [
     "app",
     "ml"
-  ],
-  "dependencies": {
-    "recharts": "^2.12.7"
-  }
+  ]
 }
