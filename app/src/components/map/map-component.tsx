@@ -134,11 +134,11 @@ export function MapComponent({
         const occupancyRate = parseInt(building.info.vacancyRate);
         let color;
         if (occupancyRate >= 80) {
-          color = "rgba(0, 255, 0, 0.2)";
+          color = "rgba(255, 0, 0, 0.2)";
         } else if (occupancyRate >= 30) {
           color = "rgba(255, 255, 0, 0.2)";
         } else {
-          color = "rgba(255, 0, 0, 0.2)";
+          color = "rgba(0, 255, 0, 0.2)";
         }
 
         polygonFeature.setStyle(
@@ -214,7 +214,6 @@ const usePopupStyles = makeStyles({
     width: "32px",
     height: "32px",
     borderRadius: "50%",
-    backgroundColor: tokens.colorPaletteGreenBackground2,
   },
   close: {
     position: "absolute",
@@ -225,7 +224,6 @@ const usePopupStyles = makeStyles({
     color: "#8A8A8A",
   },
   vacancyRate: {
-    color: "#4CAF50",
     fontSize: "24px",
     fontWeight: "bold",
   },
@@ -279,6 +277,27 @@ const usePopupStyles = makeStyles({
   otherIcon: {
     backgroundColor: "#738298",
   },
+  low: {
+    color: tokens.colorPaletteGreenBackground3,
+    backgroundColor: tokens.colorPaletteGreenBackground1,
+    "& > span": {
+      backgroundColor: tokens.colorPaletteGreenBackground3,
+    },
+  },
+  medium: {
+    color: tokens.colorPaletteYellowBackground3,
+    backgroundColor: tokens.colorPaletteYellowBackground1,
+    "& > span": {
+      backgroundColor: tokens.colorPaletteYellowBackground3,
+    },
+  },
+  high: {
+    color: tokens.colorPaletteRedBackground3,
+    backgroundColor: tokens.colorPaletteRedBackground1,
+    "& > span": {
+      backgroundColor: tokens.colorPaletteRedBackground3,
+    },
+  },
 });
 
 interface PopupProps {
@@ -288,11 +307,22 @@ interface PopupProps {
 const Popup = forwardRef<HTMLDivElement, PopupProps>(
   ({ buildingInfo }, ref) => {
     const styles = usePopupStyles();
+    const vacancyRateColorStyle = (() => {
+      if (!buildingInfo) return "";
+      const vacancyRate = parseInt(buildingInfo.vacancyRate);
+      if (vacancyRate >= 80) {
+        return styles.high;
+      } else if (vacancyRate >= 30) {
+        return styles.medium;
+      } else {
+        return styles.low;
+      }
+    })();
 
     return (
       <div ref={ref} className={styles.container} tabIndex={-1}>
         <span className={styles.close}>×</span>
-        <div className={styles.header}>
+        <div className={mergeClasses(styles.header, vacancyRateColorStyle)}>
           <span className={mergeClasses(styles.circleIcon)} />
           <div>
             <span className={styles.vacancyRate}>
