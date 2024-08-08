@@ -10,15 +10,15 @@ import { DisplayPeriodDropdown } from "./display-period-dropdown";
 const useStyles = makeStyles({
   filters: {
     display: "flex",
-    gap: "24px",
+    gap: tokens.spacingHorizontalXXL,
   },
   filter: {
     display: "flex",
     flexDirection: "column",
-    gap: "4px",
+    gap: tokens.spacingVerticalXS,
   },
   map: {
-    marginTop: "10px",
+    marginTop: tokens.spacingVerticalMNudge,
   },
 });
 

@@ -11,7 +11,7 @@ const useStyles = makeStyles({
     alignItems: "center",
     borderRadius: "6px",
     userSelect: "none",
-    gap: "8px",
+    gap: tokens.spacingHorizontalS,
   },
   label: {
     display: "flex",

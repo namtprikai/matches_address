@@ -208,7 +208,7 @@ const usePopupStyles = makeStyles({
     backgroundColor: "#1B8C631F",
     padding: "15px",
     display: "flex",
-    gap: "12px",
+    gap: tokens.spacingHorizontalM,
   },
   circleIcon: {
     width: "32px",
