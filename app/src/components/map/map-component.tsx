@@ -21,7 +21,7 @@ export type BuildingData = {
 
 interface Building {
   info: {
-    vacancyRate: string;
+    vacancyRate: number;
     address: string;
     totalPopulation: number;
     ageGroups: {
@@ -111,7 +111,7 @@ export function MapComponent({
 
       const yearData = data.find((value) => value.year === selectedYear);
       const filteredData = yearData?.buildings.filter((building) => {
-        const vacancyRate = parseInt(building.info.vacancyRate);
+        const vacancyRate = building.info.vacancyRate;
         if (vacancyRate >= 80) {
           return vacancyLevels.high;
         } else if (vacancyRate >= 30) {
@@ -131,7 +131,7 @@ export function MapComponent({
         });
         polygonFeature.setProperties({ buildingInfo: building.info });
 
-        const occupancyRate = parseInt(building.info.vacancyRate);
+        const occupancyRate = building.info.vacancyRate;
         let color;
         if (occupancyRate >= 80) {
           color = "rgba(255, 0, 0, 0.2)";
@@ -309,7 +309,7 @@ const Popup = forwardRef<HTMLDivElement, PopupProps>(
     const styles = usePopupStyles();
     const vacancyRateColorStyle = (() => {
       if (!buildingInfo) return "";
-      const vacancyRate = parseInt(buildingInfo.vacancyRate);
+      const vacancyRate = buildingInfo.vacancyRate;
       if (vacancyRate >= 80) {
         return styles.high;
       } else if (vacancyRate >= 30) {
@@ -326,7 +326,7 @@ const Popup = forwardRef<HTMLDivElement, PopupProps>(
           <span className={mergeClasses(styles.circleIcon)} />
           <div>
             <span className={styles.vacancyRate}>
-              {buildingInfo?.vacancyRate}
+              {buildingInfo?.vacancyRate}%
             </span>
             <div className={styles.address}>{buildingInfo?.address}</div>
           </div>

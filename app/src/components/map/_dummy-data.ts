@@ -6,7 +6,7 @@ export const _dummyBuildingData: BuildingData = [
     buildings: [
       {
         info: {
-          vacancyRate: "27%",
+          vacancyRate: 27,
           address: "愛知県豊田市喜多町2丁目170番地",
           totalPopulation: 42,
           ageGroups: {
@@ -29,7 +29,7 @@ export const _dummyBuildingData: BuildingData = [
       },
       {
         info: {
-          vacancyRate: "92%",
+          vacancyRate: 92,
           address: "愛知県豊田市西町1丁目57番地",
           totalPopulation: 55,
           ageGroups: {
@@ -52,7 +52,7 @@ export const _dummyBuildingData: BuildingData = [
       },
       {
         info: {
-          vacancyRate: "78%",
+          vacancyRate: 78,
           address: "愛知県豊田市若宮町1丁目57−1",
           totalPopulation: 33,
           ageGroups: {
@@ -75,7 +75,7 @@ export const _dummyBuildingData: BuildingData = [
       },
       {
         info: {
-          vacancyRate: "25%",
+          vacancyRate: 25,
           address: "愛知県豊田市元城町3丁目17",
           totalPopulation: 28,
           ageGroups: {
@@ -103,7 +103,7 @@ export const _dummyBuildingData: BuildingData = [
     buildings: [
       {
         info: {
-          vacancyRate: "23%",
+          vacancyRate: 23,
           address: "愛知県豊田市小坂本町1丁目25",
           totalPopulation: 39,
           ageGroups: {
@@ -126,7 +126,7 @@ export const _dummyBuildingData: BuildingData = [
       },
       {
         info: {
-          vacancyRate: "89%",
+          vacancyRate: 89,
           address: "愛知県豊田市西町4丁目26−1",
           totalPopulation: 47,
           ageGroups: {
@@ -149,7 +149,7 @@ export const _dummyBuildingData: BuildingData = [
       },
       {
         info: {
-          vacancyRate: "91%",
+          vacancyRate: 91,
           address: "愛知県豊田市栄町1丁目198",
           totalPopulation: 51,
           ageGroups: {
@@ -177,7 +177,7 @@ export const _dummyBuildingData: BuildingData = [
     buildings: [
       {
         info: {
-          vacancyRate: "0%",
+          vacancyRate: 0,
           address: "愛知県豊田市喜多町3丁目110番地",
           totalPopulation: 36,
           ageGroups: {
@@ -200,7 +200,7 @@ export const _dummyBuildingData: BuildingData = [
       },
       {
         info: {
-          vacancyRate: "94%",
+          vacancyRate: 94,
           address: "愛知県豊田市元城町2丁目68番地",
           totalPopulation: 31,
           ageGroups: {
@@ -223,7 +223,7 @@ export const _dummyBuildingData: BuildingData = [
       },
       {
         info: {
-          vacancyRate: "58%",
+          vacancyRate: 58,
           address: "愛知県豊田市神田町2丁目70",
           totalPopulation: 44,
           ageGroups: {
