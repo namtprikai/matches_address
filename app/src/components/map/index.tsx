@@ -3,19 +3,20 @@ import {
   VacancyLevelCheckbox,
   type VacancyLevels,
 } from "./vacancy-level-checkbox";
-import { MapComponent } from "./map-component";
-import { _dummyBuildingData } from "./_dummy-data";
+import { type BuildingData, MapComponent } from "./map-component";
 import { DisplayPeriodDropdown } from "./display-period-dropdown";
 
-export function Map(): JSX.Element {
+interface Props {
+  data: BuildingData;
+}
+
+export function Map({ data }: Props): JSX.Element {
   const [vacancyLevels, setVacancyLevels] = useState<VacancyLevels>({
     low: true,
     medium: true,
     high: true,
   });
-  const [selectedYear, setSelectedYear] = useState<number>(
-    _dummyBuildingData[0].year,
-  );
+  const [selectedYear, setSelectedYear] = useState<number>(data[0].year);
 
   return (
     <div>
@@ -35,13 +36,13 @@ export function Map(): JSX.Element {
             <DisplayPeriodDropdown
               selectedYear={selectedYear}
               setSelectedYear={setSelectedYear}
-              years={_dummyBuildingData.map((data) => data.year)}
+              years={data.map((data) => data.year)}
             />
           </div>
         </div>
       </div>
       <MapComponent
-        data={_dummyBuildingData}
+        data={data}
         selectedYear={selectedYear}
         vacancyLevels={vacancyLevels}
       />

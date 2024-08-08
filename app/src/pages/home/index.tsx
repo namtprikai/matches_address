@@ -2,6 +2,7 @@ import { Button, Field, Input } from "@fluentui/react-components";
 import { useEffect, useState } from "react";
 import { type FormProps } from "react-router-dom";
 import { Map } from "../../components/map";
+import { _dummyBuildingData } from "../../components/map/_dummy-data";
 
 export function Home(): JSX.Element {
   const [names, setNames] = useState<string[] | null>(null);
@@ -54,7 +55,7 @@ export function Home(): JSX.Element {
         <a href="#about">Go to about page</a>
       </div>
       <div>
-        <Map />
+        <Map data={_dummyBuildingData} />
       </div>
       <form onSubmit={handleSubmit}>
         <Field label="Save name">
