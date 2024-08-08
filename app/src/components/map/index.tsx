@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { makeStyles, tokens } from "@fluentui/react-components";
 import {
   VacancyLevelCheckbox,
   type VacancyLevels,
@@ -6,11 +7,27 @@ import {
 import { type BuildingData, MapComponent } from "./map-component";
 import { DisplayPeriodDropdown } from "./display-period-dropdown";
 
+const useStyles = makeStyles({
+  filters: {
+    display: "flex",
+    gap: "24px",
+  },
+  filter: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "4px",
+  },
+  map: {
+    marginTop: "10px",
+  },
+});
+
 interface Props {
   data: BuildingData;
 }
 
 export function Map({ data }: Props): JSX.Element {
+  const styles = useStyles();
   const [vacancyLevels, setVacancyLevels] = useState<VacancyLevels>({
     low: true,
     medium: true,
@@ -20,8 +37,8 @@ export function Map({ data }: Props): JSX.Element {
 
   return (
     <div>
-      <div>
-        <div>
+      <div className={styles.filters}>
+        <div className={styles.filter}>
           <div>空き家率</div>
           <div>
             <VacancyLevelCheckbox
@@ -30,7 +47,7 @@ export function Map({ data }: Props): JSX.Element {
             />
           </div>
         </div>
-        <div>
+        <div className={styles.filter}>
           <div>表示期間</div>
           <div>
             <DisplayPeriodDropdown
@@ -41,11 +58,13 @@ export function Map({ data }: Props): JSX.Element {
           </div>
         </div>
       </div>
-      <MapComponent
-        data={data}
-        selectedYear={selectedYear}
-        vacancyLevels={vacancyLevels}
-      />
+      <div className={styles.map}>
+        <MapComponent
+          data={data}
+          selectedYear={selectedYear}
+          vacancyLevels={vacancyLevels}
+        />
+      </div>
     </div>
   );
 }
