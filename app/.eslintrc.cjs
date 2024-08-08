@@ -57,7 +57,12 @@ module.exports = {
       },
     ],
     "@typescript-eslint/no-floating-promises": "error",
-    "@typescript-eslint/explicit-function-return-type": "error",
+    "@typescript-eslint/explicit-function-return-type": [
+      "error",
+      {
+        allowExpressions: true,
+      },
+    ],
     "react/jsx-sort-props": [
       "error",
       {

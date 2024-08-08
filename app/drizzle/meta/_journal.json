@@ -43,6 +43,13 @@
       "when": 1722154818230,
       "tag": "0005_magical_jean_grey",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1723077112274,
+      "tag": "0006_windy_paibok",
+      "breakpoints": true
     }
   ]
 }
