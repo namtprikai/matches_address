@@ -6,7 +6,8 @@ import {
   makeStyles,
   Subtitle2,
 } from "@fluentui/react-components";
-import { useFetchResultViews } from "../hooks/use-fetch-result-views";
+import { useAtom } from "jotai";
+import { resultViewsAtom } from "../state/result-views-atom";
 
 const useStyles = makeStyles({
   root: {
@@ -20,17 +21,13 @@ const useStyles = makeStyles({
   },
 });
 
-type Props = {
-  sheetId: number;
-};
-
 /**
- * 判定結果シートの表示
+ * ビューの追加画面で表示されるシートのプレビュー
  */
-export const ResultSheet = ({ sheetId }: Props): JSX.Element => {
+export const PreviewResultSheet = (): JSX.Element => {
   const styles = useStyles();
 
-  const { data } = useFetchResultViews({ sheetId });
+  const [data] = useAtom(resultViewsAtom);
 
   if (data.length === 0)
     return (
@@ -60,7 +57,7 @@ export const ResultSheet = ({ sheetId }: Props): JSX.Element => {
         {data.map(
           (resultView, index) =>
             index !== 0 && (
-              <Card key={resultView.id}>
+              <Card key={resultView.id} className="">
                 <CardHeader
                   action={
                     <Button
