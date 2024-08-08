@@ -1,5 +1,10 @@
 import { eq, sql } from "drizzle-orm";
-import { result_views, data_set_results, data_set_detail_buildings, data_set_detail_areas } from "../schema";
+import {
+  result_views,
+  data_set_results,
+  data_set_detail_buildings,
+  data_set_detail_areas,
+} from "../schema";
 import { db } from "../utils/db";
 import { type IpcMainListener } from ".";
 

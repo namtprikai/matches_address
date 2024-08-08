@@ -6,7 +6,12 @@ import {
   type CardProps,
   Subtitle2,
 } from "@fluentui/react-components";
-import { type data_set_detail_areas, type data_set_detail_buildings, type data_set_results, type result_views } from "../schema";
+import {
+  type data_set_detail_areas,
+  type data_set_detail_buildings,
+  type data_set_results,
+  type result_views,
+} from "../schema";
 import { LanguageMap } from "../lang";
 
 type ResultViews = typeof result_views.$inferSelect;
