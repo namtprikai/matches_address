@@ -38,10 +38,14 @@ export const PreviewResultSheet = (): JSX.Element => {
     <div className={styles.root}>
       <div>
         <CardResultView
-          dataSetResult={data[0].data_set_results}
           onClick={(): void => setSelectedResultViewId(data[0].result_views.id)}
-          resultView={data[0].result_views}
           selected={selectedResultViewId === data[0].result_views.id}
+          {...{
+            dataSetResult: data[0].data_set_results,
+            resultView: data[0].result_views,
+            dataSetDetailAreas: data[0].data_set_detail_areas,
+            dataSetDetailBuildings: data[0].data_set_detail_buildings,
+          }}
         />
       </div>
       <div className={styles.resultViews}>
@@ -50,12 +54,16 @@ export const PreviewResultSheet = (): JSX.Element => {
             index !== 0 && (
               <CardResultView
                 key={item.result_views.id}
-                dataSetResult={item.data_set_results}
                 onClick={(): void =>
                   setSelectedResultViewId(item.result_views.id)
                 }
-                resultView={item.result_views}
                 selected={selectedResultViewId === item.result_views.id}
+                {...{
+                  dataSetResult: item.data_set_results,
+                  resultView: item.result_views,
+                  dataSetDetailAreas: item.data_set_detail_areas,
+                  dataSetDetailBuildings: item.data_set_detail_buildings,
+                }}
               />
             ),
         )}
