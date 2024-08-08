@@ -11,6 +11,7 @@ import { Vector as VectorSource } from "ol/source";
 import { Style, Fill, Stroke } from "ol/style";
 import Polygon from "ol/geom/Polygon";
 import Overlay from "ol/Overlay";
+import { makeStyles, mergeClasses, tokens } from "@fluentui/react-components";
 import { type VacancyLevels } from "./vacancy-level-checkbox";
 
 export type BuildingData = {
@@ -36,6 +37,13 @@ interface Building {
   coordinates: number[][];
 }
 
+const useMapComponentStyles = makeStyles({
+  map: {
+    width: "100%",
+    height: "800px",
+  },
+});
+
 interface Props {
   data: BuildingData;
   vacancyLevels: VacancyLevels;
@@ -47,6 +55,7 @@ export function MapComponent({
   selectedYear,
   vacancyLevels,
 }: Props): JSX.Element {
+  const styles = useMapComponentStyles();
   const mapRef = useRef<HTMLDivElement | null>(null);
   const popupRef = useRef<HTMLDivElement | null>(null);
   const [map, setMap] = useState<Map | null>(null);
@@ -177,11 +186,100 @@ export function MapComponent({
 
   return (
     <div>
-      <div ref={mapRef} style={{ width: "100%", height: "400px" }} />
+      <div ref={mapRef} className={styles.map} />
       <Popup ref={popupRef} buildingInfo={popupData} />
     </div>
   );
 }
+
+const usePopupStyles = makeStyles({
+  container: {
+    position: "absolute",
+    backgroundColor: "white",
+    boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
+    borderRadius: "10px",
+    border: "1px solid #e0e0e0",
+    bottom: "4px",
+    left: "8px",
+    minWidth: "280px",
+    fontFamily: "Arial, sans-serif",
+  },
+  header: {
+    backgroundColor: "#1B8C631F",
+    padding: "15px",
+    display: "flex",
+    gap: "12px",
+  },
+  circleIcon: {
+    width: "32px",
+    height: "32px",
+    borderRadius: "50%",
+    backgroundColor: tokens.colorPaletteGreenBackground2,
+  },
+  close: {
+    position: "absolute",
+    fontSize: "24px",
+    top: "15px",
+    right: "15px",
+    cursor: "pointer",
+    color: "#8A8A8A",
+  },
+  vacancyRate: {
+    color: "#4CAF50",
+    fontSize: "24px",
+    fontWeight: "bold",
+  },
+  address: {
+    color: "#666",
+    fontSize: "14px",
+  },
+  info: {
+    padding: "12px 20px 20px",
+    "& > div + div": {
+      marginTop: "12px",
+    },
+  },
+  heading: {
+    color: "#333",
+    fontSize: "16px",
+    fontWeight: "bold",
+    marginBottom: "10px",
+    display: "flex",
+    alignItems: "center",
+  },
+  item: {
+    display: "flex",
+    justifyContent: "space-between",
+    fontSize: "14px",
+    borderBottom: "1px solid #E0E0E0",
+    lineHeight: "2",
+  },
+  itemLabel: {
+    color: "#8A8A8A",
+  },
+  itemValue: {
+    color: "#242424",
+  },
+  square: {
+    width: "24px",
+    height: "24px",
+    marginRight: "10px",
+    borderRadius: "4px",
+    display: "inline-block",
+  },
+  householdIcon: {
+    backgroundColor: tokens.colorPaletteGreenBackground3,
+  },
+  waterIcon: {
+    backgroundColor: tokens.colorPaletteBlueBackground2,
+  },
+  buildingIcon: {
+    backgroundColor: tokens.colorPaletteDarkOrangeBackground2,
+  },
+  otherIcon: {
+    backgroundColor: "#738298",
+  },
+});
 
 interface PopupProps {
   buildingInfo: Building["info"] | null;
@@ -189,72 +287,99 @@ interface PopupProps {
 
 const Popup = forwardRef<HTMLDivElement, PopupProps>(
   ({ buildingInfo }, ref) => {
+    const styles = usePopupStyles();
+
     return (
-      <div
-        ref={ref}
-        style={{
-          position: "absolute",
-          backgroundColor: "white",
-          boxShadow: "0 1px 4px rgba(0,0,0,0.2)",
-          padding: "15px",
-          borderRadius: "10px",
-          border: "1px solid #cccccc",
-          bottom: "4px",
-          left: "8px",
-          minWidth: "280px",
-        }}
-        tabIndex={-1}
-      >
-        <div>
-          <span>{buildingInfo?.vacancyRate}</span>
-          <span>×</span>
-        </div>
-        <div>{buildingInfo?.address}</div>
-        <div>
-          <h3>世帯情報</h3>
+      <div ref={ref} className={styles.container} tabIndex={-1}>
+        <span className={styles.close}>×</span>
+        <div className={styles.header}>
+          <span className={mergeClasses(styles.circleIcon)} />
           <div>
-            <span>世帯人数</span>
-            <span>{buildingInfo?.totalPopulation}人</span>
-          </div>
-          <div>
-            <span>〜14歳</span>
-            <span>{buildingInfo?.ageGroups.under14}人</span>
-          </div>
-          <div>
-            <span>15-64歳</span>
-            <span>{buildingInfo?.ageGroups.between15And64}人</span>
-          </div>
-          <div>
-            <span>65歳〜</span>
-            <span>{buildingInfo?.ageGroups.over65}人</span>
+            <span className={styles.vacancyRate}>
+              {buildingInfo?.vacancyRate}
+            </span>
+            <div className={styles.address}>{buildingInfo?.address}</div>
           </div>
         </div>
-        <div>
-          <h3>水道情報</h3>
+        <div className={styles.info}>
           <div>
-            <span>水道使用量</span>
-            <span>{buildingInfo?.waterUsage}</span>
+            <h3 className={styles.heading}>
+              <span
+                className={mergeClasses(styles.square, styles.householdIcon)}
+              />
+              世帯情報
+            </h3>
+            <div className={styles.item}>
+              <span className={styles.itemLabel}>世帯人数</span>
+              <span className={styles.itemValue}>
+                {buildingInfo?.totalPopulation}人
+              </span>
+            </div>
+            <div className={styles.item}>
+              <span className={styles.itemLabel}>〜14歳</span>
+              <span className={styles.itemValue}>
+                {buildingInfo?.ageGroups.under14}人
+              </span>
+            </div>
+            <div className={styles.item}>
+              <span className={styles.itemLabel}>15-64歳</span>
+              <span className={styles.itemValue}>
+                {buildingInfo?.ageGroups.between15And64}人
+              </span>
+            </div>
+            <div className={styles.item}>
+              <span className={styles.itemLabel}>65歳〜</span>
+              <span className={styles.itemValue}>
+                {buildingInfo?.ageGroups.over65}人
+              </span>
+            </div>
           </div>
           <div>
-            <span>水道使用状況</span>
-            <span>{buildingInfo?.waterStatus}</span>
+            <h3 className={styles.heading}>
+              <span className={mergeClasses(styles.square, styles.waterIcon)} />
+              水道情報
+            </h3>
+            <div className={styles.item}>
+              <span className={styles.itemLabel}>水道使用量</span>
+              <span className={styles.itemValue}>
+                {buildingInfo?.waterUsage}
+              </span>
+            </div>
+            <div className={styles.item}>
+              <span className={styles.itemLabel}>水道使用状況</span>
+              <span className={styles.itemValue}>
+                {buildingInfo?.waterStatus}
+              </span>
+            </div>
           </div>
-        </div>
-        <div>
-          <h3>建物情報</h3>
           <div>
-            <span>築年月</span>
-            <span>{buildingInfo?.constructionDate}</span>
+            <h3 className={styles.heading}>
+              <span
+                className={mergeClasses(styles.square, styles.buildingIcon)}
+              />
+              建物情報
+            </h3>
+            <div className={styles.item}>
+              <span className={styles.itemLabel}>築年月</span>
+              <span className={styles.itemValue}>
+                {buildingInfo?.constructionDate}
+              </span>
+            </div>
+            <div className={styles.item}>
+              <span className={styles.itemLabel}>構造名称</span>
+              <span className={styles.itemValue}>
+                {buildingInfo?.structureName}
+              </span>
+            </div>
           </div>
           <div>
-            <span>構造名称</span>
-            <span>{buildingInfo?.structureName}</span>
-          </div>
-        </div>
-        <div>
-          <h3>その他</h3>
-          <div>
-            <span>災害避難経路等の情報表示</span>
+            <h3 className={styles.heading}>
+              <span className={mergeClasses(styles.square, styles.otherIcon)} />
+              その他
+            </h3>
+            <div className={styles.item}>
+              <span>災害避難経路等の情報表示</span>
+            </div>
           </div>
         </div>
       </div>
