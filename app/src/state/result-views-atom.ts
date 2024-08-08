@@ -1,14 +1,12 @@
 import { atomWithRefresh } from "jotai/utils";
-import { type result_views } from "../schema";
+import { type ReadResultViewsResponse } from "../ipc-main-listeners/read-result-views";
 import { selectedResultSheetIdAtom } from "./selected-result-sheet-id-atom";
 
-type ResultViews = typeof result_views.$inferSelect;
-
 export const resultViewsAtom = atomWithRefresh(
-  async (get): Promise<ResultViews[]> => {
+  async (get): Promise<ReadResultViewsResponse> => {
     const selectedResultSheetId = get(selectedResultSheetIdAtom);
     if (!selectedResultSheetId) return [];
-    const result = await window.ipcRenderer.invoke("selectResultViews", {
+    const result = await window.ipcRenderer.invoke("readResultViews", {
       sheetId: selectedResultSheetId,
     });
     return result;

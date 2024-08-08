@@ -12,11 +12,12 @@ import { selectWorkbook } from "./select-workbook";
 import { selectResultSheets } from "./select-result-sheets";
 import { insertResultSheets } from "./insert-result-sheets";
 import { selectDataSetResults } from "./select-data-set-results";
-import { insertDataSetResults } from "./insert-data-set-results";
+import { createDataSetResults } from "./create-data-set-results";
 import { updateResultSheets } from "./update-result-sheets";
 import { selectResultViews } from "./select-result-views";
 import { insertResultViews } from "./insert-result-views";
 import { updateResultViews } from "./update-result-views";
+import { readResultViews } from "./read-result-views";
 
 export const ipcMainListeners = {
   getNames,
@@ -29,11 +30,12 @@ export const ipcMainListeners = {
   selectResultSheets,
   insertResultSheets,
   selectDataSetResults,
-  insertDataSetResults,
+  createDataSetResults,
   updateResultSheets,
   selectResultViews,
   insertResultViews,
   updateResultViews,
+  readResultViews,
 };
 
 export const execFileAsync = promisify(execFile);

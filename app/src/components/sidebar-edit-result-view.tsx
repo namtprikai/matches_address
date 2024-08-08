@@ -21,7 +21,7 @@ import { EditResultViewForm } from "./edit-result-view-form";
 const addDataSetResult = async (
   dataSetResults: (typeof data_set_results.$inferSelect)[],
 ): Promise<void> => {
-  await window.ipcRenderer.invoke("insertDataSetResults", {
+  await window.ipcRenderer.invoke("createDataSetResults", {
     title: `分析結果${dataSetResults.length + 1}`,
   });
 };
