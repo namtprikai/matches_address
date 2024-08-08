@@ -40,3 +40,33 @@ export const data_set_results = sqliteTable("data_set_results", {
   created_at: text("created_at").default(sql`(CURRENT_TIMESTAMP)`).notNull(),
   updated_at: text("updated_at").default(sql`(CURRENT_TIMESTAMP)`).notNull().$onUpdate(() => sql`(CURRENT_TIMESTAMP)`),
 });
+
+export const data_set_detail_buildings = sqliteTable("data_set_results", {
+  id: integer("id").primaryKey(),
+  data_set_result_id: integer("data_set_result_id"),
+
+  /** @todo 中身はあとから */
+
+  created_at: text("created_at")
+    .default(sql`(CURRENT_TIMESTAMP)`)
+    .notNull(),
+  updated_at: text("updated_at")
+    .default(sql`(CURRENT_TIMESTAMP)`)
+    .notNull()
+    .$onUpdate(() => sql`(CURRENT_TIMESTAMP)`),
+});
+
+export const data_set_detail_areas = sqliteTable("data_set_results", {
+  id: integer("id").primaryKey(),
+  data_set_result_id: integer("data_set_result_id"),
+
+  /** @todo 中身はあとから */
+
+  created_at: text("created_at")
+    .default(sql`(CURRENT_TIMESTAMP)`)
+    .notNull(),
+  updated_at: text("updated_at")
+    .default(sql`(CURRENT_TIMESTAMP)`)
+    .notNull()
+    .$onUpdate(() => sql`(CURRENT_TIMESTAMP)`),
+});
