@@ -245,7 +245,7 @@ const usePopupStyles = makeStyles({
   },
   header: {
     backgroundColor: "#1B8C631F",
-    padding: "15px",
+    padding: "20px 16px 12px",
     display: "flex",
     gap: tokens.spacingHorizontalM,
   },
@@ -263,12 +263,12 @@ const usePopupStyles = makeStyles({
     color: "#8A8A8A",
   },
   vacancyRate: {
-    fontSize: "24px",
+    fontSize: "20px",
     fontWeight: "bold",
   },
   address: {
     color: "#666",
-    fontSize: "14px",
+    fontSize: "12px",
   },
   info: {
     padding: "12px 20px 20px",
@@ -278,16 +278,16 @@ const usePopupStyles = makeStyles({
   },
   heading: {
     color: "#333",
-    fontSize: "16px",
+    fontSize: "14px",
     fontWeight: "bold",
-    marginBottom: "10px",
+    marginBottom: "4px",
     display: "flex",
     alignItems: "center",
   },
   item: {
     display: "flex",
     justifyContent: "space-between",
-    fontSize: "14px",
+    fontSize: "12px",
     borderBottom: "1px solid #E0E0E0",
     lineHeight: "2",
   },
