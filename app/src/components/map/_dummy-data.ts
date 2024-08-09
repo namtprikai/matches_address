@@ -1,4 +1,4 @@
-import { type BuildingData } from "./map-component";
+import { type AreaData, type BuildingData } from "./map-component";
 
 export const _dummyBuildingData: BuildingData = [
   {
@@ -242,6 +242,192 @@ export const _dummyBuildingData: BuildingData = [
           [137.166, 35.086],
           [137.161, 35.081],
           [137.156, 35.086],
+        ],
+      },
+    ],
+  },
+];
+
+export const _dummyAreaData: AreaData = [
+  {
+    year: 2024,
+    areas: [
+      {
+        info: {
+          vacancyRate: 15.3,
+          address: "愛知県豊田市高丘新町",
+          totalPopulation: 3250,
+          malePopulation: 1560,
+          femalePopulation: 1690,
+          averageAge: 42.8,
+          waterUsageAverage: 245,
+          waterUsageMax: 890,
+          waterUsageMin: 50,
+          averageConstructionAge: 22,
+          minConstructionAge: 1,
+          maxConstructionAge: 45,
+          vacantHouseRiskLevels: {
+            A: 12,
+            B: 28,
+            C: 45,
+          },
+          area: 1250000,
+        },
+        coordinates: [
+          [35.0891, 137.1514],
+          [35.0918, 137.1581],
+          [35.0872, 137.1603],
+          [35.0845, 137.1536],
+        ],
+      },
+      {
+        info: {
+          vacancyRate: 8.7,
+          address: "愛知県豊田市若林東町",
+          totalPopulation: 4120,
+          malePopulation: 2010,
+          femalePopulation: 2110,
+          averageAge: 39.5,
+          waterUsageAverage: 280,
+          waterUsageMax: 1050,
+          waterUsageMin: 65,
+          averageConstructionAge: 18,
+          minConstructionAge: 0,
+          maxConstructionAge: 40,
+          vacantHouseRiskLevels: {
+            A: 8,
+            B: 19,
+            C: 31,
+          },
+          area: 980000,
+        },
+        coordinates: [
+          [35.1108, 137.1731],
+          [35.1145, 137.1792],
+          [35.1092, 137.1814],
+          [35.1055, 137.1753],
+        ],
+      },
+    ],
+  },
+  {
+    year: 2023,
+    areas: [
+      {
+        info: {
+          vacancyRate: 17.1,
+          address: "愛知県豊田市高丘新町",
+          totalPopulation: 3280,
+          malePopulation: 1570,
+          femalePopulation: 1710,
+          averageAge: 42.5,
+          waterUsageAverage: 240,
+          waterUsageMax: 880,
+          waterUsageMin: 48,
+          averageConstructionAge: 21,
+          minConstructionAge: 0,
+          maxConstructionAge: 44,
+          vacantHouseRiskLevels: {
+            A: 14,
+            B: 30,
+            C: 48,
+          },
+          area: 1250000,
+        },
+        coordinates: [
+          [35.0891, 137.1514],
+          [35.0918, 137.1581],
+          [35.0872, 137.1603],
+          [35.0845, 137.1536],
+        ],
+      },
+      {
+        info: {
+          vacancyRate: 9.2,
+          address: "愛知県豊田市若林東町",
+          totalPopulation: 4080,
+          malePopulation: 1990,
+          femalePopulation: 2090,
+          averageAge: 39.2,
+          waterUsageAverage: 275,
+          waterUsageMax: 1030,
+          waterUsageMin: 62,
+          averageConstructionAge: 17,
+          minConstructionAge: 0,
+          maxConstructionAge: 39,
+          vacantHouseRiskLevels: {
+            A: 9,
+            B: 21,
+            C: 33,
+          },
+          area: 980000,
+        },
+        coordinates: [
+          [35.1108, 137.1731],
+          [35.1145, 137.1792],
+          [35.1092, 137.1814],
+          [35.1055, 137.1753],
+        ],
+      },
+    ],
+  },
+  {
+    year: 2022,
+    areas: [
+      {
+        info: {
+          vacancyRate: 18.9,
+          address: "愛知県豊田市高丘新町",
+          totalPopulation: 3310,
+          malePopulation: 1580,
+          femalePopulation: 1730,
+          averageAge: 42.2,
+          waterUsageAverage: 235,
+          waterUsageMax: 870,
+          waterUsageMin: 45,
+          averageConstructionAge: 20,
+          minConstructionAge: 0,
+          maxConstructionAge: 43,
+          vacantHouseRiskLevels: {
+            A: 16,
+            B: 32,
+            C: 51,
+          },
+          area: 1250000,
+        },
+        coordinates: [
+          [35.0891, 137.1514],
+          [35.0918, 137.1581],
+          [35.0872, 137.1603],
+          [35.0845, 137.1536],
+        ],
+      },
+      {
+        info: {
+          vacancyRate: 9.8,
+          address: "愛知県豊田市若林東町",
+          totalPopulation: 4040,
+          malePopulation: 1970,
+          femalePopulation: 2070,
+          averageAge: 38.9,
+          waterUsageAverage: 270,
+          waterUsageMax: 1010,
+          waterUsageMin: 60,
+          averageConstructionAge: 16,
+          minConstructionAge: 0,
+          maxConstructionAge: 38,
+          vacantHouseRiskLevels: {
+            A: 10,
+            B: 23,
+            C: 35,
+          },
+          area: 980000,
+        },
+        coordinates: [
+          [35.1108, 137.1731],
+          [35.1145, 137.1792],
+          [35.1092, 137.1814],
+          [35.1055, 137.1753],
         ],
       },
     ],
