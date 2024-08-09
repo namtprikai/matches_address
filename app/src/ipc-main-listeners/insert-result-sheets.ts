@@ -3,19 +3,15 @@ import { db } from "../utils/db";
 import { type IpcMainListener } from ".";
 
 type InsertResultSheets = typeof result_sheets.$inferInsert;
+type SelectResultSheets = typeof result_sheets.$inferSelect;
 
-export const insertResultSheets = ((
+export const insertResultSheets = (async (
   _: unknown,
   { workbook_id, title }: InsertResultSheets,
-): {
-  id: number | bigint;
-} => {
-  const res = db
+): Promise<SelectResultSheets[]> => {
+  const res = await db
     .insert(result_sheets)
     .values({ workbook_id, title })
-    .returning()
-    .run();
-  return {
-    id: res.lastInsertRowid,
-  };
+    .returning();
+  return res;
 }) satisfies IpcMainListener;

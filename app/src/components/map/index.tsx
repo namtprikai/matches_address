@@ -1,26 +1,44 @@
 import { useState } from "react";
+import { makeStyles, tokens } from "@fluentui/react-components";
 import {
   VacancyLevelCheckbox,
   type VacancyLevels,
 } from "./vacancy-level-checkbox";
-import { MapComponent } from "./map-component";
-import { _dummyBuildingData } from "./_dummy-data";
+import { type BuildingData, MapComponent } from "./map-component";
 import { DisplayPeriodDropdown } from "./display-period-dropdown";
 
-export function Map(): JSX.Element {
+const useStyles = makeStyles({
+  filters: {
+    display: "flex",
+    gap: tokens.spacingHorizontalXXL,
+  },
+  filter: {
+    display: "flex",
+    flexDirection: "column",
+    gap: tokens.spacingVerticalXS,
+  },
+  map: {
+    marginTop: tokens.spacingVerticalMNudge,
+  },
+});
+
+interface Props {
+  data: BuildingData;
+}
+
+export function Map({ data }: Props): JSX.Element {
+  const styles = useStyles();
   const [vacancyLevels, setVacancyLevels] = useState<VacancyLevels>({
     low: true,
     medium: true,
     high: true,
   });
-  const [selectedYear, setSelectedYear] = useState<number>(
-    _dummyBuildingData[0].year,
-  );
+  const [selectedYear, setSelectedYear] = useState<number>(data[0].year);
 
   return (
     <div>
-      <div>
-        <div>
+      <div className={styles.filters}>
+        <div className={styles.filter}>
           <div>空き家率</div>
           <div>
             <VacancyLevelCheckbox
@@ -29,22 +47,24 @@ export function Map(): JSX.Element {
             />
           </div>
         </div>
-        <div>
+        <div className={styles.filter}>
           <div>表示期間</div>
           <div>
             <DisplayPeriodDropdown
               selectedYear={selectedYear}
               setSelectedYear={setSelectedYear}
-              years={_dummyBuildingData.map((data) => data.year)}
+              years={data.map((data) => data.year)}
             />
           </div>
         </div>
       </div>
-      <MapComponent
-        data={_dummyBuildingData}
-        selectedYear={selectedYear}
-        vacancyLevels={vacancyLevels}
-      />
+      <div className={styles.map}>
+        <MapComponent
+          data={data}
+          selectedYear={selectedYear}
+          vacancyLevels={vacancyLevels}
+        />
+      </div>
     </div>
   );
 }
