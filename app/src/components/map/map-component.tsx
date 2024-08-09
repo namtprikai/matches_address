@@ -158,7 +158,7 @@ export function MapComponent({
         const polygonFeature = new Feature({
           geometry: new Polygon([coordinates]),
         });
-        polygonFeature.setProperties({ buildingInfo: building.info });
+        polygonFeature.setProperties({ info: building.info });
 
         const occupancyRate = building.info.vacancyRate;
         let color;
@@ -194,8 +194,8 @@ export function MapComponent({
           (feature) => feature,
         );
         if (feature) {
-          const buildingInfo = feature.get("buildingInfo") as Building["info"];
-          setPopupData(buildingInfo);
+          const info = feature.get("info") as Building["info"];
+          setPopupData(info);
           map.getOverlays().item(0).setPosition(event.coordinate);
         } else {
           map.getOverlays().item(0).setPosition(undefined);
