@@ -71,19 +71,29 @@ class Summarization:
         try:
             file_type = os.path.splitext(path)[1].lower()
             if file_type == ".csv":
-                # エンコーディングを自動検出
+                # 試行するエンコーディングのリスト
+                encodings = ['utf-8', 'cp932', 'shift_jis', 'utf-16']
+                
+                for encoding in encodings:
+                    try:
+                        return pd.read_csv(path, encoding=encoding, **kwargs)
+                    except UnicodeDecodeError:
+                        continue
+                
+                # すべてのエンコーディングが失敗した場合、chardetを使用
                 with open(path, 'rb') as file:
                     raw_data = file.read()
                     result = chardet.detect(raw_data)
                     encoding = result['encoding']
                 
-                # 検出されたエンコーディングでファイルを読み込む
                 return pd.read_csv(path, encoding=encoding, **kwargs)
+            
             elif file_type == ".shp":
                 return gpd.read_file(path, **kwargs)
             
         except Exception as e:
             print(f"Error reading file {path}: {e}")
+            return None
     
     @staticmethod
     def save_csv(df, path, encoding='shift_jis'):
