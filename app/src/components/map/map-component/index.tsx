@@ -12,7 +12,7 @@ import { Style, Fill, Stroke } from "ol/style";
 import Polygon from "ol/geom/Polygon";
 import Overlay from "ol/Overlay";
 import { makeStyles, mergeClasses, tokens } from "@fluentui/react-components";
-import { type VacancyLevels } from "./vacancy-level-checkbox";
+import { type VacancyLevels } from "../vacancy-level-checkbox";
 
 export type BuildingData = {
   year: number;
