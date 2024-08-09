@@ -10,3 +10,8 @@ export const CHART_COLORS = [
     "#99FF99",
     "#B34D4D",
 ];
+
+export const GRAPH_COLORS = {
+    primary: "#53389E",
+    pimaryHovered: "#B692F6"
+}
