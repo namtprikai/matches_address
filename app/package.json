@@ -10,7 +10,8 @@
     "dev": "electron-forge start",
     "make": "electron-forge make",
     "lint": "eslint --ext .ts,.tsx .",
-    "generate:migration": "npx drizzle-kit generate"
+    "generate:migration": "npx drizzle-kit generate",
+    "test:unit": "vitest"
   },
   "devDependencies": {
     "@electron-forge/cli": "^7.4.0",
@@ -43,7 +44,8 @@
     "ts-node": "^10.0.0",
     "tsx": "^4.16.2",
     "typescript": "5.1.6",
-    "vite": "^5.0.12"
+    "vite": "^5.0.12",
+    "vitest": "^2.0.5"
   },
   "dependencies": {
     "@fluentui/react-components": "^9.54.6",
