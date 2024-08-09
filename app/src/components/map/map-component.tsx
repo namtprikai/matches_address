@@ -213,10 +213,20 @@ export function MapComponent({
     ],
   );
 
+  const handleClose = (): void => {
+    if (!map) return;
+    map.getOverlays().item(0).setPosition(undefined);
+    setPopupData(null);
+  };
+
   return (
     <div>
       <div ref={mapRef} className={styles.map} />
-      <BuildingPopup ref={popupRef} buildingInfo={popupData} />
+      <BuildingPopup
+        ref={popupRef}
+        buildingInfo={popupData}
+        onClose={handleClose}
+      />
     </div>
   );
 }
@@ -331,10 +341,11 @@ const usePopupStyles = makeStyles({
 
 interface BuildingPopupProps {
   buildingInfo: Building["info"] | null;
+  onClose: () => void;
 }
 
 const BuildingPopup = forwardRef<HTMLDivElement, BuildingPopupProps>(
-  ({ buildingInfo }, ref) => {
+  ({ buildingInfo, onClose }, ref) => {
     const styles = usePopupStyles();
     const vacancyRateColorStyle = (() => {
       if (!buildingInfo) return "";
@@ -350,7 +361,9 @@ const BuildingPopup = forwardRef<HTMLDivElement, BuildingPopupProps>(
 
     return (
       <div ref={ref} className={styles.container} tabIndex={-1}>
-        <span className={styles.close}>×</span>
+        <span className={styles.close} onClick={onClose}>
+          ×
+        </span>
         <div className={mergeClasses(styles.header, vacancyRateColorStyle)}>
           <span className={mergeClasses(styles.circleIcon)} />
           <div>
@@ -450,10 +463,11 @@ BuildingPopup.displayName = "BuildingPopup";
 
 interface AreaPopupProps {
   areaInfo: Area["info"] | null;
+  onClose: () => void;
 }
 
 const AreaPopup = forwardRef<HTMLDivElement, AreaPopupProps>(
-  ({ areaInfo }, ref) => {
+  ({ areaInfo, onClose }, ref) => {
     const styles = usePopupStyles();
     const riskRateColorStyle = (() => {
       if (!areaInfo) return "";
@@ -469,7 +483,9 @@ const AreaPopup = forwardRef<HTMLDivElement, AreaPopupProps>(
 
     return (
       <div ref={ref} className={styles.container} tabIndex={-1}>
-        <span className={styles.close}>×</span>
+        <span className={styles.close} onClick={onClose}>
+          ×
+        </span>
         <div className={`${styles.header} ${riskRateColorStyle}`}>
           <span className={styles.circleIcon} />
           <div>
