@@ -8,6 +8,7 @@ const RESULT_VIEWS_STYLE: {
   bar: "棒グラフ",
   line: "折れ線グラフ",
   pie: "円グラフ",
+  table: "表",
 };
 
 type ResultViewsUnit = (typeof result_views.unit.enumValues)[number];

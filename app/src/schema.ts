@@ -38,7 +38,7 @@ export const result_views = sqliteTable("result_views", {
 
   title: text("title"),
   unit: text("unit", { enum: ["building", "area"] }),
-  style: text("style", { enum: ["map", "bar", "line", "pie"] }),
+  style: text("style", { enum: ["map", "bar", "line", "pie", "table"] }),
 
   created_at: text("created_at")
     .default(sql`(CURRENT_TIMESTAMP)`)
