@@ -1,3 +1,3 @@
-import { type data_set_detail_buildings } from "./anlysis";
+import { type DataSetDetailBuidlings } from "./analysis";
 
-export type ChartAccepatbleType = data_set_detail_buildings;
+export type ChartAccepatbleType = DataSetDetailBuidlings;

@@ -1,3 +1,4 @@
+import { type DataSetDetailBuidlings } from "./@types/analysis";
 import { type result_views } from "./schema";
 
 type ResultViewsStyle = (typeof result_views.style.enumValues)[number];
@@ -19,7 +20,17 @@ const RESULT_VIEWS_UNIT: {
   area: "地域",
 };
 
+const DATA_SET_DETAIL_BUILDINGS: {
+  [k in keyof DataSetDetailBuidlings]: string;
+} = {
+  id: "ID",
+  data_set_result_id: "データセット結果ID",
+  created_at: "作成日時",
+  updated_at: "更新日時",
+}
+
 export const LanguageMap = {
   RESULT_VIEWS_STYLE,
   RESULT_VIEWS_UNIT,
+  DATA_SET_DETAIL_BUILDINGS,
 };

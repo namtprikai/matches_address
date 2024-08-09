@@ -6,8 +6,8 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { type ChartAccepatbleType } from "../@types/charts";
-import { Label } from "../config/label-map";
 import { CHART_COLORS } from "../config/chart-colors";
+import { LanguageMap } from "../lang";
 
 export interface PieChartProps<T> {
   keyColumn: {
@@ -31,7 +31,9 @@ export const PieChart = <T extends ChartAccepatbleType>({
   const chartData = data.map((row) => {
     return {
       name: row[keyColumn.key],
-      [Label[column.key as keyof typeof Label]]: row[column.key],
+      [LanguageMap.DATA_SET_DETAIL_BUILDINGS[
+        column.key as keyof typeof LanguageMap.DATA_SET_DETAIL_BUILDINGS
+      ]]: row[column.key],
     };
   });
   return (
@@ -41,7 +43,11 @@ export const PieChart = <T extends ChartAccepatbleType>({
           cx="50%"
           cy="50%"
           data={chartData}
-          dataKey={Label[column.key as keyof typeof Label]}
+          dataKey={
+            LanguageMap.DATA_SET_DETAIL_BUILDINGS[
+              column.key as keyof typeof LanguageMap.DATA_SET_DETAIL_BUILDINGS
+            ]
+          }
           labelLine={false}
           nameKey="name"
           startAngle={0}
