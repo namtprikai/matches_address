@@ -13,5 +13,5 @@ export const CHART_COLORS = [
 
 export const GRAPH_COLORS = {
     primary: "#53389E",
-    pimaryHovered: "#B692F6"
+    teritiary: "#B692F6",
 }
