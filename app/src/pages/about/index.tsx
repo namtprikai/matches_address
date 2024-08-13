@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import { PieChart } from "../../components/pie-charts";
 import { type DataSetDetailBuidlings } from "../../@types/analysis";
+import { BarChart } from "../../components/bar-charts";
 
 export function About(): JSX.Element {
   const demo: DataSetDetailBuidlings[] = useMemo(
@@ -10,6 +11,12 @@ export function About(): JSX.Element {
         data_set_result_id: 1,
         created_at: "2021-09-01 00:00:00",
         updated_at: "2021-09-01 00:00:00",
+      },
+      {
+        id: 2,
+        data_set_result_id: 2,
+        created_at: "2021-09-02 00:00:00",
+        updated_at: "2021-09-02 00:00:00",
       },
     ],
     [],
@@ -36,8 +43,28 @@ export function About(): JSX.Element {
   return (
     <div>
       <h1>About</h1>
-      <div>
+
+      {/* FIXME: 以下スタイルは仮のものなので本番では削除 */}
+      <div
+        style={{
+          width: "400px",
+        }}
+      >
         {memotizedPieChart}
+        <BarChart<DataSetDetailBuidlings>
+          data={demo}
+          xColumn={{
+            key: "created_at",
+            type: "string",
+            label: "世帯人数",
+          }}
+          yColumn={{
+            key: "id",
+            type: "number",
+            label: "世帯人数",
+            unit: "%",
+          }}
+        />
         <a href="#">Go to home page</a>
       </div>
     </div>
