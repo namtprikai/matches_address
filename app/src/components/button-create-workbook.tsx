@@ -32,7 +32,6 @@ const useStyles = makeStyles({
     fontSize: tokens.fontSizeBase400,
     lineHeight: "24px",
     height: "24px",
-    display: "flex",
   },
   dialogBody: {
     gap: tokens.spacingVerticalL,
