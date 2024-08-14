@@ -39,11 +39,12 @@ const useStyles = makeStyles({
       bottom: 0,
       backgroundColor: THEME_COLORS.primary,
     },
-    "&::before": {
+    "&:hover::before": {
       width: "100%",
-      transform: "translate(0, 100%)",
+      transform: "none",
       left: 0,
-      bottom: "3px",
+      bottom: "0",
+      borderRadius: 0,
     },
     fontSize: tokens.fontSizeBase300,
     color: THEME_COLORS.primary,
