@@ -57,6 +57,13 @@ const useStyles = makeStyles({
       fontWeight: tokens.fontWeightRegular,
     },
   },
+  editButton: {
+    border: `1px solid ${tokens.colorNeutralStroke2}`,
+    borderRadius: tokens.borderRadiusMedium,
+    "&:hover, &:active, &:focus, &:focus-within": {
+      border: `1px solid $(tokens.colorNeutralStroke1Selected}`,
+    },
+  },
 });
 
 export function DetailWorkbook(): JSX.Element {
@@ -77,7 +84,12 @@ export function DetailWorkbook(): JSX.Element {
       <div className={styles.headingWithAction}>
         <h2 className={styles.heading}>{workbook?.title}</h2>
         <a href={`#analysis/workbook/${id}/edit`}>
-          <Button appearance="subtle" icon={<EditFilled />} shape="square" />
+          <Button
+            appearance="outline"
+            className={styles.editButton}
+            icon={<EditFilled />}
+            shape="square"
+          />
         </a>
       </div>
 
