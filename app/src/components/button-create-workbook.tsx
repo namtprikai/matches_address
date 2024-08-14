@@ -17,9 +17,56 @@ import { Button } from "./button";
 const useStyles = makeStyles({
   input: {
     width: "100%",
+    "&:after": {
+      display: "none",
+    },
+    padding: `${tokens.spacingVerticalSNudge} ${tokens.spacingHorizontalM}`,
+    "& input": {
+      padding: 0,
+    },
   },
   title: {
     fontSize: tokens.fontSizeBase200,
+  },
+  dialogTitle: {
+    fontSize: tokens.fontSizeBase400,
+    lineHeight: "24px",
+    height: "24px",
+    display: "flex",
+  },
+  dialogBody: {
+    gap: tokens.spacingVerticalL,
+  },
+  dialogSurface: {
+    boxShadow: tokens.shadow28,
+    borderRadius: tokens.borderRadiusXLarge,
+    maxWidth: "450px",
+  },
+  closeButton: {
+    padding: 0,
+    width: "24px",
+    height: "24px",
+    minWidth: "24px",
+    "& span > svg": {
+      width: "20px",
+      height: "20px",
+    },
+  },
+  saveButton: {
+    padding: `${tokens.spacingVerticalMNudge} ${tokens.spacingHorizontalL}`,
+    fontSize: tokens.fontSizeBase300,
+    border: "none",
+    minWidth: "80px",
+    marginTop: tokens.spacingVerticalS,
+  },
+  form: {
+    "& span:has(> input)": {
+      border: `1px solid ${tokens.colorNeutralStroke1}`,
+      borderRadius: tokens.borderRadiusXLarge,
+      "&:active, &:hover, &:focus, &:focus-within": {
+        border: `1px solid ${tokens.colorNeutralStroke1Pressed}`,
+      },
+    },
   },
 });
 
@@ -49,36 +96,52 @@ export const ButtonCreateWorkbook = (): JSX.Element => {
             <AddFilled
               color={tokens.colorNeutralForeground1}
               fontSize={tokens.fontSizeBase400}
-              width={2}
+              strokeWidth={2}
             />
           }
         >
           新規ワークブック作成
         </Button>
       </DialogTrigger>
-      <DialogSurface>
-        <DialogBody>
+      <DialogSurface className={styles.dialogSurface}>
+        <DialogBody className={styles.dialogBody}>
           <DialogTitle
             action={
               <DialogTrigger action="close">
                 <Button
                   appearance="subtle"
                   aria-label="close"
-                  icon={<Dismiss24Regular />}
+                  className={styles.closeButton}
+                  icon={
+                    <Dismiss24Regular
+                      color={tokens.colorNeutralForeground1}
+                      strokeWidth={2}
+                    />
+                  }
                 />
               </DialogTrigger>
             }
+            className={styles.dialogTitle}
           >
             ワークブック名
           </DialogTitle>
           <DialogContent>
-            <form id="create-workbook" onSubmit={handleSubmit}>
+            <form
+              className={styles.form}
+              id="create-workbook"
+              onSubmit={handleSubmit}
+            >
               <Input className={styles.input} name="title" />
             </form>
           </DialogContent>
           <DialogActions>
             {/* <DialogTrigger> */}
-            <Button appearance="primary" form="create-workbook" type="submit">
+            <Button
+              appearance="primary"
+              className={styles.saveButton}
+              form="create-workbook"
+              type="submit"
+            >
               保存
             </Button>
             {/* </DialogTrigger> */}
