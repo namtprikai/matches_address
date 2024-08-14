@@ -90,8 +90,6 @@ export function MapComponent({
   const popupRef = useRef<HTMLDivElement | null>(null);
   const [map, setMap] = useState<Map | null>(null);
   const [popupData, setPopupData] = useState<Building["info"] | null>(null);
-  const [zoom, setZoom] = useState<number | undefined>(12);
-  console.log("zoom", zoom);
 
   useEffect(function initializeMap() {
     const mapEl = mapRef.current;
@@ -123,11 +121,6 @@ export function MapComponent({
         center: fromLonLat([137.1513, 35.0816]),
         zoom: 12,
       }),
-    });
-
-    initialMap.getView().on("change:resolution", () => {
-      const roundedZoomLevel = Math.round(initialMap.getView().getZoom() || 0);
-      setZoom(roundedZoomLevel);
     });
 
     setMap(initialMap);
