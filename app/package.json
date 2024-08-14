@@ -11,6 +11,7 @@
     "make": "electron-forge make",
     "lint": "eslint --ext .ts,.tsx .",
     "generate:migration": "npx drizzle-kit generate",
+    "drizzle": "npx drizzle-kit",
     "test:unit": "vitest"
   },
   "devDependencies": {
