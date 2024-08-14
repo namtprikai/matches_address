@@ -47,7 +47,6 @@ export const ButtonCreateWorkbook = (): JSX.Element => {
           className={styles.title}
           icon={
             <AddFilled
-              className={styles.addIcon}
               color={tokens.colorNeutralForeground1}
               fontSize={tokens.fontSizeBase400}
               width={2}
