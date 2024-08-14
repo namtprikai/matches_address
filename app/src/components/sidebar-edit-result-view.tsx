@@ -53,6 +53,7 @@ export const SidebarEditResultView = (): JSX.Element => {
   }: {
     dataSetResultId: number;
   }): Promise<void> => {
+    if (resultViews.length === 4) return; /** 最大4つ */
     await window.ipcRenderer.invoke("insertResultViews", {
       data_set_result_id: dataSetResultId,
       sheet_id: selectedResultSheetId,
