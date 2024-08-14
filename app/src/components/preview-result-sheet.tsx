@@ -34,6 +34,30 @@ export const PreviewResultSheet = (): JSX.Element => {
       </div>
     );
 
+  if (data.length === 4) {
+    return (
+      <div className={styles.root}>
+        <div className={styles.resultViews}>
+          {data.map((item) => (
+            <CardResultView
+              key={item.result_views.id}
+              onClick={(): void =>
+                setSelectedResultViewId(item.result_views.id)
+              }
+              selected={selectedResultViewId === item.result_views.id}
+              {...{
+                dataSetResult: item.data_set_results,
+                resultView: item.result_views,
+                dataSetDetailAreas: item.data_set_detail_areas,
+                dataSetDetailBuildings: item.data_set_detail_buildings,
+              }}
+            />
+          ))}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className={styles.root}>
       <div>
