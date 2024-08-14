@@ -10,12 +10,16 @@ import { ResultSheet } from "../../../../components/result-sheet";
 import { THEME_COLORS } from "../../../../config/theme-colors";
 
 const useStyles = makeStyles({
+  root: {
+    display: "grid",
+    gap: `${tokens.spacingVerticalXXL} ${tokens.spacingHorizontalXXL}`,
+  },
   heading: {
     fontSize: tokens.fontSizeBase500,
     lineHeight: tokens.lineHeightBase600,
   },
   resultSheets: {
-    padding: tokens.spacingVerticalL,
+    padding: 0,
   },
   headingWithAction: {
     display: "flex",
@@ -68,7 +72,7 @@ export function DetailWorkbook(): JSX.Element {
   }, [resultSheets, setSelectedValue]);
 
   return (
-    <div>
+    <div className={styles.root}>
       <div className={styles.headingWithAction}>
         <h2 className={styles.heading}>{workbook?.title}</h2>
         <a href={`#analysis/workbook/${id}/edit`}>
