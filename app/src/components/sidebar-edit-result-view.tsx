@@ -75,6 +75,7 @@ export const SidebarEditResultView = (): JSX.Element => {
           action={
             isAddView ? undefined : (
               <Button
+                disabled={resultViews.length === 4}
                 icon={<AddFilled />}
                 onClick={(): void => {
                   setIsAddView(true);
