@@ -7,6 +7,7 @@ import { useFetchWorkbook } from "../../../../hooks/use-fetch-workbook";
 import { useFetchResultSheets } from "../../../../hooks/use-fetch-result-sheets";
 import { useTabs } from "../../../../hooks/use-tabs";
 import { ResultSheet } from "../../../../components/result-sheet";
+import { THEME_COLORS } from "../../../../config/theme-colors";
 
 const useStyles = makeStyles({
   heading: {
@@ -20,6 +21,36 @@ const useStyles = makeStyles({
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
+  },
+  tabList: {
+    gap: tokens.spacingHorizontalM,
+  },
+  tabItem: {
+    padding: 0,
+    paddingBottom: "5px",
+    "&::after": {
+      width: "100%",
+      transform: "translate(0, 100%)",
+      left: 0,
+      bottom: 0,
+      backgroundColor: THEME_COLORS.primary,
+    },
+    "&::before": {
+      width: "100%",
+      transform: "translate(0, 100%)",
+      left: 0,
+      bottom: "3px",
+    },
+    fontSize: tokens.fontSizeBase300,
+    color: THEME_COLORS.primary,
+    "& .fui-Tab__content": {
+      color: THEME_COLORS.primary,
+      padding: `0 ${tokens.spacingHorizontalXXS}`,
+    },
+    '&[aria-selected="true"] .fui-Tab__content': {
+      color: THEME_COLORS.primary,
+      fontWeight: tokens.fontWeightRegular,
+    },
   },
 });
 
@@ -46,9 +77,18 @@ export function DetailWorkbook(): JSX.Element {
       </div>
 
       {selectedValue ? (
-        <TabList onTabSelect={onTabSelect} selectedValue={selectedValue}>
+        <TabList
+          className={styles.tabList}
+          onTabSelect={onTabSelect}
+          selectedValue={selectedValue}
+        >
           {resultSheets.map((item) => (
-            <Tab key={item.id} id={item.title || ""} value={item.id}>
+            <Tab
+              key={item.id}
+              className={styles.tabItem}
+              id={item.title || ""}
+              value={item.id}
+            >
               {item.title}
             </Tab>
           ))}
