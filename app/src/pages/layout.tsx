@@ -9,7 +9,7 @@ const useStyles = makeStyles({
   },
   content: {
     flex: "1",
-    padding: tokens.spacingVerticalL,
+    padding: `${tokens.spacingVerticalXXL} ${tokens.spacingHorizontalXXL}`,
     backgroundColor: tokens.colorNeutralBackground3,
   },
 });
