@@ -26,6 +26,54 @@ type Props = CardProps & {
   dataSetDetailAreas: DataSetsDetailAreas | null;
 };
 
+/** 仮の分岐、微妙だったらあとでリファクタしてもいいかも */
+const SwithViewStyle = ({
+  resultViewStyle,
+}: {
+  resultViewStyle: ResultViews["style"];
+}): JSX.Element => {
+  switch (resultViewStyle) {
+    case "bar":
+      return (
+        <div>
+          <img alt="dummy" src="https://placehold.co/1220x760?text=Bar+Chart" />
+        </div>
+      );
+    case "line":
+      return (
+        <div>
+          <img
+            alt="dummy"
+            src="https://placehold.co/1220x760?text=Line+Chart"
+          />
+        </div>
+      );
+    case "pie":
+      return (
+        <div>
+          <img alt="dummy" src="https://placehold.co/1220x760?text=Pie+Chart" />
+        </div>
+      );
+    case "table":
+      return (
+        <div>
+          <img
+            alt="dummy"
+            src="https://placehold.co/1220x760?text=Table+Chart"
+          />
+        </div>
+      );
+    case "map":
+      return (
+        <div>
+          <img alt="dummy" src="https://placehold.co/1220x760?text=Map" />
+        </div>
+      );
+    default:
+      return <>未設定</>;
+  }
+};
+
 export const CardResultView = ({
   resultView,
   dataSetResult,
@@ -55,9 +103,7 @@ export const CardResultView = ({
         <br />
         地域データID: {dataSetDetailAreas?.id || "未設定"}
       </div>
-      <div>
-        <img alt="dummy" src="https://placehold.co/1220x760" />
-      </div>
+      <SwithViewStyle resultViewStyle={resultView.style} />
     </Card>
   );
 };
