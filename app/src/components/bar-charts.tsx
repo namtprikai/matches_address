@@ -137,7 +137,7 @@ export const BarChart = <T extends ChartAccepatbleType>({
               cursor="pointer"
               fill={
                 index === activeIndex && activeToolTip
-                  ? GRAPH_COLORS.pimaryHovered
+                  ? GRAPH_COLORS.teritiary
                   : GRAPH_COLORS.primary
               }
             />
