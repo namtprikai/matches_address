@@ -9,6 +9,7 @@ import {
   DialogContent,
   Input,
   makeStyles,
+  tokens,
 } from "@fluentui/react-components";
 import { useNavigate, type FormProps } from "react-router-dom";
 import { Button } from "./button";
@@ -16,6 +17,9 @@ import { Button } from "./button";
 const useStyles = makeStyles({
   input: {
     width: "100%",
+  },
+  title: {
+    fontSize: tokens.fontSizeBase200,
   },
 });
 
@@ -39,7 +43,19 @@ export const ButtonCreateWorkbook = (): JSX.Element => {
   return (
     <Dialog>
       <DialogTrigger disableButtonEnhancement>
-        <Button icon={<AddFilled />}>新規ワークブック作成</Button>
+        <Button
+          className={styles.title}
+          icon={
+            <AddFilled
+              className={styles.addIcon}
+              color={tokens.colorNeutralForeground1}
+              fontSize={tokens.fontSizeBase400}
+              width={2}
+            />
+          }
+        >
+          新規ワークブック作成
+        </Button>
       </DialogTrigger>
       <DialogSurface>
         <DialogBody>
