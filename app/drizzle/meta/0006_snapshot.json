@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "3ce9c4cf-8c77-42ae-920e-d734b8b90d58",
+  "id": "53b22ac3-d96f-4c46-8cdd-4c30933a0c2c",
   "prevId": "240efd9c-3311-46fc-89c2-22eca20ff711",
   "tables": {
     "data_set_detail_areas": {
@@ -56,6 +56,286 @@
         "data_set_result_id": {
           "name": "data_set_result_id",
           "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "household_code": {
+          "name": "household_code",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "normalized_address": {
+          "name": "normalized_address",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "number_of_people_in_household": {
+          "name": "number_of_people_in_household",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "number_of_people_under_15_years_old": {
+          "name": "number_of_people_under_15_years_old",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "composition_ratio_of_people_under_15_years_old": {
+          "name": "composition_ratio_of_people_under_15_years_old",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "number_of_people_aged_15_to_64": {
+          "name": "number_of_people_aged_15_to_64",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "composition_ratio_of_people_aged_15_to_64": {
+          "name": "composition_ratio_of_people_aged_15_to_64",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "number_of_people_aged_65_and_over": {
+          "name": "number_of_people_aged_65_and_over",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "composition_ratio_of_people_aged_65_and_over": {
+          "name": "composition_ratio_of_people_aged_65_and_over",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "male_to_female_ratio": {
+          "name": "male_to_female_ratio",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "period_of_residence": {
+          "name": "period_of_residence",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "water_number_suido_residence": {
+          "name": "water_number_suido_residence",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "closing_flag_suido_residence": {
+          "name": "closing_flag_suido_residence",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "maximum_water_usage_suido_residence": {
+          "name": "maximum_water_usage_suido_residence",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "average_water_usage_suido_residence": {
+          "name": "average_water_usage_suido_residence",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "total_water_usage_suido_residence": {
+          "name": "total_water_usage_suido_residence",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "minimum_water_usage_suido_residence": {
+          "name": "minimum_water_usage_suido_residence",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "name_source_information_suido_residence": {
+          "name": "name_source_information_suido_residence",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "structure_name_touki_residence": {
+          "name": "structure_name_touki_residence",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "registration_date_touki_residence": {
+          "name": "registration_date_touki_residence",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "name_source_information_touki_residence": {
+          "name": "name_source_information_touki_residence",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "id_akiya_result_cleaned": {
+          "name": "id_akiya_result_cleaned",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "address_akiya_result_cleaned": {
+          "name": "address_akiya_result_cleaned",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "geometry": {
+          "name": "geometry",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "measuredheight": {
+          "name": "measuredheight",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "rank": {
+          "name": "rank",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "depth": {
+          "name": "depth",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "duration": {
+          "name": "duration",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "number_of_floors_above_ground": {
+          "name": "number_of_floors_above_ground",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "number_of_basement_floors": {
+          "name": "number_of_basement_floors",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "buildingdisasterriskattribute_buildinginlandfloodingriskattribute_description": {
+          "name": "buildingdisasterriskattribute_buildinginlandfloodingriskattribute_description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "buildingdisasterriskattribute_buildinginlandfloodingriskattribute_rank": {
+          "name": "buildingdisasterriskattribute_buildinginlandfloodingriskattribute_rank",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "buildingdisasterriskattribute_buildinginlandfloodingriskattribute_depth": {
+          "name": "buildingdisasterriskattribute_buildinginlandfloodingriskattribute_depth",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "buildingdisasterriskattribute_buildingriverfloodingriskattribute_description": {
+          "name": "buildingdisasterriskattribute_buildingriverfloodingriskattribute_description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "buildingdisasterriskattribute_buildingriverfloodingriskattribute_rank": {
+          "name": "buildingdisasterriskattribute_buildingriverfloodingriskattribute_rank",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "buildingdisasterriskattribute_buildingriverfloodingriskattribute_depth": {
+          "name": "buildingdisasterriskattribute_buildingriverfloodingriskattribute_depth",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "buildingdisasterriskattribute_buildinglandslideriskattribute_description": {
+          "name": "buildingdisasterriskattribute_buildinglandslideriskattribute_description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "pred": {
+          "name": "pred",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "pred_proba": {
+          "name": "pred_proba",
+          "type": "real",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
