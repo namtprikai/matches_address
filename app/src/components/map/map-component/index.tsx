@@ -15,11 +15,6 @@ import { makeStyles } from "@fluentui/react-components";
 import { type VacancyLevels } from "../vacancy-level-checkbox";
 import { BuildingPopup } from "./building-popup";
 
-export type BuildingData = {
-  year: number;
-  buildings: Building[];
-}[];
-
 export interface Building {
   info: {
     vacancyRate: number;
@@ -37,11 +32,6 @@ export interface Building {
   };
   coordinates: number[][];
 }
-
-export type AreaData = {
-  year: number;
-  areas: Area[];
-}[];
 
 export interface Area {
   info: {
@@ -66,6 +56,16 @@ export interface Area {
   };
   coordinates: number[][];
 }
+
+export type BuildingData = {
+  year: number;
+  buildings: Building[];
+}[];
+
+export type AreaData = {
+  year: number;
+  areas: Area[];
+}[];
 
 const useMapComponentStyles = makeStyles({
   map: {

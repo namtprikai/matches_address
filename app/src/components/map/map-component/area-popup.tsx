@@ -2,12 +2,12 @@ import { forwardRef } from "react";
 import { usePopupStyles } from "./use-popup-styles";
 import { type Area } from ".";
 
-interface AreaPopupProps {
+interface Props {
   areaInfo: Area["info"] | null;
   onClose: () => void;
 }
 
-export const AreaPopup = forwardRef<HTMLDivElement, AreaPopupProps>(
+export const AreaPopup = forwardRef<HTMLDivElement, Props>(
   ({ areaInfo, onClose }, ref) => {
     const styles = usePopupStyles();
     const riskRateColorStyle = (() => {

@@ -3,12 +3,12 @@ import { forwardRef } from "react";
 import { usePopupStyles } from "./use-popup-styles";
 import { type Building } from ".";
 
-interface BuildingPopupProps {
+interface Props {
   buildingInfo: Building["info"] | null;
   onClose: () => void;
 }
 
-export const BuildingPopup = forwardRef<HTMLDivElement, BuildingPopupProps>(
+export const BuildingPopup = forwardRef<HTMLDivElement, Props>(
   ({ buildingInfo, onClose }, ref) => {
     const styles = usePopupStyles();
     const vacancyRateColorStyle = (() => {
