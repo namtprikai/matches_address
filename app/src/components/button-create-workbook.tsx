@@ -59,15 +59,6 @@ const useStyles = makeStyles({
     minWidth: "80px",
     marginTop: tokens.spacingVerticalS,
   },
-  form: {
-    "& span:has(> input)": {
-      border: `1px solid ${tokens.colorNeutralStroke1}`,
-      borderRadius: tokens.borderRadiusXLarge,
-      "&:active, &:hover, &:focus, &:focus-within": {
-        border: `1px solid ${tokens.colorNeutralStroke1Pressed}`,
-      },
-    },
-  },
 });
 
 export const ButtonCreateWorkbook = (): JSX.Element => {
@@ -126,11 +117,7 @@ export const ButtonCreateWorkbook = (): JSX.Element => {
             ワークブック名
           </DialogTitle>
           <DialogContent>
-            <Form
-              className={styles.form}
-              id="create-workbook"
-              onSubmit={handleSubmit}
-            >
+            <Form id="create-workbook" onSubmit={handleSubmit}>
               <Input className={styles.input} name="title" />
             </Form>
           </DialogContent>
