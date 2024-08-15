@@ -5,7 +5,6 @@ import {
   DialogBody,
   DialogActions,
   DialogContent,
-  Input,
   makeStyles,
   tokens,
 } from "@fluentui/react-components";
@@ -14,17 +13,11 @@ import { Button } from "./ui/button";
 import { Form } from "./ui/form";
 import { DialogSurface } from "./ui/dialog-surface";
 import { DialogTitle } from "./ui/dialog-title";
+import { Input } from "./ui/input";
 
 const useStyles = makeStyles({
   input: {
     width: "100%",
-    "&:after": {
-      display: "none",
-    },
-    padding: `${tokens.spacingVerticalSNudge} ${tokens.spacingHorizontalM}`,
-    "& input": {
-      padding: 0,
-    },
   },
   dialogBody: {
     gap: tokens.spacingVerticalL,
