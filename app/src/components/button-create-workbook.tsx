@@ -2,7 +2,6 @@ import { AddFilled, Dismiss24Regular } from "@fluentui/react-icons";
 import {
   Dialog,
   DialogTrigger,
-  DialogSurface,
   DialogTitle,
   DialogBody,
   DialogActions,
@@ -14,6 +13,7 @@ import {
 import { useNavigate, type FormProps } from "react-router-dom";
 import { Button } from "./ui/button";
 import { Form } from "./ui/form";
+import { DialogSurface } from "./ui/dialog-surface";
 
 const useStyles = makeStyles({
   input: {
@@ -36,11 +36,6 @@ const useStyles = makeStyles({
   },
   dialogBody: {
     gap: tokens.spacingVerticalL,
-  },
-  dialogSurface: {
-    boxShadow: tokens.shadow28,
-    borderRadius: tokens.borderRadiusXLarge,
-    maxWidth: "450px",
   },
   closeButton: {
     padding: 0,
@@ -94,7 +89,7 @@ export const ButtonCreateWorkbook = (): JSX.Element => {
           新規ワークブック作成
         </Button>
       </DialogTrigger>
-      <DialogSurface className={styles.dialogSurface}>
+      <DialogSurface>
         <DialogBody className={styles.dialogBody}>
           <DialogTitle
             action={
