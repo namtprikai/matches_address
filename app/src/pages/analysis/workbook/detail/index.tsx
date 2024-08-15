@@ -1,13 +1,13 @@
 import { EditFilled } from "@fluentui/react-icons";
 import { useEffect } from "react";
-import { makeStyles, Tab, TabList, tokens } from "@fluentui/react-components";
+import { makeStyles, TabList, tokens } from "@fluentui/react-components";
 import { useParams } from "react-router-dom";
 import { Button } from "../../../../components/ui/button";
 import { useFetchWorkbook } from "../../../../hooks/use-fetch-workbook";
 import { useFetchResultSheets } from "../../../../hooks/use-fetch-result-sheets";
 import { useTabs } from "../../../../hooks/use-tabs";
 import { ResultSheet } from "../../../../components/result-sheet";
-import { THEME_COLORS } from "../../../../config/theme-colors";
+import { Tab } from "../../../../components/ui/tab";
 
 const useStyles = makeStyles({
   root: {
@@ -28,34 +28,6 @@ const useStyles = makeStyles({
   },
   tabList: {
     gap: tokens.spacingHorizontalM,
-  },
-  tabItem: {
-    padding: 0,
-    paddingBottom: "5px",
-    "&::after": {
-      width: "100%",
-      transform: "translate(0, 100%)",
-      left: 0,
-      bottom: 0,
-      backgroundColor: THEME_COLORS.primary,
-    },
-    "&:hover::before": {
-      width: "100%",
-      transform: "none",
-      left: 0,
-      bottom: "0",
-      borderRadius: 0,
-    },
-    fontSize: tokens.fontSizeBase300,
-    color: THEME_COLORS.primary,
-    "& .fui-Tab__content": {
-      color: THEME_COLORS.primary,
-      padding: `0 ${tokens.spacingHorizontalXXS}`,
-    },
-    '&[aria-selected="true"] .fui-Tab__content': {
-      color: THEME_COLORS.primary,
-      fontWeight: tokens.fontWeightRegular,
-    },
   },
   editButton: {
     border: `1px solid ${tokens.colorNeutralStroke2}`,
@@ -100,12 +72,7 @@ export function DetailWorkbook(): JSX.Element {
           selectedValue={selectedValue}
         >
           {resultSheets.map((item) => (
-            <Tab
-              key={item.id}
-              className={styles.tabItem}
-              id={item.title || ""}
-              value={item.id}
-            >
+            <Tab key={item.id} id={item.title || ""} value={item.id}>
               {item.title}
             </Tab>
           ))}
