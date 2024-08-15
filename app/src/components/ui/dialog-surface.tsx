@@ -1,7 +1,4 @@
-import {
-  DialogSurfaceElement,
-  type DialogSurfaceProps,
-} from "@fluentui/react-dialog";
+import { type DialogSurfaceProps } from "@fluentui/react-dialog";
 import {
   DialogSurface as FUIDialogSurface,
   makeStyles,
