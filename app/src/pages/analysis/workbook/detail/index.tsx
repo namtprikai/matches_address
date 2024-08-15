@@ -2,7 +2,7 @@ import { EditFilled } from "@fluentui/react-icons";
 import { useEffect } from "react";
 import { makeStyles, Tab, TabList, tokens } from "@fluentui/react-components";
 import { useParams } from "react-router-dom";
-import { Button } from "../../../../components/button";
+import { Button } from "../../../../components/ui/button";
 import { useFetchWorkbook } from "../../../../hooks/use-fetch-workbook";
 import { useFetchResultSheets } from "../../../../hooks/use-fetch-result-sheets";
 import { useTabs } from "../../../../hooks/use-tabs";

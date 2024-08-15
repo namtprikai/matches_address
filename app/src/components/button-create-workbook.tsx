@@ -12,7 +12,7 @@ import {
   tokens,
 } from "@fluentui/react-components";
 import { useNavigate, type FormProps } from "react-router-dom";
-import { Button } from "./button";
+import { Button } from "./ui/button";
 
 const useStyles = makeStyles({
   input: {

@@ -3,7 +3,7 @@ import { useRef, useState } from "react";
 import { type FormProps } from "react-router-dom";
 import { type result_sheets } from "../schema";
 import { useOnClickOutside } from "../hooks/use-on-click-outside";
-import { Button } from "./button";
+import { Button } from "./ui/button";
 
 type ResultSheet = typeof result_sheets.$inferSelect;
 
