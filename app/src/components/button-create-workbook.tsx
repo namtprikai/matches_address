@@ -3,7 +3,6 @@ import {
   Dialog,
   DialogTrigger,
   DialogBody,
-  DialogActions,
   DialogContent,
   makeStyles,
   tokens,
@@ -14,6 +13,7 @@ import { Form } from "./ui/form";
 import { DialogSurface } from "./ui/dialog-surface";
 import { DialogTitle } from "./ui/dialog-title";
 import { Input } from "./ui/input";
+import { DialogActions } from "./ui/dialog-actions";
 
 const useStyles = makeStyles({
   input: {
