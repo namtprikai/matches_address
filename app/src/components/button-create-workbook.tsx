@@ -26,28 +26,8 @@ const useStyles = makeStyles({
       padding: 0,
     },
   },
-  title: {
-    fontSize: tokens.fontSizeBase200,
-  },
   dialogBody: {
     gap: tokens.spacingVerticalL,
-  },
-  closeButton: {
-    padding: 0,
-    width: "24px",
-    height: "24px",
-    minWidth: "24px",
-    "& span > svg": {
-      width: "20px",
-      height: "20px",
-    },
-  },
-  saveButton: {
-    padding: `${tokens.spacingVerticalMNudge} ${tokens.spacingHorizontalL}`,
-    fontSize: tokens.fontSizeBase300,
-    border: "none",
-    minWidth: "80px",
-    marginTop: tokens.spacingVerticalS,
   },
 });
 
@@ -72,7 +52,6 @@ export const ButtonCreateWorkbook = (): JSX.Element => {
     <Dialog>
       <DialogTrigger disableButtonEnhancement>
         <Button
-          className={styles.title}
           icon={
             <AddFilled
               color={tokens.colorNeutralForeground1}
@@ -80,6 +59,7 @@ export const ButtonCreateWorkbook = (): JSX.Element => {
               strokeWidth={2}
             />
           }
+          size="small"
         >
           新規ワークブック作成
         </Button>
@@ -92,7 +72,6 @@ export const ButtonCreateWorkbook = (): JSX.Element => {
                 <Button
                   appearance="subtle"
                   aria-label="close"
-                  className={styles.closeButton}
                   icon={
                     <Dismiss24Regular
                       color={tokens.colorNeutralForeground1}
@@ -114,8 +93,8 @@ export const ButtonCreateWorkbook = (): JSX.Element => {
             {/* <DialogTrigger> */}
             <Button
               appearance="primary"
-              className={styles.saveButton}
               form="create-workbook"
+              size="medium"
               type="submit"
             >
               保存
