@@ -2,7 +2,6 @@ import { AddFilled, Dismiss24Regular } from "@fluentui/react-icons";
 import {
   Dialog,
   DialogTrigger,
-  DialogBody,
   DialogContent,
   makeStyles,
   tokens,
@@ -14,13 +13,11 @@ import { DialogSurface } from "./ui/dialog-surface";
 import { DialogTitle } from "./ui/dialog-title";
 import { Input } from "./ui/input";
 import { DialogActions } from "./ui/dialog-actions";
+import { DialogBody } from "./ui/dialog-body";
 
 const useStyles = makeStyles({
   input: {
     width: "100%",
-  },
-  dialogBody: {
-    gap: tokens.spacingVerticalL,
   },
 });
 
@@ -58,7 +55,7 @@ export const ButtonCreateWorkbook = (): JSX.Element => {
         </Button>
       </DialogTrigger>
       <DialogSurface>
-        <DialogBody className={styles.dialogBody}>
+        <DialogBody>
           <DialogTitle
             action={
               <DialogTrigger action="close">
