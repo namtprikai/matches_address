@@ -5,15 +5,20 @@ import { TableWorkbook } from "../../../components/table-workbook";
 const useStyles = makeStyles({
   root: {
     display: "grid",
-    gap: tokens.spacingVerticalL,
+    gap: tokens.spacingVerticalXXL,
   },
   heading: {
     fontSize: tokens.fontSizeBase500,
     lineHeight: tokens.lineHeightBase600,
   },
   content: {
-    display: "block",
+    display: "flex",
+    justifyContent: "flex-start",
+    alignItems: "flex-start",
+    flexDirection: "column",
     minHeight: "300px",
+    padding: `${tokens.spacingVerticalXXL} ${tokens.spacingHorizontalXXL}`,
+    gap: tokens.spacingVerticalXL,
   },
 });
 

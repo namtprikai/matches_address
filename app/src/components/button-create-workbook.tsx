@@ -2,16 +2,18 @@ import { AddFilled, Dismiss24Regular } from "@fluentui/react-icons";
 import {
   Dialog,
   DialogTrigger,
-  DialogSurface,
-  DialogTitle,
-  DialogBody,
-  DialogActions,
   DialogContent,
-  Input,
   makeStyles,
+  tokens,
 } from "@fluentui/react-components";
 import { useNavigate, type FormProps } from "react-router-dom";
-import { Button } from "./button";
+import { Button } from "./ui/button";
+import { Form } from "./ui/form";
+import { DialogSurface } from "./ui/dialog-surface";
+import { DialogTitle } from "./ui/dialog-title";
+import { Input } from "./ui/input";
+import { DialogActions } from "./ui/dialog-actions";
+import { DialogBody } from "./ui/dialog-body";
 
 const useStyles = makeStyles({
   input: {
@@ -39,7 +41,18 @@ export const ButtonCreateWorkbook = (): JSX.Element => {
   return (
     <Dialog>
       <DialogTrigger disableButtonEnhancement>
-        <Button icon={<AddFilled />}>新規ワークブック作成</Button>
+        <Button
+          icon={
+            <AddFilled
+              color={tokens.colorNeutralForeground1}
+              fontSize={tokens.fontSizeBase400}
+              strokeWidth={2}
+            />
+          }
+          size="small"
+        >
+          新規ワークブック作成
+        </Button>
       </DialogTrigger>
       <DialogSurface>
         <DialogBody>
@@ -49,7 +62,12 @@ export const ButtonCreateWorkbook = (): JSX.Element => {
                 <Button
                   appearance="subtle"
                   aria-label="close"
-                  icon={<Dismiss24Regular />}
+                  icon={
+                    <Dismiss24Regular
+                      color={tokens.colorNeutralForeground1}
+                      strokeWidth={2}
+                    />
+                  }
                 />
               </DialogTrigger>
             }
@@ -57,13 +75,18 @@ export const ButtonCreateWorkbook = (): JSX.Element => {
             ワークブック名
           </DialogTitle>
           <DialogContent>
-            <form id="create-workbook" onSubmit={handleSubmit}>
+            <Form id="create-workbook" onSubmit={handleSubmit}>
               <Input className={styles.input} name="title" />
-            </form>
+            </Form>
           </DialogContent>
           <DialogActions>
             {/* <DialogTrigger> */}
-            <Button appearance="primary" form="create-workbook" type="submit">
+            <Button
+              appearance="primary"
+              form="create-workbook"
+              size="medium"
+              type="submit"
+            >
               保存
             </Button>
             {/* </DialogTrigger> */}
