@@ -12,6 +12,7 @@ const useStyles = makeStyles({
     padding: `${tokens.spacingVerticalXS} ${tokens.spacingHorizontalM}`,
     fontSize: tokens.fontSizeBase200,
     minWidth: "60px",
+    fontWeight: tokens.fontWeightBold,
   },
   medium: {
     padding: `${tokens.spacingVerticalMNudge} ${tokens.spacingHorizontalL}`,
