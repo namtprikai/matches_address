@@ -13,6 +13,7 @@ import {
 } from "@fluentui/react-components";
 import { useNavigate, type FormProps } from "react-router-dom";
 import { Button } from "./ui/button";
+import { Form } from "./ui/form";
 
 const useStyles = makeStyles({
   input: {
@@ -125,13 +126,13 @@ export const ButtonCreateWorkbook = (): JSX.Element => {
             ワークブック名
           </DialogTitle>
           <DialogContent>
-            <form
+            <Form
               className={styles.form}
               id="create-workbook"
               onSubmit={handleSubmit}
             >
               <Input className={styles.input} name="title" />
-            </form>
+            </Form>
           </DialogContent>
           <DialogActions>
             {/* <DialogTrigger> */}
