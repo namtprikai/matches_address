@@ -6,30 +6,26 @@ import {
   type CardProps,
   Subtitle2,
 } from "@fluentui/react-components";
-import {
-  type data_set_detail_areas,
-  type data_set_detail_buildings,
-  type data_set_results,
-  type result_views,
-} from "../schema";
+import { type data_set_results, type result_views } from "../schema";
 import { LanguageMap } from "../lang";
+import { type ChartProps } from "../@types/charts";
+import { useFetchFilterDataSetForChart } from "../hooks/use-fetch-filtered-data-set-for-chart";
+import { PieChart } from "./pie-charts";
 type ResultViews = typeof result_views.$inferSelect;
 type DataSetResults = typeof data_set_results.$inferSelect;
-type DataSetsDetailBuildings = typeof data_set_detail_buildings.$inferSelect;
-type DataSetsDetailAreas = typeof data_set_detail_areas.$inferSelect;
 
 type Props = CardProps & {
   resultView: ResultViews;
   dataSetResult: DataSetResults;
-  dataSetDetailBuildings: DataSetsDetailBuildings | null;
-  dataSetDetailAreas: DataSetsDetailAreas | null;
 };
 
 /** 仮の分岐、微妙だったらあとでリファクタしてもいいかも */
 const SwithViewStyle = ({
   resultViewStyle,
+  chartProps,
 }: {
   resultViewStyle: ResultViews["style"];
+  chartProps: ChartProps;
 }): JSX.Element => {
   switch (resultViewStyle) {
     case "bar":
@@ -50,7 +46,7 @@ const SwithViewStyle = ({
     case "pie":
       return (
         <div>
-          <img alt="dummy" src="https://placehold.co/1220x760?text=Pie+Chart" />
+          <PieChart {...chartProps} />
         </div>
       );
     case "table":
@@ -76,10 +72,15 @@ const SwithViewStyle = ({
 export const CardResultView = ({
   resultView,
   dataSetResult,
-  dataSetDetailAreas,
-  dataSetDetailBuildings,
   ...cardProps
 }: Props): JSX.Element => {
+  const { chartProps } = useFetchFilterDataSetForChart({
+    resultId: resultView.id,
+    type: "buildings",
+    x: "id",
+    y: "rank",
+  });
+
   return (
     <Card {...cardProps}>
       <CardHeader
@@ -97,12 +98,11 @@ export const CardResultView = ({
         {resultView.unit && LanguageMap["RESULT_VIEWS_UNIT"][resultView.unit]}
         <br />
         データセット: {dataSetResult.title}
-        <br />
-        建物データID: {dataSetDetailBuildings?.id || "未設定"}
-        <br />
-        地域データID: {dataSetDetailAreas?.id || "未設定"}
       </div>
-      <SwithViewStyle resultViewStyle={resultView.style} />
+      <SwithViewStyle
+        chartProps={chartProps}
+        resultViewStyle={resultView.style}
+      />
     </Card>
   );
 };

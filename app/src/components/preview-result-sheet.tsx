@@ -48,8 +48,6 @@ export const PreviewResultSheet = (): JSX.Element => {
               {...{
                 dataSetResult: item.data_set_results,
                 resultView: item.result_views,
-                dataSetDetailAreas: item.data_set_detail_areas,
-                dataSetDetailBuildings: item.data_set_detail_buildings,
               }}
             />
           ))}
@@ -67,8 +65,6 @@ export const PreviewResultSheet = (): JSX.Element => {
           {...{
             dataSetResult: data[0].data_set_results,
             resultView: data[0].result_views,
-            dataSetDetailAreas: data[0].data_set_detail_areas,
-            dataSetDetailBuildings: data[0].data_set_detail_buildings,
           }}
         />
       </div>
@@ -85,8 +81,6 @@ export const PreviewResultSheet = (): JSX.Element => {
                 {...{
                   dataSetResult: item.data_set_results,
                   resultView: item.result_views,
-                  dataSetDetailAreas: item.data_set_detail_areas,
-                  dataSetDetailBuildings: item.data_set_detail_buildings,
                 }}
               />
             ),
