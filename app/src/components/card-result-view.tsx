@@ -13,7 +13,6 @@ import {
   type result_views,
 } from "../schema";
 import { LanguageMap } from "../lang";
-
 type ResultViews = typeof result_views.$inferSelect;
 type DataSetResults = typeof data_set_results.$inferSelect;
 type DataSetsDetailBuildings = typeof data_set_detail_buildings.$inferSelect;

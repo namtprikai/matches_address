@@ -26,7 +26,6 @@ const useStyles = makeStyles({
 export const CustomTooltip = ({
   active,
   payload,
-  ...props
 }: {
   active: boolean;
   payload: { value: string; unit: string | undefined }[];
