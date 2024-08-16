@@ -16,6 +16,7 @@ export const useFetchFilterDataSetForChart = ({ resultId, type, x, y }: { result
         yAxisColumn: { type: "number" };
     }>({ data: [], xAxisColumn: { type: "string" }, yAxisColumn: { type: "number" } });
 
+    // TODO: 冗長な関数呼び出しをしているので型定義も修正しつつ、要リファクタ
     const fetchFilteredDataSetDetailBuildingsForChart = useCallback(async (): Promise<void> => {
         const result = await window.ipcRenderer.invoke("filterDataSetForChart", { resultId, type: "buildings", x, y });
         setChartProps(result);

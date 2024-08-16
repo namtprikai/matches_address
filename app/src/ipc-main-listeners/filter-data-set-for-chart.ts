@@ -27,14 +27,14 @@ export const filterDataSetForChart = ((
             data: all.map((row: typeof data_set_detail_areas.$inferSelect) => {
                 return {
                     x: row[x] as string,
-                    y: row[y] as number,
+                    y: row[y] as number, // TODO: この辺りの型定義は別途修正が必要
                 }
             }),
             xAxisColumn: {
-                type: "string",
+                type: "string", // TODO: この辺りの型定義は別途修正が必要
             },
             yAxisColumn: {
-                type: "number",
+                type: "number", // TODO: この辺りの型定義は別途修正が必要
             },
         };
     }

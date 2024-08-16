@@ -75,8 +75,8 @@ export const CardResultView = ({
   const { chartProps } = useFetchFilterDataSetForChart({
     resultId: resultView.id,
     type: "buildings",
-    x: "id",
-    y: "rank",
+    x: "id", // FIXME: 仮の値, ここを変えるとチャートの表示が変わる
+    y: "rank", // FIXME: 仮の値, ここを変えるとチャートの表示が変わる
   });
 
   return (
