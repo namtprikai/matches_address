@@ -5,11 +5,8 @@ import {
   DialogTrigger,
   Field,
   makeStyles,
-  Overflow,
-  OverflowItem,
   Select,
   Text,
-  useOverflowMenu,
 } from "@fluentui/react-components";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -49,17 +46,6 @@ const AREA_ITEMS = [
   "弥富市",
 ];
 
-const OverflowMenu: React.FC<{ itemIds: string[] }> = ({ itemIds }) => {
-  const { ref, overflowCount, isOverflowing } =
-    useOverflowMenu<HTMLButtonElement>();
-
-  if (!isOverflowing) {
-    return null;
-  }
-
-  return <>+{overflowCount} items</>;
-};
-
 const formSchema = z.object({
   period: z.string().optional() /** 仮: 範囲指定になるらしい */,
   areas: z.array(z.string()).optional().default([]),
@@ -71,7 +57,7 @@ const form_id = "edit-result-view-filter-fields";
 export const EditResultViewFilterFields = (): JSX.Element => {
   const styles = useStyles();
 
-  const { register, handleSubmit, watch } = useForm<FormType>({
+  const { register, handleSubmit, watch, setValue } = useForm<FormType>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       areas: [],
@@ -107,21 +93,18 @@ export const EditResultViewFilterFields = (): JSX.Element => {
 
         <Field label="地域">
           <div className={styles.area}>
-            <Overflow>
-              <div>
-                {areas.map((item, inedx) =>
-                  areas.length - 1 === inedx ? (
-                    <Text key={item}>{item}</Text>
-                  ) : (
-                    <Text key={item}>
-                      {item}
-                      <span>/</span>
-                    </Text>
-                  ),
-                )}
-                <OverflowMenu itemIds={areas} />
-              </div>
-            </Overflow>
+            <div>
+              {areas.map((item, inedx) =>
+                areas.length - 1 === inedx ? (
+                  <Text key={item}>{item}</Text>
+                ) : (
+                  <Text key={item}>
+                    {item}
+                    <span>/</span>
+                  </Text>
+                ),
+              )}
+            </div>
 
             <Dialog>
               <DialogTrigger disableButtonEnhancement>
@@ -143,11 +126,16 @@ export const EditResultViewFilterFields = (): JSX.Element => {
                     ))}
                   </DialogContent>
                   <DialogActions position="start">
-                    <Button appearance="subtle">すべてクリア</Button>
+                    <Button
+                      appearance="subtle"
+                      onClick={() => setValue("areas", [])}
+                    >
+                      すべてクリア
+                    </Button>
                   </DialogActions>
                   <DialogActions position="end">
                     <DialogTrigger>
-                      <Button appearance="primary">フィルターを適用</Button>
+                      <Button appearance="primary">変更内容を適用</Button>
                     </DialogTrigger>
                   </DialogActions>
                 </DialogBody>
@@ -157,7 +145,7 @@ export const EditResultViewFilterFields = (): JSX.Element => {
         </Field>
       </fieldset>
 
-      <Button type="submit">フィルターを適用</Button>
+      <Button type="submit">フィルターを実行</Button>
     </form>
   );
 };
