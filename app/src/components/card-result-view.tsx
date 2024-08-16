@@ -7,10 +7,11 @@ import {
   Subtitle2,
 } from "@fluentui/react-components";
 import { type data_set_results, type result_views } from "../schema";
-import { LanguageMap } from "../lang";
 import { type ChartProps } from "../@types/charts";
 import { useFetchFilterDataSetForChart } from "../hooks/use-fetch-filtered-data-set-for-chart";
 import { PieChart } from "./pie-charts";
+import { LineChart } from "./line-charts";
+import { BarChart } from "./bar-charts";
 type ResultViews = typeof result_views.$inferSelect;
 type DataSetResults = typeof data_set_results.$inferSelect;
 
@@ -31,16 +32,13 @@ const SwithViewStyle = ({
     case "bar":
       return (
         <div>
-          <img alt="dummy" src="https://placehold.co/1220x760?text=Bar+Chart" />
+          <BarChart {...chartProps} />
         </div>
       );
     case "line":
       return (
         <div>
-          <img
-            alt="dummy"
-            src="https://placehold.co/1220x760?text=Line+Chart"
-          />
+          <LineChart {...chartProps} />
         </div>
       );
     case "pie":
@@ -89,20 +87,14 @@ export const CardResultView = ({
           <Subtitle2>{`ID:${resultView.id} - ${resultView.title || "タイトル未入力"}`}</Subtitle2>
         }
       />
-      <div>
-        スタイル:{" "}
-        {resultView.style &&
-          LanguageMap["RESULT_VIEWS_STYLE"][resultView.style]}
-        <br />
-        単位:{" "}
-        {resultView.unit && LanguageMap["RESULT_VIEWS_UNIT"][resultView.unit]}
-        <br />
-        データセット: {dataSetResult.title}
-      </div>
-      <SwithViewStyle
-        chartProps={chartProps}
-        resultViewStyle={resultView.style}
-      />
+      {chartProps.data.length === 0 ? (
+        <div>データがありません</div>
+      ) : (
+        <SwithViewStyle
+          chartProps={chartProps}
+          resultViewStyle={resultView.style}
+        />
+      )}
     </Card>
   );
 };
