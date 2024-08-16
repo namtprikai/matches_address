@@ -74,7 +74,7 @@ const SwithViewStyle = ({
   }
 };
 
-export const CardResultView = ({
+export const TileResultView = ({
   resultView,
   dataSetResult,
   dataSetDetailAreas,
