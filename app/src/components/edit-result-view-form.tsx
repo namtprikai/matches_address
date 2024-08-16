@@ -1,4 +1,3 @@
-import { Field, Input, Select } from "@fluentui/react-components";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -7,6 +6,11 @@ import { result_views } from "../schema";
 import { LanguageMap } from "../lang";
 import { selectedResultViewIdAtom } from "../state/selected-result-view-id-atom";
 import { resultViewsAtom } from "../state/result-views-atom";
+import { Fieldset } from "./ui/fieldset";
+import { FieldLegend } from "./ui/field-legend";
+import { Field } from "./ui/field";
+import { Input } from "./ui/input";
+import { Select } from "./ui/select";
 
 const schema = z.object({
   title: z.string().max(255).optional(),
@@ -52,8 +56,8 @@ export const EditResultViewForm = (): JSX.Element => {
           onBlur={onSubmit}
         />
       </Field>
-      <fieldset>
-        <legend>パラメーター</legend>
+      <Fieldset>
+        <FieldLegend>パラメーター</FieldLegend>
         <Field label="スタイル">
           <Select {...register("style")} onBlur={onSubmit}>
             {result_views.style.enumValues.map((item) => (
@@ -72,7 +76,7 @@ export const EditResultViewForm = (): JSX.Element => {
             ))}
           </Select>
         </Field>
-      </fieldset>
+      </Fieldset>
     </form>
   );
 };
