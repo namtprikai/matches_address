@@ -13,26 +13,10 @@ import {
   Tooltip as FUIToolTip,
   makeStyles,
 } from "@fluentui/react-components";
-import { type ChartAccepatbleType } from "../@types/charts";
-import { LanguageMap } from "../lang";
 import { GRAPH_COLORS } from "../config/chart-colors";
+import { type ChartProps } from "../@types/charts";
 
-export interface LineChartProps<T> {
-  xColumn: {
-    key: keyof T;
-    type: "string" | "number";
-    label: string;
-    unit?: string;
-  };
-  yColumn: {
-    key: keyof T;
-    type: "string" | "number";
-    label: string;
-    unit?: string;
-  };
-  data: T[];
-}
-
+export type LineChartProps = ChartProps;
 //
 const CustomizedDot = ({
   cx,
@@ -123,42 +107,16 @@ const CustomizedActiveDot = ({
   );
 };
 
-export const LineChart = <T extends ChartAccepatbleType>({
-  xColumn,
-  yColumn,
+export const LineChart = ({
   data,
-}: LineChartProps<T>): JSX.Element => {
-  const chartData = data.map((row) => {
-    return {
-      name: row[xColumn.key],
-      [LanguageMap.DATA_SET_DETAIL_BUILDINGS[
-        xColumn.key as keyof typeof LanguageMap.DATA_SET_DETAIL_BUILDINGS
-      ]]: row[xColumn.key],
-      [LanguageMap.DATA_SET_DETAIL_BUILDINGS[
-        yColumn.key as keyof typeof LanguageMap.DATA_SET_DETAIL_BUILDINGS
-      ]]: row[yColumn.key],
-    };
-  });
-
+  xAxisColumn,
+  yAxisColumn,
+}: LineChartProps): JSX.Element => {
   return (
     <ResponsiveContainer height={400} width="100%">
-      <ReLineChart data={chartData}>
-        <ReXAxis
-          dataKey={
-            LanguageMap.DATA_SET_DETAIL_BUILDINGS[
-              xColumn.key as keyof typeof LanguageMap.DATA_SET_DETAIL_BUILDINGS
-            ]
-          }
-          unit={xColumn.unit}
-        />
-        <ReYAxis
-          dataKey={
-            LanguageMap.DATA_SET_DETAIL_BUILDINGS[
-              yColumn.key as keyof typeof LanguageMap.DATA_SET_DETAIL_BUILDINGS
-            ]
-          }
-          unit={yColumn.unit}
-        />
+      <ReLineChart data={data}>
+        <ReXAxis dataKey={"x"} unit={xAxisColumn.unit} />
+        <ReYAxis dataKey={"y"} unit={yAxisColumn.unit} />
         <ReTooltip
           wrapperStyle={{
             display: "none",
@@ -168,11 +126,7 @@ export const LineChart = <T extends ChartAccepatbleType>({
         <ReLine
           // @ts-expect-error 内部処理で適切なPropsが渡されるが型定義が不足しているためエラーが出る
           activeDot={<CustomizedActiveDot />}
-          dataKey={
-            LanguageMap.DATA_SET_DETAIL_BUILDINGS[
-              yColumn.key as keyof typeof LanguageMap.DATA_SET_DETAIL_BUILDINGS
-            ]
-          }
+          dataKey={"y"}
           // @ts-expect-error 内部処理で適切なPropsが渡されるが型定義が不足しているためエラーが出る
           dot={<CustomizedDot />}
           stroke={GRAPH_COLORS.primary}

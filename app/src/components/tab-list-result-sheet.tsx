@@ -11,7 +11,7 @@ import { startTransition, useEffect } from "react";
 import { resultSheetsAtom } from "../state/result-sheets-atom";
 import { selectedResultSheetIdAtom } from "../state/selected-result-sheet-id-atom";
 import { selectedWorkbookIdAtom } from "../state/selected-workbook-id-atom";
-import { Button } from "./button";
+import { Button } from "./ui/button";
 import { ButtonEditableSheetTitle } from "./button-editable-sheet-title";
 
 const addResultSheet = async ({

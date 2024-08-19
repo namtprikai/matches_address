@@ -2,7 +2,7 @@ import { makeStyles } from "@fluentui/react-components";
 import { useAtom } from "jotai";
 import { resultViewsAtom } from "../state/result-views-atom";
 import { selectedResultViewIdAtom } from "../state/selected-result-view-id-atom";
-import { CardResultView } from "./card-result-view";
+import { TileResultView } from "./tile-result-view";
 
 const useStyles = makeStyles({
   root: {
@@ -39,7 +39,7 @@ export const PreviewResultSheet = (): JSX.Element => {
       <div className={styles.root}>
         <div className={styles.resultViews}>
           {data.map((item) => (
-            <CardResultView
+            <TileResultView
               key={item.result_views.id}
               onClick={(): void =>
                 setSelectedResultViewId(item.result_views.id)
@@ -48,8 +48,6 @@ export const PreviewResultSheet = (): JSX.Element => {
               {...{
                 dataSetResult: item.data_set_results,
                 resultView: item.result_views,
-                dataSetDetailAreas: item.data_set_detail_areas,
-                dataSetDetailBuildings: item.data_set_detail_buildings,
               }}
             />
           ))}
@@ -61,14 +59,12 @@ export const PreviewResultSheet = (): JSX.Element => {
   return (
     <div className={styles.root}>
       <div>
-        <CardResultView
+        <TileResultView
           onClick={(): void => setSelectedResultViewId(data[0].result_views.id)}
           selected={selectedResultViewId === data[0].result_views.id}
           {...{
             dataSetResult: data[0].data_set_results,
             resultView: data[0].result_views,
-            dataSetDetailAreas: data[0].data_set_detail_areas,
-            dataSetDetailBuildings: data[0].data_set_detail_buildings,
           }}
         />
       </div>
@@ -76,7 +72,7 @@ export const PreviewResultSheet = (): JSX.Element => {
         {data.map(
           (item, index) =>
             index !== 0 && (
-              <CardResultView
+              <TileResultView
                 key={item.result_views.id}
                 onClick={(): void =>
                   setSelectedResultViewId(item.result_views.id)
@@ -85,8 +81,6 @@ export const PreviewResultSheet = (): JSX.Element => {
                 {...{
                   dataSetResult: item.data_set_results,
                   resultView: item.result_views,
-                  dataSetDetailAreas: item.data_set_detail_areas,
-                  dataSetDetailBuildings: item.data_set_detail_buildings,
                 }}
               />
             ),

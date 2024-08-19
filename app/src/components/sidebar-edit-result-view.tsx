@@ -14,8 +14,9 @@ import { useFetchDataSetResults } from "../hooks/use-fetch-data-set-results";
 import { type data_set_results } from "../schema";
 import { resultViewsAtom } from "../state/result-views-atom";
 import { selectedResultSheetIdAtom } from "../state/selected-result-sheet-id-atom";
-import { Button } from "./button";
+import { Button } from "./ui/button";
 import { EditResultViewForm } from "./edit-result-view-form";
+import { EditResultViewFilterFields } from "./edit-result-view-filter-fields";
 
 /** 開発用 */
 const addDataSetResult = async (
@@ -128,7 +129,12 @@ export const SidebarEditResultView = (): JSX.Element => {
               </div>
             </>
           )}
-          {!isAddView && <EditResultViewForm />}
+          {!isAddView && (
+            <>
+              <EditResultViewForm />
+              <EditResultViewFilterFields />
+            </>
+          )}
         </div>
       </DrawerBody>
     </InlineDrawer>

@@ -10,44 +10,17 @@ import {
   CartesianGrid as ReCartesianGrid,
 } from "recharts";
 import { useState } from "react";
-import { type ChartAccepatbleType } from "../@types/charts";
-import { LanguageMap } from "../lang";
 import { GRAPH_COLORS } from "../config/chart-colors";
+import { type ChartProps } from "../@types/charts";
 import { CustomTooltip } from "./custom-tooltip";
 
-export interface PieChartProps<T> {
-  xColumn: {
-    key: keyof T;
-    type: "string" | "number";
-    label: string;
-    unit?: string;
-  };
-  yColumn: {
-    key: keyof T;
-    type: "string" | "number";
-    label: string;
-    unit?: string;
-  };
-  data: T[];
-}
+export type BarChartProps = ChartProps;
 
-export const BarChart = <T extends ChartAccepatbleType>({
-  xColumn,
-  yColumn,
+export const BarChart = ({
+  xAxisColumn,
+  yAxisColumn,
   data,
-}: PieChartProps<T>): JSX.Element => {
-  const chartData = data.map((row) => {
-    return {
-      name: row[xColumn.key],
-      [LanguageMap.DATA_SET_DETAIL_BUILDINGS[
-        xColumn.key as keyof typeof LanguageMap.DATA_SET_DETAIL_BUILDINGS
-      ]]: row[xColumn.key],
-      [LanguageMap.DATA_SET_DETAIL_BUILDINGS[
-        yColumn.key as keyof typeof LanguageMap.DATA_SET_DETAIL_BUILDINGS
-      ]]: row[yColumn.key],
-    };
-  });
-
+}: BarChartProps): JSX.Element => {
   const [tooltipPosition, setTooltipPosition] = useState<{
     x: number;
     y: number;
@@ -59,7 +32,7 @@ export const BarChart = <T extends ChartAccepatbleType>({
   return (
     <ResponsiveContainer height={400} width="100%">
       <ReBarChart
-        data={chartData}
+        data={data}
         onMouseLeave={() => {
           setActiveToolTip(false);
         }}
@@ -84,22 +57,8 @@ export const BarChart = <T extends ChartAccepatbleType>({
           setActiveToolTip(data.isTooltipActive);
         }}
       >
-        <ReXAxis
-          dataKey={
-            LanguageMap.DATA_SET_DETAIL_BUILDINGS[
-              xColumn.key as keyof typeof LanguageMap.DATA_SET_DETAIL_BUILDINGS
-            ]
-          }
-          unit={xColumn.unit}
-        />
-        <ReYAxis
-          dataKey={
-            LanguageMap.DATA_SET_DETAIL_BUILDINGS[
-              yColumn.key as keyof typeof LanguageMap.DATA_SET_DETAIL_BUILDINGS
-            ]
-          }
-          unit={yColumn.unit}
-        />
+        <ReXAxis dataKey={"x"} unit={xAxisColumn.unit} />
+        <ReYAxis dataKey={"y"} unit={yAxisColumn.unit} />
         <ReTooltip
           active={activeToolTip}
           // @ts-expect-error 内部処理で適切なPropsが渡されるが型定義が不足しているためエラーが出る
@@ -111,11 +70,7 @@ export const BarChart = <T extends ChartAccepatbleType>({
         <ReCartesianGrid vertical={false} />
         <ReLegend />
         <ReBar
-          dataKey={
-            LanguageMap.DATA_SET_DETAIL_BUILDINGS[
-              yColumn.key as keyof typeof LanguageMap.DATA_SET_DETAIL_BUILDINGS
-            ]
-          }
+          dataKey={"y"}
           fill={GRAPH_COLORS.primary} // tokensに存在しない値
           onMouseMove={(data, _) => {
             setTooltipPosition((prev) => {
@@ -129,9 +84,9 @@ export const BarChart = <T extends ChartAccepatbleType>({
               };
             });
           }}
-          unit={yColumn.unit}
+          unit={yAxisColumn.unit}
         >
-          {chartData.map((_, index) => (
+          {data.map((_, index) => (
             <ReCell
               key={`cell-${index}`}
               cursor="pointer"

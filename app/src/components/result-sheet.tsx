@@ -5,18 +5,19 @@ import {
   CardHeader,
   makeStyles,
   Subtitle2,
+  tokens,
 } from "@fluentui/react-components";
 import { useFetchResultViews } from "../hooks/use-fetch-result-views";
 
 const useStyles = makeStyles({
   root: {
     display: "grid",
-    gap: "16px",
+    gap: `${tokens.spacingVerticalXL} ${tokens.spacingHorizontalXL}`,
   },
   resultViews: {
     display: "grid",
     gridTemplateColumns: "repeat(2, 1fr)",
-    gap: "16px",
+    gap: `${tokens.spacingVerticalXL} ${tokens.spacingHorizontalXL}`,
   },
 });
 

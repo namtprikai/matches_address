@@ -6,52 +6,45 @@ import {
   type CardProps,
   Subtitle2,
 } from "@fluentui/react-components";
-import {
-  type data_set_detail_areas,
-  type data_set_detail_buildings,
-  type data_set_results,
-  type result_views,
-} from "../schema";
-import { LanguageMap } from "../lang";
-
+import { type data_set_results, type result_views } from "../schema";
+import { type ChartProps } from "../@types/charts";
+import { useFetchFilterDataSetForChart } from "../hooks/use-fetch-filtered-data-set-for-chart";
+import { PieChart } from "./pie-charts";
+import { LineChart } from "./line-charts";
+import { BarChart } from "./bar-charts";
 type ResultViews = typeof result_views.$inferSelect;
 type DataSetResults = typeof data_set_results.$inferSelect;
-type DataSetsDetailBuildings = typeof data_set_detail_buildings.$inferSelect;
-type DataSetsDetailAreas = typeof data_set_detail_areas.$inferSelect;
 
 type Props = CardProps & {
   resultView: ResultViews;
   dataSetResult: DataSetResults;
-  dataSetDetailBuildings: DataSetsDetailBuildings | null;
-  dataSetDetailAreas: DataSetsDetailAreas | null;
 };
 
 /** 仮の分岐、微妙だったらあとでリファクタしてもいいかも */
 const SwithViewStyle = ({
   resultViewStyle,
+  chartProps,
 }: {
   resultViewStyle: ResultViews["style"];
+  chartProps: ChartProps;
 }): JSX.Element => {
   switch (resultViewStyle) {
     case "bar":
       return (
         <div>
-          <img alt="dummy" src="https://placehold.co/1220x760?text=Bar+Chart" />
+          <BarChart {...chartProps} />
         </div>
       );
     case "line":
       return (
         <div>
-          <img
-            alt="dummy"
-            src="https://placehold.co/1220x760?text=Line+Chart"
-          />
+          <LineChart {...chartProps} />
         </div>
       );
     case "pie":
       return (
         <div>
-          <img alt="dummy" src="https://placehold.co/1220x760?text=Pie+Chart" />
+          <PieChart {...chartProps} />
         </div>
       );
     case "table":
@@ -74,13 +67,18 @@ const SwithViewStyle = ({
   }
 };
 
-export const CardResultView = ({
+export const TileResultView = ({
   resultView,
   dataSetResult,
-  dataSetDetailAreas,
-  dataSetDetailBuildings,
   ...cardProps
 }: Props): JSX.Element => {
+  const { chartProps } = useFetchFilterDataSetForChart({
+    resultId: dataSetResult.id,
+    type: "buildings",
+    x: "id", // FIXME: 仮の値, ここを変えるとチャートの表示が変わる
+    y: "rank", // FIXME: 仮の値, ここを変えるとチャートの表示が変わる
+  });
+
   return (
     <Card {...cardProps}>
       <CardHeader
@@ -89,21 +87,14 @@ export const CardResultView = ({
           <Subtitle2>{`ID:${resultView.id} - ${resultView.title || "タイトル未入力"}`}</Subtitle2>
         }
       />
-      <div>
-        スタイル:{" "}
-        {resultView.style &&
-          LanguageMap["RESULT_VIEWS_STYLE"][resultView.style]}
-        <br />
-        単位:{" "}
-        {resultView.unit && LanguageMap["RESULT_VIEWS_UNIT"][resultView.unit]}
-        <br />
-        データセット: {dataSetResult.title}
-        <br />
-        建物データID: {dataSetDetailBuildings?.id || "未設定"}
-        <br />
-        地域データID: {dataSetDetailAreas?.id || "未設定"}
-      </div>
-      <SwithViewStyle resultViewStyle={resultView.style} />
+      {chartProps.data.length === 0 ? (
+        <div>データがありません</div>
+      ) : (
+        <SwithViewStyle
+          chartProps={chartProps}
+          resultViewStyle={resultView.style}
+        />
+      )}
     </Card>
   );
 };
