@@ -18,6 +18,7 @@ import { selectResultViews } from "./select-result-views";
 import { insertResultViews } from "./insert-result-views";
 import { updateResultViews } from "./update-result-views";
 import { readResultViews } from "./read-result-views";
+import { filterDataSetForChart } from "./filter-data-set-for-chart";
 
 export const ipcMainListeners = {
   getNames,
@@ -36,6 +37,7 @@ export const ipcMainListeners = {
   insertResultViews,
   updateResultViews,
   readResultViews,
+  filterDataSetForChart,
 };
 
 export const execFileAsync = promisify(execFile);
