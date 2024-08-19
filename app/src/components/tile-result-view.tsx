@@ -4,9 +4,13 @@ import {
   Card,
   CardHeader,
   type CardProps,
+  makeStyles,
+  mergeClasses,
   Subtitle2,
+  tokens,
 } from "@fluentui/react-components";
 import { type data_set_results, type result_views } from "../schema";
+import { THEME_COLORS } from "../config/theme-colors";
 import { TileViewStyle } from "./tile-view-style";
 type ResultViews = typeof result_views.$inferSelect;
 type DataSetResults = typeof data_set_results.$inferSelect;
@@ -16,15 +20,47 @@ type Props = CardProps & {
   dataSetResult: DataSetResults | null;
 };
 
+const useStyles = makeStyles({
+  selected: {
+    border: `2px solid ${THEME_COLORS.primary}`,
+  },
+  cardSurface: {
+    border: `2px solid transparent`,
+    transition: "border,background-color 0.2s",
+    boxShadow: tokens.shadow16,
+    // border分を引いている
+    padding: `calc(${tokens.spacingHorizontalXXL} - 2px) calc(${tokens.spacingVerticalXXL} - 2px)`,
+    gap: tokens.spacingVerticalXL,
+  },
+  cardHeaderSubtle: {
+    padding: `${tokens.spacingHorizontalXXS} ${tokens.spacingVerticalXXS}`,
+    border: "none",
+    minWidth: "24px",
+    minHeight: "24px",
+  },
+});
+
 export const TileResultView = ({
   resultView,
   dataSetResult,
+  selected,
   ...cardProps
 }: Props): JSX.Element => {
+  const styles = useStyles();
+
   return (
-    <Card {...cardProps}>
+    <Card
+      {...cardProps}
+      className={mergeClasses(styles.cardSurface, selected && styles.selected)}
+    >
       <CardHeader
-        action={<Button appearance="subtle" icon={<ArrowDownloadFilled />} />}
+        action={
+          <Button
+            appearance="subtle"
+            className={styles.cardHeaderSubtle}
+            icon={<ArrowDownloadFilled />}
+          />
+        }
         header={
           <Subtitle2>{`ID:${resultView.id} - ${resultView.title || "タイトル未入力"}`}</Subtitle2>
         }
