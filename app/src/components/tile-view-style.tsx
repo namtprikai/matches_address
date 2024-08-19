@@ -8,6 +8,8 @@ import { useFetchFilterDataSetForChart } from "../hooks/use-fetch-filtered-data-
 import { BarChart } from "./bar-charts";
 import { LineChart } from "./line-charts";
 import { PieChart } from "./pie-charts";
+import { _dummyBuildingData } from "./map/_dummy-data";
+import { Map } from "./map";
 
 type ResultViews = typeof result_views.$inferSelect;
 type DataSetResults = typeof data_set_results.$inferSelect;
@@ -76,7 +78,7 @@ export const TileViewStyle = ({
     case "map":
       return (
         <div>
-          <img alt="dummy" src="https://placehold.co/1220x760?text=Map" />
+          <Map data={_dummyBuildingData} />
         </div>
       );
     default:
