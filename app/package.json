@@ -57,6 +57,7 @@
     "electron-squirrel-startup": "^1.0.1",
     "jotai": "^2.9.1",
     "maplibre-gl": "^4.5.2",
+    "pmtiles": "^3.0.7",
     "react-hook-form": "^7.52.1",
     "recharts": "^2.13.0-alpha.4",
     "vite-plugin-native": "^2.2.1",
