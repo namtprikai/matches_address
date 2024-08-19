@@ -12,6 +12,8 @@ import { useFetchFilterDataSetForChart } from "../hooks/use-fetch-filtered-data-
 import { PieChart } from "./pie-charts";
 import { LineChart } from "./line-charts";
 import { BarChart } from "./bar-charts";
+import { Map } from "./map";
+import { _dummyBuildingData } from "./map/_dummy-data";
 type ResultViews = typeof result_views.$inferSelect;
 type DataSetResults = typeof data_set_results.$inferSelect;
 
@@ -59,7 +61,7 @@ const SwithViewStyle = ({
     case "map":
       return (
         <div>
-          <img alt="dummy" src="https://placehold.co/1220x760?text=Map" />
+          <Map data={_dummyBuildingData} />
         </div>
       );
     default:
