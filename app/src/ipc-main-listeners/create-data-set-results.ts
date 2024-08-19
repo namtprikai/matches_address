@@ -19,6 +19,8 @@ export const createDataSetResults = (async (
       .insert(data_set_detail_areas)
       .values({ data_set_result_id: res[0].id });
 
+
+    /** 開発用のテストデータ生成ロジック、本番環境では利用しない  */
     for (let i = 0; i < 5; i++) {
 
       const number_of_people_under_15_years_old = Math.floor(Math.random() * 10);
