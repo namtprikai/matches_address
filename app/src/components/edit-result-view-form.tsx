@@ -1,12 +1,22 @@
-import { Field, Input, Select } from "@fluentui/react-components";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useAtom } from "jotai";
+import { Dialog, DialogTrigger } from "@fluentui/react-components";
 import { result_views } from "../schema";
 import { LanguageMap } from "../lang";
 import { selectedResultViewIdAtom } from "../state/selected-result-view-id-atom";
 import { resultViewsAtom } from "../state/result-views-atom";
+import { Fieldset } from "./ui/fieldset";
+import { FieldLegend } from "./ui/field-legend";
+import { Field } from "./ui/field";
+import { Input } from "./ui/input";
+import { Select } from "./ui/select";
+import { Button } from "./ui/button";
+import { DialogSurface } from "./ui/dialog-surface";
+import { DialogActions } from "./ui/dialog-actions";
+import { DialogBody } from "./ui/dialog-body";
+import { DialogTitle } from "./ui/dialog-title";
 
 const schema = z.object({
   title: z.string().max(255).optional(),
@@ -16,10 +26,53 @@ const schema = z.object({
 
 type EditResultViewFormType = z.infer<typeof schema>;
 
+const graphOptions = {
+  pie: {
+    fields: [
+      { key: "label", label: "ラベル" },
+      { key: "value", label: "値" },
+    ],
+    grouping: {
+      enabled: true,
+    },
+  },
+  bar: {
+    fields: [
+      { key: "xAxis", label: "X軸" },
+      { key: "yAxis", label: "Y軸" },
+    ],
+    grouping: {
+      enabled: true,
+    },
+  },
+  line: {
+    fields: [
+      { key: "xAxis", label: "X軸" },
+      { key: "yAxis", label: "Y軸" },
+    ],
+    grouping: {
+      enabled: false,
+    },
+  },
+  map: {
+    fields: [],
+    grouping: {
+      enabled: false,
+    },
+  },
+  table: {
+    fields: [],
+    grouping: {
+      enabled: false,
+    },
+  },
+} as const;
+
 export const EditResultViewForm = (): JSX.Element => {
-  const { register, handleSubmit, reset } = useForm<EditResultViewFormType>({
-    resolver: zodResolver(schema),
-  });
+  const { register, handleSubmit, reset, getValues } =
+    useForm<EditResultViewFormType>({
+      resolver: zodResolver(schema),
+    });
   const [selectedResultViewId] = useAtom(selectedResultViewIdAtom);
   const [, refresh] = useAtom(resultViewsAtom);
 
@@ -39,6 +92,8 @@ export const EditResultViewForm = (): JSX.Element => {
     });
   });
 
+  const style = getValues("style");
+
   return (
     <form onSubmit={onSubmit}>
       <button hidden type="submit" />
@@ -52,8 +107,8 @@ export const EditResultViewForm = (): JSX.Element => {
           onBlur={onSubmit}
         />
       </Field>
-      <fieldset>
-        <legend>パラメーター</legend>
+      <Fieldset>
+        <FieldLegend>パラメーター</FieldLegend>
         <Field label="スタイル">
           <Select {...register("style")} onBlur={onSubmit}>
             {result_views.style.enumValues.map((item) => (
@@ -63,6 +118,29 @@ export const EditResultViewForm = (): JSX.Element => {
             ))}
           </Select>
         </Field>
+        {graphOptions[style] &&
+          graphOptions[style].fields.map((field) => (
+            <Field key={field.key} label={field.label}>
+              <Input placeholder={field.label} />
+            </Field>
+          ))}
+
+        {graphOptions[style] && graphOptions[style].grouping.enabled && (
+          <Dialog>
+            <DialogTrigger>
+              <Button size="medium">グループを編集</Button>
+            </DialogTrigger>
+            <DialogSurface>
+              <DialogTitle>グループを編集</DialogTitle>
+              <DialogBody>
+                <p>グループを編集</p>
+              </DialogBody>
+              <DialogActions>
+                <Button>保存</Button>
+              </DialogActions>
+            </DialogSurface>
+          </Dialog>
+        )}
         <Field label="集計単位">
           <Select {...register("unit")} onBlur={onSubmit}>
             {result_views.unit.enumValues.map((item) => (
@@ -72,7 +150,7 @@ export const EditResultViewForm = (): JSX.Element => {
             ))}
           </Select>
         </Field>
-      </fieldset>
+      </Fieldset>
     </form>
   );
 };

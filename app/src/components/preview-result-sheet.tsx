@@ -2,7 +2,7 @@ import { makeStyles } from "@fluentui/react-components";
 import { useAtom } from "jotai";
 import { resultViewsAtom } from "../state/result-views-atom";
 import { selectedResultViewIdAtom } from "../state/selected-result-view-id-atom";
-import { CardResultView } from "./card-result-view";
+import { TileResultView } from "./tile-result-view";
 
 const useStyles = makeStyles({
   root: {
@@ -39,7 +39,7 @@ export const PreviewResultSheet = (): JSX.Element => {
       <div className={styles.root}>
         <div className={styles.resultViews}>
           {data.map((item) => (
-            <CardResultView
+            <TileResultView
               key={item.result_views.id}
               onClick={(): void =>
                 setSelectedResultViewId(item.result_views.id)
@@ -59,7 +59,7 @@ export const PreviewResultSheet = (): JSX.Element => {
   return (
     <div className={styles.root}>
       <div>
-        <CardResultView
+        <TileResultView
           onClick={(): void => setSelectedResultViewId(data[0].result_views.id)}
           selected={selectedResultViewId === data[0].result_views.id}
           {...{
@@ -72,7 +72,7 @@ export const PreviewResultSheet = (): JSX.Element => {
         {data.map(
           (item, index) =>
             index !== 0 && (
-              <CardResultView
+              <TileResultView
                 key={item.result_views.id}
                 onClick={(): void =>
                   setSelectedResultViewId(item.result_views.id)
