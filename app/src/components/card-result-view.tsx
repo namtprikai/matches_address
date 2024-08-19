@@ -73,7 +73,7 @@ export const CardResultView = ({
   ...cardProps
 }: Props): JSX.Element => {
   const { chartProps } = useFetchFilterDataSetForChart({
-    resultId: resultView.id,
+    resultId: dataSetResult.id,
     type: "buildings",
     x: "id", // FIXME: 仮の値, ここを変えるとチャートの表示が変わる
     y: "rank", // FIXME: 仮の値, ここを変えるとチャートの表示が変わる
