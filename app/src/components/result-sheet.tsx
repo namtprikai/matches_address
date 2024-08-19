@@ -1,13 +1,6 @@
-import { ArrowDownloadFilled } from "@fluentui/react-icons";
-import {
-  Button,
-  Card,
-  CardHeader,
-  makeStyles,
-  Subtitle2,
-  tokens,
-} from "@fluentui/react-components";
+import { makeStyles, tokens } from "@fluentui/react-components";
 import { useFetchResultViews } from "../hooks/use-fetch-result-views";
+import { TileResultView } from "./tile-result-view";
 
 const useStyles = makeStyles({
   root: {
@@ -40,43 +33,46 @@ export const ResultSheet = ({ sheetId }: Props): JSX.Element => {
       </div>
     );
 
+  if (data.length === 4) {
+    return (
+      <div className={styles.root}>
+        <div className={styles.resultViews}>
+          {data.map((item) => (
+            <TileResultView
+              key={item.result_views.id}
+              {...{
+                resultView: item.result_views,
+                dataSetResult: item.data_set_results,
+              }}
+            />
+          ))}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className={styles.root}>
       <div>
-        <Card>
-          <CardHeader
-            action={
-              <Button appearance="subtle" icon={<ArrowDownloadFilled />} />
-            }
-            header={
-              <Subtitle2>{`ID:${data[0].data_set_result_id} - ${data[0].title || "タイトル未入力"}`}</Subtitle2>
-            }
-          />
-          <div>
-            <img alt="dummy" src="https://placehold.co/1220x760" />
-          </div>
-        </Card>
+        <TileResultView
+          key={data[0].result_views.id}
+          {...{
+            resultView: data[0].result_views,
+            dataSetResult: data[0].data_set_results,
+          }}
+        />
       </div>
       <div className={styles.resultViews}>
         {data.map(
-          (resultView, index) =>
+          ({ data_set_results, result_views }, index) =>
             index !== 0 && (
-              <Card key={resultView.id}>
-                <CardHeader
-                  action={
-                    <Button
-                      appearance="subtle"
-                      icon={<ArrowDownloadFilled />}
-                    />
-                  }
-                  header={
-                    <Subtitle2>{`ID:${resultView.data_set_result_id} - ${resultView.title || "タイトル未入力"}`}</Subtitle2>
-                  }
-                />
-                <div>
-                  <img alt="dummy" src="https://placehold.co/1220x760" />
-                </div>
-              </Card>
+              <TileResultView
+                key={result_views.id}
+                {...{
+                  resultView: result_views,
+                  dataSetResult: data_set_results,
+                }}
+              />
             ),
         )}
       </div>

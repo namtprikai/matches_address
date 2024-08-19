@@ -7,66 +7,13 @@ import {
   Subtitle2,
 } from "@fluentui/react-components";
 import { type data_set_results, type result_views } from "../schema";
-import { type ChartProps } from "../@types/charts";
-import { useFetchFilterDataSetForChart } from "../hooks/use-fetch-filtered-data-set-for-chart";
-import { PieChart } from "./pie-charts";
-import { LineChart } from "./line-charts";
-import { BarChart } from "./bar-charts";
-import { Map } from "./map";
-import { _dummyBuildingData } from "./map/_dummy-data";
+import { TileViewStyle } from "./tile-view-style";
 type ResultViews = typeof result_views.$inferSelect;
 type DataSetResults = typeof data_set_results.$inferSelect;
 
 type Props = CardProps & {
   resultView: ResultViews;
-  dataSetResult: DataSetResults;
-};
-
-/** 仮の分岐、微妙だったらあとでリファクタしてもいいかも */
-const SwithViewStyle = ({
-  resultViewStyle,
-  chartProps,
-}: {
-  resultViewStyle: ResultViews["style"];
-  chartProps: ChartProps;
-}): JSX.Element => {
-  switch (resultViewStyle) {
-    case "bar":
-      return (
-        <div>
-          <BarChart {...chartProps} />
-        </div>
-      );
-    case "line":
-      return (
-        <div>
-          <LineChart {...chartProps} />
-        </div>
-      );
-    case "pie":
-      return (
-        <div>
-          <PieChart {...chartProps} />
-        </div>
-      );
-    case "table":
-      return (
-        <div>
-          <img
-            alt="dummy"
-            src="https://placehold.co/1220x760?text=Table+Chart"
-          />
-        </div>
-      );
-    case "map":
-      return (
-        <div>
-          <Map data={_dummyBuildingData} />
-        </div>
-      );
-    default:
-      return <>未設定</>;
-  }
+  dataSetResult: DataSetResults | null;
 };
 
 export const TileResultView = ({
@@ -74,13 +21,6 @@ export const TileResultView = ({
   dataSetResult,
   ...cardProps
 }: Props): JSX.Element => {
-  const { chartProps } = useFetchFilterDataSetForChart({
-    resultId: dataSetResult.id,
-    type: "buildings",
-    x: "id", // FIXME: 仮の値, ここを変えるとチャートの表示が変わる
-    y: "rank", // FIXME: 仮の値, ここを変えるとチャートの表示が変わる
-  });
-
   return (
     <Card {...cardProps}>
       <CardHeader
@@ -89,12 +29,18 @@ export const TileResultView = ({
           <Subtitle2>{`ID:${resultView.id} - ${resultView.title || "タイトル未入力"}`}</Subtitle2>
         }
       />
-      {chartProps.data.length === 0 ? (
-        <div>データがありません</div>
+      {dataSetResult === null ? (
+        <div>データセットが選択されていません</div>
       ) : (
-        <SwithViewStyle
-          chartProps={chartProps}
-          resultViewStyle={resultView.style}
+        <TileViewStyle
+          // FIXME:  仮の値を入れている。本来であれば動的に変更可能
+          chartOptions={{
+            type: "buildings",
+            x: "id",
+            y: "rank",
+          }}
+          dataSetResults={dataSetResult}
+          style={resultView.style}
         />
       )}
     </Card>
