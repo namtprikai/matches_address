@@ -9,12 +9,18 @@ import { forwardRef } from "react";
 
 const useStyles = makeStyles({
   input: {
+    padding: `${tokens.spacingVerticalSNudge} ${tokens.spacingHorizontalM}`,
+    border: `1px solid ${tokens.colorNeutralStroke1}`,
+    borderRadius: tokens.borderRadiusXLarge,
+    "& input": {
+      padding: 0,
+    },
     "&:after": {
       display: "none",
     },
-    padding: `${tokens.spacingVerticalSNudge} ${tokens.spacingHorizontalM}`,
-    "& input": {
-      padding: 0,
+    "&:active, &:hover, &:focus, &:focus-within": {
+      border: `1px solid ${tokens.colorNeutralStroke1Pressed}`,
+      borderBottomColor: tokens.colorNeutralStroke1Pressed, // 既存スタイル上書きのため優先度を限定してスタイルを指定
     },
   },
 });

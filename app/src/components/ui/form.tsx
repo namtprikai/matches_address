@@ -2,15 +2,7 @@ import { makeStyles, mergeClasses, tokens } from "@fluentui/react-components";
 import { type ComponentPropsWithoutRef, forwardRef } from "react";
 
 const useStyles = makeStyles({
-  form: {
-    "& span:has(> input)": {
-      border: `1px solid ${tokens.colorNeutralStroke1}`,
-      borderRadius: tokens.borderRadiusXLarge,
-      "&:active, &:hover, &:focus, &:focus-within": {
-        border: `1px solid ${tokens.colorNeutralStroke1Pressed}`,
-      },
-    },
-  },
+  form: {},
 });
 
 export const Form = forwardRef<
