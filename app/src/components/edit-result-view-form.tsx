@@ -125,6 +125,7 @@ export const EditResultViewForm = (): JSX.Element => {
         title: data.title?.length === 0 ? undefined : data.title,
         style: data.style,
         unit: data.unit,
+        parameters: data.parameters,
       },
     });
     refresh();
@@ -133,12 +134,13 @@ export const EditResultViewForm = (): JSX.Element => {
   const style = watch("style");
   const unit = watch("unit");
 
-  const { fields, replace } = useFieldArray({
+  const { fields, replace, update } = useFieldArray({
     control,
     name: "parameters",
   });
 
   useEffect(() => {
+    console.log("style changed!");
     const option = graphOptions[style];
     if (!option) return;
     replace(option.fields.map((field) => ({ key: field.key, value: "" })));
@@ -184,6 +186,12 @@ export const EditResultViewForm = (): JSX.Element => {
               <Select
                 {...register(`parameters.${index}.value`)}
                 onBlur={onSubmit}
+                onChange={(e) => {
+                  update(index, {
+                    key: field.key,
+                    value: e.target.value,
+                  });
+                }}
               >
                 {unit === "building" &&
                   DATA_SET_DETAIL_BUILIDNG_COLUMN.filter((column) => {
