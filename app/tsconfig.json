@@ -30,7 +30,10 @@
     // その他
     "allowJs": true,
     "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true
+    "forceConsistentCasingInFileNames": true,
+
+    // CSS Modulesファイルのインポートエラーを回避する
+    "types": ["vite/client"]
   },
   "exclude": ["node_modules", "dist"]
 }
