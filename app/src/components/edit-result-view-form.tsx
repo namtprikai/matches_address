@@ -131,6 +131,7 @@ export const EditResultViewForm = (): JSX.Element => {
   });
 
   const style = watch("style");
+  const unit = watch("unit");
 
   const { fields, replace } = useFieldArray({
     control,
@@ -184,24 +185,25 @@ export const EditResultViewForm = (): JSX.Element => {
                 {...register(`parameters.${index}.value`)}
                 onBlur={onSubmit}
               >
-                {DATA_SET_DETAIL_BUILIDNG_COLUMN.filter((column) => {
-                  const matchedType = optionField.accept.filter((type) => {
+                {unit === "building" &&
+                  DATA_SET_DETAIL_BUILIDNG_COLUMN.filter((column) => {
+                    const matchedType = optionField.accept.filter((type) => {
+                      return (
+                        DATA_SET_DETAIL_BUILIDNG_COLUMN_CONFIG[column].type ===
+                        type
+                      );
+                    });
+
+                    if (matchedType.length === 0) return false;
+
+                    return true;
+                  }).map((column) => {
                     return (
-                      DATA_SET_DETAIL_BUILIDNG_COLUMN_CONFIG[column].type ===
-                      type
+                      <option key={column} value={column}>
+                        {DATA_SET_DETAIL_BUILIDNG_COLUMN_CONFIG[column].label}
+                      </option>
                     );
-                  });
-
-                  if (matchedType.length === 0) return false;
-
-                  return true;
-                }).map((column) => {
-                  return (
-                    <option key={column} value={column}>
-                      {DATA_SET_DETAIL_BUILIDNG_COLUMN_CONFIG[column].label}
-                    </option>
-                  );
-                })}
+                  })}
               </Select>
             </Field>
           );
