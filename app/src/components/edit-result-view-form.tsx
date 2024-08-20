@@ -1,17 +1,17 @@
 import { useFieldArray, useForm } from "react-hook-form";
-import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useAtom } from "jotai";
 import { Dialog, DialogTrigger } from "@fluentui/react-components";
 import { useEffect } from "react";
+import { z } from "zod";
 import { result_views } from "../schema";
 import { LanguageMap } from "../lang";
 import { selectedResultViewIdAtom } from "../state/selected-result-view-id-atom";
-import { resultViewsAtom } from "../state/result-views-atom";
 import {
   DATA_SET_DETAIL_BUILIDNG_COLUMN,
   DATA_SET_DETAIL_BUILIDNG_COLUMN_CONFIG,
 } from "../config/data-columns";
+import { selectedResultViewAtom } from "../state/selected-result-view-atom";
 import { Fieldset } from "./ui/fieldset";
 import { FieldLegend } from "./ui/field-legend";
 import { Field } from "./ui/field";
@@ -110,12 +110,19 @@ const graphOptions = {
 } as const;
 
 export const EditResultViewForm = (): JSX.Element => {
-  const { register, handleSubmit, reset, watch, getValues, control } =
+  const [selectedResultViewId] = useAtom(selectedResultViewIdAtom);
+  const [selectedResultView, refresh] = useAtom(selectedResultViewAtom);
+
+  const { register, handleSubmit, watch, reset, control, setValue } =
     useForm<EditResultViewFormType>({
       resolver: zodResolver(schema),
+      defaultValues: {
+        title: selectedResultView?.title ?? "",
+        style: selectedResultView?.style ?? "map",
+        unit: selectedResultView?.unit ?? "building",
+        parameters: selectedResultView?.parameters ?? [],
+      },
     });
-  const [selectedResultViewId] = useAtom(selectedResultViewIdAtom);
-  const [, refresh] = useAtom(resultViewsAtom);
 
   const onSubmit = handleSubmit(async (data) => {
     if (!selectedResultViewId) return;
@@ -140,13 +147,13 @@ export const EditResultViewForm = (): JSX.Element => {
   });
 
   useEffect(() => {
-    console.log("style changed!");
-    const option = graphOptions[style];
-    if (!option) return;
-    replace(option.fields.map((field) => ({ key: field.key, value: "" })));
-  }, [style, replace]);
-
-  console.log(fields);
+    reset({
+      title: selectedResultView?.title ?? "",
+      style: selectedResultView?.style ?? "map",
+      unit: selectedResultView?.unit ?? "building",
+      parameters: selectedResultView?.parameters ?? [],
+    });
+  }, [selectedResultView, reset]);
 
   return (
     <form onSubmit={onSubmit}>
@@ -164,7 +171,18 @@ export const EditResultViewForm = (): JSX.Element => {
       <Fieldset>
         <FieldLegend>パラメーター</FieldLegend>
         <Field label="スタイル">
-          <Select {...register("style")} onBlur={onSubmit}>
+          <Select
+            {...register("style")}
+            onChange={(e) => {
+              const option =
+                graphOptions[e.target.value as keyof typeof graphOptions];
+              if (!option) return;
+              replace(
+                option.fields.map((field) => ({ key: field.key, value: "" })),
+              );
+              setValue("style", e.target.value as keyof typeof graphOptions);
+            }}
+          >
             {result_views.style.enumValues.map((item) => (
               <option key={item} value={item}>
                 {LanguageMap["RESULT_VIEWS_STYLE"][item]}
@@ -185,13 +203,13 @@ export const EditResultViewForm = (): JSX.Element => {
             <Field key={field.id} label={optionField.label}>
               <Select
                 {...register(`parameters.${index}.value`)}
-                onBlur={onSubmit}
                 onChange={(e) => {
                   update(index, {
                     key: field.key,
                     value: e.target.value,
                   });
                 }}
+                value={field.value}
               >
                 {unit === "building" &&
                   DATA_SET_DETAIL_BUILIDNG_COLUMN.filter((column) => {
@@ -243,6 +261,9 @@ export const EditResultViewForm = (): JSX.Element => {
           </Select>
         </Field>
       </Fieldset>
+      <Button onSubmit={onSubmit} size="medium" type="submit">
+        保存(開発用)
+      </Button>
     </form>
   );
 };
