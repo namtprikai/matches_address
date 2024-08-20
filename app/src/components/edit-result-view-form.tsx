@@ -211,6 +211,7 @@ export const EditResultViewForm = (): JSX.Element => {
                 }}
                 value={field.value}
               >
+                <option value="">選択してください</option>
                 {unit === "building" &&
                   DATA_SET_DETAIL_BUILIDNG_COLUMN.filter((column) => {
                     const matchedType = optionField.accept.filter((type) => {
