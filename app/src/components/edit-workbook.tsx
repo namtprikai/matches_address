@@ -6,7 +6,7 @@ import { resultSheetsAtom } from "../state/result-sheets-atom";
 import { selectedWorkbookIdAtom } from "../state/selected-workbook-id-atom";
 import { selectedResultSheetIdAtom } from "../state/selected-result-sheet-id-atom";
 import { Button } from "./ui/button";
-import { TabListResultSheet } from "./tab-list-result-sheet";
+import { TabListEditResultSheet } from "./tab-list-edit-result-sheet";
 import { SidebarEditResultView } from "./sidebar-edit-result-view";
 import { PreviewResultSheet } from "./preview-result-sheet";
 
@@ -46,7 +46,7 @@ export const EditWorkbook = (): JSX.Element => {
       <div className={styles.content}>
         <h2 className={styles.heading}>{workbook?.title}</h2>
 
-        <TabListResultSheet />
+        <TabListEditResultSheet />
         <div>
           {resultSheets.map((item) => (
             <div key={item.id} hidden={selectedResultSheetId !== item.id}>

@@ -41,7 +41,7 @@ const useStyles = makeStyles({
   },
 });
 
-export const TabListResultSheet = (): JSX.Element => {
+export const TabListEditResultSheet = (): JSX.Element => {
   const styles = useStyles();
   const [resultSheets, refresh] = useAtom(resultSheetsAtom);
   const [workbookId] = useAtom(selectedWorkbookIdAtom);
