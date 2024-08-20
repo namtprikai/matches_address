@@ -195,7 +195,7 @@ export function MapComponent({
       });
 
       return () => {
-        popup?.remove();
+        popup?.remove(); // FIXME: ポップアップが消えないで残る場合がある
         mapInstance.removeLayer(layerId);
         mapInstance.removeSource(sourceId);
       };
