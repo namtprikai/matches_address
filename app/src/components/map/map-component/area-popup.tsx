@@ -1,15 +1,13 @@
 import { forwardRef } from "react";
-import { usePopupStyles } from "./use-popup-styles";
+import styles from "./popup-styles.module.css";
 import { type Area } from ".";
 
 interface Props {
-  areaInfo: Area["info"] | null;
-  onClose: () => void;
+  areaInfo: Area | null;
 }
 
 export const AreaPopup = forwardRef<HTMLDivElement, Props>(
-  ({ areaInfo, onClose }, ref) => {
-    const styles = usePopupStyles();
+  ({ areaInfo }, ref) => {
     const riskRateColorStyle = (() => {
       if (!areaInfo) return "";
       const riskRate = areaInfo.vacancyRate;
@@ -24,9 +22,6 @@ export const AreaPopup = forwardRef<HTMLDivElement, Props>(
 
     return (
       <div ref={ref} className={styles.container} tabIndex={-1}>
-        <span className={styles.close} onClick={onClose}>
-          ×
-        </span>
         <div className={`${styles.header} ${riskRateColorStyle}`}>
           <span className={styles.circleIcon} />
           <div>
@@ -135,21 +130,15 @@ export const AreaPopup = forwardRef<HTMLDivElement, Props>(
             </div>
             <div className={styles.item}>
               <span className={styles.itemLabel}>A</span>
-              <span className={styles.itemValue}>
-                {areaInfo?.vacantHouseRiskLevels.A}
-              </span>
+              <span className={styles.itemValue}>{areaInfo?.riskLevelA}</span>
             </div>
             <div className={styles.item}>
               <span className={styles.itemLabel}>B</span>
-              <span className={styles.itemValue}>
-                {areaInfo?.vacantHouseRiskLevels.B}
-              </span>
+              <span className={styles.itemValue}>{areaInfo?.riskLevelB}</span>
             </div>
             <div className={styles.item}>
               <span className={styles.itemLabel}>C</span>
-              <span className={styles.itemValue}>
-                {areaInfo?.vacantHouseRiskLevels.C}
-              </span>
+              <span className={styles.itemValue}>{areaInfo?.riskLevelC}</span>
             </div>
             <div className={styles.item}>
               <span className={styles.itemLabel}>面積</span>

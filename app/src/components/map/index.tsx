@@ -4,8 +4,8 @@ import {
   VacancyLevelCheckbox,
   type VacancyLevels,
 } from "./vacancy-level-checkbox";
-import { type BuildingData, MapComponent } from "./map-component";
 import { DisplayPeriodDropdown } from "./display-period-dropdown";
+import { type BuildingData, MapComponent } from "./map-component";
 
 const useStyles = makeStyles({
   filters: {

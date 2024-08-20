@@ -1,60 +1,47 @@
+import "maplibre-gl/dist/maplibre-gl.css";
 import { useEffect, useRef, useState } from "react";
-import "ol/ol.css";
-import Map from "ol/Map";
-import View from "ol/View";
-import TileLayer from "ol/layer/Tile";
-import XYZ from "ol/source/XYZ";
-import { fromLonLat } from "ol/proj";
-import Feature from "ol/Feature";
-import { Vector as VectorLayer } from "ol/layer";
-import { Vector as VectorSource } from "ol/source";
-import { Style, Fill, Stroke } from "ol/style";
-import Polygon from "ol/geom/Polygon";
-import Overlay from "ol/Overlay";
+import { addProtocol, Map, Popup } from "maplibre-gl";
+import { Protocol } from "pmtiles";
+import { renderToString } from "react-dom/server";
 import { makeStyles } from "@fluentui/react-components";
 import { type VacancyLevels } from "../vacancy-level-checkbox";
 import { BuildingPopup } from "./building-popup";
 
+export const VACANCY_RATE_HIGH = 80;
+export const VACANCY_RATE_MEDIUM = 30;
+
 export interface Building {
-  info: {
-    vacancyRate: number;
-    address: string;
-    totalPopulation: number;
-    ageGroups: {
-      under14: number;
-      between15And64: number;
-      over65: number;
-    };
-    waterUsage: string;
-    waterStatus: string;
-    constructionDate: string;
-    structureName: string;
-  };
-  coordinates: number[][];
+  vacancyRate: number;
+  address: string;
+  totalPopulation: number;
+  under14: number;
+  between15And64: number;
+  over65: number;
+  waterUsage: string;
+  waterStatus: string;
+  constructionDate: string;
+  structureName: string;
+  coordinates: number[][][];
 }
 
 export interface Area {
-  info: {
-    vacancyRate: number;
-    address: string;
-    totalPopulation: number;
-    malePopulation: number;
-    femalePopulation: number;
-    averageAge: number;
-    waterUsageAverage: number;
-    waterUsageMax: number;
-    waterUsageMin: number;
-    averageConstructionAge: number;
-    minConstructionAge: number;
-    maxConstructionAge: number;
-    vacantHouseRiskLevels: {
-      A: number;
-      B: number;
-      C: number;
-    };
-    area: number;
-  };
-  coordinates: number[][];
+  vacancyRate: number;
+  address: string;
+  totalPopulation: number;
+  malePopulation: number;
+  femalePopulation: number;
+  averageAge: number;
+  waterUsageAverage: number;
+  waterUsageMax: number;
+  waterUsageMin: number;
+  averageConstructionAge: number;
+  minConstructionAge: number;
+  maxConstructionAge: number;
+  riskLevelA: number;
+  riskLevelB: number;
+  riskLevelC: number;
+  area: number;
+  coordinates: number[][][];
 }
 
 export type BuildingData = {
@@ -76,8 +63,8 @@ const useMapComponentStyles = makeStyles({
 
 interface Props {
   data: BuildingData;
-  vacancyLevels: VacancyLevels;
   selectedYear: number;
+  vacancyLevels: VacancyLevels;
 }
 
 export function MapComponent({
@@ -86,148 +73,142 @@ export function MapComponent({
   vacancyLevels,
 }: Props): JSX.Element {
   const styles = useMapComponentStyles();
-  const mapRef = useRef<HTMLDivElement | null>(null);
-  const popupRef = useRef<HTMLDivElement | null>(null);
-  const [map, setMap] = useState<Map | null>(null);
-  const [popupData, setPopupData] = useState<Building["info"] | null>(null);
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const [mapInstance, setMapInstance] = useState<Map | null>(null);
 
   useEffect(function initializeMap() {
-    const mapEl = mapRef.current;
-    const popupEl = popupRef.current;
-    if (!mapEl || !popupEl) return;
+    if (!containerRef.current) return;
+    const protocol = new Protocol();
+    addProtocol("pmtiles", protocol.tile);
 
-    const popupOverlay = new Overlay({
-      element: popupEl,
-      autoPan: {
-        animation: {
-          duration: 250,
-        },
-      },
+    const initializedMap = new Map({
+      container: containerRef.current,
+      style: "protomaps-basemaps.json",
+      center: [137.1513, 35.0816],
+      zoom: 15,
+      maxZoom: 18,
+      minZoom: 6,
     });
 
-    const initialMap = new Map({
-      target: mapEl,
-      layers: [
-        new TileLayer({
-          source: new XYZ({
-            url: "https://cyberjapandata.gsi.go.jp/xyz/pale/{z}/{x}/{y}.png",
-            attributions:
-              '<a href="https://maps.gsi.go.jp/development/ichiran.html" target="_blank">地理院タイル</a>',
-          }),
-        }),
-      ],
-      overlays: [popupOverlay],
-      view: new View({
-        center: fromLonLat([137.1513, 35.0816]),
-        zoom: 12,
-      }),
+    initializedMap.on("load", () => {
+      setMapInstance(initializedMap);
     });
-
-    setMap(initialMap);
-
-    return () => initialMap.setTarget(undefined);
   }, []);
 
   useEffect(
     function updateMap() {
-      if (!map) return;
-
-      // Remove existing vector layers
-      map
-        .getLayers()
-        .getArray()
-        .filter((layer) => layer instanceof VectorLayer)
-        .forEach((layer) => map.removeLayer(layer));
-
+      if (!mapInstance) return;
       const yearData = data.find((value) => value.year === selectedYear);
-      const filteredData = yearData?.buildings.filter((building) => {
-        const vacancyRate = building.info.vacancyRate;
-        if (vacancyRate >= 80) {
-          return vacancyLevels.high;
-        } else if (vacancyRate >= 30) {
-          return vacancyLevels.medium;
-        } else {
-          return vacancyLevels.low;
-        }
-      });
-      if (!filteredData) return;
+      const filteredDataByVacancyRate = yearData?.buildings.filter(
+        (building) => {
+          const vacancyRate = building.vacancyRate;
+          if (vacancyRate >= VACANCY_RATE_HIGH) {
+            return vacancyLevels.high;
+          } else if (vacancyRate >= VACANCY_RATE_MEDIUM) {
+            return vacancyLevels.medium;
+          } else {
+            return vacancyLevels.low;
+          }
+        },
+      );
 
-      const features = filteredData.map((building: Building) => {
-        const coordinates = building.coordinates.map((coord) =>
-          fromLonLat(coord),
-        );
-        const polygonFeature = new Feature({
-          geometry: new Polygon([coordinates]),
-        });
-        polygonFeature.setProperties({ info: building.info });
+      if (!filteredDataByVacancyRate) return;
 
-        const occupancyRate = building.info.vacancyRate;
-        let color;
-        if (occupancyRate >= 80) {
-          color = "rgba(255, 0, 0, 0.2)";
-        } else if (occupancyRate >= 30) {
-          color = "rgba(255, 255, 0, 0.2)";
-        } else {
-          color = "rgba(0, 255, 0, 0.2)";
-        }
-
-        polygonFeature.setStyle(
-          new Style({
-            fill: new Fill({ color }),
-            stroke: new Stroke({
-              color: color.replace("0.2", "1"),
-              width: 2,
+      const sourceId = "buildings";
+      mapInstance.addSource(sourceId, {
+        type: "geojson",
+        data: {
+          type: "FeatureCollection",
+          features: filteredDataByVacancyRate.map(
+            ({ coordinates, ...rest }) => ({
+              type: "Feature",
+              properties: {
+                ...rest,
+              },
+              geometry: {
+                type: "Polygon",
+                coordinates,
+              },
             }),
-          }),
-        );
-
-        return polygonFeature;
+          ),
+        },
       });
 
-      const vectorSource = new VectorSource({ features });
-      const vectorLayer = new VectorLayer({ source: vectorSource });
-      map.addLayer(vectorLayer);
+      const layerId = "buildings-layer";
+      mapInstance.addLayer({
+        id: layerId,
+        type: "fill",
+        source: sourceId,
+        paint: {
+          "fill-color": [
+            "case",
+            [">=", ["get", "vacancyRate"], VACANCY_RATE_HIGH],
+            "#C4314B66", // 赤 (80以上)
+            [">=", ["get", "vacancyRate"], VACANCY_RATE_MEDIUM],
+            "#FFA92966", // 黄 (30以上80未満)
+            "#1B8C6366", // 青 (30未満)
+          ],
+          "fill-outline-color": [
+            "case",
+            [">=", ["get", "vacancyRate"], VACANCY_RATE_HIGH],
+            "#C4314B", // 赤 (80以上)
+            [">=", ["get", "vacancyRate"], VACANCY_RATE_MEDIUM],
+            "#FFA929", // 黄 (30以上80未満)
+            "#1B8C63", // 青 (30未満)
+          ],
+        },
+      });
 
-      // ポリゴンレイヤーをクリックしたらポップアップを表示する
-      map.on("singleclick", (event) => {
-        const feature = map.forEachFeatureAtPixel(
-          event.pixel,
-          (feature) => feature,
-        );
-        if (feature) {
-          const info = feature.get("info") as Building["info"];
-          setPopupData(info);
-          map.getOverlays().item(0).setPosition(event.coordinate);
-        } else {
-          map.getOverlays().item(0).setPosition(undefined);
-          setPopupData(null);
+      let popup: Popup | null = null;
+
+      // ポリゴンレイヤーをクリックしたときのイベントリスナーを追加
+      mapInstance.on("click", layerId, (e) => {
+        if (e.features && e.features.length > 0) {
+          const feature = e.features[0];
+          const properties = feature.properties as Omit<
+            Building,
+            "coordinates"
+          >;
+          const coordinates = e.lngLat;
+
+          // ポップアップの内容を作成
+          const popupContent = renderToString(
+            <BuildingPopup data={properties} />,
+          );
+
+          // ポップアップを作成して表示
+          popup = new Popup()
+            .setLngLat(coordinates)
+            .setHTML(popupContent)
+            .addTo(mapInstance);
         }
       });
+
+      // ポリゴンレイヤーにマウスが乗ったときにカーソルを変更
+      mapInstance.on("mouseenter", layerId, () => {
+        mapInstance.getCanvas().style.cursor = "pointer";
+      });
+
+      // ポリゴンレイヤーからマウスが離れたときにカーソルを元に戻す
+      mapInstance.on("mouseleave", layerId, () => {
+        mapInstance.getCanvas().style.cursor = "";
+      });
+
+      return () => {
+        popup?.remove();
+        mapInstance.removeLayer(layerId);
+        mapInstance.removeSource(sourceId);
+      };
     },
     [
       data,
-      map,
+      mapInstance,
       selectedYear,
       vacancyLevels.high,
-      vacancyLevels.low,
       vacancyLevels.medium,
+      vacancyLevels.low,
     ],
   );
 
-  const handleClose = (): void => {
-    if (!map) return;
-    map.getOverlays().item(0).setPosition(undefined);
-    setPopupData(null);
-  };
-
-  return (
-    <div>
-      <div ref={mapRef} className={styles.map} />
-      <BuildingPopup
-        ref={popupRef}
-        buildingInfo={popupData}
-        onClose={handleClose}
-      />
-    </div>
-  );
+  return <div ref={containerRef} className={styles.map} />;
 }
