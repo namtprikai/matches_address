@@ -1,4 +1,4 @@
-import { integer, real, sqliteTable, text } from "drizzle-orm/sqlite-core";
+import { blob, integer, real, sqliteTable, text } from "drizzle-orm/sqlite-core";
 import { sql } from "drizzle-orm";
 
 export const users = sqliteTable("users", {
@@ -39,6 +39,10 @@ export const result_views = sqliteTable("result_views", {
   title: text("title"),
   unit: text("unit", { enum: ["building", "area"] }),
   style: text("style", { enum: ["map", "bar", "line", "pie", "table"] }),
+
+  parameters: blob("parameters", {
+    mode: "json"
+  }),
 
   created_at: text("created_at")
     .default(sql`(CURRENT_TIMESTAMP)`)

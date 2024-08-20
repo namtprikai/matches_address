@@ -1,12 +1,17 @@
-import { useForm } from "react-hook-form";
+import { useFieldArray, useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useAtom } from "jotai";
 import { Dialog, DialogTrigger } from "@fluentui/react-components";
+import { useEffect } from "react";
 import { result_views } from "../schema";
 import { LanguageMap } from "../lang";
 import { selectedResultViewIdAtom } from "../state/selected-result-view-id-atom";
 import { resultViewsAtom } from "../state/result-views-atom";
+import {
+  DATA_SET_DETAIL_BUILIDNG_COLUMN,
+  DATA_SET_DETAIL_BUILIDNG_COLUMN_CONFIG,
+} from "../config/data-columns";
 import { Fieldset } from "./ui/fieldset";
 import { FieldLegend } from "./ui/field-legend";
 import { Field } from "./ui/field";
@@ -22,6 +27,12 @@ const schema = z.object({
   title: z.string().max(255).optional(),
   unit: z.enum(result_views.unit.enumValues).default("building"),
   style: z.enum(result_views.style.enumValues).default("map"),
+  parameters: z.array(
+    z.object({
+      key: z.string(),
+      value: z.string(),
+    }),
+  ),
 });
 
 type EditResultViewFormType = z.infer<typeof schema>;
@@ -29,8 +40,18 @@ type EditResultViewFormType = z.infer<typeof schema>;
 const graphOptions = {
   pie: {
     fields: [
-      { key: "label", label: "ラベル" },
-      { key: "value", label: "値" },
+      {
+        key: "xAxis",
+        label: "ラベル",
+        type: "select",
+        accept: ["string", "date", "integer", "float"],
+      },
+      {
+        key: "yAxis",
+        label: "値",
+        type: "select",
+        accept: ["integer", "float"],
+      },
     ],
     grouping: {
       enabled: true,
@@ -38,8 +59,18 @@ const graphOptions = {
   },
   bar: {
     fields: [
-      { key: "xAxis", label: "X軸" },
-      { key: "yAxis", label: "Y軸" },
+      {
+        key: "xAxis",
+        label: "X軸",
+        type: "select",
+        accept: ["string", "date", "integer", "float"],
+      },
+      {
+        key: "yAxis",
+        label: "Y軸",
+        type: "select",
+        accept: ["string", "date", "integer", "float"],
+      },
     ],
     grouping: {
       enabled: true,
@@ -47,8 +78,18 @@ const graphOptions = {
   },
   line: {
     fields: [
-      { key: "xAxis", label: "X軸" },
-      { key: "yAxis", label: "Y軸" },
+      {
+        key: "xAxis",
+        label: "X軸",
+        type: "select",
+        accept: ["string", "date", "integer", "float"],
+      },
+      {
+        key: "yAxis",
+        label: "Y軸",
+        type: "select",
+        accept: ["string", "date", "integer", "float"],
+      },
     ],
     grouping: {
       enabled: false,
@@ -69,7 +110,7 @@ const graphOptions = {
 } as const;
 
 export const EditResultViewForm = (): JSX.Element => {
-  const { register, handleSubmit, reset, getValues } =
+  const { register, handleSubmit, reset, watch, getValues, control } =
     useForm<EditResultViewFormType>({
       resolver: zodResolver(schema),
     });
@@ -87,12 +128,22 @@ export const EditResultViewForm = (): JSX.Element => {
       },
     });
     refresh();
-    reset({
-      title: "",
-    });
   });
 
-  const style = getValues("style");
+  const style = watch("style");
+
+  const { fields, replace } = useFieldArray({
+    control,
+    name: "parameters",
+  });
+
+  useEffect(() => {
+    const option = graphOptions[style];
+    if (!option) return;
+    replace(option.fields.map((field) => ({ key: field.key, value: "" })));
+  }, [style, replace]);
+
+  console.log(fields);
 
   return (
     <form onSubmit={onSubmit}>
@@ -118,12 +169,43 @@ export const EditResultViewForm = (): JSX.Element => {
             ))}
           </Select>
         </Field>
-        {graphOptions[style] &&
-          graphOptions[style].fields.map((field) => (
-            <Field key={field.key} label={field.label}>
-              <Input placeholder={field.label} />
+        {fields.map((field, index) => {
+          const options = graphOptions[style];
+          const optionFields = options ? options.fields : [];
+          const optionField = optionFields.find(
+            (item) => item.key === field.key,
+          );
+
+          if (!optionField) return null;
+
+          return (
+            <Field key={field.id} label={optionField.label}>
+              <Select
+                {...register(`parameters.${index}.value`)}
+                onBlur={onSubmit}
+              >
+                {DATA_SET_DETAIL_BUILIDNG_COLUMN.filter((column) => {
+                  const matchedType = optionField.accept.filter((type) => {
+                    return (
+                      DATA_SET_DETAIL_BUILIDNG_COLUMN_CONFIG[column].type ===
+                      type
+                    );
+                  });
+
+                  if (matchedType.length === 0) return false;
+
+                  return true;
+                }).map((column) => {
+                  return (
+                    <option key={column} value={column}>
+                      {DATA_SET_DETAIL_BUILIDNG_COLUMN_CONFIG[column].label}
+                    </option>
+                  );
+                })}
+              </Select>
             </Field>
-          ))}
+          );
+        })}
 
         {graphOptions[style] && graphOptions[style].grouping.enabled && (
           <Dialog>
