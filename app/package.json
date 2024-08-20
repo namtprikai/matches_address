@@ -53,6 +53,7 @@
     "@fluentui/react-nav-preview": "^0.5.3",
     "@hookform/resolvers": "^3.9.0",
     "better-sqlite3": "^11.1.2",
+    "clsx": "^2.1.1",
     "dayjs": "^1.11.12",
     "electron-squirrel-startup": "^1.0.1",
     "jotai": "^2.9.1",
