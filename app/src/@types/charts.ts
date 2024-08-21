@@ -8,7 +8,6 @@ export interface ChartData {
     y: number;
 }
 
-
 export interface ChartProps {
     data: ChartData[],
     xAxisColumn: ChartColumn,
