@@ -1,5 +1,5 @@
+import { type ChartColumnType } from "../@types/charts";
 import {
-  type ChartColumnType,
   DATA_SET_DETAIL_BUILIDNG_COLUMN,
   DATA_SET_DETAIL_BUILIDNG_COLUMN_CONFIG,
 } from "../config/data-columns";

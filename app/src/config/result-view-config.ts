@@ -1,5 +1,4 @@
-import { type ChartDynamicColumnInput, type ChartStyle } from "../@types/charts";
-import { type ChartColumnType } from "./data-columns";
+import { type ChartColumnType, type ChartDynamicColumnInput, type ChartStyle } from "../@types/charts";
 
 /**
  * 各チャートのパラーメーターやグルーピング可能かどうかなどの設定をハードコードで定義している

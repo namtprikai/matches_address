@@ -1,10 +1,5 @@
+import { type ChartColumnType } from "../@types/charts";
 import { type data_set_detail_buildings } from "../schema";
-
-/** 
- * チャートのカラムが受け付けられる型
- * JavaScriptではdateとstring, floatとintegerを区別できないため、明示する必要がある
- */
-export type ChartColumnType = "string" | "integer" | "date" | "float"
 
 /**
  * データセット詳細の建物のカラム

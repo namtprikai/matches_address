@@ -1,15 +1,9 @@
-import { type ChartDynamicColumnInput } from "../@types/charts";
+import { type ResultViewFieldOption } from "../@types/charts";
 import { RESULT_VIEW_CONFIG } from "../config/result-view-config";
-import { type ChartColumnType } from "../config/data-columns";
 
-export const getViewFieldOption = (
+export const getResultViewFieldOption = (
     style: "pie" | "bar" | "line" | "table" | "map",
-    key: string): {
-        key: string;
-        label: string;
-        type: ChartDynamicColumnInput;
-        accept: readonly ChartColumnType[];
-    } | undefined => {
+    key: string): ResultViewFieldOption | undefined => {
 
     // ハードコーディングされたチャートごとの設定を取得
     const options = RESULT_VIEW_CONFIG[style];
