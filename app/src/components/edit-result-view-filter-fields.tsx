@@ -5,6 +5,7 @@ import {
   DialogTrigger,
   makeStyles,
   Text,
+  tokens,
 } from "@fluentui/react-components";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -20,6 +21,10 @@ import { Fieldset } from "./ui/fieldset";
 import { FieldLegend } from "./ui/field-legend";
 
 const useStyles = makeStyles({
+  form: {
+    display: "grid",
+    gap: tokens.spacingVerticalXXL,
+  },
   area: {
     display: "flex",
     justifyContent: "space-between",
@@ -73,7 +78,7 @@ export const EditResultViewFilterFields = (): JSX.Element => {
   const areas = watch("areas");
 
   return (
-    <form id={form_id} onSubmit={onSubmit}>
+    <form className={styles.form} id={form_id} onSubmit={onSubmit}>
       <Fieldset>
         <FieldLegend>フィルター</FieldLegend>
 
