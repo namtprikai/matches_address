@@ -12,7 +12,7 @@ import {
   DATA_SET_DETAIL_BUILIDNG_COLUMN_CONFIG,
 } from "../config/data-columns";
 import { selectedResultViewAtom } from "../state/selected-result-view-atom";
-import { CHART_CONFIG } from "../config/graph-config";
+import { CHART_CONFIG } from "../config/chart-config";
 import { Fieldset } from "./ui/fieldset";
 import { FieldLegend } from "./ui/field-legend";
 import { Field } from "./ui/field";
