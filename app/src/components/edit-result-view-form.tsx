@@ -12,6 +12,7 @@ import {
   DATA_SET_DETAIL_BUILIDNG_COLUMN_CONFIG,
 } from "../config/data-columns";
 import { selectedResultViewAtom } from "../state/selected-result-view-atom";
+import { CHART_CONFIG } from "../config/graph-config";
 import { Fieldset } from "./ui/fieldset";
 import { FieldLegend } from "./ui/field-legend";
 import { Field } from "./ui/field";
@@ -36,78 +37,6 @@ const schema = z.object({
 });
 
 type EditResultViewFormType = z.infer<typeof schema>;
-
-const graphOptions = {
-  pie: {
-    fields: [
-      {
-        key: "xAxis",
-        label: "ラベル",
-        type: "select",
-        accept: ["string", "date", "integer", "float"],
-      },
-      {
-        key: "yAxis",
-        label: "値",
-        type: "select",
-        accept: ["integer", "float"],
-      },
-    ],
-    grouping: {
-      enabled: true,
-    },
-  },
-  bar: {
-    fields: [
-      {
-        key: "xAxis",
-        label: "X軸",
-        type: "select",
-        accept: ["string", "date", "integer", "float"],
-      },
-      {
-        key: "yAxis",
-        label: "Y軸",
-        type: "select",
-        accept: ["string", "date", "integer", "float"],
-      },
-    ],
-    grouping: {
-      enabled: true,
-    },
-  },
-  line: {
-    fields: [
-      {
-        key: "xAxis",
-        label: "X軸",
-        type: "select",
-        accept: ["string", "date", "integer", "float"],
-      },
-      {
-        key: "yAxis",
-        label: "Y軸",
-        type: "select",
-        accept: ["string", "date", "integer", "float"],
-      },
-    ],
-    grouping: {
-      enabled: false,
-    },
-  },
-  map: {
-    fields: [],
-    grouping: {
-      enabled: false,
-    },
-  },
-  table: {
-    fields: [],
-    grouping: {
-      enabled: false,
-    },
-  },
-} as const;
 
 export const EditResultViewForm = (): JSX.Element => {
   const [selectedResultViewId] = useAtom(selectedResultViewIdAtom);
@@ -175,12 +104,12 @@ export const EditResultViewForm = (): JSX.Element => {
             {...register("style")}
             onChange={(e) => {
               const option =
-                graphOptions[e.target.value as keyof typeof graphOptions];
+                CHART_CONFIG[e.target.value as keyof typeof CHART_CONFIG];
               if (!option) return;
               replace(
                 option.fields.map((field) => ({ key: field.key, value: "" })),
               );
-              setValue("style", e.target.value as keyof typeof graphOptions);
+              setValue("style", e.target.value as keyof typeof CHART_CONFIG);
             }}
           >
             {result_views.style.enumValues.map((item) => (
@@ -191,7 +120,7 @@ export const EditResultViewForm = (): JSX.Element => {
           </Select>
         </Field>
         {fields.map((field, index) => {
-          const options = graphOptions[style];
+          const options = CHART_CONFIG[style];
           const optionFields = options ? options.fields : [];
           const optionField = optionFields.find(
             (item) => item.key === field.key,
@@ -236,7 +165,7 @@ export const EditResultViewForm = (): JSX.Element => {
           );
         })}
 
-        {graphOptions[style] && graphOptions[style].grouping.enabled && (
+        {CHART_CONFIG[style] && CHART_CONFIG[style].grouping.enabled && (
           <Dialog>
             <DialogTrigger>
               <Button size="medium">グループを編集</Button>
