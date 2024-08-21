@@ -8,8 +8,9 @@ import { result_views } from "../schema";
 import { LanguageMap } from "../lang";
 import { selectedResultViewIdAtom } from "../state/selected-result-view-id-atom";
 import { selectedResultViewAtom } from "../state/selected-result-view-atom";
-import { CHART_CONFIG } from "../config/chart-config";
+import { RESULT_VIEW_CONFIG } from "../config/result-view-config";
 import { type Parameter } from "../@types/charts";
+import { getViewFieldOption } from "../utils/get-view-field-option";
 import { Fieldset } from "./ui/fieldset";
 import { FieldLegend } from "./ui/field-legend";
 import { Field } from "./ui/field";
@@ -102,12 +103,17 @@ export const EditResultViewForm = (): JSX.Element => {
             {...register("style")}
             onChange={(e) => {
               const option =
-                CHART_CONFIG[e.target.value as keyof typeof CHART_CONFIG];
+                RESULT_VIEW_CONFIG[
+                  e.target.value as keyof typeof RESULT_VIEW_CONFIG
+                ];
               if (!option) return;
               replace(
                 option.fields.map((field) => ({ key: field.key, value: "" })),
               );
-              setValue("style", e.target.value as keyof typeof CHART_CONFIG);
+              setValue(
+                "style",
+                e.target.value as keyof typeof RESULT_VIEW_CONFIG,
+              );
             }}
           >
             {result_views.style.enumValues.map((item) => (
@@ -118,13 +124,7 @@ export const EditResultViewForm = (): JSX.Element => {
           </Select>
         </Field>
         {fields.map((field, index) => {
-          const options = CHART_CONFIG[style];
-          const optionFields = options ? options.fields : [];
-          const optionField = optionFields.find(
-            (item) => item.key === field.key,
-          );
-
-          if (!optionField) return null;
+          const fieldOption = getViewFieldOption(style, field.key);
 
           return (
             <DynamicParameterInput
@@ -144,22 +144,23 @@ export const EditResultViewForm = (): JSX.Element => {
           );
         })}
 
-        {CHART_CONFIG[style] && CHART_CONFIG[style].grouping.enabled && (
-          <Dialog>
-            <DialogTrigger>
-              <Button size="medium">グループを編集</Button>
-            </DialogTrigger>
-            <DialogSurface>
-              <DialogTitle>グループを編集</DialogTitle>
-              <DialogBody>
-                <p>グループを編集</p>
-              </DialogBody>
-              <DialogActions>
-                <Button>保存</Button>
-              </DialogActions>
-            </DialogSurface>
-          </Dialog>
-        )}
+        {RESULT_VIEW_CONFIG[style] &&
+          RESULT_VIEW_CONFIG[style].grouping.enabled && (
+            <Dialog>
+              <DialogTrigger>
+                <Button size="medium">グループを編集</Button>
+              </DialogTrigger>
+              <DialogSurface>
+                <DialogTitle>グループを編集</DialogTitle>
+                <DialogBody>
+                  <p>グループを編集</p>
+                </DialogBody>
+                <DialogActions>
+                  <Button>保存</Button>
+                </DialogActions>
+              </DialogSurface>
+            </Dialog>
+          )}
         <Field label="集計単位">
           <Select {...register("unit")} onBlur={onSubmit}>
             {result_views.unit.enumValues.map((item) => (

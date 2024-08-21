@@ -6,7 +6,7 @@ import { type ChartColumnType } from "./data-columns";
  * 永続化の必要がない（＝エンドユーザーが変更しない）点、
  * JSONで記述するよりも型補完が効く点を踏まえ柔軟にコードができるためにTypeScriptで記述した
  */
-export const CHART_CONFIG = {
+export const RESULT_VIEW_CONFIG = {
     // チャートスタイルごとにコンフィグを定義
     pie: {
         fields: [ // fieldsはパラメーターやフィルターの設定を行う

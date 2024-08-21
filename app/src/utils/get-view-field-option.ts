@@ -1,8 +1,8 @@
 import { type ChartDynamicColumnInput } from "../@types/charts";
-import { CHART_CONFIG } from "../config/chart-config";
+import { RESULT_VIEW_CONFIG } from "../config/result-view-config";
 import { type ChartColumnType } from "../config/data-columns";
 
-export const getChartFieldOption = (
+export const getViewFieldOption = (
     style: "pie" | "bar" | "line" | "table" | "map",
     key: string): {
         key: string;
@@ -12,7 +12,7 @@ export const getChartFieldOption = (
     } | undefined => {
 
     // ハードコーディングされたチャートごとの設定を取得
-    const options = CHART_CONFIG[style];
+    const options = RESULT_VIEW_CONFIG[style];
 
     // チャート設定からパラメーターフィールドに使う値を取得
     const optionFields = options ? options.fields : [];
