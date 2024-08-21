@@ -5,7 +5,7 @@ import { Protocol } from "pmtiles";
 import { renderToString } from "react-dom/server";
 import { makeStyles } from "@fluentui/react-components";
 import { type VacancyLevels } from "../vacancy-level-checkbox";
-import { BuildingPopup } from "./building-popup";
+import { addGeoJsonLayer, addGeoJsonSource, useGeoJsonData } from "./utils";
 
 export const VACANCY_RATE_HIGH = 80;
 export const VACANCY_RATE_MEDIUM = 30;
@@ -57,7 +57,7 @@ export type AreaData = {
 const useMapComponentStyles = makeStyles({
   map: {
     width: "100%",
-    height: "800px",
+    height: "600px",
   },
 });
 
@@ -75,6 +75,7 @@ export function MapComponent({
   const styles = useMapComponentStyles();
   const containerRef = useRef<HTMLDivElement | null>(null);
   const [mapInstance, setMapInstance] = useState<Map | null>(null);
+  const geoJsonData = useGeoJsonData(vacancyLevels);
 
   useEffect(function initializeMap() {
     if (!containerRef.current) return;
@@ -84,8 +85,8 @@ export function MapComponent({
     const initializedMap = new Map({
       container: containerRef.current,
       style: "protomaps-basemaps.json",
-      center: [137.1513, 35.0816],
-      zoom: 15,
+      center: [137.12333, 34.99406],
+      zoom: 19,
       maxZoom: 18,
       minZoom: 6,
     });
@@ -98,85 +99,22 @@ export function MapComponent({
   useEffect(
     function updateMap() {
       if (!mapInstance) return;
-      const yearData = data.find((value) => value.year === selectedYear);
-      const filteredDataByVacancyRate = yearData?.buildings.filter(
-        (building) => {
-          const vacancyRate = building.vacancyRate;
-          if (vacancyRate >= VACANCY_RATE_HIGH) {
-            return vacancyLevels.high;
-          } else if (vacancyRate >= VACANCY_RATE_MEDIUM) {
-            return vacancyLevels.medium;
-          } else {
-            return vacancyLevels.low;
-          }
-        },
-      );
-
-      if (!filteredDataByVacancyRate) return;
+      if (!geoJsonData) return;
 
       const sourceId = "buildings";
-      mapInstance.addSource(sourceId, {
-        type: "geojson",
-        data: {
-          type: "FeatureCollection",
-          features: filteredDataByVacancyRate.map(
-            ({ coordinates, ...rest }) => ({
-              type: "Feature",
-              properties: {
-                ...rest,
-              },
-              geometry: {
-                type: "Polygon",
-                coordinates,
-              },
-            }),
-          ),
-        },
-      });
-
       const layerId = "buildings-layer";
-      mapInstance.addLayer({
-        id: layerId,
-        type: "fill",
-        source: sourceId,
-        paint: {
-          "fill-color": [
-            "case",
-            [">=", ["get", "vacancyRate"], VACANCY_RATE_HIGH],
-            "#C4314B66", // 赤 (80以上)
-            [">=", ["get", "vacancyRate"], VACANCY_RATE_MEDIUM],
-            "#FFA92966", // 黄 (30以上80未満)
-            "#1B8C6366", // 青 (30未満)
-          ],
-          "fill-outline-color": [
-            "case",
-            [">=", ["get", "vacancyRate"], VACANCY_RATE_HIGH],
-            "#C4314B", // 赤 (80以上)
-            [">=", ["get", "vacancyRate"], VACANCY_RATE_MEDIUM],
-            "#FFA929", // 黄 (30以上80未満)
-            "#1B8C63", // 青 (30未満)
-          ],
-        },
-      });
-
+      addGeoJsonSource(mapInstance, sourceId, geoJsonData);
+      addGeoJsonLayer(mapInstance, layerId, sourceId);
       let popup: Popup | null = null;
-
-      // ポリゴンレイヤーをクリックしたときのイベントリスナーを追加
       mapInstance.on("click", layerId, (e) => {
         if (e.features && e.features.length > 0) {
           const feature = e.features[0];
-          const properties = feature.properties as Omit<
-            Building,
-            "coordinates"
-          >;
+          const properties = feature.properties;
           const coordinates = e.lngLat;
-
-          // ポップアップの内容を作成
           const popupContent = renderToString(
-            <BuildingPopup data={properties} />,
+            <div>{properties.predicted_probability}</div>,
           );
 
-          // ポップアップを作成して表示
           popup = new Popup()
             .setLngLat(coordinates)
             .setHTML(popupContent)
@@ -202,11 +140,12 @@ export function MapComponent({
     },
     [
       data,
+      geoJsonData,
       mapInstance,
       selectedYear,
       vacancyLevels.high,
-      vacancyLevels.medium,
       vacancyLevels.low,
+      vacancyLevels.medium,
     ],
   );
 
