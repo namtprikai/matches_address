@@ -1,5 +1,4 @@
 import { type data_set_detail_buildings } from "../schema";
-import { getKeys } from "../utils/getKeys";
 
 /** 
  * チャートのカラムが受け付けられる型
