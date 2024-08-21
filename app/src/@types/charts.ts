@@ -14,3 +14,8 @@ export interface ChartProps {
     xAxisColumn: ChartColumn,
     yAxisColumn: ChartColumn
 }
+
+export interface Parameter {
+    key: string;
+    value: string;
+}

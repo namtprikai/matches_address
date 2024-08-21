@@ -7,12 +7,9 @@ import { z } from "zod";
 import { result_views } from "../schema";
 import { LanguageMap } from "../lang";
 import { selectedResultViewIdAtom } from "../state/selected-result-view-id-atom";
-import {
-  DATA_SET_DETAIL_BUILIDNG_COLUMN,
-  DATA_SET_DETAIL_BUILIDNG_COLUMN_CONFIG,
-} from "../config/data-columns";
 import { selectedResultViewAtom } from "../state/selected-result-view-atom";
 import { CHART_CONFIG } from "../config/chart-config";
+import { type Parameter } from "../@types/charts";
 import { Fieldset } from "./ui/fieldset";
 import { FieldLegend } from "./ui/field-legend";
 import { Field } from "./ui/field";
@@ -23,17 +20,18 @@ import { DialogSurface } from "./ui/dialog-surface";
 import { DialogActions } from "./ui/dialog-actions";
 import { DialogBody } from "./ui/dialog-body";
 import { DialogTitle } from "./ui/dialog-title";
+import { DynamicParameterField } from "./dynamic-parameter-field";
 
 const schema = z.object({
   title: z.string().max(255).optional(),
   unit: z.enum(result_views.unit.enumValues).default("building"),
   style: z.enum(result_views.style.enumValues).default("map"),
-  parameters: z.array(
-    z.object({
+  parameters: z
+    .object({
       key: z.string(),
       value: z.string(),
-    }),
-  ),
+    })
+    .array(),
 });
 
 type EditResultViewFormType = z.infer<typeof schema>;
@@ -49,7 +47,7 @@ export const EditResultViewForm = (): JSX.Element => {
         title: selectedResultView?.title ?? "",
         style: selectedResultView?.style ?? "map",
         unit: selectedResultView?.unit ?? "building",
-        parameters: selectedResultView?.parameters ?? [],
+        parameters: (selectedResultView?.parameters as Parameter[]) ?? [],
       },
     });
 
@@ -80,7 +78,7 @@ export const EditResultViewForm = (): JSX.Element => {
       title: selectedResultView?.title ?? "",
       style: selectedResultView?.style ?? "map",
       unit: selectedResultView?.unit ?? "building",
-      parameters: selectedResultView?.parameters ?? [],
+      parameters: (selectedResultView?.parameters as Parameter[]) ?? [],
     });
   }, [selectedResultView, reset]);
 
@@ -129,39 +127,20 @@ export const EditResultViewForm = (): JSX.Element => {
           if (!optionField) return null;
 
           return (
-            <Field key={field.id} label={optionField.label}>
-              <Select
-                {...register(`parameters.${index}.value`)}
-                onChange={(e) => {
-                  update(index, {
-                    key: field.key,
-                    value: e.target.value,
-                  });
-                }}
-                value={field.value}
-              >
-                <option value="">選択してください</option>
-                {unit === "building" &&
-                  DATA_SET_DETAIL_BUILIDNG_COLUMN.filter((column) => {
-                    const matchedType = optionField.accept.filter((type) => {
-                      return (
-                        DATA_SET_DETAIL_BUILIDNG_COLUMN_CONFIG[column].type ===
-                        type
-                      );
-                    });
-
-                    if (matchedType.length === 0) return false;
-
-                    return true;
-                  }).map((column) => {
-                    return (
-                      <option key={column} value={column}>
-                        {DATA_SET_DETAIL_BUILIDNG_COLUMN_CONFIG[column].label}
-                      </option>
-                    );
-                  })}
-              </Select>
-            </Field>
+            <DynamicParameterField
+              {...register(`parameters.${index}.value`)}
+              key={field.id}
+              label={optionField.label}
+              onChange={(e) => {
+                update(index, {
+                  key: field.key,
+                  value: e.target.value,
+                });
+              }}
+              optionField={optionField}
+              unit={unit}
+              value={field.value}
+            />
           );
         })}
 

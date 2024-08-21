@@ -1,11 +1,16 @@
-import { data_set_detail_buildings } from "../schema";
+import { type data_set_detail_buildings } from "../schema";
 import { getKeys } from "../utils/getKeys";
 
+/** 
+ * チャートのカラムが受け付けられる型
+ * JavaScriptではdateとstring, floatとintegerを区別できないため、明示する必要がある
+ */
 export type ChartColumnType = "string" | "integer" | "date" | "float"
 
-// @ts-expect-error getKeys がうまく動かない
-const data_set_detail_buildings_keys = getKeys<typeof data_set_detail_buildings>(data_set_detail_buildings);
-
+/**
+ * データセット詳細の建物のカラム
+ * ここで指定したカラムのみがパラメーターの選択肢として表示される
+ */
 export const DATA_SET_DETAIL_BUILIDNG_COLUMN = [
     "id",
     "data_set_result_id",
@@ -25,8 +30,12 @@ export const DATA_SET_DETAIL_BUILIDNG_COLUMN = [
     "updated_at",
     "buildingdisasterriskattribute_buildingriverfloodingriskattribute_rank",
     "buildingdisasterriskattribute_buildingriverfloodingriskattribute_description",
-] satisfies typeof data_set_detail_buildings_keys
+] satisfies (keyof typeof data_set_detail_buildings.$inferSelect)[]
 
+/**
+ * カラムごとのメタデータをハードコード
+ * ここでの設定は、チャートの表示やグルーピングの際に利用される
+ */
 export const DATA_SET_DETAIL_BUILIDNG_COLUMN_CONFIG = {
     id: {
         label: "ID",
@@ -127,7 +136,7 @@ export const DATA_SET_DETAIL_BUILIDNG_COLUMN_CONFIG = {
         groupable: true,
     },
 } satisfies {
-    [k in keyof typeof data_set_detail_buildings.$inferSelect]?: {
+    [k in (typeof DATA_SET_DETAIL_BUILIDNG_COLUMN)[number]]?: {
         label: string;
         type: ChartColumnType;
         unit?: string;
