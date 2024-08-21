@@ -19,3 +19,7 @@ export interface Parameter {
     key: string;
     value: string;
 }
+
+export type ChartDynamicColumnInput = "select" | "input";
+
+export type ChartStyle = "pie" | "bar" | "line" | "table" | "map";

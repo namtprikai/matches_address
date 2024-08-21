@@ -1,3 +1,6 @@
+import { type ChartDynamicColumnInput, type ChartStyle } from "../@types/charts";
+import { type ChartColumnType } from "./data-columns";
+
 /**
  * 各チャートのパラーメーターやグルーピング可能かどうかなどの設定をハードコードで定義している
  * 永続化の必要がない（＝エンドユーザーが変更しない）点、
@@ -74,4 +77,16 @@ export const CHART_CONFIG = {
             enabled: false,
         },
     },
-} as const;
+} satisfies {
+    [k in ChartStyle]: {
+        fields: {
+            key: string;
+            label: string;
+            type: ChartDynamicColumnInput;
+            accept: ChartColumnType[];
+        }[];
+        grouping: {
+            enabled: boolean;
+        };
+    }
+};

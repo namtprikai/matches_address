@@ -40,6 +40,15 @@ export const result_views = sqliteTable("result_views", {
   unit: text("unit", { enum: ["building", "area"] }),
   style: text("style", { enum: ["map", "bar", "line", "pie", "table"] }),
 
+  /**
+   * チャートの動的カラム対応のためのフィールドをkey-valueのオブジェクト配列で保持するためのカラム
+   * SQLiteにはBlobかText型しかなく、DrizzleのレイヤーでObectとして扱わせるために mode;json を指定
+   * 
+   * {
+   *  key: string // inputのname属性に対応
+   *  value: string // inputのvalue属性に対応
+   * }
+   */
   parameters: blob("parameters", {
     mode: "json"
   }),

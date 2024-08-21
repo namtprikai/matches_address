@@ -20,7 +20,7 @@ import { DialogSurface } from "./ui/dialog-surface";
 import { DialogActions } from "./ui/dialog-actions";
 import { DialogBody } from "./ui/dialog-body";
 import { DialogTitle } from "./ui/dialog-title";
-import { DynamicParameterField } from "./dynamic-parameter-field";
+import { DynamicParameterInput } from "./dynamic-parameter-input";
 
 const schema = z.object({
   title: z.string().max(255).optional(),
@@ -127,17 +127,17 @@ export const EditResultViewForm = (): JSX.Element => {
           if (!optionField) return null;
 
           return (
-            <DynamicParameterField
+            <DynamicParameterInput
               {...register(`parameters.${index}.value`)}
               key={field.id}
-              label={optionField.label}
+              fieldKey={field.key}
               onChange={(e) => {
                 update(index, {
                   key: field.key,
                   value: e.target.value,
                 });
               }}
-              optionField={optionField}
+              style={style}
               unit={unit}
               value={field.value}
             />
