@@ -75,7 +75,7 @@ export function MapComponent({
   const styles = useMapComponentStyles();
   const containerRef = useRef<HTMLDivElement | null>(null);
   const [mapInstance, setMapInstance] = useState<Map | null>(null);
-  const geoJsonData = useGeoJsonData();
+  const geoJsonData = useGeoJsonData(vacancyLevels);
 
   useEffect(function initializeMap() {
     if (!containerRef.current) return;
