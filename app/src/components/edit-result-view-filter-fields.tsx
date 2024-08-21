@@ -3,9 +3,7 @@ import {
   Dialog,
   DialogContent,
   DialogTrigger,
-  Field,
   makeStyles,
-  Select,
   Text,
 } from "@fluentui/react-components";
 import { useForm } from "react-hook-form";
@@ -16,6 +14,10 @@ import { DialogSurface } from "./ui/dialog-surface";
 import { DialogTitle } from "./ui/dialog-title";
 import { DialogBody } from "./ui/dialog-body";
 import { DialogActions } from "./ui/dialog-actions";
+import { Field } from "./ui/field";
+import { Select } from "./ui/select";
+import { Fieldset } from "./ui/fieldset";
+import { FieldLegend } from "./ui/field-legend";
 
 const useStyles = makeStyles({
   area: {
@@ -72,8 +74,8 @@ export const EditResultViewFilterFields = (): JSX.Element => {
 
   return (
     <form id={form_id} onSubmit={onSubmit}>
-      <fieldset>
-        <legend>フィルター</legend>
+      <Fieldset>
+        <FieldLegend>フィルター</FieldLegend>
 
         <Field label="期間">
           <Select
@@ -143,7 +145,7 @@ export const EditResultViewFilterFields = (): JSX.Element => {
             </Dialog>
           </div>
         </Field>
-      </fieldset>
+      </Fieldset>
 
       <Button type="submit">フィルターを実行</Button>
     </form>
