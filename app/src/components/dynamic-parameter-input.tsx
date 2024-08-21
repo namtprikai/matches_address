@@ -1,37 +1,30 @@
-import { getChartFieldOption } from "../utils/get-chart-field-option";
+import { getResultViewFieldOption } from "../utils/get-view-field-option";
+import { type ResultViewFieldOption } from "../@types/charts";
 import { Select } from "./ui/select";
 import { DynamicColumnOptions } from "./dynamic-column-options";
 import { Field } from "./ui/field";
 
 type Props = {
   unit: "building" | "area";
-  style: "map" | "table" | "line" | "bar" | "pie";
-  fieldKey: string;
-  onChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
   value: string;
   name: string;
+  fieldOption: ResultViewFieldOption;
+} & {
+  type: "select";
+  onChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
 };
 
 /**
- *
- *
- *
- * @param label Fieldのラベル
  * @param unit `building` か``area``のどちらか集計単位
  * @returns
  */
 export const DynamicParameterInput = ({
   unit,
-  style,
-  fieldKey,
+  fieldOption,
   value,
   name,
   onChange,
 }: Props): JSX.Element => {
-  const fieldOption = getChartFieldOption(style, fieldKey);
-
-  if (!fieldOption) return <></>;
-
   return (
     <Field label={fieldOption.label}>
       {fieldOption.type === "select" && (

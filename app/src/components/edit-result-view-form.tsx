@@ -10,7 +10,7 @@ import { selectedResultViewIdAtom } from "../state/selected-result-view-id-atom"
 import { selectedResultViewAtom } from "../state/selected-result-view-atom";
 import { RESULT_VIEW_CONFIG } from "../config/result-view-config";
 import { type Parameter } from "../@types/charts";
-import { getViewFieldOption } from "../utils/get-view-field-option";
+import { getResultViewFieldOption } from "../utils/get-view-field-option";
 import { Fieldset } from "./ui/fieldset";
 import { FieldLegend } from "./ui/field-legend";
 import { Field } from "./ui/field";
@@ -124,20 +124,22 @@ export const EditResultViewForm = (): JSX.Element => {
           </Select>
         </Field>
         {fields.map((field, index) => {
-          const fieldOption = getViewFieldOption(style, field.key);
+          const fieldOption = getResultViewFieldOption(style, field.key);
+
+          if (!fieldOption) return null;
 
           return (
             <DynamicParameterInput
+              type="select"
               {...register(`parameters.${index}.value`)}
               key={field.id}
-              fieldKey={field.key}
+              fieldOption={fieldOption}
               onChange={(e) => {
                 update(index, {
                   key: field.key,
                   value: e.target.value,
                 });
               }}
-              style={style}
               unit={unit}
               value={field.value}
             />
