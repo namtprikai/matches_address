@@ -22,9 +22,12 @@ const useStyles = makeStyles({
   },
   content: {
     flex: "1",
-    padding: tokens.spacingVerticalL,
+    padding: tokens.spacingHorizontalXXL,
     backgroundColor: tokens.colorNeutralBackground3,
     minHeight: "100vh",
+    display: "flex",
+    flexFlow: "column",
+    gap: `${tokens.spacingVerticalXXL} ${tokens.spacingHorizontalXXL}`,
   },
 });
 
