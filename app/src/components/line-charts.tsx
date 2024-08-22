@@ -13,7 +13,7 @@ import {
   Tooltip as FUIToolTip,
   makeStyles,
 } from "@fluentui/react-components";
-import { GRAPH_COLORS } from "../config/chart-colors";
+import { CHART_COLORS } from "../config/chart-colors";
 import { type ChartProps } from "../@types/charts";
 
 export type LineChartProps = ChartProps;
@@ -97,9 +97,9 @@ const CustomizedActiveDot = ({
         <circle
           cx={4}
           cy={4}
-          fill={GRAPH_COLORS.primary}
+          fill={CHART_COLORS.primary}
           r={3}
-          stroke={GRAPH_COLORS.teritiary}
+          stroke={CHART_COLORS.teritiary}
           strokeWidth={2}
         />
       </svg>
@@ -129,7 +129,7 @@ export const LineChart = ({
           dataKey={"y"}
           // @ts-expect-error 内部処理で適切なPropsが渡されるが型定義が不足しているためエラーが出る
           dot={<CustomizedDot />}
-          stroke={GRAPH_COLORS.primary}
+          stroke={CHART_COLORS.primary}
           strokeWidth={2}
         />
         <ReLegend />
