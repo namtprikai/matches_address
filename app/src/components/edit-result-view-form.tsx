@@ -61,7 +61,7 @@ export const EditResultViewForm = (): JSX.Element => {
         title: selectedResultView?.title ?? "",
         style: selectedResultView?.style ?? "map",
         unit: selectedResultView?.unit ?? "building",
-        parameters: (selectedResultView?.parameters as Parameter[]) ?? [],
+        parameters: selectedResultView?.parameters ?? [],
       },
     });
 
@@ -92,7 +92,7 @@ export const EditResultViewForm = (): JSX.Element => {
       title: selectedResultView?.title ?? "",
       style: selectedResultView?.style ?? "map",
       unit: selectedResultView?.unit ?? "building",
-      parameters: (selectedResultView?.parameters as Parameter[]) ?? [],
+      parameters: selectedResultView?.parameters ?? [],
     });
   }, [selectedResultView, reset]);
 
