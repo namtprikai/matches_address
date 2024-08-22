@@ -62,7 +62,7 @@ export const TileResultView = ({
           />
         }
         header={
-          <Subtitle2>{`ID:${resultView.id} - ${resultView.title || "タイトル未入力"}`}</Subtitle2>
+          <Subtitle2>{`${resultView.title || "タイトル未入力"}`}</Subtitle2>
         }
       />
       {dataSetResult === null ? (

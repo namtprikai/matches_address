@@ -1,17 +1,16 @@
-export const CHART_COLORS = [
-    "#FF6633",
-    "#FFB399",
-    "#FF33FF",
-    "#FFFF99",
-    "#00B3E6",
-    "#E6B333",
-    "#3366E6",
-    "#999966",
-    "#99FF99",
-    "#B34D4D",
-];
-
-export const GRAPH_COLORS = {
+export const CHART_COLORS = {
     primary: "#53389E",
     teritiary: "#B692F6",
+    repeated: [
+        "#66C2A5",
+        "#3288BD",
+        "#5E4FA2",
+        "#9E0142",
+        "#D53E4F",
+        "#F46D43",
+        "#FDAE61",
+        "#FEE08B",
+        "#E6F598",
+        "#ABDDA4",
+    ]
 }

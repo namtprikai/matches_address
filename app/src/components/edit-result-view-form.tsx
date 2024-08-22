@@ -1,7 +1,12 @@
 import { useFieldArray, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useAtom } from "jotai";
-import { Dialog, DialogTrigger } from "@fluentui/react-components";
+import {
+  Dialog,
+  DialogTrigger,
+  makeStyles,
+  tokens,
+} from "@fluentui/react-components";
 import { useEffect } from "react";
 import { z } from "zod";
 import { result_views } from "../schema";
@@ -37,10 +42,18 @@ const schema = z.object({
 
 type EditResultViewFormType = z.infer<typeof schema>;
 
+const useStyles = makeStyles({
+  form: {
+    display: "grid",
+    gap: tokens.spacingVerticalXXL,
+  },
+});
+
 export const EditResultViewForm = (): JSX.Element => {
   const [selectedResultViewId] = useAtom(selectedResultViewIdAtom);
   const [selectedResultView, refresh] = useAtom(selectedResultViewAtom);
 
+  const styles = useStyles();
   const { register, handleSubmit, watch, reset, control, setValue } =
     useForm<EditResultViewFormType>({
       resolver: zodResolver(schema),
@@ -84,7 +97,7 @@ export const EditResultViewForm = (): JSX.Element => {
   }, [selectedResultView, reset]);
 
   return (
-    <form onSubmit={onSubmit}>
+    <form className={styles.form} onSubmit={onSubmit}>
       <button hidden type="submit" />
       <Field label="データセット">
         <Input disabled placeholder="選択中のデータセット名が入る" />

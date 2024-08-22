@@ -27,7 +27,9 @@ export const PieChart = ({ data }: PieChartProps): JSX.Element => {
             return (
               <ReCell
                 key={index}
-                fill={CHART_COLORS[index % CHART_COLORS.length]}
+                fill={
+                  CHART_COLORS.repeated[index % CHART_COLORS.repeated.length]
+                }
               />
             );
           })}
