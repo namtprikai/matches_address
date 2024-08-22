@@ -2,7 +2,7 @@ import { type ChartColumnType } from "../@types/charts";
 import { type data_set_detail_buildings } from "../schema";
 
 /**
- * データセット詳細の建物のカラム
+ * D902のカラム指定
  * ここで指定したカラムのみがパラメーターの選択肢として表示される
  */
 export const DATA_SET_DETAIL_BUILIDNG_COLUMN = [
@@ -27,7 +27,7 @@ export const DATA_SET_DETAIL_BUILIDNG_COLUMN = [
 ] satisfies (keyof typeof data_set_detail_buildings.$inferSelect)[]
 
 /**
- * カラムごとのメタデータをハードコード
+ * D902のカラムごとのメタデータをハードコード
  * ここでの設定は、チャートの表示やグルーピングの際に利用される
  */
 export const DATA_SET_DETAIL_BUILIDNG_COLUMN_CONFIG = {
