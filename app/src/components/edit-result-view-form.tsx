@@ -16,6 +16,7 @@ import { selectedResultViewAtom } from "../state/selected-result-view-atom";
 import { RESULT_VIEW_CONFIG } from "../config/result-view-config";
 import { type Parameter } from "../@types/charts";
 import { getResultViewFieldOption } from "../utils/get-view-field-option";
+import { resultViewsAtom } from "../state/result-views-atom";
 import { Fieldset } from "./ui/fieldset";
 import { FieldLegend } from "./ui/field-legend";
 import { Field } from "./ui/field";
@@ -52,6 +53,7 @@ const useStyles = makeStyles({
 export const EditResultViewForm = (): JSX.Element => {
   const [selectedResultViewId] = useAtom(selectedResultViewIdAtom);
   const [selectedResultView, refresh] = useAtom(selectedResultViewAtom);
+  const [, refreshResultViews] = useAtom(resultViewsAtom);
 
   const styles = useStyles();
   const { register, handleSubmit, watch, reset, control, setValue } =
@@ -77,6 +79,7 @@ export const EditResultViewForm = (): JSX.Element => {
       },
     });
     refresh();
+    refreshResultViews();
   });
 
   const style = watch("style");
