@@ -10,7 +10,7 @@ import {
   CartesianGrid as ReCartesianGrid,
 } from "recharts";
 import { useState } from "react";
-import { CHART_COLORS, CHART_COLORS } from "../config/chart-colors";
+import { CHART_COLORS } from "../config/chart-colors";
 import { type ChartProps } from "../@types/charts";
 import { CustomTooltip } from "./custom-tooltip";
 
