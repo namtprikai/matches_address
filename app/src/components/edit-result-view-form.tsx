@@ -79,6 +79,7 @@ export const EditResultViewForm = (): JSX.Element => {
       },
     });
     refresh();
+    // resultViewsの再取得を行い、更新されたデータを反映する
     refreshResultViews();
   });
 
