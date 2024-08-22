@@ -3,8 +3,8 @@ import {
   makeStyles,
   type SelectTabData,
   type SelectTabEvent,
-  Tab,
   TabList,
+  tokens,
 } from "@fluentui/react-components";
 import { useAtom } from "jotai";
 import { startTransition, useEffect } from "react";
@@ -13,6 +13,7 @@ import { selectedResultSheetIdAtom } from "../state/selected-result-sheet-id-ato
 import { selectedWorkbookIdAtom } from "../state/selected-workbook-id-atom";
 import { Button } from "./ui/button";
 import { ButtonEditableSheetTitle } from "./button-editable-sheet-title";
+import { Tab } from "./ui/tab";
 
 const addResultSheet = async ({
   workbookId,
@@ -38,10 +39,11 @@ const useStyles = makeStyles({
     "::-webkit-scrollbar": {
       display: "none",
     },
+    gap: tokens.spacingHorizontalM,
   },
 });
 
-export const TabListResultSheet = (): JSX.Element => {
+export const TabListEditResultSheet = (): JSX.Element => {
   const styles = useStyles();
   const [resultSheets, refresh] = useAtom(resultSheetsAtom);
   const [workbookId] = useAtom(selectedWorkbookIdAtom);

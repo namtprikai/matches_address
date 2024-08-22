@@ -2,7 +2,12 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useAtom } from "jotai";
-import { Dialog, DialogTrigger } from "@fluentui/react-components";
+import {
+  Dialog,
+  DialogTrigger,
+  makeStyles,
+  tokens,
+} from "@fluentui/react-components";
 import { result_views } from "../schema";
 import { LanguageMap } from "../lang";
 import { selectedResultViewIdAtom } from "../state/selected-result-view-id-atom";
@@ -68,7 +73,15 @@ const graphOptions = {
   },
 } as const;
 
+const useStyles = makeStyles({
+  form: {
+    display: "grid",
+    gap: tokens.spacingVerticalXXL,
+  },
+});
+
 export const EditResultViewForm = (): JSX.Element => {
+  const styles = useStyles();
   const { register, handleSubmit, reset, getValues } =
     useForm<EditResultViewFormType>({
       resolver: zodResolver(schema),
@@ -95,7 +108,7 @@ export const EditResultViewForm = (): JSX.Element => {
   const style = getValues("style");
 
   return (
-    <form onSubmit={onSubmit}>
+    <form className={styles.form} onSubmit={onSubmit}>
       <button hidden type="submit" />
       <Field label="データセット">
         <Input disabled placeholder="選択中のデータセット名が入る" />
