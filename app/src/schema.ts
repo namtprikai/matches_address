@@ -83,6 +83,15 @@ export const data_set_detail_buildings = sqliteTable(
     household_code: text("household_code"),
     normalized_address: text("normalized_address"),
 
+    /**
+     * 基準日
+     * 
+     * 判定の基準となる日付
+     * 
+     * YYYY-MM-DD形式の文字列
+     */
+    reference_date: text("reference_date").notNull(),
+
     number_of_people_in_household: integer("number_of_people_in_household"),
     number_of_people_under_15_years_old: integer("number_of_people_under_15_years_old"),
     /**

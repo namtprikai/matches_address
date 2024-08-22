@@ -10,6 +10,7 @@ CREATE TABLE `data_set_detail_buildings` (
 	`data_set_result_id` integer,
 	`household_code` text,
 	`normalized_address` text,
+	`date` text NOT NULL,
 	`number_of_people_in_household` integer,
 	`number_of_people_under_15_years_old` integer,
 	`composition_ratio_of_people_under_15_years_old` real,
