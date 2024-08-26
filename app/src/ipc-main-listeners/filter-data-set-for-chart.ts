@@ -5,6 +5,7 @@ import {
 } from "../schema";
 import { db } from "../utils/db";
 import { type ChartProps } from "../@types/charts";
+import { DATA_SET_DETAIL_BUILIDNG_COLUMN_CONFIG } from "../config/data-columns";
 import { type IpcMainListener } from ".";
 
 export type FilterDataSetForChartResponse = ChartProps;
@@ -54,9 +55,13 @@ export const filterDataSetForChart = ((
             }),
             xAxisColumn: {
                 type: "string",
+                // @ts-expect-error TODO: この辺りの型定義は別途修正が必要
+                unit: DATA_SET_DETAIL_BUILIDNG_COLUMN_CONFIG[x].unit,
             },
             yAxisColumn: {
                 type: "number",
+                // @ts-expect-error TODO: この辺りの型定義は別途修正が必要
+                unit: DATA_SET_DETAIL_BUILIDNG_COLUMN_CONFIG[y].unit,
             },
         };
     }
