@@ -57,11 +57,15 @@ export const filterDataSetForChart = ((
                 type: "string",
                 // @ts-expect-error TODO: この辺りの型定義は別途修正が必要
                 unit: DATA_SET_DETAIL_BUILIDNG_COLUMN_CONFIG[x].unit,
+                // @ts-expect-error TODO: この辺りの型定義は別途修正が必要
+                label: DATA_SET_DETAIL_BUILIDNG_COLUMN_CONFIG[x].label,
             },
             yAxisColumn: {
                 type: "number",
                 // @ts-expect-error TODO: この辺りの型定義は別途修正が必要
                 unit: DATA_SET_DETAIL_BUILIDNG_COLUMN_CONFIG[y].unit,
+                // @ts-expect-error TODO: この辺りの型定義は別途修正が必要
+                label: DATA_SET_DETAIL_BUILIDNG_COLUMN_CONFIG[y].label,
             },
         };
     }

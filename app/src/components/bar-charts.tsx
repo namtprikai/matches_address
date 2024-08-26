@@ -72,6 +72,7 @@ export const BarChart = ({
         <ReBar
           dataKey={"y"}
           fill={CHART_COLORS.primary} // tokensに存在しない値
+          name={yAxisColumn.label} // Legend（凡例）でも利用される
           onMouseMove={(data, _) => {
             setTooltipPosition((prev) => {
               if (data.tooltipPosition === undefined) {

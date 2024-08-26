@@ -26,8 +26,6 @@ const CustomizedDot = ({
   cx: number;
   cy: number;
   stroke: string;
-  payload: { value: number };
-  value: number;
 }): JSX.Element => {
   return (
     <svg
@@ -66,19 +64,22 @@ const CustomizedActiveDot = ({
   cy,
   stroke,
   value,
+  unit,
 }: {
   cx: number;
   cy: number;
   stroke: string;
-  payload: { value: number; unit: string | undefined }[];
   value: number;
+  unit?: string;
 }): JSX.Element => {
   const styles = useStyles();
+
+  const labelText = unit ? `${value}${unit}` : value;
 
   return (
     <FUIToolTip
       content={{
-        children: value,
+        children: labelText,
         className: styles.tooltip,
       }}
       positioning={"above"}
@@ -125,12 +126,14 @@ export const LineChart = ({
         <ReCartesianGrid vertical={false} />
         <ReLine
           // @ts-expect-error 内部処理で適切なPropsが渡されるが型定義が不足しているためエラーが出る
-          activeDot={<CustomizedActiveDot />}
+          activeDot={<CustomizedActiveDot unit={yAxisColumn.unit} />}
           dataKey={"y"}
           // @ts-expect-error 内部処理で適切なPropsが渡されるが型定義が不足しているためエラーが出る
           dot={<CustomizedDot />}
+          name={yAxisColumn.label}
           stroke={CHART_COLORS.primary}
           strokeWidth={2}
+          unit={yAxisColumn.unit}
         />
         <ReLegend />
       </ReLineChart>
