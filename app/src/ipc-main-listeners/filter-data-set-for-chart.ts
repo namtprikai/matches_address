@@ -12,7 +12,7 @@ export type FilterDataSetForChartResponse = ChartProps;
 export const filterDataSetForChart = ((
     _: unknown,
     { resultId, type, x, y }: { resultId: number } & (
-        { type: "buildings"; x: keyof typeof data_set_detail_buildings.$inferSelect; y: keyof typeof data_set_detail_buildings.$inferSelect } |
+        { type: "building"; x: keyof typeof data_set_detail_buildings.$inferSelect; y: keyof typeof data_set_detail_buildings.$inferSelect } |
         { type: "area"; x: keyof typeof data_set_detail_areas.$inferSelect; y: keyof typeof data_set_detail_areas.$inferSelect }
     ),
 ): FilterDataSetForChartResponse => {
@@ -38,7 +38,7 @@ export const filterDataSetForChart = ((
             },
         };
     }
-    if (type === "buildings") {
+    if (type === "building") {
         const all = db
             .select()
             .from(data_set_detail_buildings)
