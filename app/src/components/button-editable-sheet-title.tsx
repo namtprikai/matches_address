@@ -15,9 +15,6 @@ const useStyles = makeStyles({
   root: {
     padding: tokens.spacingVerticalNone,
   },
-  input: {
-    width: "96px",
-  },
 });
 
 export const ButtonEditableSheetTitle = ({
@@ -28,6 +25,7 @@ export const ButtonEditableSheetTitle = ({
 
   const [title, setTitle] = useState(resultSheet.title || "");
   const updateTitle = (): void => {
+    if (title.length === 0) return; // 仮のバリデーション
     const asyncSubmit = async (): Promise<void> => {
       await window.ipcRenderer.invoke("updateResultSheets", {
         resultSheetId: resultSheet.id,
@@ -51,7 +49,8 @@ export const ButtonEditableSheetTitle = ({
     return (
       <form ref={ref} onSubmit={handleSubmit}>
         <Input
-          className={styles.input}
+          maxLength={100}
+          minLength={1}
           name="title"
           onChange={(e): void => setTitle(e.target.value)}
           size="small"
@@ -70,6 +69,12 @@ export const ButtonEditableSheetTitle = ({
       className={styles.root}
       onDoubleClick={(): void => setIsEditing(true)}
       shape="square"
+      style={{
+        lineHeight: "24px",
+        padding: 0,
+        margin: 0,
+        minWidth: "auto",
+      }}
     >
       {title}
     </Button>

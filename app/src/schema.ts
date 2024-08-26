@@ -1,4 +1,4 @@
-import { integer, real, sqliteTable, text } from "drizzle-orm/sqlite-core";
+import { blob, integer, real, sqliteTable, text } from "drizzle-orm/sqlite-core";
 import { sql } from "drizzle-orm";
 
 export const users = sqliteTable("users", {
@@ -40,6 +40,19 @@ export const result_views = sqliteTable("result_views", {
   unit: text("unit", { enum: ["building", "area"] }),
   style: text("style", { enum: ["map", "bar", "line", "pie", "table"] }),
 
+  /**
+   * チャートの動的カラム対応のためのフィールドをkey-valueのオブジェクト配列で保持するためのカラム
+   * SQLiteにはBlobかText型しかなく、DrizzleのレイヤーでObectとして扱わせるために mode;json を指定
+   * 
+   * {
+   *  key: string // inputのname属性に対応
+   *  value: string // inputのvalue属性に対応
+   * }
+   */
+  parameters: blob("parameters", {
+    mode: "json"
+  }),
+
   created_at: text("created_at")
     .default(sql`(CURRENT_TIMESTAMP)`)
     .notNull(),
@@ -69,6 +82,15 @@ export const data_set_detail_buildings = sqliteTable(
 
     household_code: text("household_code"),
     normalized_address: text("normalized_address"),
+
+    /**
+     * 基準日
+     * 
+     * 判定の基準となる日付
+     * 
+     * YYYY-MM-DD形式の文字列
+     */
+    reference_date: text("reference_date").notNull(),
 
     number_of_people_in_household: integer("number_of_people_in_household"),
     number_of_people_under_15_years_old: integer("number_of_people_under_15_years_old"),

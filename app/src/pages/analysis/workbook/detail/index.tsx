@@ -33,7 +33,7 @@ const useStyles = makeStyles({
     border: `1px solid ${tokens.colorNeutralStroke2}`,
     borderRadius: tokens.borderRadiusMedium,
     "&:hover, &:active, &:focus, &:focus-within": {
-      border: `1px solid $(tokens.colorNeutralStroke1Selected}`,
+      border: `1px solid ${tokens.colorNeutralStroke1Selected}`,
     },
   },
 });

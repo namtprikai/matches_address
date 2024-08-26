@@ -1,4 +1,8 @@
-import { string } from "zod";
+/** 
+ * チャートのカラムが受け付けられる型
+ * JavaScriptではdateとstring, floatとintegerを区別できないため、明示する必要がある
+ */
+export type ChartColumnType = "string" | "integer" | "date" | "float"
 
 export interface ChartColumn {
     type: "string" | "number";
@@ -19,4 +23,20 @@ export interface ChartProps {
 export interface TableViewProps {
     columns: string[],
     data: Record<string, string | number | null>[]
+}
+
+export interface Parameter {
+    key: string;
+    value: string;
+}
+
+export type ChartDynamicColumnInput = "select" | "input";
+
+export type ChartStyle = "pie" | "bar" | "line" | "table" | "map";
+
+export interface ResultViewFieldOption {
+    key: string;
+    label: string;
+    type: ChartDynamicColumnInput;
+    accept: readonly ChartColumnType[];
 }

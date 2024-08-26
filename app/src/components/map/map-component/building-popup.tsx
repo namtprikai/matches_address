@@ -1,5 +1,5 @@
 import { forwardRef } from "react";
-import { clsx } from "clsx";
+import { mergeClasses } from "@fluentui/react-components";
 import styles from "./popup-styles.module.css";
 import { VACANCY_RATE_HIGH, VACANCY_RATE_MEDIUM, type Building } from ".";
 
@@ -23,8 +23,8 @@ export const BuildingPopup = forwardRef<HTMLDivElement, Props>(
 
     return (
       <div ref={ref} className={styles.container} tabIndex={-1}>
-        <div className={clsx(styles.header, vacancyRateColorStyle)}>
-          <span className={clsx(styles.circleIcon)} />
+        <div className={mergeClasses(styles.header, vacancyRateColorStyle)}>
+          <span className={styles.circleIcon} />
           <div>
             <span className={styles.vacancyRate}>{data?.vacancyRate}%</span>
             <div className={styles.address}>{data?.address}</div>
@@ -33,7 +33,9 @@ export const BuildingPopup = forwardRef<HTMLDivElement, Props>(
         <div className={styles.info}>
           <div>
             <h3 className={styles.heading}>
-              <span className={clsx(styles.square, styles.householdIcon)} />
+              <span
+                className={mergeClasses(styles.square, styles.householdIcon)}
+              />
               世帯情報
             </h3>
             <div className={styles.item}>
@@ -57,7 +59,7 @@ export const BuildingPopup = forwardRef<HTMLDivElement, Props>(
           </div>
           <div>
             <h3 className={styles.heading}>
-              <span className={clsx(styles.square, styles.waterIcon)} />
+              <span className={mergeClasses(styles.square, styles.waterIcon)} />
               水道情報
             </h3>
             <div className={styles.item}>
@@ -71,7 +73,9 @@ export const BuildingPopup = forwardRef<HTMLDivElement, Props>(
           </div>
           <div>
             <h3 className={styles.heading}>
-              <span className={clsx(styles.square, styles.buildingIcon)} />
+              <span
+                className={mergeClasses(styles.square, styles.buildingIcon)}
+              />
               建物情報
             </h3>
             <div className={styles.item}>
@@ -85,7 +89,7 @@ export const BuildingPopup = forwardRef<HTMLDivElement, Props>(
           </div>
           <div>
             <h3 className={styles.heading}>
-              <span className={clsx(styles.square, styles.otherIcon)} />
+              <span className={mergeClasses(styles.square, styles.otherIcon)} />
               その他
             </h3>
             <div className={styles.item}>
