@@ -6,6 +6,7 @@ import {
 import { db } from "../utils/db";
 import { type ChartProps } from "../@types/charts";
 import { DATA_SET_DETAIL_BUILIDNG_COLUMN_CONFIG } from "../config/data-columns";
+import { formatChartValue } from "../utils/format-chart-value";
 import { type IpcMainListener } from ".";
 
 export type FilterDataSetForChartResponse = ChartProps;
@@ -46,11 +47,15 @@ export const filterDataSetForChart = ((
             .where(eq(data_set_detail_buildings.data_set_result_id, resultId))
             .all();
 
+        // @ts-expect-error TODO: この辺りの型定義は別途修正が必要
+        const percentage = DATA_SET_DETAIL_BUILIDNG_COLUMN_CONFIG[y].percentage;
+
         return {
             data: all.map((row: typeof data_set_detail_buildings.$inferSelect) => {
                 return {
                     x: row[x] as string,
-                    y: row[y] as number,
+                    // TODO: この辺りの型定義は別途修正が必要
+                    y: formatChartValue(row[y] as number, percentage),
                 }
             }),
             xAxisColumn: {
