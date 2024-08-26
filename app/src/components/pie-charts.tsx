@@ -4,7 +4,9 @@ import {
   Pie as RePie,
   Cell as ReCell,
   ResponsiveContainer,
+  XAxis,
 } from "recharts";
+import { char } from "drizzle-orm/mysql-core";
 import { CHART_COLORS } from "../config/chart-colors";
 import { type ChartProps } from "../@types/charts";
 
@@ -20,7 +22,7 @@ export const PieChart = ({ data }: PieChartProps): JSX.Element => {
           data={data}
           dataKey="y"
           labelLine={false}
-          nameKey="name"
+          nameKey={"y"}
           startAngle={0}
         >
           {data.map((_, index) => {
