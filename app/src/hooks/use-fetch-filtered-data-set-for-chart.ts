@@ -3,8 +3,8 @@ import { type ChartProps } from "../@types/charts";
 import { type data_set_detail_areas, type data_set_detail_buildings } from "../schema";
 
 export const useFetchFilterDataSetForChart = ({ resultId, type, x, y }: { resultId: number } & (
-    { type: "buildings"; x: keyof typeof data_set_detail_buildings.$inferSelect; y: keyof typeof data_set_detail_buildings.$inferSelect } |
-    { type: "areas"; x: keyof typeof data_set_detail_areas.$inferSelect; y: keyof typeof data_set_detail_areas.$inferSelect }
+    { type: "building"; x: keyof typeof data_set_detail_buildings.$inferSelect; y: keyof typeof data_set_detail_buildings.$inferSelect } |
+    { type: "area"; x: keyof typeof data_set_detail_areas.$inferSelect; y: keyof typeof data_set_detail_areas.$inferSelect }
 )): {
     chartProps: ChartProps;
     refetch: () => Promise<void>;
@@ -16,32 +16,26 @@ export const useFetchFilterDataSetForChart = ({ resultId, type, x, y }: { result
         yAxisColumn: { type: "number" };
     }>({ data: [], xAxisColumn: { type: "string" }, yAxisColumn: { type: "number" } });
 
-    // TODO: 冗長な関数呼び出しをしているので型定義も修正しつつ、要リファクタ
-    const fetchFilteredDataSetDetailBuildingsForChart = useCallback(async (): Promise<void> => {
-        const result = await window.ipcRenderer.invoke("filterDataSetForChart", { resultId, type: "buildings", x, y });
-        setChartProps(result);
-    }, [resultId, x, y]);
-
-    const fetchFilteredDataSetDetailAreasForChart = useCallback(async (): Promise<void> => {
-        const result = await window.ipcRenderer.invoke("filterDataSetForChart", { resultId, type: "buildings", x, y });
-        setChartProps(result);
-    }, [resultId, x, y]);
+    const fetchFilteredDataSetForChart = useCallback(async (): Promise<void> => {
+        if (type === "area") {
+            const result = await window.ipcRenderer.invoke("filterDataSetForChart", { resultId, type: "area", x, y });
+            setChartProps(result);
+        }
+        if (type === "building") {
+            const result = await window.ipcRenderer.invoke("filterDataSetForChart", { resultId, type: "building", x, y });
+            setChartProps(result);
+        }
+    }, [resultId, x, y, type]);
 
     useEffect(() => {
-        if (type === "buildings")
-            fetchFilteredDataSetDetailBuildingsForChart().catch(console.error);
-        if (type === "areas")
-            fetchFilteredDataSetDetailAreasForChart().catch(console.error);
+        fetchFilteredDataSetForChart().catch(console.error);
 
-    }, [fetchFilteredDataSetDetailAreasForChart, fetchFilteredDataSetDetailBuildingsForChart, type]);
+    }, [fetchFilteredDataSetForChart, type]);
 
-    if (type === "buildings") {
-        return { chartProps, refetch: fetchFilteredDataSetDetailBuildingsForChart };
+    if (type === "building" || type === "area") {
+        return { chartProps, refetch: fetchFilteredDataSetForChart };
     }
 
-    if (type === "areas") {
-        return { chartProps, refetch: fetchFilteredDataSetDetailAreasForChart };
-    }
 
     return { chartProps, refetch: async () => { return } }
 };

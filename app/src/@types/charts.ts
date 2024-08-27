@@ -7,6 +7,7 @@ export type ChartColumnType = "string" | "integer" | "date" | "float"
 export interface ChartColumn {
     type: "string" | "number";
     unit?: string;
+    label?: string;
 }
 
 export interface ChartData {

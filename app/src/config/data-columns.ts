@@ -56,24 +56,28 @@ export const DATA_SET_DETAIL_BUILIDNG_COLUMN_CONFIG = {
         type: "float",
         groupable: true,
         unit: "%",
+        percentage: true,
     },
     composition_ratio_of_people_aged_15_to_64: {
         label: "15歳以上64歳以下の世帯に対する人数比",
         type: "float",
         groupable: true,
         unit: "%",
+        percentage: true,
     },
     composition_ratio_of_people_aged_65_and_over: {
         label: "65歳以上の世帯に対する人数比",
         type: "float",
         groupable: true,
         unit: "%",
+        percentage: true,
     },
     composition_ratio_of_people_under_15_years_old: {
         label: "15歳未満の世帯に対する人数比",
         type: "float",
         groupable: true,
         unit: "%",
+        percentage: true,
     },
     household_code: {
         label: "世帯番号",
@@ -136,5 +140,6 @@ export const DATA_SET_DETAIL_BUILIDNG_COLUMN_CONFIG = {
         unit?: string;
         groupable?: boolean; // グルーピング可能かどうか
         excludeChart?: true; // チャート表示対象外かどうか
+        percentage?: boolean; // パーセンテージ表示かどうか
     }
 }

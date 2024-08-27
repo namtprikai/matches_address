@@ -192,7 +192,7 @@ export const EditResultViewForm = (): JSX.Element => {
       </Fieldset>
       {/** 開発用のため後で削除する  */}
       <Button onSubmit={onSubmit} size="medium" type="submit">
-        保存(開発用)
+        パラーメーター反映(開発用)
       </Button>
     </form>
   );
