@@ -1,13 +1,13 @@
 import { eq, sql } from "drizzle-orm";
 import { data_set_results, result_views } from "../schema";
 import { db } from "../utils/db";
+import { type SelectResultViewResponse } from "./select-result-view";
 import { type IpcMainListener } from ".";
 
-type ResultViews = typeof result_views.$inferSelect;
 type DataSetResults = typeof data_set_results.$inferSelect;
 // Left Join のため、 data_set_results が null の場合がある
 type Result = {
-  result_views: ResultViews;
+  result_views: SelectResultViewResponse;
   data_set_results: DataSetResults | null;
 }
 
@@ -23,5 +23,5 @@ export const selectResultViews = ((
     .leftJoin(data_set_results, eq(result_views.data_set_result_id, data_set_results.id))
     .all();
 
-  return all
+  return all as Result[];
 }) satisfies IpcMainListener;

@@ -5,6 +5,8 @@ import {
 } from "../schema";
 import { db } from "../utils/db";
 import { type ChartProps } from "../@types/charts";
+import { DATA_SET_DETAIL_BUILIDNG_COLUMN_CONFIG } from "../config/data-columns";
+import { formatChartValue } from "../utils/format-chart-value";
 import { type IpcMainListener } from ".";
 
 export type FilterDataSetForChartResponse = ChartProps;
@@ -12,7 +14,7 @@ export type FilterDataSetForChartResponse = ChartProps;
 export const filterDataSetForChart = ((
     _: unknown,
     { resultId, type, x, y }: { resultId: number } & (
-        { type: "buildings"; x: keyof typeof data_set_detail_buildings.$inferSelect; y: keyof typeof data_set_detail_buildings.$inferSelect } |
+        { type: "building"; x: keyof typeof data_set_detail_buildings.$inferSelect; y: keyof typeof data_set_detail_buildings.$inferSelect } |
         { type: "area"; x: keyof typeof data_set_detail_areas.$inferSelect; y: keyof typeof data_set_detail_areas.$inferSelect }
     ),
 ): FilterDataSetForChartResponse => {
@@ -38,25 +40,37 @@ export const filterDataSetForChart = ((
             },
         };
     }
-    if (type === "buildings") {
+    if (type === "building") {
         const all = db
             .select()
             .from(data_set_detail_buildings)
             .where(eq(data_set_detail_buildings.data_set_result_id, resultId))
             .all();
 
+        // @ts-expect-error TODO: この辺りの型定義は別途修正が必要
+        const percentage = DATA_SET_DETAIL_BUILIDNG_COLUMN_CONFIG[y].percentage;
+
         return {
             data: all.map((row: typeof data_set_detail_buildings.$inferSelect) => {
                 return {
                     x: row[x] as string,
-                    y: row[y] as number,
+                    // TODO: この辺りの型定義は別途修正が必要
+                    y: formatChartValue(row[y] as number, percentage),
                 }
             }),
             xAxisColumn: {
                 type: "string",
+                // @ts-expect-error TODO: この辺りの型定義は別途修正が必要
+                unit: DATA_SET_DETAIL_BUILIDNG_COLUMN_CONFIG[x].unit,
+                // @ts-expect-error TODO: この辺りの型定義は別途修正が必要
+                label: DATA_SET_DETAIL_BUILIDNG_COLUMN_CONFIG[x].label,
             },
             yAxisColumn: {
                 type: "number",
+                // @ts-expect-error TODO: この辺りの型定義は別途修正が必要
+                unit: DATA_SET_DETAIL_BUILIDNG_COLUMN_CONFIG[y].unit,
+                // @ts-expect-error TODO: この辺りの型定義は別途修正が必要
+                label: DATA_SET_DETAIL_BUILIDNG_COLUMN_CONFIG[y].label,
             },
         };
     }

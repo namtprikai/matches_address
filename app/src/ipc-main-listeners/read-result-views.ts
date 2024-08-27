@@ -4,12 +4,12 @@ import {
   data_set_results,
 } from "../schema";
 import { db } from "../utils/db";
+import { type SelectResultViewResponse } from "./select-result-view";
 import { type IpcMainListener } from ".";
 
-type ResultViews = typeof result_views.$inferSelect;
 type DataSetResults = typeof data_set_results.$inferSelect;
 export type ReadResultViewsResponse = {
-  result_views: ResultViews;
+  result_views: SelectResultViewResponse;
   data_set_results: DataSetResults;
 }[];
 
@@ -27,5 +27,5 @@ export const readResultViews = ((
     )
     .all();
 
-  return all;
+  return all as ReadResultViewsResponse;
 }) satisfies IpcMainListener;

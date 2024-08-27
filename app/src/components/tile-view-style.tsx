@@ -1,9 +1,5 @@
-import {
-  type data_set_results,
-  type data_set_detail_areas,
-  type data_set_detail_buildings,
-  type result_views,
-} from "../schema";
+import { type SelectResultViewResponse } from "../ipc-main-listeners/select-result-view";
+import { type data_set_detail_buildings } from "../schema";
 import { useFetchFilterDataSetForChart } from "../hooks/use-fetch-filtered-data-set-for-chart";
 import { BarChart } from "./bar-charts";
 import { LineChart } from "./line-charts";
@@ -11,36 +7,35 @@ import { PieChart } from "./pie-charts";
 import { _dummyBuildingData } from "./map/_dummy-data";
 import { Map } from "./map";
 
-type ResultViews = typeof result_views.$inferSelect;
-type DataSetResults = typeof data_set_results.$inferSelect;
-
 type Props = {
-  style: ResultViews["style"];
-  dataSetResults: DataSetResults;
-  chartOptions:
-    | {
-        type: "buildings";
-        x: keyof typeof data_set_detail_buildings.$inferSelect;
-        y: keyof typeof data_set_detail_buildings.$inferSelect;
-      }
-    | {
-        type: "areas";
-        x: keyof typeof data_set_detail_areas.$inferSelect;
-        y: keyof typeof data_set_detail_areas.$inferSelect;
-      };
-};
+  style: SelectResultViewResponse["style"];
+  resultId: number;
+} & (
+  | {
+      type: "building";
+      x: keyof typeof data_set_detail_buildings.$inferSelect;
+      y: keyof typeof data_set_detail_buildings.$inferSelect;
+    }
+  | {
+      type: "area";
+      x: keyof typeof data_set_detail_buildings.$inferSelect;
+      y: keyof typeof data_set_detail_buildings.$inferSelect;
+    }
+);
 
 export const TileViewStyle = ({
   style,
-  dataSetResults,
-  chartOptions,
+  type,
+  resultId,
+  x,
+  y,
 }: Props): JSX.Element => {
-  //@ts-expect-error unionを正しく辿れないため解釈に失敗している
+  //@ts-expect-error Union型を引数として渡した時に正しく解釈しない
   const { chartProps } = useFetchFilterDataSetForChart({
-    resultId: dataSetResults.id,
-    x: chartOptions.x,
-    y: chartOptions.y,
-    type: chartOptions.type,
+    resultId,
+    x,
+    y,
+    type,
   });
 
   if (chartProps.data.length === 0) {
