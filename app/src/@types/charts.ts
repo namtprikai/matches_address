@@ -21,7 +21,10 @@ export interface ChartProps {
 }
 
 export interface TableViewProps {
-    columns: string[],
+    columns: {
+        key: string;
+        label: string,
+    }[],
     data: Record<string, string | number | null>[]
 }
 
