@@ -52,6 +52,7 @@ export const ListDataSetResults = ({
         >
           <Body1>{item.title}</Body1>
           <Caption1 className={styles.term}>
+            {/** @todo created_atではなく作成年度あるいは基準日を表示することになる想定  */}
             {formatDate(item.created_at, "YYYY/MM/DD")}
           </Caption1>
         </Button>
