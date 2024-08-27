@@ -71,7 +71,14 @@ export const RESULT_VIEW_CONFIG = {
         },
     },
     table: {
-        fields: [],
+        fields: [
+            {
+                key: "columns",
+                label: "カラム",
+                type: "select",
+                accept: ["string", "date", "integer", "float"],
+            }
+        ],
         grouping: {
             enabled: false,
         },

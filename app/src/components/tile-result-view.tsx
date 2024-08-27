@@ -72,8 +72,8 @@ export const TileResultView = ({
           // FIXME:  仮の値を入れている。本来であれば動的に変更可能
           chartOptions={{
             type: "buildings",
-            x: "id",
-            y: "rank",
+            columns: ["id", "rank"],
+            style: "bar",
           }}
           dataSetResults={dataSetResult}
           style={resultView.style}

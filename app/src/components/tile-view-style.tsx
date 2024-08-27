@@ -5,28 +5,41 @@ import {
   type result_views,
 } from "../schema";
 import { useFetchFilterDataSetForChart } from "../hooks/use-fetch-filtered-data-set-for-chart";
+import { useFetchFilterDataSetForTable } from "../hooks/use-fetch-filtered-data-set-for-table";
 import { BarChart } from "./bar-charts";
 import { LineChart } from "./line-charts";
 import { PieChart } from "./pie-charts";
 import { _dummyBuildingData } from "./map/_dummy-data";
 import { Map } from "./map";
+import { TableView } from "./table-view";
 
 type ResultViews = typeof result_views.$inferSelect;
 type DataSetResults = typeof data_set_results.$inferSelect;
 
 type Props = {
-  style: ResultViews["style"];
   dataSetResults: DataSetResults;
   chartOptions:
     | {
         type: "buildings";
+        style: "pie" | "bar" | "line";
         x: keyof typeof data_set_detail_buildings.$inferSelect;
         y: keyof typeof data_set_detail_buildings.$inferSelect;
       }
     | {
         type: "areas";
+        style: "pie" | "bar" | "line";
         x: keyof typeof data_set_detail_areas.$inferSelect;
         y: keyof typeof data_set_detail_areas.$inferSelect;
+      }
+    | {
+        type: "buildings";
+        style: "table";
+        columns: keyof typeof data_set_detail_buildings.$inferSelect;
+      }
+    | {
+        type: "areas";
+        style: "table";
+        columns: keyof typeof data_set_detail_areas.$inferSelect;
       };
 };
 
@@ -41,6 +54,12 @@ export const TileViewStyle = ({
     x: chartOptions.x,
     y: chartOptions.y,
     type: chartOptions.type,
+  });
+
+  const { tableProps } = useFetchFilterDataSetForTable({
+    resultId: dataSetResults.id,
+    type: chartOptions.type,
+    columns: chartOptions.columns,
   });
 
   if (chartProps.data.length === 0) {
@@ -69,10 +88,7 @@ export const TileViewStyle = ({
     case "table":
       return (
         <div>
-          <img
-            alt="dummy"
-            src="https://placehold.co/1220x760?text=Table+Chart"
-          />
+          <TableView data={chartProps.data} />
         </div>
       );
     case "map":
