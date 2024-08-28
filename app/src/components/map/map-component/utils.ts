@@ -1,15 +1,15 @@
-import { type Map, type GeoJSONSourceSpecification } from "maplibre-gl";
+import { type Map } from "maplibre-gl";
+import { type FeatureCollection } from "geojson";
 import { useState, useEffect } from "react";
 import { type VacancyLevels } from "../vacancy-level-checkbox";
 
-export type GeojsonData = GeoJSONSourceSpecification["data"];
 export const VACANCY_RATE_HIGH = 0.8;
 export const VACANCY_RATE_MEDIUM = 0.3;
 
 export function addGeojsonSource(
   map: Map,
   sourceId: string,
-  geojsonData: GeojsonData,
+  geojsonData: FeatureCollection,
 ): void {
   map.addSource(sourceId, {
     type: "geojson",
@@ -51,14 +51,26 @@ export function addGeojsonLayer(
 
 export function useGeojsonData(
   vacancyLevels: VacancyLevels,
-): GeojsonData | null {
-  const [geojsonData, setGeojsonData] = useState<GeojsonData | null>(null);
+): FeatureCollection | null {
+  const [geojsonData, setGeojsonData] = useState<FeatureCollection | null>(
+    null,
+  );
 
   useEffect(() => {
     const fetchGeojsonData = async (): Promise<void> => {
       try {
-        const response = await fetch("/output_1.json");
-        const data = await response.json();
+        const _data: FeatureCollection[] = await Promise.all(
+          Array.from({ length: 10 }, (_, i) => i + 1).map(async (i) => {
+            const response = await fetch(`/D902/${i}.json`);
+            return await response.json();
+          }),
+        );
+
+        const data: FeatureCollection = {
+          type: "FeatureCollection",
+          features: _data.flatMap((d) => d.features),
+        };
+
         setGeojsonData(data);
       } catch (error) {
         console.error("Error fetching GeoJSON data:", error);
