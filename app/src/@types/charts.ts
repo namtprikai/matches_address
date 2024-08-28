@@ -21,7 +21,7 @@ export interface ChartProps {
     yAxisColumn: ChartColumn
 }
 
-export interface TableViewProps {
+export interface TableProps {
     columns: {
         key: string;
         label: string,

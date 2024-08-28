@@ -14,10 +14,27 @@ import {
   makeStyles,
 } from "@fluentui/react-components";
 import { CHART_COLORS } from "../config/chart-colors";
-import { type ChartProps } from "../@types/charts";
+import {
+  type data_set_detail_areas,
+  type data_set_detail_buildings,
+} from "../schema";
+import { useFetchFilterDataSetForChart } from "../hooks/use-fetch-filtered-data-set-for-chart";
 
-export type LineChartProps = ChartProps;
-//
+export type LineChartProps = {
+  resultId: number;
+} & (
+  | {
+      type: "building";
+      x: keyof typeof data_set_detail_buildings.$inferSelect;
+      y: keyof typeof data_set_detail_buildings.$inferSelect;
+    }
+  | {
+      type: "area";
+      x: keyof typeof data_set_detail_areas.$inferSelect;
+      y: keyof typeof data_set_detail_areas.$inferSelect;
+    }
+);
+
 const CustomizedDot = ({
   cx,
   cy,
@@ -109,15 +126,26 @@ const CustomizedActiveDot = ({
 };
 
 export const LineChart = ({
-  data,
-  xAxisColumn,
-  yAxisColumn,
+  resultId,
+  type,
+  x,
+  y,
 }: LineChartProps): JSX.Element => {
+  // @ts-expect-error TODO: Unionが正しく分配されない
+  const { chartProps } = useFetchFilterDataSetForChart({
+    resultId,
+    type,
+    x,
+    y,
+  });
+
+  const data = chartProps.data;
+
   return (
     <ResponsiveContainer height={400} width="100%">
       <ReLineChart data={data}>
-        <ReXAxis dataKey={"x"} unit={xAxisColumn.unit} />
-        <ReYAxis dataKey={"y"} unit={yAxisColumn.unit} />
+        <ReXAxis dataKey={"x"} unit={chartProps.xAxisColumn.unit} />
+        <ReYAxis dataKey={"y"} unit={chartProps.yAxisColumn.unit} />
         <ReTooltip
           wrapperStyle={{
             display: "none",
@@ -130,10 +158,10 @@ export const LineChart = ({
           dataKey={"y"}
           // @ts-expect-error 内部処理で適切なPropsが渡されるが型定義が不足しているためエラーが出る
           dot={<CustomizedDot />}
-          name={yAxisColumn.label}
+          name={chartProps.yAxisColumn.label}
           stroke={CHART_COLORS.primary}
           strokeWidth={2}
-          unit={yAxisColumn.unit}
+          unit={chartProps.yAxisColumn.unit}
         />
         <ReLegend />
       </ReLineChart>

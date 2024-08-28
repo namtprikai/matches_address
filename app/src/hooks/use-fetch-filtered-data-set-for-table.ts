@@ -1,15 +1,15 @@
 import { useCallback, useEffect, useState } from "react";
-import { type TableViewProps } from "../@types/charts";
 import { type data_set_detail_buildings } from "../schema";
+import { type TableProps } from "../@types/charts";
 
 export const useFetchFilterDataSetForTable = ({ resultId, type, columns }: { resultId: number } & (
-    { type: "buildings"; columns: (keyof typeof data_set_detail_buildings.$inferSelect)[]; } |
+    { type: "building"; columns: (keyof typeof data_set_detail_buildings.$inferSelect)[]; } |
     { type: "area"; columns: (keyof typeof data_set_detail_buildings.$inferSelect)[]; })): {
-        tableProps: TableViewProps;
+        tableProps: TableProps;
         refetch: () => Promise<void>;
     } => {
 
-    const [props, setProps] = useState<TableViewProps>({ columns: [], data: [] });
+    const [props, setProps] = useState<TableProps>({ columns: [], data: [] });
 
     const fetchFilteredDataSetDetailForTable = useCallback(async (): Promise<void> => {
         const result = await window.ipcRenderer.invoke("filterDataSetForTable", { resultId, type, columns });
@@ -20,7 +20,7 @@ export const useFetchFilterDataSetForTable = ({ resultId, type, columns }: { res
         fetchFilteredDataSetDetailForTable().catch(console.error);
     }, [fetchFilteredDataSetDetailForTable]);
 
-    if (type === "buildings") {
+    if (type === "building") {
         return { tableProps: props, refetch: fetchFilteredDataSetDetailForTable };
     }
 

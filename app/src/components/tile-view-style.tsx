@@ -1,7 +1,9 @@
+import {
+  type data_set_detail_areas,
+  type data_set_detail_buildings,
+} from "../schema";
 import { type SelectResultViewResponse } from "../ipc-main-listeners/select-result-view";
-import { type data_set_detail_buildings } from "../schema";
-import { useFetchFilterDataSetForChart } from "../hooks/use-fetch-filtered-data-set-for-chart";
-import { useFetchFilterDataSetForTable } from "../hooks/use-fetch-filtered-data-set-for-table";
+import { type Parameter } from "../@types/charts";
 import { BarChart } from "./bar-charts";
 import { LineChart } from "./line-charts";
 import { PieChart } from "./pie-charts";
@@ -15,60 +17,107 @@ type Props = {
 } & (
   | {
       type: "building";
-      x: keyof typeof data_set_detail_buildings.$inferSelect;
-      y: keyof typeof data_set_detail_buildings.$inferSelect;
+      parameters: {
+        key: string;
+        value: keyof typeof data_set_detail_buildings.$inferSelect;
+      } & Parameter[];
+      dataSetResults: typeof data_set_detail_buildings.$inferSelect;
     }
   | {
       type: "area";
-      x: keyof typeof data_set_detail_buildings.$inferSelect;
-      y: keyof typeof data_set_detail_buildings.$inferSelect;
+      parameters: {
+        key: string;
+        value: keyof typeof data_set_detail_areas.$inferSelect;
+      } & Parameter[];
+      dataSetResults: typeof data_set_detail_areas.$inferSelect;
     }
 );
 
 export const TileViewStyle = ({
   style,
+  dataSetResults,
+  parameters,
   type,
-  resultId,
-  x,
-  y,
 }: Props): JSX.Element => {
-  //@ts-expect-error Union型を引数として渡した時に正しく解釈しない
-  const { chartProps } = useFetchFilterDataSetForChart({
-    resultId: dataSetResults.id,
-    x: chartOptions.x,
-    y: chartOptions.y,
-    type: chartOptions.type,
-  });
+  if (style === "pie") {
+    const xAxis = parameters.find((p) => p.key === "label");
+    const yAxis = parameters.find((p) => p.key === "value");
 
-  if (chartProps.data.length === 0) {
-    return <div>データがありません</div>;
+    if (!xAxis || !yAxis) {
+      return <div>パラメーターの値を正しく設定してください</div>;
+    }
+
+    return (
+      <div>
+        <PieChart
+          resultId={dataSetResults.id}
+          type={type}
+          x={xAxis.value}
+          y={yAxis.value}
+        />
+      </div>
+    );
+  }
+
+  if (style === "bar") {
+    const xAxis = parameters.find((p) => p.key === "xAxis");
+    const yAxis = parameters.find((p) => p.key === "yAxis");
+
+    if (!xAxis || !yAxis) {
+      return <div>パラメーターの値を正しく設定してください</div>;
+    }
+
+    return (
+      <div>
+        <BarChart
+          resultId={dataSetResults.id}
+          type={type}
+          x={xAxis.value}
+          y={yAxis.value}
+        />
+      </div>
+    );
+  }
+
+  if (style === "line") {
+    const xAxis = parameters.find((p) => p.key === "xAxis");
+    const yAxis = parameters.find((p) => p.key === "yAxis");
+
+    if (!xAxis || !yAxis) {
+      return <div>パラメーターの値を正しく設定してください</div>;
+    }
+
+    return (
+      <div>
+        <LineChart
+          resultId={dataSetResults.id}
+          type={type}
+          x={xAxis.value}
+          y={yAxis.value}
+        />
+      </div>
+    );
+  }
+
+  if (style === "table") {
+    const columns = parameters.find((p) => p.key === "columns");
+
+    if (!columns) {
+      return <div>パラメーターの値を正しく設定してください</div>;
+    }
+
+    return (
+      <div>
+        <TableView
+          columns={columns.value.split(",")}
+          resultId={dataSetResults.id}
+          type={type}
+        />
+      </div>
+    );
   }
 
   switch (style) {
-    case "bar":
-      return (
-        <div>
-          <BarChart {...chartProps} />
-        </div>
-      );
-    case "line":
-      return (
-        <div>
-          <LineChart {...chartProps} />
-        </div>
-      );
-    case "pie":
-      return (
-        <div>
-          <PieChart {...chartProps} />
-        </div>
-      );
-    case "table":
-      return (
-        <div>
-          <TableView data={chartProps.data} />
-        </div>
-      );
     case "map":
       return (
         <div>

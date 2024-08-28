@@ -5,25 +5,54 @@ import {
   TableHeaderCell,
   TableRow,
 } from "@fluentui/react-components";
-import { type TableViewProps } from "../@types/charts";
+import {
+  type data_set_detail_areas,
+  type data_set_detail_buildings,
+} from "../schema";
+import { useFetchFilterDataSetForTable } from "../hooks/use-fetch-filtered-data-set-for-table";
 
-export const TableView = ({ columns, data }: TableViewProps): JSX.Element => {
+type TableViewProps = {
+  resultId: number;
+} & (
+  | {
+      type: "building";
+      dataSetResult: typeof data_set_detail_buildings.$inferSelect;
+      columns: (keyof typeof data_set_detail_buildings.$inferSelect)[];
+    }
+  | {
+      type: "area";
+      dataSetResult: typeof data_set_detail_areas.$inferSelect;
+      columns: (keyof typeof data_set_detail_areas.$inferSelect)[];
+    }
+);
+
+export const TableView = ({
+  columns,
+  resultId,
+  type,
+}: TableViewProps): JSX.Element => {
+  const { tableProps } = useFetchFilterDataSetForTable({
+    resultId,
+    type,
+    columns,
+  });
+
   return (
     <Table>
       <TableHeader>
         <TableRow>
-          {columns.map((column, index) => {
+          {tableProps.columns.map((column, index) => {
             return (
               <TableHeaderCell key={index}>{column.label}</TableHeaderCell>
             );
           })}
         </TableRow>
       </TableHeader>
-      {data
+      {tableProps.data
         .map((row, index) => {
           return (
             <TableRow key={index}>
-              {columns.map((column, index) => {
+              {tableProps.columns.map((column, index) => {
                 return <TableCell key={index}>{row[column.key]}</TableCell>;
               })}
             </TableRow>

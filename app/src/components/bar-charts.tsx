@@ -11,16 +11,44 @@ import {
 } from "recharts";
 import { useState } from "react";
 import { CHART_COLORS } from "../config/chart-colors";
-import { type ChartProps } from "../@types/charts";
+import {
+  type data_set_detail_areas,
+  type data_set_detail_buildings,
+} from "../schema";
+import { useFetchFilterDataSetForChart } from "../hooks/use-fetch-filtered-data-set-for-chart";
 import { CustomTooltip } from "./custom-tooltip";
 
-export type BarChartProps = ChartProps;
+export type BarChartProps = {
+  resultId: number;
+} & (
+  | {
+      type: "building";
+      x: keyof typeof data_set_detail_buildings.$inferSelect;
+      y: keyof typeof data_set_detail_buildings.$inferSelect;
+    }
+  | {
+      type: "area";
+      x: keyof typeof data_set_detail_areas.$inferSelect;
+      y: keyof typeof data_set_detail_areas.$inferSelect;
+    }
+);
 
 export const BarChart = ({
-  xAxisColumn,
-  yAxisColumn,
-  data,
+  resultId,
+  type,
+  x,
+  y,
 }: BarChartProps): JSX.Element => {
+  // @ts-expect-error TODO: Unionが正しく分配されない
+  const { chartProps } = useFetchFilterDataSetForChart({
+    resultId,
+    type,
+    x,
+    y,
+  });
+
+  const data = chartProps.data;
+
   const [tooltipPosition, setTooltipPosition] = useState<{
     x: number;
     y: number;
@@ -28,6 +56,14 @@ export const BarChart = ({
 
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
   const [activeToolTip, setActiveToolTip] = useState<boolean>(false);
+
+  if (x == null || y == null) {
+    return <div>パラメーターの値を正しく設定してください</div>;
+  }
+
+  if (data.length === 0) {
+    return <div>データがありません</div>;
+  }
 
   return (
     <ResponsiveContainer height={400} width="100%">
@@ -57,8 +93,8 @@ export const BarChart = ({
           setActiveToolTip(data.isTooltipActive);
         }}
       >
-        <ReXAxis dataKey={"x"} unit={xAxisColumn.unit} />
-        <ReYAxis dataKey={"y"} unit={yAxisColumn.unit} />
+        <ReXAxis dataKey={"x"} unit={chartProps.xAxisColumn.unit} />
+        <ReYAxis dataKey={"y"} unit={chartProps.yAxisColumn.unit} />
         <ReTooltip
           active={activeToolTip}
           // @ts-expect-error 内部処理で適切なPropsが渡されるが型定義が不足しているためエラーが出る
@@ -72,7 +108,7 @@ export const BarChart = ({
         <ReBar
           dataKey={"y"}
           fill={CHART_COLORS.primary} // tokensに存在しない値
-          name={yAxisColumn.label} // Legend（凡例）でも利用される
+          name={chartProps.yAxisColumn.label} // Legend（凡例）でも利用される
           onMouseMove={(data, _) => {
             setTooltipPosition((prev) => {
               if (data.tooltipPosition === undefined) {
@@ -85,7 +121,7 @@ export const BarChart = ({
               };
             });
           }}
-          unit={yAxisColumn.unit}
+          unit={chartProps.yAxisColumn.unit}
         >
           {data.map((_, index) => (
             <ReCell

@@ -1,19 +1,18 @@
 import { eq } from "drizzle-orm";
-import { type TableViewProps } from "../@types/charts"
-import { data_set_detail_areas, data_set_detail_buildings } from "../schema";
+import { data_set_detail_buildings } from "../schema";
 import { db } from "../utils/db";
 import { DATA_SET_DETAIL_BUILIDNG_COLUMN_CONFIG } from "../config/data-columns";
-import { type IpcMainListener } from ".";
 import { columnsToSelectField } from "../utils/columns-to-select-field";
+import { type TableProps } from "../@types/charts";
+import { type IpcMainListener } from ".";
 
-type FilterDataSetForTableResponse = TableViewProps;
+type FilterDataSetForTableResponse = TableProps;
 
 export const filterDataSetForTable = ((_: unknown, { resultId, type, columns }: { resultId: number } & (
-    { type: "buildings"; columns: (keyof typeof data_set_detail_buildings.$inferSelect)[]; } |
+    { type: "building"; columns: (keyof typeof data_set_detail_buildings.$inferSelect)[]; } |
     { type: "area"; columns: (keyof typeof data_set_detail_buildings.$inferSelect)[]; })): FilterDataSetForTableResponse => {
 
-
-    if (type === "buildings") {
+    if (type === "building") {
 
         const all = db
             .select(columnsToSelectField({ type: "building", columns }))
