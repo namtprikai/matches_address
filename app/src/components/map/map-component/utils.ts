@@ -2,22 +2,22 @@ import { type Map, type GeoJSONSourceSpecification } from "maplibre-gl";
 import { useState, useEffect } from "react";
 import { type VacancyLevels } from "../vacancy-level-checkbox";
 
-export type GeoJsonData = GeoJSONSourceSpecification["data"];
+export type GeojsonData = GeoJSONSourceSpecification["data"];
 export const VACANCY_RATE_HIGH = 0.8;
 export const VACANCY_RATE_MEDIUM = 0.3;
 
-export function addGeoJsonSource(
+export function addGeojsonSource(
   map: Map,
   sourceId: string,
-  geoJsonData: GeoJsonData,
+  geojsonData: GeojsonData,
 ): void {
   map.addSource(sourceId, {
     type: "geojson",
-    data: geoJsonData,
+    data: geojsonData,
   });
 }
 
-export function addGeoJsonLayer(
+export function addGeojsonLayer(
   map: Map,
   layerId: string,
   sourceId: string,
@@ -49,31 +49,31 @@ export function addGeoJsonLayer(
   });
 }
 
-export function useGeoJsonData(
+export function useGeojsonData(
   vacancyLevels: VacancyLevels,
-): GeoJsonData | null {
-  const [geoJsonData, setGeoJsonData] = useState<GeoJsonData | null>(null);
+): GeojsonData | null {
+  const [geojsonData, setGeojsonData] = useState<GeojsonData | null>(null);
 
   useEffect(() => {
-    const fetchGeoJsonData = async (): Promise<void> => {
+    const fetchGeojsonData = async (): Promise<void> => {
       try {
         const response = await fetch("/output_1.json");
         const data = await response.json();
-        setGeoJsonData(data);
+        setGeojsonData(data);
       } catch (error) {
         console.error("Error fetching GeoJSON data:", error);
       }
     };
 
-    void fetchGeoJsonData();
+    void fetchGeojsonData();
   }, []);
 
   const hasFeatures =
-    geoJsonData && typeof geoJsonData === "object" && "features" in geoJsonData;
+    geojsonData && typeof geojsonData === "object" && "features" in geojsonData;
   if (hasFeatures) {
     return {
-      ...geoJsonData,
-      features: geoJsonData.features.filter((feature) => {
+      ...geojsonData,
+      features: geojsonData.features.filter((feature) => {
         const predictedProbability = feature.properties?.predicted_probability;
         if (predictedProbability >= VACANCY_RATE_HIGH) {
           return vacancyLevels.high;

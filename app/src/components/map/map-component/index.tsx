@@ -5,7 +5,7 @@ import { Protocol } from "pmtiles";
 import { renderToString } from "react-dom/server";
 import { makeStyles } from "@fluentui/react-components";
 import { type VacancyLevels } from "../vacancy-level-checkbox";
-import { addGeoJsonLayer, addGeoJsonSource, useGeoJsonData } from "./utils";
+import { addGeojsonLayer, addGeojsonSource, useGeojsonData } from "./utils";
 import { BuildingPopup } from "./building-popup";
 
 export interface Building {
@@ -73,7 +73,7 @@ export function MapComponent({
   const styles = useMapComponentStyles();
   const containerRef = useRef<HTMLDivElement | null>(null);
   const [mapInstance, setMapInstance] = useState<Map | null>(null);
-  const geoJsonData = useGeoJsonData(vacancyLevels);
+  const geojsonData = useGeojsonData(vacancyLevels);
 
   useEffect(function initializeMap() {
     if (!containerRef.current) return;
@@ -97,12 +97,12 @@ export function MapComponent({
   useEffect(
     function updateMap() {
       if (!mapInstance) return;
-      if (!geoJsonData) return;
+      if (!geojsonData) return;
 
       const sourceId = "buildings";
       const layerId = "buildings-layer";
-      addGeoJsonSource(mapInstance, sourceId, geoJsonData);
-      addGeoJsonLayer(mapInstance, layerId, sourceId);
+      addGeojsonSource(mapInstance, sourceId, geojsonData);
+      addGeojsonLayer(mapInstance, layerId, sourceId);
       let popup: Popup | null = null;
       mapInstance.on("click", layerId, (e) => {
         if (e.features && e.features.length > 0) {
@@ -152,7 +152,7 @@ export function MapComponent({
     },
     [
       data,
-      geoJsonData,
+      geojsonData,
       mapInstance,
       selectedYear,
       vacancyLevels.high,
