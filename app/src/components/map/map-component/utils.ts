@@ -3,8 +3,8 @@ import { useState, useEffect } from "react";
 import { type VacancyLevels } from "../vacancy-level-checkbox";
 
 export type GeoJsonData = GeoJSONSourceSpecification["data"];
-const VACANCY_RATE_HIGH = 0.8;
-const VACANCY_RATE_MEDIUM = 0.3;
+export const VACANCY_RATE_HIGH = 0.8;
+export const VACANCY_RATE_MEDIUM = 0.3;
 
 export function addGeoJsonSource(
   map: Map,
@@ -57,7 +57,7 @@ export function useGeoJsonData(
   useEffect(() => {
     const fetchGeoJsonData = async (): Promise<void> => {
       try {
-        const response = await fetch("/D902.geojson");
+        const response = await fetch("/output_1.json");
         const data = await response.json();
         setGeoJsonData(data);
       } catch (error) {
