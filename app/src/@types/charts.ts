@@ -25,6 +25,7 @@ export interface TableProps {
     columns: {
         key: string;
         label: string,
+        unit?: string,
     }[],
     data: Record<string, string | number | null>[]
 }
