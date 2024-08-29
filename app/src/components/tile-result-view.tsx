@@ -49,10 +49,12 @@ export const TileResultView = ({
   const styles = useStyles();
 
   if (
-    !resultView.parameters ||
-    resultView.parameters.length === 0 ||
     !resultView.style ||
-    !resultView.unit
+    !resultView.unit ||
+    (resultView.style !== "map" &&
+      (!resultView.parameters ||
+        resultView.parameters.filter((parameter) => parameter.value === "")
+          .length > 0))
   ) {
     return (
       <Card
@@ -74,7 +76,7 @@ export const TileResultView = ({
             <Subtitle2>{`${resultView.title || "タイトル未入力"}`}</Subtitle2>
           }
         />
-        <div>未設定</div>
+        <div>パラメーターの値を正しく設定してください</div>
       </Card>
     );
   }
