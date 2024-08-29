@@ -8,37 +8,45 @@ import { type data_set_detail_areas, type data_set_detail_buildings } from "../s
 export const DATA_SET_DETAIL_BUILIDNG_COLUMN = [
     "household_code",
     "normalized_address",
-    'reference_date',
-    "number_of_people_in_household",
-    "number_of_people_under_15_years_old",
-    "composition_ratio_of_people_under_15_years_old",
-    "number_of_people_aged_15_to_64",
-    "composition_ratio_of_people_aged_15_to_64",
-    "number_of_people_aged_65_and_over",
-    "composition_ratio_of_people_aged_65_and_over",
-    "male_to_female_ratio",
-    "period_of_residence",
-    "water_number_suido_residence",
-    "closing_flag_suido_residence",
-    "maximum_water_usage_suido_residence",
-    "average_water_usage_suido_residence",
-    "total_water_usage_suido_residence",
-    "minimum_water_usage_suido_residence",
-    "name_source_information_suido_residence",
-    "structure_name_touki_residence",
-    "registration_date_touki_residence",
-    "name_source_information_touki_residence",
-    "id_akiya_result_cleaned",
-    "address_akiya_result_cleaned",
+    "reference_date",
+    "household_size",
+    "members_under_15",
+    "percentage_under_15",
+    "members_15_to_64",
+    "percentage_15_to_64",
+    "members_over_65",
+    "percentage_over_65",
+    "gender_ratio",
+    "residence_duration",
+    "water_supply_number",
+    "water_disconnection_flag",
+    "max_water_usage",
+    "avg_water_usage",
+    "total_water_usage",
+    "min_water_usage",
+    "water_supply_source_info",
+    "structure_name",
+    "registration_date",
+    "registration_source_info",
+    "vacant_house_id",
+    "vacant_house_address",
+    "gml_id",
     "measuredheight",
     "rank",
     "depth",
     "duration",
-    "number_of_floors_above_ground",
-    "number_of_basement_floors",
+    "floors_above_ground",
+    "floors_below_ground",
+    "inland_flooding_risk_desc",
+    "inland_flooding_risk_rank",
+    "inland_flooding_risk_depth",
+    "river_flooding_risk_desc",
+    "river_flooding_risk_rank",
+    "river_flooding_risk_depth",
+    "landslide_risk_desc",
     "name",
-    "pred",
-    "pred_proba",
+    "predicted_label",
+    "predicted_probability",
 ] satisfies (keyof typeof data_set_detail_buildings.$inferSelect)[]
 
 /**
@@ -61,136 +69,126 @@ export const DATA_SET_DETAIL_BUILIDNG_COLUMN_CONFIG = {
         type: "string",
         groupable: true,
     },
-    number_of_people_in_household: {
+    household_size: {
         label: "世帯人数",
         type: "integer",
         groupable: true,
     },
-    number_of_people_under_15_years_old: {
-        label: "15歳未満の人数",
+    members_under_15: {
+        label: "15歳未満人数",
         type: "integer",
         groupable: true,
     },
-    composition_ratio_of_people_under_15_years_old: {
-        label: "15歳未満の人数比",
+    percentage_under_15: {
+        label: "15歳未満割合",
         type: "float",
         groupable: true,
         unit: "%",
         percentage: true,
     },
-    number_of_people_aged_15_to_64: {
-        label: "15歳以上64歳以下の人数",
+    members_15_to_64: {
+        label: "15-64歳人数",
         type: "integer",
         groupable: true,
     },
-    composition_ratio_of_people_aged_15_to_64: {
-        label: "15歳以上64歳以下の人数比",
+    percentage_15_to_64: {
+        label: "15-64歳割合",
         type: "float",
         groupable: true,
         unit: "%",
         percentage: true,
     },
-    number_of_people_aged_65_and_over: {
-        label: "65歳以上の人数",
+    members_over_65: {
+        label: "65歳以上人数",
         type: "integer",
         groupable: true,
     },
-    composition_ratio_of_people_aged_65_and_over: {
-        label: "65歳以上の人数比",
+    percentage_over_65: {
+        label: "65歳以上割合",
         type: "float",
         groupable: true,
         unit: "%",
-        percentage: true,
+        percentage: true
     },
-    male_to_female_ratio: {
-        label: "男女比",
+    gender_ratio: {
+        label: "性比",
         type: "float",
         groupable: true,
     },
-    period_of_residence: {
-        label: "住定期間",
+    residence_duration: {
+        label: "居住期間",
         type: "integer",
         groupable: true,
     },
-    water_number_suido_residence: {
+    water_supply_number: {
         label: "水道番号",
         type: "string",
         groupable: true,
     },
-    closing_flag_suido_residence: {
-        label: "閉栓フラグ",
-        type: "integer",
-        groupable: true,
-    },
-    maximum_water_usage_suido_residence: {
-        label: "最大水道使用量",
-        type: "float",
-        groupable: true,
-        unit: "m^3",
-    },
-    average_water_usage_suido_residence: {
-        label: "平均水道使用量",
-        type: "float",
-        groupable: true,
-        unit: "m^3",
-    },
-    total_water_usage_suido_residence: {
-        label: "合計水道使用量",
-        type: "float",
-        groupable: true,
-        unit: "m^3",
-    },
-    minimum_water_usage_suido_residence: {
-        label: "最小水道使用量",
-        type: "float",
-        groupable: true,
-        unit: "m^3",
-    },
-    name_source_information_suido_residence: {
-        label: "情報源名",
+    water_disconnection_flag: {
+        label: "断水フラグ",
         type: "string",
         groupable: true,
     },
-    structure_name_touki_residence: {
+    max_water_usage: {
+        label: "最大水道使用量",
+        type: "integer",
+        groupable: true,
+    },
+    avg_water_usage: {
+        label: "平均水道使用量",
+        type: "integer",
+        groupable: true,
+    },
+    total_water_usage: {
+        label: "合計水道使用量",
+        type: "integer",
+        groupable: true,
+    },
+    min_water_usage: {
+        label: "最小水道使用量",
+        type: "integer",
+        groupable: true,
+    },
+    water_supply_source_info: {
+        label: "水道情報元",
+        type: "string",
+        groupable: true,
+    },
+    structure_name: {
         label: "構造名",
         type: "string",
         groupable: true,
     },
-    registration_date_touki_residence: {
+    registration_date: {
         label: "登録日",
         type: "string",
         groupable: true,
     },
-    name_source_information_touki_residence: {
-        label: "情報源名",
+    registration_source_info: {
+        label: "登記情報元",
         type: "string",
         groupable: true,
     },
-    id_akiya_result_cleaned: {
+    vacant_house_id: {
         label: "空き家ID",
-        type: "integer",
+        type: "string",
         groupable: true,
     },
-    address_akiya_result_cleaned: {
+    vacant_house_address: {
         label: "空き家住所",
         type: "string",
         groupable: true,
     },
-    number_of_floors_above_ground: {
-        label: "地上階数",
-        type: "integer",
-        groupable: true,
-    },
-    number_of_basement_floors: {
-        label: "地下階数",
-        type: "integer",
+    gml_id: {
+        label: "GML ID",
+        type: "string",
         groupable: true,
     },
     measuredheight: {
-        label: "測定高度",
+        label: "測定高さ",
         type: "float",
         groupable: true,
-        unit: "m",
     },
     rank: {
         label: "浸水ランク",
@@ -201,30 +199,71 @@ export const DATA_SET_DETAIL_BUILIDNG_COLUMN_CONFIG = {
         label: "浸水深",
         type: "float",
         groupable: true,
-        unit: "m",
     },
     duration: {
-        label: "浸水時間",
-        type: "float",
-        groupable: true,
-        unit: "時間",
-    },
-    name: {
-        label: "名前",
-        type: "string",
-        groupable: true,
-    },
-    pred: {
-        label: "空き家判定",
+        label: "期間",
         type: "integer",
         groupable: true,
     },
-    pred_proba: {
-        label: "空き家確率",
+    floors_above_ground: {
+        label: "地上階数",
+        type: "integer",
+        groupable: true,
+    },
+    floors_below_ground: {
+        label: "地下階数",
+        type: "integer",
+        groupable: true,
+    },
+    inland_flooding_risk_desc: {
+        label: "洪水リスク説明",
+        type: "string",
+        groupable: true,
+    },
+    inland_flooding_risk_rank: {
+        label: "洪水リスクランク",
+        type: "integer",
+        groupable: true,
+    },
+    inland_flooding_risk_depth: {
+        label: "洪水リスク深さ",
         type: "float",
         groupable: true,
-        unit: "%",
-        percentage: true,
+    },
+    river_flooding_risk_depth: {
+        label: "河川氾濫リスク深さ",
+        type: "float",
+        groupable: true,
+    },
+    river_flooding_risk_rank: {
+        label: "河川氾濫リスクランク",
+        type: "integer",
+        groupable: true,
+    },
+    river_flooding_risk_desc: {
+        label: "河川氾濫リスク説明",
+        type: "string",
+        groupable: true,
+    },
+    landslide_risk_desc: {
+        label: "地滑りリスク説明",
+        type: "string",
+        groupable: true,
+    },
+    name: {
+        label: "建物名",
+        type: "string",
+        groupable: true,
+    },
+    predicted_label: {
+        label: "予測ラベル",
+        type: "string",
+        groupable: true,
+    },
+    predicted_probability: {
+        label: "予測確率",
+        type: "float",
+        groupable: true,
     },
 } satisfies {
     [k in (typeof DATA_SET_DETAIL_BUILIDNG_COLUMN)[number]]?: {
