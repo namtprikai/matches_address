@@ -1,5 +1,5 @@
 import { type ChartColumnType } from "../@types/charts";
-import { type data_set_detail_buildings } from "../schema";
+import { type data_set_detail_areas, type data_set_detail_buildings } from "../schema";
 
 /**
  * D902のカラム指定
@@ -228,6 +228,78 @@ export const DATA_SET_DETAIL_BUILIDNG_COLUMN_CONFIG = {
     },
 } satisfies {
     [k in (typeof DATA_SET_DETAIL_BUILIDNG_COLUMN)[number]]?: {
+        label: string;
+        type: ChartColumnType;
+        unit?: string;
+        groupable?: boolean; // グルーピング可能かどうか
+        percentage?: boolean; // パーセンテージ表示かどうか
+    }
+}
+
+/**
+ * D903のカラム指定
+ * ここで指定したカラムのみがパラメーターの選択肢として表示される
+ */
+
+export const DATA_SET_DETAIL_AREA_COLUMN = [
+    "reference_date",
+    "address",
+    "young_population_ratio",
+    "elderly_population_ratio",
+    "total_building_count",
+    "vacant_house_ratio",
+    "area",
+] satisfies (keyof typeof data_set_detail_areas.$inferSelect)[]
+
+/**
+ * D903のカラムごとのメタデータをハードコード
+ * ここでの設定は、チャートの表示やグルーピングの際に利用される
+ */
+export const DATA_SET_DETAIL_AREA_COLUMN_CONFIG = {
+    reference_date: {
+        label: "基準日",
+        type: "string",
+        groupable: true,
+    },
+    address: {
+        label: "住所",
+        type: "string",
+        groupable: true,
+    },
+    young_population_ratio: {
+        label: "若年層率",
+        type: "float",
+        groupable: true,
+        unit: "%",
+        percentage: true,
+    },
+    elderly_population_ratio: {
+        label: "高齢者率",
+        type: "float",
+        groupable: true,
+        unit: "%",
+        percentage: true,
+    },
+    total_building_count: {
+        label: "建物数",
+        type: "integer",
+        groupable: true,
+    },
+    vacant_house_ratio: {
+        label: "空き家率",
+        type: "float",
+        groupable: true,
+        unit: "%",
+        percentage: true,
+    },
+    area: {
+        label: "面積",
+        type: "float",
+        groupable: true,
+        unit: "m^2",
+    },
+} satisfies {
+    [k in (typeof DATA_SET_DETAIL_AREA_COLUMN)[number]]?: {
         label: string;
         type: ChartColumnType;
         unit?: string;
