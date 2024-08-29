@@ -141,6 +141,14 @@ export const LineChart = ({
 
   const data = chartProps.data;
 
+  if (x == null || y == null) {
+    return <div>パラメーターの値を正しく設定してください</div>;
+  }
+
+  if (data.length === 0) {
+    return <div>データがありません</div>;
+  }
+
   return (
     <ResponsiveContainer height={400} width="100%">
       <ReLineChart data={data}>
@@ -154,7 +162,7 @@ export const LineChart = ({
         <ReCartesianGrid vertical={false} />
         <ReLine
           // @ts-expect-error 内部処理で適切なPropsが渡されるが型定義が不足しているためエラーが出る
-          activeDot={<CustomizedActiveDot unit={yAxisColumn.unit} />}
+          activeDot={<CustomizedActiveDot unit={chartProps.yAxisColumn.unit} />}
           dataKey={"y"}
           // @ts-expect-error 内部処理で適切なPropsが渡されるが型定義が不足しているためエラーが出る
           dot={<CustomizedDot />}
