@@ -42,10 +42,6 @@ const router = createHashRouter([
         path: "dataset",
         element: <Dataset />,
       },
-      {
-        path: "analysis/workbook/:id/edit",
-        element: <EditWorkbook />,
-      },
     ],
   },
   {
