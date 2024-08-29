@@ -394,7 +394,7 @@ export const data_set_detail_buildings = sqliteTable(
      */
     river_flooding_risk_rank:
       integer(
-        "buildingdisasterriskattribute_buildingriverfloodingriskattribute_rank",
+        "river_flooding_risk_rank",
       ),
     /**
      * 洪水氾濫リスク属性_氾濫深長
