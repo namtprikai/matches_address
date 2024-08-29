@@ -1,5 +1,6 @@
 import {
   Table,
+  TableBody,
   TableCell,
   TableHeader,
   TableHeaderCell,
@@ -48,17 +49,19 @@ export const TableView = ({
           })}
         </TableRow>
       </TableHeader>
-      {tableProps.data
-        .map((row, index) => {
-          return (
-            <TableRow key={index}>
-              {tableProps.columns.map((column, index) => {
-                return <TableCell key={index}>{row[column.key]}</TableCell>;
-              })}
-            </TableRow>
-          );
-        })
-        .flat(-1)}
+      <TableBody>
+        {tableProps.data
+          .map((row, index) => {
+            return (
+              <TableRow key={index}>
+                {tableProps.columns.map((column, index) => {
+                  return <TableCell key={index}>{row[column.key]}</TableCell>;
+                })}
+              </TableRow>
+            );
+          })
+          .flat(-1)}
+      </TableBody>
     </Table>
   );
 };

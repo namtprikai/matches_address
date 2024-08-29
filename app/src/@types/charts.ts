@@ -34,13 +34,14 @@ export interface Parameter {
     value: string;
 }
 
-export type ChartDynamicColumnInput = "select" | "input";
+export type ChartDynamicColumnInput = "select" | "input" | "dropdown";
 
 export type ChartStyle = "pie" | "bar" | "line" | "table" | "map";
 
-export interface ResultViewFieldOption {
+export type ResultViewFieldOption = {
     key: string;
     label: string;
     type: ChartDynamicColumnInput;
     accept: readonly ChartColumnType[];
+    multiple?: boolean;
 }

@@ -75,8 +75,9 @@ export const RESULT_VIEW_CONFIG = {
             {
                 key: "columns",
                 label: "カラム",
-                type: "select",
+                type: "dropdown",
                 accept: ["string", "date", "integer", "float"],
+                mutliple: true,
             }
         ],
         grouping: {
@@ -90,6 +91,7 @@ export const RESULT_VIEW_CONFIG = {
             label: string;
             type: ChartDynamicColumnInput;
             accept: ChartColumnType[];
+            mutliple?: boolean;
         }[];
         grouping: {
             enabled: boolean;
