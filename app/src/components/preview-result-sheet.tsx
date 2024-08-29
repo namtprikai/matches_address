@@ -27,12 +27,8 @@ export const PreviewResultSheet = (): JSX.Element => {
 
   const [data] = useAtom(resultViewsAtom);
 
-  if (data.length === 0)
-    return (
-      <div>
-        <p>ビューがありません</p>
-      </div>
-    );
+  /** 仮 */
+  if (data.length === 0) return <div style={{ height: "60vh" }}></div>;
 
   if (data.length === 4) {
     return (
