@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
 import { type data_set_results, type result_views } from "../schema";
+import { type SelectResultViewResponse } from "../ipc-main-listeners/select-result-view";
 
-type ResultViews = typeof result_views.$inferSelect;
 type DataSetResults = typeof data_set_results.$inferSelect;
 type Result = {
-  result_views: ResultViews;
+  result_views: SelectResultViewResponse;
   data_set_results: DataSetResults | null;
 };
 

@@ -74,6 +74,13 @@
           "notNull": false,
           "autoincrement": false
         },
+        "reference_date": {
+          "name": "reference_date",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
         "number_of_people_in_household": {
           "name": "number_of_people_in_household",
           "type": "integer",
@@ -488,6 +495,13 @@
         "style": {
           "name": "style",
           "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "parameters": {
+          "name": "parameters",
+          "type": "blog",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false

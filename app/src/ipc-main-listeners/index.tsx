@@ -19,6 +19,7 @@ import { insertResultViews } from "./insert-result-views";
 import { updateResultViews } from "./update-result-views";
 import { readResultViews } from "./read-result-views";
 import { filterDataSetForChart } from "./filter-data-set-for-chart";
+import { selectResultView } from "./select-result-view";
 
 export const ipcMainListeners = {
   getNames,
@@ -37,6 +38,7 @@ export const ipcMainListeners = {
   insertResultViews,
   updateResultViews,
   readResultViews,
+  selectResultView,
   filterDataSetForChart,
 };
 

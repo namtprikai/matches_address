@@ -10,7 +10,7 @@ import {
   CartesianGrid as ReCartesianGrid,
 } from "recharts";
 import { useState } from "react";
-import { GRAPH_COLORS } from "../config/chart-colors";
+import { CHART_COLORS } from "../config/chart-colors";
 import { type ChartProps } from "../@types/charts";
 import { CustomTooltip } from "./custom-tooltip";
 
@@ -71,7 +71,8 @@ export const BarChart = ({
         <ReLegend />
         <ReBar
           dataKey={"y"}
-          fill={GRAPH_COLORS.primary} // tokensに存在しない値
+          fill={CHART_COLORS.primary} // tokensに存在しない値
+          name={yAxisColumn.label} // Legend（凡例）でも利用される
           onMouseMove={(data, _) => {
             setTooltipPosition((prev) => {
               if (data.tooltipPosition === undefined) {
@@ -92,8 +93,8 @@ export const BarChart = ({
               cursor="pointer"
               fill={
                 index === activeIndex && activeToolTip
-                  ? GRAPH_COLORS.teritiary
-                  : GRAPH_COLORS.primary
+                  ? CHART_COLORS.teritiary
+                  : CHART_COLORS.primary
               }
             />
           ))}

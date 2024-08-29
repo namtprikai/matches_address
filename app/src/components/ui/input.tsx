@@ -18,21 +18,32 @@ const useStyles = makeStyles({
     "&:after": {
       display: "none",
     },
+  },
+  enabled: {
     "&:active, &:hover, &:focus, &:focus-within": {
       border: `1px solid ${tokens.colorNeutralStroke1Pressed}`,
       borderBottomColor: tokens.colorNeutralStroke1Pressed, // 既存スタイル上書きのため優先度を限定してスタイルを指定
     },
   },
+  disabled: {
+    backgroundColor: tokens.colorNeutralBackgroundDisabled,
+    color: tokens.colorNeutralForegroundDisabled,
+  },
 });
 
 export const Input = forwardRef<HTMLInputElement, InputProps>(
-  ({ className, ...props }, ref) => {
+  ({ className, disabled, ...props }, ref) => {
     const styles = useStyles();
     return (
       <FUIInput
         {...props}
         ref={ref}
-        className={mergeClasses(className, styles.input)}
+        className={mergeClasses(
+          className,
+          styles.input,
+          disabled ? styles.disabled : styles.enabled,
+        )}
+        disabled={disabled}
       />
     );
   },

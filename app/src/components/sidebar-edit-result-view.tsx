@@ -17,6 +17,7 @@ import { selectedResultSheetIdAtom } from "../state/selected-result-sheet-id-ato
 import { Button } from "./ui/button";
 import { EditResultViewForm } from "./edit-result-view-form";
 import { EditResultViewFilterFields } from "./edit-result-view-filter-fields";
+import { ListDataSetResults } from "./list-data-set-results";
 
 /** 開発用 */
 const addDataSetResult = async (
@@ -37,6 +38,11 @@ const useStyles = makeStyles({
     display: "grid",
     gap: tokens.spacingVerticalXXL,
     padding: `${tokens.spacingVerticalXXL} ${tokens.spacingHorizontalNone}`,
+  },
+  isAddView: {
+    display: "flex",
+    flexDirection: "column",
+    gap: tokens.spacingVerticalXXL,
   },
 });
 
@@ -96,29 +102,24 @@ export const SidebarEditResultView = (): JSX.Element => {
         <div className={styles.drawerBody}>
           {isAddView && (
             <>
-              <div>
+              <div className={styles.isAddView}>
+                <SearchBox />
+
                 <div>
-                  <SearchBox />
+                  <span className={styles.heading}>データセット一覧</span>
+
+                  <ListDataSetResults
+                    dataSetResults={dataSetResults}
+                    onClickItem={(item) =>
+                      addResultView({ dataSetResultId: item.id })
+                        .catch()
+                        .finally(() => setIsAddView(false))
+                    }
+                  />
                 </div>
-                <span className={styles.heading}>データセット一覧</span>
-                {dataSetResults.map((item) => (
-                  <div key={item.id}>
-                    <Button
-                      appearance="subtle"
-                      onClick={(): void => {
-                        addResultView({ dataSetResultId: item.id })
-                          .catch()
-                          .finally(() => setIsAddView(false));
-                      }}
-                    >
-                      {item.title}
-                    </Button>
-                  </div>
-                ))}
               </div>
               <div>
                 <Button
-                  appearance="subtle"
                   onClick={(): void => {
                     addDataSetResult(dataSetResults).catch;
                   }}

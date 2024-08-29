@@ -13,7 +13,7 @@ import {
   Tooltip as FUIToolTip,
   makeStyles,
 } from "@fluentui/react-components";
-import { GRAPH_COLORS } from "../config/chart-colors";
+import { CHART_COLORS } from "../config/chart-colors";
 import { type ChartProps } from "../@types/charts";
 
 export type LineChartProps = ChartProps;
@@ -26,8 +26,6 @@ const CustomizedDot = ({
   cx: number;
   cy: number;
   stroke: string;
-  payload: { value: number };
-  value: number;
 }): JSX.Element => {
   return (
     <svg
@@ -66,19 +64,22 @@ const CustomizedActiveDot = ({
   cy,
   stroke,
   value,
+  unit,
 }: {
   cx: number;
   cy: number;
   stroke: string;
-  payload: { value: number; unit: string | undefined }[];
   value: number;
+  unit?: string;
 }): JSX.Element => {
   const styles = useStyles();
+
+  const labelText = unit ? `${value}${unit}` : value;
 
   return (
     <FUIToolTip
       content={{
-        children: value,
+        children: labelText,
         className: styles.tooltip,
       }}
       positioning={"above"}
@@ -97,9 +98,9 @@ const CustomizedActiveDot = ({
         <circle
           cx={4}
           cy={4}
-          fill={GRAPH_COLORS.primary}
+          fill={CHART_COLORS.primary}
           r={3}
-          stroke={GRAPH_COLORS.teritiary}
+          stroke={CHART_COLORS.teritiary}
           strokeWidth={2}
         />
       </svg>
@@ -125,12 +126,14 @@ export const LineChart = ({
         <ReCartesianGrid vertical={false} />
         <ReLine
           // @ts-expect-error 内部処理で適切なPropsが渡されるが型定義が不足しているためエラーが出る
-          activeDot={<CustomizedActiveDot />}
+          activeDot={<CustomizedActiveDot unit={yAxisColumn.unit} />}
           dataKey={"y"}
           // @ts-expect-error 内部処理で適切なPropsが渡されるが型定義が不足しているためエラーが出る
           dot={<CustomizedDot />}
-          stroke={GRAPH_COLORS.primary}
+          name={yAxisColumn.label}
+          stroke={CHART_COLORS.primary}
           strokeWidth={2}
+          unit={yAxisColumn.unit}
         />
         <ReLegend />
       </ReLineChart>
