@@ -38,7 +38,7 @@ export const RESULT_VIEW_CONFIG = {
                 key: "yAxis",
                 label: "Y軸",
                 type: "select",
-                accept: ["string", "date", "integer", "float"],
+                accept: ["integer", "float"],
             },
         ],
         grouping: {
@@ -57,7 +57,7 @@ export const RESULT_VIEW_CONFIG = {
                 key: "yAxis",
                 label: "Y軸",
                 type: "select",
-                accept: ["string", "date", "integer", "float"],
+                accept: ["integer", "float"],
             },
         ],
         grouping: {
