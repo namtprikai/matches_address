@@ -10,13 +10,13 @@ export const RESULT_VIEW_CONFIG = {
     pie: {
         fields: [ // fieldsはパラメーターやフィルターの設定を行う
             {
-                key: "xAxis", // フィールドのキー(DBのparametersのkeyに対応)
+                key: "label", // フィールドのキー(DBのparametersのkeyに対応)
                 label: "ラベル", // フィールドのラベル、DBには保存せずkeyから引く形をとる
                 type: "select", // フィールドの入力方法を指定
                 accept: ["string", "date", "integer", "float"], // 設定可能なカラムの型を指定
             },
             {
-                key: "yAxis",
+                key: "value",
                 label: "値",
                 type: "select",
                 accept: ["integer", "float"],
@@ -71,7 +71,15 @@ export const RESULT_VIEW_CONFIG = {
         },
     },
     table: {
-        fields: [],
+        fields: [
+            {
+                key: "columns",
+                label: "カラム",
+                type: "dropdown",
+                accept: ["string", "date", "integer", "float"],
+                mutliple: true,
+            }
+        ],
         grouping: {
             enabled: false,
         },
@@ -83,6 +91,7 @@ export const RESULT_VIEW_CONFIG = {
             label: string;
             type: ChartDynamicColumnInput;
             accept: ChartColumnType[];
+            mutliple?: boolean;
         }[];
         grouping: {
             enabled: boolean;

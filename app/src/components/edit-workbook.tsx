@@ -29,6 +29,9 @@ const useStyles = makeStyles({
     flexFlow: "column",
     gap: `${tokens.spacingVerticalXXL} ${tokens.spacingHorizontalXXL}`,
   },
+  sidebar: {
+    minWidth: "320px", // 現状チャート部分は無限に拡大するため、最小値を設定
+  },
 });
 
 export const EditWorkbook = (): JSX.Element => {
@@ -44,7 +47,9 @@ export const EditWorkbook = (): JSX.Element => {
 
   return (
     <div className={styles.root}>
-      <SidebarEditResultView />
+      <div className={styles.sidebar}>
+        <SidebarEditResultView />
+      </div>
 
       <div className={styles.content}>
         <h2 className={styles.heading}>{workbook?.title}</h2>

@@ -1,4 +1,3 @@
-
 /** 
  * チャートのカラムが受け付けられる型
  * JavaScriptではdateとstring, floatとintegerを区別できないため、明示する必要がある
@@ -22,18 +21,28 @@ export interface ChartProps {
     yAxisColumn: ChartColumn
 }
 
+export interface TableProps {
+    columns: {
+        key: string;
+        label: string,
+        unit?: string,
+    }[],
+    data: Record<string, string | number | null>[]
+}
+
 export interface Parameter {
     key: string;
     value: string;
 }
 
-export type ChartDynamicColumnInput = "select" | "input";
+export type ChartDynamicColumnInput = "select" | "input" | "dropdown";
 
 export type ChartStyle = "pie" | "bar" | "line" | "table" | "map";
 
-export interface ResultViewFieldOption {
+export type ResultViewFieldOption = {
     key: string;
     label: string;
     type: ChartDynamicColumnInput;
     accept: readonly ChartColumnType[];
+    multiple?: boolean;
 }

@@ -12,7 +12,6 @@ import {
 import { type data_set_results } from "../schema";
 import { THEME_COLORS } from "../config/theme-colors";
 import { type SelectResultViewResponse } from "../ipc-main-listeners/select-result-view";
-import { type Parameter } from "../@types/charts";
 import { TileViewStyle } from "./tile-view-style";
 type DataSetResults = typeof data_set_results.$inferSelect;
 
@@ -80,14 +79,6 @@ export const TileResultView = ({
     );
   }
 
-  const xAxisParameter = resultView.parameters.find(
-    (parameter) => parameter.key === "xAxis",
-  ) as Parameter;
-
-  const yAxisParameter = resultView.parameters.find(
-    (parameter) => parameter.key === "yAxis",
-  ) as Parameter;
-
   return (
     <Card
       {...cardProps}
@@ -109,13 +100,10 @@ export const TileResultView = ({
         <div>データセットが選択されていません</div>
       ) : (
         <TileViewStyle
-          resultId={dataSetResult.id}
+          dataSetResults={dataSetResult}
+          parameters={resultView.parameters}
           style={resultView.style}
           type={resultView.unit}
-          // @ts-expect-error x, yの型に問題はないためスルー
-          x={xAxisParameter.value}
-          // @ts-expect-error x, yの型に問題はないためスルー
-          y={yAxisParameter.value}
         />
       )}
     </Card>
