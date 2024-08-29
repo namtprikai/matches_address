@@ -73,11 +73,46 @@ export const TileResultView = ({
       >
         <CardHeader
           action={
-            <Button
-              appearance="subtle"
-              className={styles.cardHeaderSubtle}
-              icon={<ArchiveRegular />}
-            />
+            <Dialog>
+              <DialogTrigger disableButtonEnhancement>
+                <Button
+                  appearance="subtle"
+                  className={styles.cardHeaderSubtle}
+                  icon={<ArchiveRegular />}
+                />
+              </DialogTrigger>
+              <DialogSurface>
+                <DialogBody>
+                  <DialogTitle
+                    action={
+                      <DialogTrigger action="close">
+                        <Button
+                          appearance="subtle"
+                          aria-label="close"
+                          icon={
+                            <Dismiss24Regular
+                              color={tokens.colorNeutralForeground1}
+                              strokeWidth={2}
+                            />
+                          }
+                        />
+                      </DialogTrigger>
+                    }
+                  >
+                    タイルを削除しますか？
+                  </DialogTitle>
+                  <DialogContent>
+                    削除したタイルはもとに戻せません
+                  </DialogContent>
+                  <DialogActions position="start">
+                    <Button>キャンセル</Button>
+                  </DialogActions>
+                  <DialogActions position="end">
+                    <Button appearance="primary">削除</Button>
+                  </DialogActions>
+                </DialogBody>
+              </DialogSurface>
+            </Dialog>
           }
           header={
             <Subtitle2>{`${resultView.title || "タイトル未入力"}`}</Subtitle2>
