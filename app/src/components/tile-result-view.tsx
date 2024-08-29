@@ -1,9 +1,11 @@
-import { ArrowDownloadFilled } from "@fluentui/react-icons";
+import { ArchiveRegular, Dismiss24Regular } from "@fluentui/react-icons";
 import {
-  Button,
   Card,
   CardHeader,
   type CardProps,
+  Dialog,
+  DialogContent,
+  DialogTrigger,
   makeStyles,
   mergeClasses,
   Subtitle2,
@@ -12,8 +14,12 @@ import {
 import { type data_set_results } from "../schema";
 import { THEME_COLORS } from "../config/theme-colors";
 import { type SelectResultViewResponse } from "../ipc-main-listeners/select-result-view";
-import { type Parameter } from "../@types/charts";
 import { TileViewStyle } from "./tile-view-style";
+import { DialogSurface } from "./ui/dialog-surface";
+import { DialogBody } from "./ui/dialog-body";
+import { DialogTitle } from "./ui/dialog-title";
+import { DialogActions } from "./ui/dialog-actions";
+import { Button } from "./ui/button";
 type DataSetResults = typeof data_set_results.$inferSelect;
 
 type Props = CardProps & {
@@ -50,10 +56,12 @@ export const TileResultView = ({
   const styles = useStyles();
 
   if (
-    !resultView.parameters ||
-    resultView.parameters.length === 0 ||
     !resultView.style ||
-    !resultView.unit
+    !resultView.unit ||
+    (resultView.style !== "map" &&
+      (!resultView.parameters ||
+        resultView.parameters.filter((parameter) => parameter.value === "")
+          .length > 0))
   ) {
     return (
       <Card
@@ -65,28 +73,55 @@ export const TileResultView = ({
       >
         <CardHeader
           action={
-            <Button
-              appearance="subtle"
-              className={styles.cardHeaderSubtle}
-              icon={<ArrowDownloadFilled />}
-            />
+            <Dialog>
+              <DialogTrigger disableButtonEnhancement>
+                <Button
+                  appearance="subtle"
+                  className={styles.cardHeaderSubtle}
+                  icon={<ArchiveRegular />}
+                />
+              </DialogTrigger>
+              <DialogSurface>
+                <DialogBody>
+                  <DialogTitle
+                    action={
+                      <DialogTrigger action="close">
+                        <Button
+                          appearance="subtle"
+                          aria-label="close"
+                          icon={
+                            <Dismiss24Regular
+                              color={tokens.colorNeutralForeground1}
+                              strokeWidth={2}
+                            />
+                          }
+                        />
+                      </DialogTrigger>
+                    }
+                  >
+                    タイルを削除しますか？
+                  </DialogTitle>
+                  <DialogContent>
+                    削除したタイルはもとに戻せません
+                  </DialogContent>
+                  <DialogActions position="start">
+                    <Button>キャンセル</Button>
+                  </DialogActions>
+                  <DialogActions position="end">
+                    <Button appearance="primary">削除</Button>
+                  </DialogActions>
+                </DialogBody>
+              </DialogSurface>
+            </Dialog>
           }
           header={
             <Subtitle2>{`${resultView.title || "タイトル未入力"}`}</Subtitle2>
           }
         />
-        <div>未設定</div>
+        <div>パラメーターの値を正しく設定してください</div>
       </Card>
     );
   }
-
-  const xAxisParameter = resultView.parameters.find(
-    (parameter) => parameter.key === "xAxis",
-  ) as Parameter;
-
-  const yAxisParameter = resultView.parameters.find(
-    (parameter) => parameter.key === "yAxis",
-  ) as Parameter;
 
   return (
     <Card
@@ -95,11 +130,44 @@ export const TileResultView = ({
     >
       <CardHeader
         action={
-          <Button
-            appearance="subtle"
-            className={styles.cardHeaderSubtle}
-            icon={<ArrowDownloadFilled />}
-          />
+          <Dialog>
+            <DialogTrigger disableButtonEnhancement>
+              <Button
+                appearance="subtle"
+                className={styles.cardHeaderSubtle}
+                icon={<ArchiveRegular />}
+              />
+            </DialogTrigger>
+            <DialogSurface>
+              <DialogBody>
+                <DialogTitle
+                  action={
+                    <DialogTrigger action="close">
+                      <Button
+                        appearance="subtle"
+                        aria-label="close"
+                        icon={
+                          <Dismiss24Regular
+                            color={tokens.colorNeutralForeground1}
+                            strokeWidth={2}
+                          />
+                        }
+                      />
+                    </DialogTrigger>
+                  }
+                >
+                  タイルを削除しますか？
+                </DialogTitle>
+                <DialogContent>削除したタイルはもとに戻せません</DialogContent>
+                <DialogActions position="start">
+                  <Button>キャンセル</Button>
+                </DialogActions>
+                <DialogActions position="end">
+                  <Button appearance="primary">削除</Button>
+                </DialogActions>
+              </DialogBody>
+            </DialogSurface>
+          </Dialog>
         }
         header={
           <Subtitle2>{`${resultView.title || "タイトル未入力"}`}</Subtitle2>
@@ -109,13 +177,10 @@ export const TileResultView = ({
         <div>データセットが選択されていません</div>
       ) : (
         <TileViewStyle
-          resultId={dataSetResult.id}
+          dataSetResults={dataSetResult}
+          parameters={resultView.parameters}
           style={resultView.style}
           type={resultView.unit}
-          // @ts-expect-error x, yの型に問題はないためスルー
-          x={xAxisParameter.value}
-          // @ts-expect-error x, yの型に問題はないためスルー
-          y={yAxisParameter.value}
         />
       )}
     </Card>

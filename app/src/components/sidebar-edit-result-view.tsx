@@ -35,6 +35,9 @@ const useStyles = makeStyles({
     fontWeight: tokens.fontWeightSemibold,
   },
   drawerBody: {
+    minHeight: "100vh",
+  },
+  drawerBodyInner: {
     display: "grid",
     gap: tokens.spacingVerticalXXL,
     padding: `${tokens.spacingVerticalXXL} ${tokens.spacingHorizontalNone}`,
@@ -98,8 +101,8 @@ export const SidebarEditResultView = (): JSX.Element => {
         </DrawerHeaderTitle>
       </DrawerHeader>
 
-      <DrawerBody>
-        <div className={styles.drawerBody}>
+      <DrawerBody className={styles.drawerBody}>
+        <div className={styles.drawerBodyInner}>
           {isAddView && (
             <>
               <div className={styles.isAddView}>

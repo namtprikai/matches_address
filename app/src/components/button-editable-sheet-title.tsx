@@ -1,8 +1,20 @@
-import { Input, makeStyles, tokens } from "@fluentui/react-components";
+import { ArchiveRegular, Dismiss24Regular } from "@fluentui/react-icons";
+import {
+  Dialog,
+  DialogContent,
+  DialogTrigger,
+  makeStyles,
+  tokens,
+  Input,
+} from "@fluentui/react-components";
 import { useRef, useState } from "react";
 import { type FormProps } from "react-router-dom";
 import { type result_sheets } from "../schema";
 import { useOnClickOutside } from "../hooks/use-on-click-outside";
+import { DialogSurface } from "./ui/dialog-surface";
+import { DialogBody } from "./ui/dialog-body";
+import { DialogTitle } from "./ui/dialog-title";
+import { DialogActions } from "./ui/dialog-actions";
 import { Button } from "./ui/button";
 
 type ResultSheet = typeof result_sheets.$inferSelect;
@@ -56,6 +68,40 @@ export const ButtonEditableSheetTitle = ({
           size="small"
           value={title}
         />
+        <Dialog>
+          <DialogTrigger disableButtonEnhancement>
+            <Button appearance="subtle" icon={<ArchiveRegular />} />
+          </DialogTrigger>
+          <DialogSurface>
+            <DialogBody>
+              <DialogTitle
+                action={
+                  <DialogTrigger action="close">
+                    <Button
+                      appearance="subtle"
+                      aria-label="close"
+                      icon={
+                        <Dismiss24Regular
+                          color={tokens.colorNeutralForeground1}
+                          strokeWidth={2}
+                        />
+                      }
+                    />
+                  </DialogTrigger>
+                }
+              >
+                シートを削除しますか？
+              </DialogTitle>
+              <DialogContent>削除したシートはもとに戻せません</DialogContent>
+              <DialogActions position="start">
+                <Button>キャンセル</Button>
+              </DialogActions>
+              <DialogActions position="end">
+                <Button appearance="primary">削除</Button>
+              </DialogActions>
+            </DialogBody>
+          </DialogSurface>
+        </Dialog>
       </form>
     );
   }

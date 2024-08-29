@@ -1,4 +1,8 @@
-import { type ChartColumnType } from "../@types/charts";
+import { Option } from "@fluentui/react-components";
+import {
+  type ChartDynamicColumnInput,
+  type ChartColumnType,
+} from "../@types/charts";
 import {
   DATA_SET_DETAIL_BUILIDNG_COLUMN,
   DATA_SET_DETAIL_BUILIDNG_COLUMN_CONFIG,
@@ -11,11 +15,13 @@ type Props = {
     label: string;
     accept: readonly ChartColumnType[];
   };
+  type: ChartDynamicColumnInput;
 };
 
 export const DynamicColumnOptions = ({
   unit,
   fieldOption,
+  type,
 }: Props): JSX.Element[] | null => {
   if (unit === "building") {
     return DATA_SET_DETAIL_BUILIDNG_COLUMN.filter((column) => {
@@ -27,11 +33,25 @@ export const DynamicColumnOptions = ({
 
       return true;
     }).map((column) => {
-      return (
-        <option key={column} value={column}>
-          {DATA_SET_DETAIL_BUILIDNG_COLUMN_CONFIG[column].label}
-        </option>
-      );
+      if (type === "select") {
+        return (
+          <option key={column} value={column}>
+            {DATA_SET_DETAIL_BUILIDNG_COLUMN_CONFIG[column].label}
+          </option>
+        );
+      }
+      if (type === "dropdown") {
+        return (
+          <Option
+            key={column}
+            text={DATA_SET_DETAIL_BUILIDNG_COLUMN_CONFIG[column].label}
+            value={column}
+          >
+            {DATA_SET_DETAIL_BUILIDNG_COLUMN_CONFIG[column].label}
+          </Option>
+        );
+      }
+      return <></>;
     });
   }
 
@@ -45,11 +65,25 @@ export const DynamicColumnOptions = ({
 
       return true;
     }).map((column) => {
-      return (
-        <option key={column} value={column}>
-          {DATA_SET_DETAIL_BUILIDNG_COLUMN_CONFIG[column].label}
-        </option>
-      );
+      if (type === "select") {
+        return (
+          <option key={column} value={column}>
+            {DATA_SET_DETAIL_BUILIDNG_COLUMN_CONFIG[column].label}
+          </option>
+        );
+      }
+      if (type === "dropdown") {
+        return (
+          <Option
+            key={column}
+            text={DATA_SET_DETAIL_BUILIDNG_COLUMN_CONFIG[column].label}
+            value={column}
+          >
+            {DATA_SET_DETAIL_BUILIDNG_COLUMN_CONFIG[column].label}
+          </Option>
+        );
+      }
+      return <></>;
     });
   }
 

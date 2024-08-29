@@ -14,7 +14,6 @@ import { LanguageMap } from "../lang";
 import { selectedResultViewIdAtom } from "../state/selected-result-view-id-atom";
 import { selectedResultViewAtom } from "../state/selected-result-view-atom";
 import { RESULT_VIEW_CONFIG } from "../config/result-view-config";
-import { type Parameter } from "../@types/charts";
 import { getResultViewFieldOption } from "../utils/get-view-field-option";
 import { resultViewsAtom } from "../state/result-views-atom";
 import { Fieldset } from "./ui/fieldset";
@@ -145,22 +144,63 @@ export const EditResultViewForm = (): JSX.Element => {
 
           if (!fieldOption) return null;
 
-          return (
-            <DynamicParameterInput
-              type="select"
-              {...register(`parameters.${index}.value`)}
-              key={field.id}
-              fieldOption={fieldOption}
-              onChange={(e) => {
-                update(index, {
-                  key: field.key,
-                  value: e.target.value,
-                });
-              }}
-              unit={unit}
-              value={field.value}
-            />
-          );
+          if (fieldOption.type === "select") {
+            return (
+              <DynamicParameterInput
+                type={fieldOption.type}
+                {...register(`parameters.${index}.value`)}
+                key={field.id}
+                // @ts-expect-error TODO: この辺りの型定義は別途修正が必要
+                fieldOption={fieldOption}
+                onChange={(e) => {
+                  update(index, {
+                    key: field.key,
+                    value: e.target.value,
+                  });
+                }}
+                unit={unit}
+                value={field.value}
+              />
+            );
+          }
+
+          if (fieldOption.type === "dropdown") {
+            return (
+              <DynamicParameterInput
+                type={fieldOption.type}
+                {...register(`parameters.${index}.value`)}
+                key={field.id}
+                // @ts-expect-error TODO: この辺りの型定義は別途修正が必要
+                fieldOption={fieldOption}
+                multiple={fieldOption.multiple ?? false}
+                onChange={(event, data) => {
+                  // dropdownから返ってくる値が空の場合は何もしない
+                  if (data.optionValue === undefined) return;
+
+                  // 更新前の値をカンマ区切りの文字列としてデータクレンジングした上で配列化
+                  const prevValue = field.value
+                    .split(",")
+                    .filter((value) => value !== "");
+
+                  // 更新後の値を生成
+                  const newValue = prevValue.includes(data.optionValue)
+                    ? prevValue.filter((value) => {
+                        return value !== data.optionValue;
+                      })
+                    : [...prevValue, data.optionValue];
+
+                  update(index, {
+                    key: field.key,
+                    value: newValue.join(","),
+                  });
+                }}
+                unit={unit}
+                value={field.value}
+              />
+            );
+          }
+
+          return <></>;
         })}
 
         {RESULT_VIEW_CONFIG[style] &&

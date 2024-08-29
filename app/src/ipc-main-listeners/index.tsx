@@ -20,6 +20,7 @@ import { updateResultViews } from "./update-result-views";
 import { readResultViews } from "./read-result-views";
 import { filterDataSetForChart } from "./filter-data-set-for-chart";
 import { selectResultView } from "./select-result-view";
+import { filterDataSetForTable } from "./filter-data-set-for-table";
 
 export const ipcMainListeners = {
   getNames,
@@ -40,6 +41,7 @@ export const ipcMainListeners = {
   readResultViews,
   selectResultView,
   filterDataSetForChart,
+  filterDataSetForTable,
 };
 
 export const execFileAsync = promisify(execFile);

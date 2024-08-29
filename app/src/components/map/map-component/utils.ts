@@ -1,23 +1,23 @@
-import { type Map, type GeoJSONSourceSpecification } from "maplibre-gl";
+import { type Map } from "maplibre-gl";
+import { type FeatureCollection } from "geojson";
 import { useState, useEffect } from "react";
 import { type VacancyLevels } from "../vacancy-level-checkbox";
 
-export type GeoJsonData = GeoJSONSourceSpecification["data"];
-const VACANCY_RATE_HIGH = 0.8;
-const VACANCY_RATE_MEDIUM = 0.3;
+export const VACANCY_RATE_HIGH = 0.8;
+export const VACANCY_RATE_MEDIUM = 0.3;
 
-export function addGeoJsonSource(
+export function addGeojsonSource(
   map: Map,
   sourceId: string,
-  geoJsonData: GeoJsonData,
+  geojsonData: FeatureCollection,
 ): void {
   map.addSource(sourceId, {
     type: "geojson",
-    data: geoJsonData,
+    data: geojsonData,
   });
 }
 
-export function addGeoJsonLayer(
+export function addGeojsonLayer(
   map: Map,
   layerId: string,
   sourceId: string,
@@ -49,31 +49,43 @@ export function addGeoJsonLayer(
   });
 }
 
-export function useGeoJsonData(
+export function useGeojsonData(
   vacancyLevels: VacancyLevels,
-): GeoJsonData | null {
-  const [geoJsonData, setGeoJsonData] = useState<GeoJsonData | null>(null);
+): FeatureCollection | null {
+  const [geojsonData, setGeojsonData] = useState<FeatureCollection | null>(
+    null,
+  );
 
   useEffect(() => {
-    const fetchGeoJsonData = async (): Promise<void> => {
+    const fetchGeojsonData = async (): Promise<void> => {
       try {
-        const response = await fetch("/D902.geojson");
-        const data = await response.json();
-        setGeoJsonData(data);
+        const _data: FeatureCollection[] = await Promise.all(
+          Array.from({ length: 10 }, (_, i) => i + 1).map(async (i) => {
+            const response = await fetch(`/D902/${i}.json`);
+            return await response.json();
+          }),
+        );
+
+        const data: FeatureCollection = {
+          type: "FeatureCollection",
+          features: _data.flatMap((d) => d.features),
+        };
+
+        setGeojsonData(data);
       } catch (error) {
         console.error("Error fetching GeoJSON data:", error);
       }
     };
 
-    void fetchGeoJsonData();
+    void fetchGeojsonData();
   }, []);
 
   const hasFeatures =
-    geoJsonData && typeof geoJsonData === "object" && "features" in geoJsonData;
+    geojsonData && typeof geojsonData === "object" && "features" in geojsonData;
   if (hasFeatures) {
     return {
-      ...geoJsonData,
-      features: geoJsonData.features.filter((feature) => {
+      ...geojsonData,
+      features: geojsonData.features.filter((feature) => {
         const predictedProbability = feature.properties?.predicted_probability;
         if (predictedProbability >= VACANCY_RATE_HIGH) {
           return vacancyLevels.high;
