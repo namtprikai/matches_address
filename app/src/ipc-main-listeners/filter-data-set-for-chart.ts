@@ -33,7 +33,7 @@ export const filterDataSetForChart = ((
                 return {
                     x: row[x] as string,
                     // TODO: この辺りの型定義は別途修正が必要
-                    y: formatChartValue(row[y] as number, percentage),
+                    y: formatChartValue(row[y] ?? "", percentage) as number,
                 }
             }),
             xAxisColumn: {
@@ -67,7 +67,7 @@ export const filterDataSetForChart = ((
                 return {
                     x: row[x] as string,
                     // TODO: この辺りの型定義は別途修正が必要
-                    y: formatChartValue(row[y] as number, percentage),
+                    y: formatChartValue(row[y] ?? "", percentage) as number,
                 }
             }),
             xAxisColumn: {
