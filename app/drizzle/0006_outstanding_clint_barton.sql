@@ -1,6 +1,15 @@
 CREATE TABLE `data_set_detail_areas` (
 	`id` integer PRIMARY KEY NOT NULL,
 	`data_set_result_id` integer,
+	`address`: text,
+	`reference_date` text NOT NULL,
+	`young_poplulation_ratio` real,
+	`elderly_population_ratio` real,
+	`total_building_count` real,
+	`vacant_house_ratio` real,
+	`area` real,
+	`geometry` text,
+	`key_code` text,
 	`created_at` text DEFAULT (CURRENT_TIMESTAMP) NOT NULL,
 	`updated_at` text DEFAULT (CURRENT_TIMESTAMP) NOT NULL
 );
