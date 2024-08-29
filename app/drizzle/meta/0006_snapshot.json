@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "53b22ac3-d96f-4c46-8cdd-4c30933a0c2c",
+  "id": "0d9b5adb-65b4-4db8-b51a-d56010c9b2df",
   "prevId": "240efd9c-3311-46fc-89c2-22eca20ff711",
   "tables": {
     "data_set_detail_areas": {
@@ -17,6 +17,69 @@
         "data_set_result_id": {
           "name": "data_set_result_id",
           "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "reference_date": {
+          "name": "reference_date",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "address": {
+          "name": "address",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "young_population_ratio": {
+          "name": "young_population_ratio",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "elderly_population_ratio": {
+          "name": "elderly_population_ratio",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "total_building_count": {
+          "name": "total_building_count",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "vacant_house_ratio": {
+          "name": "vacant_house_ratio",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "area": {
+          "name": "area",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "geometry": {
+          "name": "geometry",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "key_code": {
+          "name": "key_code",
+          "type": "text",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
@@ -78,7 +141,7 @@
           "name": "reference_date",
           "type": "text",
           "primaryKey": false,
-          "notNull": false,
+          "notNull": true,
           "autoincrement": false
         },
         "number_of_people_in_household": {
@@ -501,7 +564,7 @@
         },
         "parameters": {
           "name": "parameters",
-          "type": "blog",
+          "type": "blob",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false

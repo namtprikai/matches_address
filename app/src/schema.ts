@@ -380,6 +380,73 @@ export const data_set_detail_areas = sqliteTable("data_set_detail_areas", {
   id: integer("id").primaryKey(),
   data_set_result_id: integer("data_set_result_id"),
 
+  /**
+   * 基準日
+   * 
+   * 判定の基準となる日付
+   * 
+   * YYYY-MM-DD形式の文字列
+   */
+  reference_date: text("reference_date").notNull(),
+
+  /**
+   * 住所
+   * 
+   * 文字列：任意の文字列
+   */
+  address: text("address"),
+
+
+  /**
+   * 若年層率
+   * 
+   * 0~1の小数で表現（8byte 浮動小数点）
+   */
+  young_population_ratio: real("young_population_ratio"),
+
+  /**
+   * 高齢者率
+   * 
+   * 0~1の小数で表現（8byte 浮動小数点）
+   */
+  elderly_population_ratio: real("elderly_population_ratio"),
+
+  /**
+   * 建物数
+   * 
+   * 0以上の整数
+   */
+  total_building_count: integer("total_building_count"),
+
+  /**
+   * 空き家率
+   * 
+   * 0~1の小数で表現（8byte 浮動小数点）
+   */
+  vacant_house_ratio: real("vacant_house_ratio"),
+
+  /**
+   * 面積
+   * 
+   * 単位：m^2
+   * 小数で表現（8byte 浮動小数点）
+   */
+  area: real("area"),
+
+  /**
+   * ジオメトリ
+   * 
+   * 文字列：任意の文字列
+   */
+  geometry: text("geometry"),
+
+  /**
+   * KEYCODE
+   * 
+   * 任意の文字列
+   */
+  key_code: text("key_code"),
+
   created_at: text("created_at")
     .default(sql`(CURRENT_TIMESTAMP)`)
     .notNull(),
