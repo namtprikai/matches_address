@@ -61,6 +61,21 @@ export const DynamicParameterInput = forwardRef<
   }
 
   if (props.type === "dropdown") {
+    const displayValue =
+      props.value !== ""
+        ? props.unit === "building"
+          ? props.value
+              .split(",")
+              // @ts-expect-error TODO: この辺りの型定義は別途修正が必要
+              .map((v) => DATA_SET_DETAIL_BUILIDNG_COLUMN_CONFIG[v].label)
+              .join(",")
+          : props.value
+              .split(",")
+              // @ts-expect-error TODO: この辺りの型定義は別途修正が必要
+              .map((v) => DATA_SET_DETAIL_BUILIDNG_COLUMN_CONFIG[v].label)
+              .join(",")
+        : "";
+
     return (
       <Field label={props.fieldOption.label}>
         <Dropdown
@@ -69,19 +84,7 @@ export const DynamicParameterInput = forwardRef<
           name={props.name}
           onOptionSelect={props.onChange}
           selectedOptions={props.value.split(",")}
-          value={
-            props.unit === "building"
-              ? props.value
-                  .split(",")
-                  // @ts-expect-error TODO: この辺りの型定義は別途修正が必要
-                  .map((v) => DATA_SET_DETAIL_BUILIDNG_COLUMN_CONFIG[v].label)
-                  .join(",")
-              : props.value
-                  .split(",")
-                  // @ts-expect-error TODO: この辺りの型定義は別途修正が必要
-                  .map((v) => DATA_SET_DETAIL_BUILIDNG_COLUMN_CONFIG[v].label)
-                  .join(",")
-          } //表示用の値としてしか使われない（Controlledなため）
+          value={displayValue} //表示用の値としてしか使われない（Controlledなため）
         >
           <DynamicColumnOptions
             fieldOption={props.fieldOption}
