@@ -21,6 +21,7 @@ import { readResultViews } from "./read-result-views";
 import { filterDataSetForChart } from "./filter-data-set-for-chart";
 import { selectResultView } from "./select-result-view";
 import { filterDataSetForTable } from "./filter-data-set-for-table";
+import { deleteResultView } from "./delete-result-view";
 
 export const ipcMainListeners = {
   getNames,
@@ -40,6 +41,7 @@ export const ipcMainListeners = {
   updateResultViews,
   readResultViews,
   selectResultView,
+  deleteResultView,
   filterDataSetForChart,
   filterDataSetForTable,
 };
