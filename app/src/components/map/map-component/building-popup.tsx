@@ -1,7 +1,8 @@
 import { forwardRef } from "react";
 import { mergeClasses } from "@fluentui/react-components";
 import styles from "./popup-styles.module.css";
-import { VACANCY_RATE_HIGH, VACANCY_RATE_MEDIUM, type Building } from ".";
+import { VACANCY_RATE_HIGH, VACANCY_RATE_MEDIUM } from "./utils";
+import { type Building } from ".";
 
 interface Props {
   data: Omit<Building, "coordinates"> | null;
@@ -26,7 +27,9 @@ export const BuildingPopup = forwardRef<HTMLDivElement, Props>(
         <div className={mergeClasses(styles.header, vacancyRateColorStyle)}>
           <span className={styles.circleIcon} />
           <div>
-            <span className={styles.vacancyRate}>{data?.vacancyRate}%</span>
+            <span className={styles.vacancyRate}>
+              {data?.vacancyRate ? (data?.vacancyRate * 100).toFixed(0) : "??"}%
+            </span>
             <div className={styles.address}>{data?.address}</div>
           </div>
         </div>

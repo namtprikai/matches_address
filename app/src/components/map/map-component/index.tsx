@@ -5,10 +5,8 @@ import { Protocol } from "pmtiles";
 import { renderToString } from "react-dom/server";
 import { makeStyles } from "@fluentui/react-components";
 import { type VacancyLevels } from "../vacancy-level-checkbox";
-import { addGeoJsonLayer, addGeoJsonSource, useGeoJsonData } from "./utils";
-
-export const VACANCY_RATE_HIGH = 80;
-export const VACANCY_RATE_MEDIUM = 30;
+import { addGeojsonLayer, addGeojsonSource, useGeojsonData } from "./utils";
+import { BuildingPopup } from "./building-popup";
 
 export interface Building {
   vacancyRate: number;
@@ -75,7 +73,7 @@ export function MapComponent({
   const styles = useMapComponentStyles();
   const containerRef = useRef<HTMLDivElement | null>(null);
   const [mapInstance, setMapInstance] = useState<Map | null>(null);
-  const geoJsonData = useGeoJsonData(vacancyLevels);
+  const geojsonData = useGeojsonData(vacancyLevels);
 
   useEffect(function initializeMap() {
     if (!containerRef.current) return;
@@ -85,7 +83,7 @@ export function MapComponent({
     const initializedMap = new Map({
       container: containerRef.current,
       style: "protomaps-basemaps.json",
-      center: [137.12333, 34.99406],
+      center: [137.120435, 34.990565],
       zoom: 19,
       maxZoom: 18,
       minZoom: 6,
@@ -99,12 +97,12 @@ export function MapComponent({
   useEffect(
     function updateMap() {
       if (!mapInstance) return;
-      if (!geoJsonData) return;
+      if (!geojsonData) return;
 
       const sourceId = "buildings";
       const layerId = "buildings-layer";
-      addGeoJsonSource(mapInstance, sourceId, geoJsonData);
-      addGeoJsonLayer(mapInstance, layerId, sourceId);
+      addGeojsonSource(mapInstance, sourceId, geojsonData);
+      addGeojsonLayer(mapInstance, layerId, sourceId);
       let popup: Popup | null = null;
       mapInstance.on("click", layerId, (e) => {
         if (e.features && e.features.length > 0) {
@@ -112,7 +110,21 @@ export function MapComponent({
           const properties = feature.properties;
           const coordinates = e.lngLat;
           const popupContent = renderToString(
-            <div>{properties.predicted_probability}</div>,
+            <BuildingPopup
+              data={{
+                // デモデータ
+                address: "東京都千代田区丸の内1-1-1",
+                totalPopulation: 1000,
+                under14: 200,
+                between15And64: 600,
+                over65: 200,
+                waterUsage: "1000L",
+                waterStatus: "良好",
+                constructionDate: "2000年",
+                structureName: "RC造",
+                vacancyRate: properties?.predicted_probability,
+              }}
+            />,
           );
 
           popup = new Popup()
@@ -140,7 +152,7 @@ export function MapComponent({
     },
     [
       data,
-      geoJsonData,
+      geojsonData,
       mapInstance,
       selectedYear,
       vacancyLevels.high,
