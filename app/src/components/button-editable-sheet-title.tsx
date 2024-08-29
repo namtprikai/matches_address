@@ -8,9 +8,12 @@ import {
   Input,
 } from "@fluentui/react-components";
 import { useRef, useState } from "react";
-import { type FormProps } from "react-router-dom";
+import { useNavigate, type FormProps } from "react-router-dom";
+import { useAtom } from "jotai";
 import { type result_sheets } from "../schema";
 import { useOnClickOutside } from "../hooks/use-on-click-outside";
+import { resultSheetsAtom } from "../state/result-sheets-atom";
+import { selectedResultSheetIdAtom } from "../state/selected-result-sheet-id-atom";
 import { DialogSurface } from "./ui/dialog-surface";
 import { DialogBody } from "./ui/dialog-body";
 import { DialogTitle } from "./ui/dialog-title";
@@ -27,6 +30,10 @@ const useStyles = makeStyles({
   root: {
     padding: tokens.spacingVerticalNone,
   },
+  title: {
+    display: "flex",
+    flexDirection: "row",
+  },
 });
 
 export const ButtonEditableSheetTitle = ({
@@ -34,6 +41,11 @@ export const ButtonEditableSheetTitle = ({
 }: Props): JSX.Element => {
   const styles = useStyles();
   const [isEditing, setIsEditing] = useState(false);
+  // Dialogの開閉でonClickOutsideを制御するためのstate
+  const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
+
+  const [, refreshSheets] = useAtom(resultSheetsAtom);
+  const [, setSelectedResultSheetId] = useAtom(selectedResultSheetIdAtom);
 
   const [title, setTitle] = useState(resultSheet.title || "");
   const updateTitle = (): void => {
@@ -54,21 +66,47 @@ export const ButtonEditableSheetTitle = ({
     updateTitle();
   };
 
+  const deleteResultSheet = async (): Promise<void> => {
+    await window.ipcRenderer.invoke("deleteResultSheet", {
+      resultSheetId: resultSheet.id,
+    });
+  };
+
+  const handleDelete = async (): Promise<void> => {
+    await deleteResultSheet();
+    // 削除後にシート一覧を再取得する
+    refreshSheets();
+    // 選択中のシートを解除する
+    setSelectedResultSheetId(undefined);
+  };
+
   const ref = useRef(null);
-  useOnClickOutside(ref, () => updateTitle());
+  useOnClickOutside(ref, () => {
+    // Dialogが開いている間はタイトルを更新しない
+    if (!openDeleteDialog) {
+      updateTitle();
+    }
+  });
 
   if (isEditing) {
     return (
-      <form ref={ref} onSubmit={handleSubmit}>
-        <Input
-          maxLength={100}
-          minLength={1}
-          name="title"
-          onChange={(e): void => setTitle(e.target.value)}
-          size="small"
-          value={title}
-        />
-        <Dialog>
+      <div ref={ref} className={styles.title}>
+        <form onSubmit={handleSubmit}>
+          <Input
+            maxLength={100}
+            minLength={1}
+            name="title"
+            onChange={(e): void => setTitle(e.target.value)}
+            size="small"
+            value={title}
+          />
+        </form>
+        <Dialog
+          onOpenChange={() => {
+            setOpenDeleteDialog((prev) => !prev);
+          }}
+          open={openDeleteDialog}
+        >
           <DialogTrigger disableButtonEnhancement>
             <Button appearance="subtle" icon={<ArchiveRegular />} />
           </DialogTrigger>
@@ -97,12 +135,14 @@ export const ButtonEditableSheetTitle = ({
                 <Button>キャンセル</Button>
               </DialogActions>
               <DialogActions position="end">
-                <Button appearance="primary">削除</Button>
+                <Button appearance="primary" onClick={handleDelete}>
+                  削除
+                </Button>
               </DialogActions>
             </DialogBody>
           </DialogSurface>
         </Dialog>
-      </form>
+      </div>
     );
   }
 
