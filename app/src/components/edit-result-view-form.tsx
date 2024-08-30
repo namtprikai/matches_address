@@ -9,7 +9,7 @@ import {
 } from "@fluentui/react-components";
 import { useEffect } from "react";
 import { z } from "zod";
-import { result_views } from "../schema";
+import { data_set_detail_areas, result_views } from "../schema";
 import { LanguageMap } from "../lang";
 import { selectedResultViewIdAtom } from "../state/selected-result-view-id-atom";
 import { selectedResultViewAtom } from "../state/selected-result-view-atom";
@@ -99,6 +99,15 @@ export const EditResultViewForm = (): JSX.Element => {
     });
   }, [selectedResultView, reset]);
 
+  const resetParametersByStyle = (
+    style: (typeof result_views.$inferSelect)["style"],
+  ): void => {
+    if (!style) return;
+    const option = RESULT_VIEW_CONFIG[style];
+    if (!option) return;
+    replace(option.fields.map((field) => ({ key: field.key, value: "" })));
+  };
+
   return (
     <form className={styles.form} onSubmit={onSubmit}>
       <button hidden type="submit" />
@@ -118,18 +127,12 @@ export const EditResultViewForm = (): JSX.Element => {
           <Select
             {...register("style")}
             onChange={(e) => {
-              const option =
-                RESULT_VIEW_CONFIG[
-                  e.target.value as keyof typeof RESULT_VIEW_CONFIG
-                ];
-              if (!option) return;
-              replace(
-                option.fields.map((field) => ({ key: field.key, value: "" })),
-              );
-              setValue(
-                "style",
-                e.target.value as keyof typeof RESULT_VIEW_CONFIG,
-              );
+              const value = e.target
+                .value as keyof (typeof result_views.$inferSelect)["style"];
+              // styleに合わせてparameterをリセット
+              resetParametersByStyle(value);
+              // スタイルの値を更新
+              setValue("style", value);
             }}
           >
             {result_views.style.enumValues.map((item) => (
@@ -221,7 +224,15 @@ export const EditResultViewForm = (): JSX.Element => {
             </Dialog>
           )}
         <Field label="集計単位">
-          <Select {...register("unit")} onBlur={onSubmit}>
+          <Select
+            {...register("unit")}
+            onChange={(e) => {
+              // styleに合わせてparameterをリセット
+              resetParametersByStyle(style);
+              // スタイルの値を更新
+              setValue("unit", e.target.value as "building" | "area");
+            }}
+          >
             {result_views.unit.enumValues.map((item) => (
               <option key={item} value={item}>
                 {LanguageMap["RESULT_VIEWS_UNIT"][item]}
