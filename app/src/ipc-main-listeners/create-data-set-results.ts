@@ -17,20 +17,31 @@ export const createDataSetResults = (async (
     const res = await tx.insert(data_set_results).values({ title }).returning();
     await tx
       .insert(data_set_detail_areas)
-      .values({ data_set_result_id: res[0].id, reference_date: "2021-01-01 12:00:00" });
-
+      .values({
+        data_set_result_id: res[0].id,
+        reference_date: "2021-01-01 12:00:00",
+      });
 
     /** 開発用のテストデータ生成ロジック、本番環境では利用しない  */
     for (let i = 0; i < 5; i++) {
-
-      const number_of_people_under_15_years_old = Math.floor(Math.random() * 10);
+      const number_of_people_under_15_years_old = Math.floor(
+        Math.random() * 10,
+      );
       const number_of_people_aged_15_to_64 = Math.floor(Math.random() * 10);
       const number_of_people_aged_65_and_over = Math.floor(Math.random() * 10);
-      const number_of_people_in_household = number_of_people_under_15_years_old + number_of_people_aged_15_to_64 + number_of_people_aged_65_and_over;
-      const composition_ratio_of_people_aged_15_to_64 = number_of_people_aged_15_to_64 / number_of_people_in_household;
-      const composition_ratio_of_people_aged_65_and_over = number_of_people_aged_65_and_over / number_of_people_in_household;
-      const composition_ratio_of_people_under_15_years_old = number_of_people_under_15_years_old / number_of_people_in_household
-      const number_of_male = Math.floor(Math.random() * number_of_people_in_household);
+      const number_of_people_in_household =
+        number_of_people_under_15_years_old +
+        number_of_people_aged_15_to_64 +
+        number_of_people_aged_65_and_over;
+      const composition_ratio_of_people_aged_15_to_64 =
+        number_of_people_aged_15_to_64 / number_of_people_in_household;
+      const composition_ratio_of_people_aged_65_and_over =
+        number_of_people_aged_65_and_over / number_of_people_in_household;
+      const composition_ratio_of_people_under_15_years_old =
+        number_of_people_under_15_years_old / number_of_people_in_household;
+      const number_of_male = Math.floor(
+        Math.random() * number_of_people_in_household,
+      );
       const number_of_female = number_of_people_in_household - number_of_male;
       const male_to_female_ratio = number_of_male / number_of_female;
 
@@ -79,11 +90,9 @@ export const createDataSetResults = (async (
         name: `建物名${i}`,
         predicted_label: Math.round(pred),
         predicted_probability: pred,
-      }
+      };
 
-      await tx
-        .insert(data_set_detail_buildings)
-        .values(insertion);
+      await tx.insert(data_set_detail_buildings).values(insertion);
     }
   });
 }) satisfies IpcMainListener;
