@@ -1,16 +1,12 @@
+import { Map } from "../../components/map";
+import { _dummyBuildingData } from "../../components/map/_dummy-data";
+
 export function About(): JSX.Element {
   return (
     <div>
       <h1>About</h1>
-
-      {/* FIXME: 以下スタイルは仮のものなので本番では削除 */}
-      <div
-        style={{
-          width: "800px",
-        }}
-      >
-        <a href="#">Go to home page</a>
-      </div>
+      <a href="#">Go to home page</a>
+      <Map data={_dummyBuildingData} />
     </div>
   );
 }
