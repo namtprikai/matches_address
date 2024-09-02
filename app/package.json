@@ -13,7 +13,7 @@
     "generate:migration": "npx drizzle-kit generate",
     "drizzle": "npx drizzle-kit",
     "test:unit": "vitest",
-    "test:e2e": "playwright test"
+    "test:e2e": "npm run make && playwright test"
   },
   "devDependencies": {
     "@electron-forge/cli": "^7.4.0",
