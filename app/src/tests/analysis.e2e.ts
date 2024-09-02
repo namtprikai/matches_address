@@ -1,4 +1,4 @@
-import test, { type ElectronApplication, _electron as electron } from "@playwright/test";
+import test, { type ElectronApplication, _electron as electron, expect } from "@playwright/test";
 import { findLatestBuild, parseElectronApp } from "electron-playwright-helpers";
 
 let electronApp: ElectronApplication
@@ -17,9 +17,28 @@ test.afterAll(async () => {
     await electronApp.close()
 })
 
-test('ワークブック一覧へ移動', async () => {
+test('分析ページへ移動し、ワークブックを作成', async () => {
     const page = await electronApp.firstWindow()
-    const title = await page.title()
-    expect(title).toBe('空き家プロジェクト')
-    expect(page).not.toBeNull()
+
+    const analysisButton = await page.getByText("分析")
+    await analysisButton.click()
+
+    const createWorkbookButton = await page.getByText("新規ワークブック作成")
+
+    expect(createWorkbookButton).not.toBeNull()
+
+    await createWorkbookButton.click()
+
+    const workbookTitleInput = await page.getByPlaceholder("ワークブック名")
+
+    expect(workbookTitleInput).not.toBeNull()
+
+    await workbookTitleInput.fill("テストワークブック")
+
+    const saveButton = await page.getByText("保存")
+    await saveButton.click()
+
+    const testWorkbook = await page.getByText("テストワークブック")
+
+    expect(testWorkbook).not.toBeNull()
 })
