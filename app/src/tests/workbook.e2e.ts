@@ -23,13 +23,13 @@ test('分析ページへ移動し、ワークブックを作成', async () => {
     const analysisButton = await page.getByText("分析")
     await analysisButton.click()
 
-    const createWorkbookButton = await page.getByText("新規ワークブック作成")
+    const createWorkbookButton = await page.getByRole("button", { name: "新規ワークブック作成" })
 
     expect(createWorkbookButton).not.toBeNull()
 
     await createWorkbookButton.click()
 
-    const workbookTitleInput = await page.getByPlaceholder("ワークブック名")
+    const workbookTitleInput = await page.getByRole("textbox");
 
     expect(workbookTitleInput).not.toBeNull()
 
