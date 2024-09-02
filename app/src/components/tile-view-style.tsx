@@ -117,14 +117,13 @@ export const TileViewStyle = ({
     );
   }
 
-  switch (style) {
-    case "map":
-      return (
-        <div>
-          <Map data={_dummyBuildingData} />
-        </div>
-      );
-    default:
-      return <>未設定</>;
+  if (style === "map") {
+    return (
+      <div>
+        <Map data={_dummyBuildingData} />
+      </div>
+    );
   }
+
+  return <>未設定</>;
 };
