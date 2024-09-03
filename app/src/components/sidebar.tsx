@@ -59,19 +59,19 @@ const menuItems = [
     icon: DocumentBulletListRegular,
     label: "空き家判定",
     value: "2",
-    href: "#",
+    href: "#wip",
   },
   {
     icon: DocumentBulletListRegular,
     label: "モデル管理",
     value: "3",
-    href: "#",
+    href: "#wip",
   },
   {
     icon: DocumentBulletListRegular,
     label: "非同期処理",
     value: "4",
-    href: "#",
+    href: "#wip",
   },
   {
     icon: DocumentBulletListRegular,
@@ -83,7 +83,7 @@ const menuItems = [
     icon: Bug16Filled,
     label: "(開発用)",
     value: "6",
-    href: "#about",
+    href: "#debug",
   },
 ];
 
