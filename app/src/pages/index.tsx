@@ -1,10 +1,9 @@
-import { createHashRouter, RouterProvider } from "react-router-dom";
+import { createHashRouter, Navigate, RouterProvider } from "react-router-dom";
 import {
   FluentProvider,
   createLightTheme,
   type BrandVariants,
 } from "@fluentui/react-components";
-import { Home } from "./home";
 import { Error } from "./error";
 import { About } from "./about";
 import { Layout } from "./layout";
@@ -24,7 +23,7 @@ const router = createHashRouter([
     children: [
       {
         path: "/",
-        element: <Home />,
+        element: <Navigate to="analysis/workbook" />,
       },
       {
         path: "about",
@@ -33,6 +32,7 @@ const router = createHashRouter([
       {
         path: "analysis/workbook",
         element: <Workbook />,
+        index: true,
       },
       {
         path: "analysis/workbook/:id",

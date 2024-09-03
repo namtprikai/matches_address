@@ -4,7 +4,7 @@ import { makeStyles, tokens } from "@fluentui/react-components";
 import {
   ArrowTrendingLinesRegular,
   DocumentBulletListRegular,
-  SettingsFilled,
+  Bug16Filled,
 } from "@fluentui/react-icons";
 
 const useStyles = makeStyles({
@@ -45,30 +45,45 @@ const useStyles = makeStyles({
   },
 });
 
+/**
+ * @ref createHashRouter
+ */
 const menuItems = [
-  {
-    icon: SettingsFilled,
-    label: "モデル管理",
-    value: "1",
-    href: "#",
-  },
-  {
-    icon: DocumentBulletListRegular,
-    label: "予測結果",
-    value: "2",
-    href: "#about",
-  },
   {
     icon: ArrowTrendingLinesRegular,
     label: "分析",
-    value: "3",
+    value: "1",
     href: "#analysis/workbook",
   },
   {
     icon: DocumentBulletListRegular,
-    label: "データセット",
+    label: "空き家判定",
+    value: "2",
+    href: "#",
+  },
+  {
+    icon: DocumentBulletListRegular,
+    label: "モデル管理",
+    value: "3",
+    href: "#",
+  },
+  {
+    icon: DocumentBulletListRegular,
+    label: "非同期処理",
     value: "4",
+    href: "#",
+  },
+  {
+    icon: DocumentBulletListRegular,
+    label: "データセット",
+    value: "5",
     href: "#dataset",
+  },
+  {
+    icon: Bug16Filled,
+    label: "(開発用)",
+    value: "6",
+    href: "#about",
   },
 ];
 
