@@ -25,6 +25,12 @@ const useStyles = makeStyles({
     display: "grid",
     gap: tokens.spacingVerticalXXL,
   },
+  year: {
+    display: "grid",
+    gridTemplateColumns: "1fr auto 1fr",
+    alignItems: "center",
+    gap: tokens.spacingHorizontalXS,
+  },
   area: {
     display: "flex",
     justifyContent: "space-between",
@@ -54,7 +60,10 @@ const AREA_ITEMS = [
 ];
 
 const formSchema = z.object({
-  period: z.string().optional() /** 仮: 範囲指定になるらしい */,
+  year: z.object({
+    start: z.number().or(z.string().optional().default("下限なし")),
+    end: z.number().or(z.string().optional().default("上限なし")),
+  }),
   areas: z.array(z.string()).optional().default([]),
 });
 
@@ -83,19 +92,31 @@ export const EditResultViewFilterFields = (): JSX.Element => {
         <FieldLegend>フィルター</FieldLegend>
 
         <Field label="期間">
-          <Select
-            {...register("period")}
-            defaultValue={new Date().getFullYear()}
-          >
-            {[...Array(30)]
-              .map((_, i) => new Date().getFullYear() - i)
-              .reverse()
-              .map((item) => (
-                <option key={item} value={item}>
-                  {item}
-                </option>
-              ))}
-          </Select>
+          <div className={styles.year}>
+            <Select>
+              <option value="下限なし">下限なし</option>
+              {[...Array(5)]
+                .map((_, i) => new Date().getFullYear() - i)
+                .reverse()
+                .map((item) => (
+                  <option key={item} value={item}>
+                    {item}
+                  </option>
+                ))}
+            </Select>
+            <span>〜</span>
+            <Select>
+              <option value="上限なし">上限なし</option>
+              {[...Array(5)]
+                .map((_, i) => new Date().getFullYear() - i)
+                .reverse()
+                .map((item) => (
+                  <option key={item} value={item}>
+                    {item}
+                  </option>
+                ))}
+            </Select>
+          </div>
         </Field>
 
         <Field label="地域">
