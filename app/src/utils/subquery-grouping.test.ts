@@ -30,17 +30,31 @@ beforeAll(async () => {
 
 
 describe("サブクエリを利用したグルーピングのテスト", () => {
-    test("サブクエリの実行", () => {
+    test("カラム単位の平均を取得する", () => {
         const res = subqueryGrouping(dz, data_set_detail_buildings, "depth_group", "depth", [
             { operation: "eq", value: 10, label: "eq10" },
             { operation: "noteq", value: 20, label: "noteq20" },
-        ]);
-
+        ], "avg");
 
         expect(res).toStrictEqual(
             [
                 { depth_group: "eq10", depth: 10 },
                 { depth_group: "noteq20", depth: 40 },
+            ]
+        )
+    });
+
+
+    test("カラム単位の合計を取得する", () => {
+        const res = subqueryGrouping(dz, data_set_detail_buildings, "depth_group", "depth", [
+            { operation: "eq", value: 10, label: "eq10" },
+            { operation: "noteq", value: 20, label: "noteq20" },
+        ], "avg");
+
+        expect(res).toStrictEqual(
+            [
+                { depth_group: "eq10", depth: 10 },
+                { depth_group: "noteq20", depth: 120 },
             ]
         )
     });
