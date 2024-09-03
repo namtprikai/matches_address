@@ -49,7 +49,7 @@ describe("サブクエリを利用したグルーピングのテスト", () => {
         const res = subqueryGrouping(dz, data_set_detail_buildings, "depth_group", "depth", [
             { operation: "eq", value: 10, label: "eq10" },
             { operation: "noteq", value: 20, label: "noteq20" },
-        ], "avg");
+        ], "sum");
 
         expect(res).toStrictEqual(
             [
