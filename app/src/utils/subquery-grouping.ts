@@ -1,9 +1,8 @@
 import Database from "better-sqlite3";
-import { type Query, type SQL, sql, type Subquery } from "drizzle-orm";
+import { type SQL, sql, } from "drizzle-orm";
 import { drizzle, type BetterSQLite3Database } from "drizzle-orm/better-sqlite3";
 import { migrate } from "drizzle-orm/better-sqlite3/migrator";
-import { type SubqueryWithSelection } from "drizzle-orm/pg-core";
-import { type SQLiteSelect, type SQLiteSelectBase, SQLiteSyncDialect, type SQLiteTableWithColumns } from "drizzle-orm/sqlite-core";
+import { SQLiteSyncDialect, type SQLiteTableWithColumns } from "drizzle-orm/sqlite-core";
 import { data_set_detail_buildings } from "../schema";
 
 type Condition = {
@@ -81,6 +80,7 @@ if (import.meta.vitest) {
     })
 }
 
+// eslint-disable-next-line @typescript-eslint/explicit-function-return-type -- ignore
 export const subqueryGrouping = <T extends SQLiteTableWithColumns<any>>(drizzle: BetterSQLite3Database, db: T, groupLabel: string, key: string, conditions: Condition[]) => {
     const subQuery = subQueryFromConditions(drizzle, db, groupLabel, key, conditions);
 
@@ -88,9 +88,6 @@ export const subqueryGrouping = <T extends SQLiteTableWithColumns<any>>(drizzle:
         [groupLabel]: sql.raw(`${groupLabel}`),
         [key]: sql.raw(`avg(${key}) as ${key}`),
     }).from(subQuery.as("groups")).groupBy(sql.raw(`${groupLabel}`)).having(sql.raw(`${groupLabel} <> ''`));
-
-    console.log(query.toSQL())
-
 
     return query.all();
 }
