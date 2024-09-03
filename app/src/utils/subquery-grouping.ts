@@ -11,6 +11,8 @@ type Condition = {
     label: string
 }
 
+type CalcOption = "sum" | "avg";
+
 const conditionsToCaseQuery = (key: string, conditions: Condition[
 ]): SQL => {
 
@@ -81,12 +83,12 @@ if (import.meta.vitest) {
 }
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type -- ignore
-export const subqueryGrouping = <T extends SQLiteTableWithColumns<any>>(drizzle: BetterSQLite3Database, db: T, groupLabel: string, key: string, conditions: Condition[]) => {
+export const subqueryGrouping = <T extends SQLiteTableWithColumns<any>>(drizzle: BetterSQLite3Database, db: T, groupLabel: string, key: string, conditions: Condition[], calc: CalcOption = "avg") => {
     const subQuery = subQueryFromConditions(drizzle, db, groupLabel, key, conditions);
 
     const query = drizzle.select({
         [groupLabel]: sql.raw(`${groupLabel}`),
-        [key]: sql.raw(`avg(${key}) as ${key}`),
+        [key]: sql.raw(`${calc}(${key}) as ${key}`),
     }).from(subQuery.as("groups")).groupBy(sql.raw(`${groupLabel}`)).having(sql.raw(`${groupLabel} <> ''`));
 
     return query.all();
