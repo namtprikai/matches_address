@@ -59,10 +59,13 @@ const AREA_ITEMS = [
   "弥富市",
 ];
 
+const LOWER_LIMIT = "下限なし";
+const UPPER_LIMIT = "上限なし";
+
 const formSchema = z.object({
   year: z.object({
-    start: z.number().or(z.string().optional().default("下限なし")),
-    end: z.number().or(z.string().optional().default("上限なし")),
+    start: z.number().or(z.enum([LOWER_LIMIT]).optional().default(LOWER_LIMIT)),
+    end: z.number().or(z.enum([UPPER_LIMIT]).optional().default(UPPER_LIMIT)),
   }),
   areas: z.array(z.string()).optional().default([]),
 });
@@ -93,8 +96,13 @@ export const EditResultViewFilterFields = (): JSX.Element => {
 
         <Field label="期間">
           <div className={styles.year}>
-            <Select>
-              <option value="下限なし">下限なし</option>
+            <Select
+              {...register("year.start", {
+                setValueAs: (v: FormType["year"]["start"]) =>
+                  v === LOWER_LIMIT ? v : Number(v),
+              })}
+            >
+              <option value={LOWER_LIMIT}>{LOWER_LIMIT}</option>
               {[...Array(5)]
                 .map((_, i) => new Date().getFullYear() - i)
                 .reverse()
@@ -105,8 +113,13 @@ export const EditResultViewFilterFields = (): JSX.Element => {
                 ))}
             </Select>
             <span>〜</span>
-            <Select>
-              <option value="上限なし">上限なし</option>
+            <Select
+              {...register("year.end", {
+                setValueAs: (v: FormType["year"]["end"]) =>
+                  v === UPPER_LIMIT ? v : Number(v),
+              })}
+            >
+              <option value={UPPER_LIMIT}>{UPPER_LIMIT}</option>
               {[...Array(5)]
                 .map((_, i) => new Date().getFullYear() - i)
                 .reverse()
