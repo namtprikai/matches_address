@@ -1,9 +1,8 @@
 import Database from "better-sqlite3";
 import { drizzle, type BetterSQLite3Database } from "drizzle-orm/better-sqlite3";
 import { migrate } from "drizzle-orm/better-sqlite3/migrator";
-import { afterAll, beforeAll, describe, expect, test } from "vitest";
-import { a } from "vitest/dist/chunks/suite.CcK46U-P.js";
-import { data_set_detail_areas, data_set_detail_buildings } from "../schema";
+import { beforeAll, describe, expect, test } from "vitest";
+import { data_set_detail_buildings } from "../schema";
 import { subqueryGrouping } from "./subquery-grouping";
 
 let dz: BetterSQLite3Database;
