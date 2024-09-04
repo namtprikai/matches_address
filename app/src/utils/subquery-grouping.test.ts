@@ -57,4 +57,17 @@ describe("サブクエリを利用したグルーピングのテスト", () => {
             ]
         )
     });
+
+    test("範囲条件でのカラム単位の平均を取得する", () => {
+
+        const res = subqueryGrouping(dz, data_set_detail_buildings, "depth_group", "depth", [
+            { operation: "range", startValue: 10, includesStart: true, lastValue: 30, includesLast: true, label: "10_to_30s" },
+        ], "avg");
+
+        expect(res).toStrictEqual(
+            [
+                { depth_group: "10_to_30s", depth: 20 },
+            ]
+        )
+    });
 });
