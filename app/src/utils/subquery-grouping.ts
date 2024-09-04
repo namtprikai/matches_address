@@ -31,7 +31,6 @@ type CalcOption = "sum" | "avg";
 const conditionsToCaseQuery = (key: string, conditions: Condition[]): SQL => {
     const conditionSQL: SQL[] = conditions.map((condition) => {
 
-
         if (condition.operation === "eq" || condition.operation === "noteq") {
             return sql.raw(
                 `when ${key} ${condition.operation === "eq" ? "=" : "<>"} ${condition.value} then '${condition.label}'`,
@@ -49,12 +48,14 @@ const conditionsToCaseQuery = (key: string, conditions: Condition[]): SQL => {
             const includesStart = condition.includesStart;
             const includesLast = condition.includesLast;
 
+            // 開始値の条件クエリを作成
             const startQuery = startValue === undefined ? "" : `${key} ${includesStart === true ? ">=" : ">"} ${startValue}`;
+            // 終了値の条件クエリを作成
             const lastQuery = lastValue === undefined ? "" : `${key} ${includesLast === true ? "<=" : "<"} ${lastValue}`;
 
-            if (startQuery && !lastQuery) {
+            if (startQuery && !lastQuery) { // 範囲条件で始まりのみの場合
                 return sql.raw(`when ${startQuery} then '${condition.label}'`);
-            } else if (lastQuery && !startQuery) {
+            } else if (lastQuery && !startQuery) { // 範囲条件で終わりのみの場合                
                 return sql.raw(`when ${lastQuery} then '${condition.label}'`);
             }
             return sql.raw(`when ${startQuery} and ${lastQuery} then '${condition.label}'`);
