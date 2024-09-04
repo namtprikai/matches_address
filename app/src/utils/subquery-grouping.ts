@@ -53,12 +53,11 @@ const conditionsToCaseQuery = (key: string, conditions: Condition[]): SQL => {
             const lastQuery = lastValue === undefined ? "" : `${key} ${includesLast === true ? "<=" : "<"} ${lastValue}`;
 
             if (startQuery && !lastQuery) {
-                return sql.raw(`when ${lastQuery} then '${condition.label}'`);
-            } else if (lastQuery && !startQuery) {
                 return sql.raw(`when ${startQuery} then '${condition.label}'`);
+            } else if (lastQuery && !startQuery) {
+                return sql.raw(`when ${lastQuery} then '${condition.label}'`);
             }
-            return sql.raw(`when ${lastQuery
-                } then '${condition.label}'`);
+            return sql.raw(`when ${startQuery} and ${lastQuery} then '${condition.label}'`);
         }
 
         return sql.raw("");
