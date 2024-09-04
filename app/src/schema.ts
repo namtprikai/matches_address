@@ -12,6 +12,9 @@ export const users = sqliteTable("users", {
   name: text("name"),
 });
 
+export type SelectUser = typeof users.$inferSelect;
+export type InsertUser = typeof users.$inferInsert;
+
 export const workbooks = sqliteTable("workbooks", {
   id: integer("id").primaryKey(),
   title: text("title"),
@@ -23,6 +26,9 @@ export const workbooks = sqliteTable("workbooks", {
     .notNull()
     .$onUpdate(() => sql`(CURRENT_TIMESTAMP)`),
 });
+
+export type SelectWorkbook = typeof workbooks.$inferSelect;
+export type InsertWorkbook = typeof workbooks.$inferInsert;
 
 export const result_sheets = sqliteTable("result_sheets", {
   id: integer("id").primaryKey(),
@@ -36,6 +42,9 @@ export const result_sheets = sqliteTable("result_sheets", {
     .notNull()
     .$onUpdate(() => sql`(CURRENT_TIMESTAMP)`),
 });
+
+export type SelectResultSheet = typeof result_sheets.$inferSelect;
+export type InsertResultSheet = typeof result_sheets.$inferInsert;
 
 export const result_views = sqliteTable("result_views", {
   id: integer("id").primaryKey(),
@@ -68,6 +77,9 @@ export const result_views = sqliteTable("result_views", {
     .$onUpdate(() => sql`(CURRENT_TIMESTAMP)`),
 });
 
+export type SelectResultView = typeof result_views.$inferSelect;
+export type InsertResultView = typeof result_views.$inferInsert;
+
 export const data_set_results = sqliteTable("data_set_results", {
   id: integer("id").primaryKey(),
   title: text("title"),
@@ -79,6 +91,9 @@ export const data_set_results = sqliteTable("data_set_results", {
     .notNull()
     .$onUpdate(() => sql`(CURRENT_TIMESTAMP)`),
 });
+
+export type SelectDataSetResult = typeof data_set_results.$inferSelect;
+export type InsertDataSetResult = typeof data_set_results.$inferInsert;
 
 export const data_set_detail_buildings = sqliteTable(
   "data_set_detail_buildings",
@@ -407,6 +422,11 @@ export const data_set_detail_buildings = sqliteTable(
   },
 );
 
+export type SelectDataSetDetailBuilding =
+  typeof data_set_detail_buildings.$inferSelect;
+export type InsertDataSetDetailBuilding =
+  typeof data_set_detail_buildings.$inferInsert;
+
 export const data_set_detail_areas = sqliteTable("data_set_detail_areas", {
   id: integer("id").primaryKey(),
   data_set_result_id: integer("data_set_result_id"),
@@ -485,3 +505,6 @@ export const data_set_detail_areas = sqliteTable("data_set_detail_areas", {
     .notNull()
     .$onUpdate(() => sql`(CURRENT_TIMESTAMP)`),
 });
+
+export type SelectDataSetDetailArea = typeof data_set_detail_areas.$inferSelect;
+export type InsertDataSetDetailArea = typeof data_set_detail_areas.$inferInsert;
