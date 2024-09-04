@@ -5,7 +5,7 @@ import {
 } from "../schema";
 import { db } from "../utils/db";
 import { type ChartProps } from "../@types/charts";
-import { DATA_SET_DETAIL_BUILIDNG_COLUMN_CONFIG } from "../config/data-columns";
+import { DATA_SET_DETAIL_AREA_COLUMN_CONFIG, DATA_SET_DETAIL_BUILIDNG_COLUMN_CONFIG } from "../config/data-columns";
 import { formatChartValue } from "../utils/format-chart-value";
 import { type IpcMainListener } from ".";
 
@@ -25,18 +25,30 @@ export const filterDataSetForChart = ((
             .where(eq(data_set_detail_areas.data_set_result_id, resultId))
             .all();
 
+        // @ts-expect-error TODO: この辺りの型定義は別途修正が必要
+        const percentage = DATA_SET_DETAIL_AREA_COLUMN_CONFIG[y].percentage;
+
         return {
             data: all.map((row: typeof data_set_detail_areas.$inferSelect) => {
                 return {
                     x: row[x] as string,
-                    y: row[y] as number, // TODO: この辺りの型定義は別途修正が必要
+                    // TODO: この辺りの型定義は別途修正が必要
+                    y: formatChartValue(row[y] ?? "", percentage) as number,
                 }
             }),
             xAxisColumn: {
-                type: "string", // TODO: この辺りの型定義は別途修正が必要
+                type: "string",
+                // @ts-expect-error TODO: この辺りの型定義は別途修正が必要
+                unit: DATA_SET_DETAIL_AREA_COLUMN_CONFIG[x].unit,
+                // @ts-expect-error TODO: この辺りの型定義は別途修正が必要
+                label: DATA_SET_DETAIL_AREA_COLUMN_CONFIG[x].label,
             },
             yAxisColumn: {
-                type: "number", // TODO: この辺りの型定義は別途修正が必要
+                type: "number",
+                // @ts-expect-error TODO: この辺りの型定義は別途修正が必要
+                unit: DATA_SET_DETAIL_AREA_COLUMN_CONFIG[y].unit,
+                // @ts-expect-error TODO: この辺りの型定義は別途修正が必要
+                label: DATA_SET_DETAIL_AREA_COLUMN_CONFIG[y].label,
             },
         };
     }
@@ -55,7 +67,7 @@ export const filterDataSetForChart = ((
                 return {
                     x: row[x] as string,
                     // TODO: この辺りの型定義は別途修正が必要
-                    y: formatChartValue(row[y] as number, percentage),
+                    y: formatChartValue(row[y] ?? "", percentage) as number,
                 }
             }),
             xAxisColumn: {

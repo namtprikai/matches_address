@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "53b22ac3-d96f-4c46-8cdd-4c30933a0c2c",
+  "id": "c06f48e2-c44d-42de-9b77-4e8b1371943a",
   "prevId": "240efd9c-3311-46fc-89c2-22eca20ff711",
   "tables": {
     "data_set_detail_areas": {
@@ -17,6 +17,69 @@
         "data_set_result_id": {
           "name": "data_set_result_id",
           "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "reference_date": {
+          "name": "reference_date",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "address": {
+          "name": "address",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "young_population_ratio": {
+          "name": "young_population_ratio",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "elderly_population_ratio": {
+          "name": "elderly_population_ratio",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "total_building_count": {
+          "name": "total_building_count",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "vacant_house_ratio": {
+          "name": "vacant_house_ratio",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "area": {
+          "name": "area",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "geometry": {
+          "name": "geometry",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "key_code": {
+          "name": "key_code",
+          "type": "text",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
@@ -78,151 +141,277 @@
           "name": "reference_date",
           "type": "text",
           "primaryKey": false,
-          "notNull": false,
+          "notNull": true,
           "autoincrement": false
         },
-        "number_of_people_in_household": {
-          "name": "number_of_people_in_household",
+        "household_size": {
+          "name": "household_size",
           "type": "integer",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
         },
-        "number_of_people_under_15_years_old": {
-          "name": "number_of_people_under_15_years_old",
+        "members_under_15": {
+          "name": "members_under_15",
           "type": "integer",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
         },
-        "composition_ratio_of_people_under_15_years_old": {
-          "name": "composition_ratio_of_people_under_15_years_old",
+        "percentage_under_15": {
+          "name": "percentage_under_15",
           "type": "real",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
         },
-        "number_of_people_aged_15_to_64": {
-          "name": "number_of_people_aged_15_to_64",
+        "members_15_to_64": {
+          "name": "members_15_to_64",
           "type": "integer",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
         },
-        "composition_ratio_of_people_aged_15_to_64": {
-          "name": "composition_ratio_of_people_aged_15_to_64",
+        "percentage_15_to_64": {
+          "name": "percentage_15_to_64",
           "type": "real",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
         },
-        "number_of_people_aged_65_and_over": {
-          "name": "number_of_people_aged_65_and_over",
+        "members_over_65": {
+          "name": "members_over_65",
           "type": "integer",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
         },
-        "composition_ratio_of_people_aged_65_and_over": {
-          "name": "composition_ratio_of_people_aged_65_and_over",
+        "percentage_over_65": {
+          "name": "percentage_over_65",
           "type": "real",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
         },
-        "male_to_female_ratio": {
-          "name": "male_to_female_ratio",
+        "gender_ratio": {
+          "name": "gender_ratio",
           "type": "real",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
         },
-        "period_of_residence": {
-          "name": "period_of_residence",
+        "residence_duration": {
+          "name": "residence_duration",
           "type": "integer",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
         },
-        "water_number_suido_residence": {
-          "name": "water_number_suido_residence",
+        "water_supply_number": {
+          "name": "water_supply_number",
           "type": "text",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
         },
-        "closing_flag_suido_residence": {
-          "name": "closing_flag_suido_residence",
+        "water_disconnection_flag": {
+          "name": "water_disconnection_flag",
           "type": "integer",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
         },
-        "maximum_water_usage_suido_residence": {
-          "name": "maximum_water_usage_suido_residence",
+        "max_water_usage": {
+          "name": "max_water_usage",
           "type": "real",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
         },
-        "average_water_usage_suido_residence": {
-          "name": "average_water_usage_suido_residence",
+        "avg_water_usage": {
+          "name": "avg_water_usage",
           "type": "real",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
         },
-        "total_water_usage_suido_residence": {
-          "name": "total_water_usage_suido_residence",
+        "total_water_usage": {
+          "name": "total_water_usage",
           "type": "real",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
         },
-        "minimum_water_usage_suido_residence": {
-          "name": "minimum_water_usage_suido_residence",
+        "min_water_usage": {
+          "name": "min_water_usage",
           "type": "real",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
         },
-        "name_source_information_suido_residence": {
-          "name": "name_source_information_suido_residence",
+        "water_supply_source_info": {
+          "name": "water_supply_source_info",
           "type": "text",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
         },
-        "structure_name_touki_residence": {
-          "name": "structure_name_touki_residence",
+        "structure_name": {
+          "name": "structure_name",
           "type": "text",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
         },
-        "registration_date_touki_residence": {
-          "name": "registration_date_touki_residence",
+        "registration_date": {
+          "name": "registration_date",
           "type": "text",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
         },
-        "name_source_information_touki_residence": {
-          "name": "name_source_information_touki_residence",
+        "registration_source_info": {
+          "name": "registration_source_info",
           "type": "text",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
         },
-        "id_akiya_result_cleaned": {
-          "name": "id_akiya_result_cleaned",
+        "vacant_house_id": {
+          "name": "vacant_house_id",
           "type": "text",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
         },
-        "address_akiya_result_cleaned": {
-          "name": "address_akiya_result_cleaned",
+        "vacant_house_address": {
+          "name": "vacant_house_address",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "vacant_house_longitude": {
+          "name": "vacant_house_longitude",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "vacant_house_latitude": {
+          "name": "vacant_house_latitude",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "vacant_house_source_info": {
+          "name": "vacant_house_source_info",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "geocoded_address": {
+          "name": "geocoded_address",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "geocoded_longitude": {
+          "name": "geocoded_longitude",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "geocoded_latitude": {
+          "name": "geocoded_latitude",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "geocoding_source_info": {
+          "name": "geocoding_source_info",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "has_water_supply": {
+          "name": "has_water_supply",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "has_juki_registry": {
+          "name": "has_juki_registry",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "has_touki_registry": {
+          "name": "has_touki_registry",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "has_juki_and_water": {
+          "name": "has_juki_and_water",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "has_vacant_result": {
+          "name": "has_vacant_result",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "has_juki_water_property": {
+          "name": "has_juki_water_property",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "has_geocoding": {
+          "name": "has_geocoding",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "has_juki_water_property_vacant": {
+          "name": "has_juki_water_property_vacant",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "fid": {
+          "name": "fid",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "gml_id": {
+          "name": "gml_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "class": {
+          "name": "class",
           "type": "text",
           "primaryKey": false,
           "notNull": false,
@@ -242,6 +431,69 @@
           "notNull": false,
           "autoincrement": false
         },
+        "measuredheight_uom": {
+          "name": "measuredheight_uom",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "src_scale": {
+          "name": "src_scale",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "geometry_src_desc": {
+          "name": "geometry_src_desc",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "thematic_src_desc": {
+          "name": "thematic_src_desc",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "lod1_height_type": {
+          "name": "lod1_height_type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "building_id": {
+          "name": "building_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "prefecture": {
+          "name": "prefecture",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "city": {
+          "name": "city",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
         "rank": {
           "name": "rank",
           "type": "integer",
@@ -256,6 +508,27 @@
           "notNull": false,
           "autoincrement": false
         },
+        "depth_uom": {
+          "name": "depth_uom",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "admin_type": {
+          "name": "admin_type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "scale": {
+          "name": "scale",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
         "duration": {
           "name": "duration",
           "type": "real",
@@ -263,65 +536,142 @@
           "notNull": false,
           "autoincrement": false
         },
-        "number_of_floors_above_ground": {
-          "name": "number_of_floors_above_ground",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "number_of_basement_floors": {
-          "name": "number_of_basement_floors",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "buildingdisasterriskattribute_buildinginlandfloodingriskattribute_description": {
-          "name": "buildingdisasterriskattribute_buildinginlandfloodingriskattribute_description",
+        "duration_uom": {
+          "name": "duration_uom",
           "type": "text",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
         },
-        "buildingdisasterriskattribute_buildinginlandfloodingriskattribute_rank": {
-          "name": "buildingdisasterriskattribute_buildinginlandfloodingriskattribute_rank",
+        "building_use": {
+          "name": "building_use",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "floors_above_ground": {
+          "name": "floors_above_ground",
           "type": "integer",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
         },
-        "buildingdisasterriskattribute_buildinginlandfloodingriskattribute_depth": {
-          "name": "buildingdisasterriskattribute_buildinginlandfloodingriskattribute_depth",
+        "floors_below_ground": {
+          "name": "floors_below_ground",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "value": {
+          "name": "value",
           "type": "real",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
         },
-        "buildingdisasterriskattribute_buildingriverfloodingriskattribute_description": {
-          "name": "buildingdisasterriskattribute_buildingriverfloodingriskattribute_description",
+        "value_uom": {
+          "name": "value_uom",
           "type": "text",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
         },
-        "buildingdisasterriskattribute_buildingriverfloodingriskattribute_rank": {
-          "name": "buildingdisasterriskattribute_buildingriverfloodingriskattribute_rank",
+        "inland_flooding_risk_desc": {
+          "name": "inland_flooding_risk_desc",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "inland_flooding_risk_rank": {
+          "name": "inland_flooding_risk_rank",
           "type": "integer",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
         },
-        "buildingdisasterriskattribute_buildingriverfloodingriskattribute_depth": {
-          "name": "buildingdisasterriskattribute_buildingriverfloodingriskattribute_depth",
+        "inland_flooding_risk_depth": {
+          "name": "inland_flooding_risk_depth",
           "type": "real",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
         },
-        "buildingdisasterriskattribute_buildinglandslideriskattribute_description": {
-          "name": "buildingdisasterriskattribute_buildinglandslideriskattribute_description",
+        "inland_flooding_risk_depth_uom": {
+          "name": "inland_flooding_risk_depth_uom",
           "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "river_flooding_risk_desc": {
+          "name": "river_flooding_risk_desc",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "river_flooding_risk_rank": {
+          "name": "river_flooding_risk_rank",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "river_flooding_risk_depth": {
+          "name": "river_flooding_risk_depth",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "river_flooding_risk_depth_uom": {
+          "name": "river_flooding_risk_depth_uom",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "landslide_risk_desc": {
+          "name": "landslide_risk_desc",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "large_store_name": {
+          "name": "large_store_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "appearance_src_desc": {
+          "name": "appearance_src_desc",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "branch_id": {
+          "name": "branch_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "residence_id": {
+          "name": "residence_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "is_test": {
+          "name": "is_test",
+          "type": "integer",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
@@ -333,15 +683,22 @@
           "notNull": false,
           "autoincrement": false
         },
-        "pred": {
-          "name": "pred",
+        "area_type": {
+          "name": "area_type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "predicted_label": {
+          "name": "predicted_label",
           "type": "integer",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
         },
-        "pred_proba": {
-          "name": "pred_proba",
+        "predicted_probability": {
+          "name": "predicted_probability",
           "type": "real",
           "primaryKey": false,
           "notNull": false,
@@ -501,7 +858,7 @@
         },
         "parameters": {
           "name": "parameters",
-          "type": "blog",
+          "type": "blob",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
