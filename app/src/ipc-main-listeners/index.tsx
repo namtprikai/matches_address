@@ -2,6 +2,7 @@ import { type ipcMain } from "electron";
 import { execFile } from "child_process";
 import path from "path";
 import { promisify } from "util";
+import { fetchReferenceYears } from "../components/map/fetch-reference-years";
 import { getNames } from "./get-names";
 import { saveName } from "./save-name";
 import { helloFromPython } from "./hello-from-python";
@@ -42,6 +43,7 @@ export const ipcMainListeners = {
   selectResultView,
   filterDataSetForChart,
   filterDataSetForTable,
+  fetchReferenceYears,
 };
 
 export const execFileAsync = promisify(execFile);
