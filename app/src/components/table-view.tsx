@@ -9,8 +9,8 @@ import {
   tokens,
 } from "@fluentui/react-components";
 import {
-  type data_set_detail_areas,
-  type data_set_detail_buildings,
+  type SelectDataSetDetailArea,
+  type SelectDataSetDetailBuilding,
 } from "../schema";
 import { useFetchFilterDataSetForTable } from "../hooks/use-fetch-filtered-data-set-for-table";
 
@@ -37,13 +37,13 @@ type TableViewProps = {
 } & (
   | {
       type: "building";
-      dataSetResult: typeof data_set_detail_buildings.$inferSelect;
-      columns: (keyof typeof data_set_detail_buildings.$inferSelect)[];
+      dataSetResult: SelectDataSetDetailBuilding;
+      columns: (keyof SelectDataSetDetailBuilding)[];
     }
   | {
       type: "area";
-      dataSetResult: typeof data_set_detail_areas.$inferSelect;
-      columns: (keyof typeof data_set_detail_areas.$inferSelect)[];
+      dataSetResult: SelectDataSetDetailArea;
+      columns: (keyof SelectDataSetDetailArea)[];
     }
 );
 
