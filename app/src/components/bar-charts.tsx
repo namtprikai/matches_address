@@ -39,6 +39,7 @@ export const BarChart = ({
   x,
   y,
 }: BarChartProps): JSX.Element => {
+  // @ts-expect-error TODO: Unionが正しく分配されない
   const { chartProps } = useFetchFilterDataSetForChart({
     resultId,
     type,
