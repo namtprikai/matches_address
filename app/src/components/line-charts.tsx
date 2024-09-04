@@ -14,24 +14,24 @@ import {
   makeStyles,
 } from "@fluentui/react-components";
 import { CHART_COLORS } from "../config/chart-colors";
-import {
-  type data_set_detail_areas,
-  type data_set_detail_buildings,
-} from "../schema";
 import { useFetchFilterDataSetForChart } from "../hooks/use-fetch-filtered-data-set-for-chart";
+import {
+  type SelectDataSetDetailArea,
+  type SelectDataSetDetailBuilding,
+} from "../schema";
 
 export type LineChartProps = {
   resultId: number;
 } & (
   | {
       type: "building";
-      x: keyof typeof data_set_detail_buildings.$inferSelect;
-      y: keyof typeof data_set_detail_buildings.$inferSelect;
+      x: keyof SelectDataSetDetailBuilding;
+      y: keyof SelectDataSetDetailBuilding;
     }
   | {
       type: "area";
-      x: keyof typeof data_set_detail_areas.$inferSelect;
-      y: keyof typeof data_set_detail_areas.$inferSelect;
+      x: keyof SelectDataSetDetailArea;
+      y: keyof SelectDataSetDetailArea;
     }
 );
 
@@ -131,7 +131,6 @@ export const LineChart = ({
   x,
   y,
 }: LineChartProps): JSX.Element => {
-  // @ts-expect-error TODO: Unionが正しく分配されない
   const { chartProps } = useFetchFilterDataSetForChart({
     resultId,
     type,
