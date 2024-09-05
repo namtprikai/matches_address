@@ -9,6 +9,7 @@
     "format": "prettier --write \"**/*.{ts,tsx,md}\""
   },
   "devDependencies": {
+    "electron": "^32.0.2",
     "prettier": "^3.2.5",
     "turbo": "^2.0.7",
     "typescript": "^5.4.5"
@@ -20,5 +21,8 @@
   "workspaces": [
     "app",
     "ml"
-  ]
+  ],
+  "dependencies": {
+    "better-sqlite3": "^11.2.1"
+  }
 }
