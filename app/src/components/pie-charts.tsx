@@ -6,24 +6,24 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { CHART_COLORS } from "../config/chart-colors";
-import {
-  type data_set_detail_areas,
-  type data_set_detail_buildings,
-} from "../schema";
 import { useFetchFilterDataSetForChart } from "../hooks/use-fetch-filtered-data-set-for-chart";
+import {
+  type SelectDataSetDetailBuilding,
+  type SelectDataSetDetailArea,
+} from "../schema";
 
 export type PieChartProps = {
   resultId: number;
 } & (
   | {
       type: "building";
-      x: keyof typeof data_set_detail_buildings.$inferSelect;
-      y: keyof typeof data_set_detail_buildings.$inferSelect;
+      x: keyof SelectDataSetDetailBuilding;
+      y: keyof SelectDataSetDetailBuilding;
     }
   | {
       type: "area";
-      x: keyof typeof data_set_detail_areas.$inferSelect;
-      y: keyof typeof data_set_detail_areas.$inferSelect;
+      x: keyof SelectDataSetDetailArea;
+      y: keyof SelectDataSetDetailArea;
     }
 );
 

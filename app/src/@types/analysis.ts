@@ -1,3 +1,3 @@
-import { type data_set_detail_buildings } from "../schema";
+import { type SelectDataSetDetailBuilding } from "../schema";
 
-export type DataSetDetailBuidlings = typeof data_set_detail_buildings.$inferSelect;
+export type DataSetDetailBuildings = SelectDataSetDetailBuilding;

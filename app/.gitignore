@@ -94,3 +94,8 @@ out/
 database/
 .temp
 chubu.pmtiles
+
+# Playwright
+.playwright/
+test-results/
+playwright-report/

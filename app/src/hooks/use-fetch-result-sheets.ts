@@ -1,14 +1,15 @@
 import { useEffect, useState } from "react";
-import { type result_sheets } from "../schema";
-
-type ResultSheet = typeof result_sheets.$inferSelect;
+import { type SelectResultSheet } from "../schema";
 
 export const useFetchResultSheets = ({
   id,
 }: {
   id: string | undefined;
-}): { data: ResultSheet[]; refetch: (workbookId: string) => Promise<void> } => {
-  const [resultSheets, setResultSheets] = useState<ResultSheet[]>([]);
+}): {
+  data: SelectResultSheet[];
+  refetch: (workbookId: string) => Promise<void>;
+} => {
+  const [resultSheets, setResultSheets] = useState<SelectResultSheet[]>([]);
 
   const fetchResultSheets = async (workbookId: string): Promise<void> => {
     const result = await window.ipcRenderer.invoke("selectResultSheets", {

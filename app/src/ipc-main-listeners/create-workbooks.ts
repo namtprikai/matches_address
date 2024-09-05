@@ -1,8 +1,6 @@
-import { workbooks, result_sheets } from "../schema";
+import { workbooks, result_sheets, type InsertWorkbook } from "../schema";
 import { db } from "../utils/db";
 import { type IpcMainListener } from ".";
-
-type InsertWorkbook = typeof workbooks.$inferInsert;
 
 /**
  * ワークブックを新規作成
