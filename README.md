@@ -15,7 +15,6 @@
 npm install
 ```
 
-
 アプリの開発サーバーを立ち上げる
 
 ```
@@ -40,3 +39,9 @@ npm run make
 2. `app/`配下で `npm run generate:migration` を実行しマイグレーションファイルを作成する
    ※既存スキーマの更新の際は上記のみだとエラーになることがあるため、`drizzle`フォルダを削除してから実行する([詳細](https://github.com/eukarya-inc/links-akiya/pull/13#discussion_r1694019271))
 3. `app/drizzle/` 配下にマイグレーションファイルが生成されていれば OK
+
+## E2Eテストの実行
+
+- `npm run build`もしくは`npm run make --workspace=app`でビルド
+- `npm run test:e2e --workspace`を実行
+- テストは `tests/sample.e2e.ts` をコピーして作成すること。ファイル名は`*.e2e.ts`にすること（詳しくはplaywright.config.tsを見てください）

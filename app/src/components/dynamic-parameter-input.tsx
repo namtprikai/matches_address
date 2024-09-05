@@ -3,7 +3,7 @@ import { type DropdownProps } from "@fluentui/react-components";
 import { type ResultViewFieldOption } from "../@types/charts";
 import {
   DATA_SET_DETAIL_AREA_COLUMN_CONFIG,
-  DATA_SET_DETAIL_BUILIDNG_COLUMN_CONFIG,
+  DATA_SET_DETAIL_BUILDING_COLUMN_CONFIG,
 } from "../config/data-columns";
 import { Select } from "./ui/select";
 import { DynamicColumnOptions } from "./dynamic-column-options";
@@ -70,7 +70,7 @@ export const DynamicParameterInput = forwardRef<
           ? props.value
               .split(",")
               // @ts-expect-error TODO: この辺りの型定義は別途修正が必要
-              .map((v) => DATA_SET_DETAIL_BUILIDNG_COLUMN_CONFIG[v].label)
+              .map((v) => DATA_SET_DETAIL_BUILDING_COLUMN_CONFIG[v].label)
               .join(",")
           : props.value
               .split(",")

@@ -1,9 +1,9 @@
-import {
-  type data_set_detail_areas,
-  type data_set_detail_buildings,
-} from "../schema";
 import { type SelectResultViewResponse } from "../ipc-main-listeners/select-result-view";
 import { type Parameter } from "../@types/charts";
+import {
+  type SelectDataSetDetailArea,
+  type SelectDataSetDetailBuilding,
+} from "../schema";
 import { BarChart } from "./bar-charts";
 import { LineChart } from "./line-charts";
 import { PieChart } from "./pie-charts";
@@ -19,17 +19,17 @@ type Props = {
       type: "building";
       parameters: {
         key: string;
-        value: keyof typeof data_set_detail_buildings.$inferSelect;
+        value: keyof SelectDataSetDetailBuilding;
       } & Parameter[];
-      dataSetResults: typeof data_set_detail_buildings.$inferSelect;
+      dataSetResults: SelectDataSetDetailBuilding;
     }
   | {
       type: "area";
       parameters: {
         key: string;
-        value: keyof typeof data_set_detail_areas.$inferSelect;
+        value: keyof SelectDataSetDetailArea;
       } & Parameter[];
-      dataSetResults: typeof data_set_detail_areas.$inferSelect;
+      dataSetResults: SelectDataSetDetailArea;
     }
 );
 

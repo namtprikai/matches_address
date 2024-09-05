@@ -12,6 +12,9 @@ export const users = sqliteTable("users", {
   name: text("name"),
 });
 
+export type SelectUser = typeof users.$inferSelect;
+export type InsertUser = typeof users.$inferInsert;
+
 export const workbooks = sqliteTable("workbooks", {
   id: integer("id").primaryKey(),
   title: text("title"),
@@ -23,6 +26,9 @@ export const workbooks = sqliteTable("workbooks", {
     .notNull()
     .$onUpdate(() => sql`(CURRENT_TIMESTAMP)`),
 });
+
+export type SelectWorkbook = typeof workbooks.$inferSelect;
+export type InsertWorkbook = typeof workbooks.$inferInsert;
 
 export const result_sheets = sqliteTable("result_sheets", {
   id: integer("id").primaryKey(),
@@ -36,6 +42,9 @@ export const result_sheets = sqliteTable("result_sheets", {
     .notNull()
     .$onUpdate(() => sql`(CURRENT_TIMESTAMP)`),
 });
+
+export type SelectResultSheet = typeof result_sheets.$inferSelect;
+export type InsertResultSheet = typeof result_sheets.$inferInsert;
 
 export const result_views = sqliteTable("result_views", {
   id: integer("id").primaryKey(),
@@ -68,6 +77,9 @@ export const result_views = sqliteTable("result_views", {
     .$onUpdate(() => sql`(CURRENT_TIMESTAMP)`),
 });
 
+export type SelectResultView = typeof result_views.$inferSelect;
+export type InsertResultView = typeof result_views.$inferInsert;
+
 export const data_set_results = sqliteTable("data_set_results", {
   id: integer("id").primaryKey(),
   title: text("title"),
@@ -79,6 +91,9 @@ export const data_set_results = sqliteTable("data_set_results", {
     .notNull()
     .$onUpdate(() => sql`(CURRENT_TIMESTAMP)`),
 });
+
+export type SelectDataSetResult = typeof data_set_results.$inferSelect;
+export type InsertDataSetResult = typeof data_set_results.$inferInsert;
 
 export const data_set_detail_buildings = sqliteTable(
   "data_set_detail_buildings",
@@ -100,29 +115,25 @@ export const data_set_detail_buildings = sqliteTable(
 
     /**
      * 世帯人数
-     * 
+     *
      * 0以上の整数
      */
     household_size: integer("household_size"),
     /**
      * 15歳未満の世帯人数
-     * 
+     *
      * 0以上の整数
      */
-    members_under_15: integer(
-      "members_under_15",
-    ),
+    members_under_15: integer("members_under_15"),
     /**
      * 15歳未満の世帯に対する人数比
      *
      * 0~1の小数で表現（8byte 浮動小数点）
      */
-    percentage_under_15: real(
-      "percentage_under_15",
-    ),
+    percentage_under_15: real("percentage_under_15"),
     /**
      * 15歳以上64歳以下の世帯人数
-     * 
+     *
      * 0以上の整数
      */
     members_15_to_64: integer("members_15_to_64"),
@@ -131,25 +142,19 @@ export const data_set_detail_buildings = sqliteTable(
      *
      * 0~1の小数で表現（8byte 浮動小数点）
      */
-    percentage_15_to_64: real(
-      "percentage_15_to_64",
-    ),
+    percentage_15_to_64: real("percentage_15_to_64"),
     /**
      * 65歳以上の世帯人数
-     * 
+     *
      * 0以上の整数
      */
-    members_over_65: integer(
-      "members_over_65",
-    ),
+    members_over_65: integer("members_over_65"),
     /**
      * 65歳以上の世帯に対する人数比
      *
      * 0~1の小数で表現（8byte 浮動小数点）
      */
-    percentage_over_65: real(
-      "percentage_over_65",
-    ),
+    percentage_over_65: real("percentage_over_65"),
     /**
      * 男女比
      *
@@ -181,45 +186,35 @@ export const data_set_detail_buildings = sqliteTable(
      * 単位：m^3
      * 小数で表現（8byte 浮動小数点）
      */
-    max_water_usage: real(
-      "max_water_usage",
-    ),
+    max_water_usage: real("max_water_usage"),
     /**
      * 平均水道使用量
      *
      * 単位：m^3
      * 小数で表現（8byte 浮動小数点）
      */
-    avg_water_usage: real(
-      "avg_water_usage",
-    ),
+    avg_water_usage: real("avg_water_usage"),
     /**
      * 合計水道使用量
      *
      * 単位：m^3
      * 小数で表現（8byte 浮動小数点）
      */
-    total_water_usage: real(
-      "total_water_usage",
-    ),
+    total_water_usage: real("total_water_usage"),
     /**
      * 最小水道使用量
      *
      * 単位：m^3
      * 小数で表現（8byte 浮動小数点）
      */
-    min_water_usage: real(
-      "min_water_usage",
-    ),
+    min_water_usage: real("min_water_usage"),
 
     /**
      * 名寄せ元情報_水道
      *
      * 文字列：任意の文字列
      */
-    water_supply_source_info: text(
-      "water_supply_source_info",
-    ),
+    water_supply_source_info: text("water_supply_source_info"),
 
     /**
      * 登記上の構造名称
@@ -232,17 +227,13 @@ export const data_set_detail_buildings = sqliteTable(
      *
      * YYYY-MM-DD形式の文字列
      */
-    registration_date: text(
-      "registration_date",
-    ),
+    registration_date: text("registration_date"),
     /**
      * 名寄せ元情報_住基
      *
      * 文字列：任意の文字列
      */
-    registration_source_info: text(
-      "registration_source_info",
-    ),
+    registration_source_info: text("registration_source_info"),
     /**
      * ID_空き家結果_データクレンジング済
      *
@@ -271,14 +262,12 @@ export const data_set_detail_buildings = sqliteTable(
     has_geocoding: integer("has_geocoding"),
     has_juki_water_property_vacant: integer("has_juki_water_property_vacant"),
 
-
     fid: text("fid"),
     /**
      * GML ID
      */
     gml_id: text("gml_id"),
     class: text("class"),
-
 
     /**
      * ジオメトリデータ
@@ -304,7 +293,6 @@ export const data_set_detail_buildings = sqliteTable(
     prefecture: text("prefecture"),
     city: text("city"),
     description: text("description"),
-
 
     /**
      * 洪水浸水ランク
@@ -354,68 +342,47 @@ export const data_set_detail_buildings = sqliteTable(
      *
      * 文字列：任意の文字列
      */
-    inland_flooding_risk_desc:
-      text(
-        "inland_flooding_risk_desc",
-      ),
+    inland_flooding_risk_desc: text("inland_flooding_risk_desc"),
     /**
      * 洪水浸水リスク属性_ランク
      *
      * 整数
      */
-    inland_flooding_risk_rank:
-      integer(
-        "inland_flooding_risk_rank",
-      ),
+    inland_flooding_risk_rank: integer("inland_flooding_risk_rank"),
     /**
      * 洪水浸水リスク属性_浸水深
      *
      * 単位：m
      * 小数で表現
      */
-    inland_flooding_risk_depth:
-      real(
-        "inland_flooding_risk_depth",
-      ),
+    inland_flooding_risk_depth: real("inland_flooding_risk_depth"),
     inland_flooding_risk_depth_uom: text("inland_flooding_risk_depth_uom"),
     /**
      * 洪水氾濫リスク属性_建物
      *
      * 文字列：任意の文字列
      */
-    river_flooding_risk_desc:
-      text(
-        "river_flooding_risk_desc",
-      ),
+    river_flooding_risk_desc: text("river_flooding_risk_desc"),
     /**
      * 洪水氾濫リスク属性_ランク
      *
      * 整数
      */
-    river_flooding_risk_rank:
-      integer(
-        "river_flooding_risk_rank",
-      ),
+    river_flooding_risk_rank: integer("river_flooding_risk_rank"),
     /**
      * 洪水氾濫リスク属性_氾濫深長
      *
      * 単位：m
      * 小数で表現
      */
-    river_flooding_risk_depth:
-      real(
-        "river_flooding_risk_depth",
-      ),
+    river_flooding_risk_depth: real("river_flooding_risk_depth"),
     river_flooding_risk_depth_uom: text("river_flooding_risk_depth_uom"),
     /**
      * 地滑りリスク属性_建物
      *
      * 文字列：任意の文字列
      */
-    landslide_risk_desc:
-      text(
-        "landslide_risk_desc",
-      ),
+    landslide_risk_desc: text("landslide_risk_desc"),
 
     large_store_name: text("large_store_name"),
     appearance_src_desc: text("appearance_src_desc"),
@@ -455,58 +422,62 @@ export const data_set_detail_buildings = sqliteTable(
   },
 );
 
+export type SelectDataSetDetailBuilding =
+  typeof data_set_detail_buildings.$inferSelect;
+export type InsertDataSetDetailBuilding =
+  typeof data_set_detail_buildings.$inferInsert;
+
 export const data_set_detail_areas = sqliteTable("data_set_detail_areas", {
   id: integer("id").primaryKey(),
   data_set_result_id: integer("data_set_result_id"),
 
   /**
    * 基準日
-   * 
+   *
    * 判定の基準となる日付
-   * 
+   *
    * YYYY-MM-DD形式の文字列
    */
   reference_date: text("reference_date").notNull(),
 
   /**
    * 住所
-   * 
+   *
    * 文字列：任意の文字列
    */
   address: text("address"),
 
-
   /**
    * 若年層率
-   * 
+   *
    * 0~1の小数で表現（8byte 浮動小数点）
    */
   young_population_ratio: real("young_population_ratio"),
 
   /**
    * 高齢者率
-   * 
+   *
    * 0~1の小数で表現（8byte 浮動小数点）
    */
   elderly_population_ratio: real("elderly_population_ratio"),
 
   /**
    * 建物数
-   * 
+   *
    * 0以上の整数
    */
   total_building_count: integer("total_building_count"),
 
   /**
    * 空き家率
-   * 
+   *
    * 0~1の小数で表現（8byte 浮動小数点）
    */
   vacant_house_ratio: real("vacant_house_ratio"),
 
   /**
    * 面積
-   * 
+   *
    * 単位：m^2
    * 小数で表現（8byte 浮動小数点）
    */
@@ -514,14 +485,14 @@ export const data_set_detail_areas = sqliteTable("data_set_detail_areas", {
 
   /**
    * ジオメトリ
-   * 
+   *
    * 文字列：任意の文字列
    */
   geometry: text("geometry"),
 
   /**
    * KEYCODE
-   * 
+   *
    * 任意の文字列
    */
   key_code: text("key_code"),
@@ -534,3 +505,6 @@ export const data_set_detail_areas = sqliteTable("data_set_detail_areas", {
     .notNull()
     .$onUpdate(() => sql`(CURRENT_TIMESTAMP)`),
 });
+
+export type SelectDataSetDetailArea = typeof data_set_detail_areas.$inferSelect;
+export type InsertDataSetDetailArea = typeof data_set_detail_areas.$inferInsert;
