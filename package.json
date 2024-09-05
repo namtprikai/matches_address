@@ -21,8 +21,5 @@
   "workspaces": [
     "app",
     "ml"
-  ],
-  "dependencies": {
-    "better-sqlite3": "^11.2.1"
-  }
+  ]
 }
