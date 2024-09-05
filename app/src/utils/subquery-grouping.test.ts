@@ -2,8 +2,9 @@ import Database from "better-sqlite3";
 import { drizzle, type BetterSQLite3Database } from "drizzle-orm/better-sqlite3";
 import { migrate } from "drizzle-orm/better-sqlite3/migrator";
 import { beforeAll, describe, expect, test } from "vitest";
+import { sql } from "drizzle-orm";
 import { data_set_detail_buildings } from "../schema";
-import { subqueryGrouping } from "./subquery-grouping";
+import { subQueryFromConditions } from "./subquery-grouping";
 
 let dz: BetterSQLite3Database;
 const count = 5;
@@ -29,11 +30,22 @@ beforeAll(async () => {
 
 
 describe("サブクエリを利用したグルーピングのテスト", () => {
+
+    const key = "depth";
+    const groupLabel = key + "_group";
     test("カラム単位の平均を取得する", () => {
-        const res = subqueryGrouping(dz, data_set_detail_buildings, "depth_group", "depth", [
+        const subQuery = subQueryFromConditions(dz, data_set_detail_buildings, groupLabel, key, [
             { operation: "eq", value: 10, label: "eq10" },
             { operation: "noteq", value: 20, label: "noteq20" },
-        ], "avg");
+        ]);
+
+        const res = dz.select({
+            [groupLabel]: sql.raw(`${groupLabel}`),
+            [key]: sql.raw(`avg(${key}) as ${key}`),
+        })
+            .from(subQuery.as("groups"))
+            .groupBy(sql.raw(`${groupLabel}`))
+            .having(sql.raw(`${groupLabel} <> ''`)).all();
 
         expect(res).toStrictEqual(
             [
@@ -45,10 +57,19 @@ describe("サブクエリを利用したグルーピングのテスト", () => {
 
 
     test("カラム単位の合計を取得する", () => {
-        const res = subqueryGrouping(dz, data_set_detail_buildings, "depth_group", "depth", [
+
+        const subQuery = subQueryFromConditions(dz, data_set_detail_buildings, groupLabel, key, [
             { operation: "eq", value: 10, label: "eq10" },
             { operation: "noteq", value: 20, label: "noteq20" },
-        ], "sum");
+        ]);
+
+        const res = dz.select({
+            [groupLabel]: sql.raw(`${groupLabel}`),
+            [key]: sql.raw(`sum(${key}) as ${key}`),
+        })
+            .from(subQuery.as("groups"))
+            .groupBy(sql.raw(`${groupLabel}`))
+            .having(sql.raw(`${groupLabel} <> ''`)).all();;
 
         expect(res).toStrictEqual(
             [
@@ -60,9 +81,17 @@ describe("サブクエリを利用したグルーピングのテスト", () => {
 
     test("範囲条件でのカラム単位の平均を取得する", () => {
 
-        const res = subqueryGrouping(dz, data_set_detail_buildings, "depth_group", "depth", [
+        const subQuery = subQueryFromConditions(dz, data_set_detail_buildings, groupLabel, key, [
             { operation: "range", startValue: 10, includesStart: true, lastValue: 30, includesLast: true, label: "10_to_30s" },
-        ], "avg");
+        ]);
+
+        const res = dz.select({
+            [groupLabel]: sql.raw(`${groupLabel}`),
+            [key]: sql.raw(`avg(${key}) as ${key}`),
+        })
+            .from(subQuery.as("groups"))
+            .groupBy(sql.raw(`${groupLabel}`))
+            .having(sql.raw(`${groupLabel} <> ''`)).all();;
 
         expect(res).toStrictEqual(
             [

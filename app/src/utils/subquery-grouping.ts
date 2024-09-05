@@ -147,7 +147,7 @@ if (import.meta.vitest) {
 }
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type -- ignore
-const subQueryFromConditions = <T extends SQLiteTableWithColumns<any>>(
+export const subQueryFromConditions = <T extends SQLiteTableWithColumns<any>>(
     drizzle: BetterSQLite3Database,
     db: T,
     groupLabel: string,
@@ -195,32 +195,3 @@ if (import.meta.vitest) {
         });
     });
 }
-
-// eslint-disable-next-line @typescript-eslint/explicit-function-return-type -- ignore
-export const subqueryGrouping = <T extends SQLiteTableWithColumns<any>>(
-    drizzle: BetterSQLite3Database,
-    db: T,
-    groupLabel: string,
-    key: string,
-    conditions: Condition[],
-    calc: CalcOption = "avg",
-) => {
-    const subQuery = subQueryFromConditions(
-        drizzle,
-        db,
-        groupLabel,
-        key,
-        conditions,
-    );
-
-    const query = drizzle
-        .select({
-            [groupLabel]: sql.raw(`${groupLabel}`),
-            [key]: sql.raw(`${calc}(${key}) as ${key}`),
-        })
-        .from(subQuery.as("groups"))
-        .groupBy(sql.raw(`${groupLabel}`))
-        .having(sql.raw(`${groupLabel} <> ''`));
-
-    return query.all();
-};
