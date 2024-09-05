@@ -21,6 +21,7 @@
     "noUnusedParameters": true,
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
+    "useDefineForClassFields": true,
 
     // 出力
     "outDir": "dist",
