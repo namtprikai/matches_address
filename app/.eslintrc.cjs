@@ -27,7 +27,7 @@ module.exports = {
   },
   parser: "@typescript-eslint/parser",
   parserOptions: {
-    project: ["./tsconfig.json"],
+    project: ["./tsconfig.base.json", "./tsconfig.forge.json"],
     tsconfigRootDir: __dirname,
   },
   plugins: ["eslint-comments"],

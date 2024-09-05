@@ -6,8 +6,8 @@ import {
 import {
   DATA_SET_DETAIL_AREA_COLUMN,
   DATA_SET_DETAIL_AREA_COLUMN_CONFIG,
-  DATA_SET_DETAIL_BUILIDNG_COLUMN,
-  DATA_SET_DETAIL_BUILIDNG_COLUMN_CONFIG,
+  DATA_SET_DETAIL_BUILDING_COLUMN,
+  DATA_SET_DETAIL_BUILDING_COLUMN_CONFIG,
 } from "../config/data-columns";
 
 type Props = {
@@ -26,9 +26,9 @@ export const DynamicColumnOptions = ({
   type,
 }: Props): JSX.Element[] | null => {
   if (unit === "building") {
-    return DATA_SET_DETAIL_BUILIDNG_COLUMN.filter((column) => {
+    return DATA_SET_DETAIL_BUILDING_COLUMN.filter((column) => {
       const matchedType = fieldOption.accept.filter((type) => {
-        return DATA_SET_DETAIL_BUILIDNG_COLUMN_CONFIG[column].type === type;
+        return DATA_SET_DETAIL_BUILDING_COLUMN_CONFIG[column].type === type;
       });
 
       if (matchedType.length === 0) return false;
@@ -38,7 +38,7 @@ export const DynamicColumnOptions = ({
       if (type === "select") {
         return (
           <option key={column} value={column}>
-            {DATA_SET_DETAIL_BUILIDNG_COLUMN_CONFIG[column].label}
+            {DATA_SET_DETAIL_BUILDING_COLUMN_CONFIG[column].label}
           </option>
         );
       }
@@ -46,10 +46,10 @@ export const DynamicColumnOptions = ({
         return (
           <Option
             key={column}
-            text={DATA_SET_DETAIL_BUILIDNG_COLUMN_CONFIG[column].label}
+            text={DATA_SET_DETAIL_BUILDING_COLUMN_CONFIG[column].label}
             value={column}
           >
-            {DATA_SET_DETAIL_BUILIDNG_COLUMN_CONFIG[column].label}
+            {DATA_SET_DETAIL_BUILDING_COLUMN_CONFIG[column].label}
           </Option>
         );
       }

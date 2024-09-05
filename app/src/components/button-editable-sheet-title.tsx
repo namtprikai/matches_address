@@ -10,7 +10,7 @@ import {
 import { useRef, useState } from "react";
 import { useNavigate, type FormProps } from "react-router-dom";
 import { useAtom } from "jotai";
-import { type result_sheets } from "../schema";
+import { type result_sheets, type SelectResultSheet } from "../schema";
 import { useOnClickOutside } from "../hooks/use-on-click-outside";
 import { resultSheetsAtom } from "../state/result-sheets-atom";
 import { selectedResultSheetIdAtom } from "../state/selected-result-sheet-id-atom";
@@ -20,10 +20,8 @@ import { DialogTitle } from "./ui/dialog-title";
 import { DialogActions } from "./ui/dialog-actions";
 import { Button } from "./ui/button";
 
-type ResultSheet = typeof result_sheets.$inferSelect;
-
 type Props = {
-  resultSheet: Pick<ResultSheet, "id" | "title">;
+  resultSheet: Pick<SelectResultSheet, "id" | "title">;
 };
 
 const useStyles = makeStyles({
