@@ -26,8 +26,6 @@ type Condition =
         includesLast?: boolean;
     })
 
-type CalcOption = "sum" | "avg";
-
 const conditionsToCaseQuery = (key: string, conditions: Condition[]): SQL => {
     const conditionSQL: SQL[] = conditions.map((condition) => {
 
