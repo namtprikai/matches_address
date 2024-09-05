@@ -1,39 +1,6 @@
 {
-  "compilerOptions": {
-    // 基本
-    "target": "ESNext",
-    "module": "ESNext",
-    "lib": ["ESNext", "DOM", "DOM.Iterable"],
-    "jsx": "react-jsx",
-
-    // モジュール解決
-    "moduleResolution": "Bundler",
-    "resolveJsonModule": true,
-    "esModuleInterop": true,
-
-    // 型チェック
-    "strict": true,
-    "noImplicitAny": true,
-    "strictNullChecks": true,
-    "noImplicitThis": true,
-    "alwaysStrict": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    "noImplicitReturns": true,
-    "noFallthroughCasesInSwitch": true,
-
-    // 出力
-    "outDir": "dist",
-    "sourceMap": true,
-    "noEmit": true,
-
-    // その他
-    "allowJs": true,
-    "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true,
-
-    // CSS Modulesファイルのインポートエラーを回避する
-    "types": ["vite/client", "vitest/importMeta"]
-  },
-  "exclude": ["node_modules", "dist"]
+  "references": [
+    { "path": "./tsconfig.base.json" },
+    { "path": "./tsconfig.forge.json" }
+  ]
 }
