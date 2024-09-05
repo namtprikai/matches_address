@@ -1,11 +1,12 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { makeStyles, tokens } from "@fluentui/react-components";
+import { type data_set_detail_buildings } from "../../schema";
 import {
   VacancyLevelCheckbox,
   type VacancyLevels,
 } from "./vacancy-level-checkbox";
-import { DisplayPeriodDropdown } from "./display-period-dropdown";
 import { type BuildingData, MapComponent } from "./map-component";
+import { DisplayPeriodDropdown } from "./display-period-dropdown";
 
 const useStyles = makeStyles({
   filters: {
@@ -22,6 +23,8 @@ const useStyles = makeStyles({
   },
 });
 
+type Buildings = (typeof data_set_detail_buildings.$inferSelect)[];
+
 interface Props {
   data: BuildingData;
 }
@@ -34,6 +37,58 @@ export function Map({ data }: Props): JSX.Element {
     high: true,
   });
   const [selectedYear, setSelectedYear] = useState<number>(data[0].year);
+  const [buildings, setBuildings] = useState<Buildings | undefined>(undefined);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+
+  // eslint-disable-next-line no-console -- for debugging
+  console.log("buildings", buildings?.[0]);
+
+  useEffect(() => {
+    const fetchData = async (): Promise<void> => {
+      const batchSize = 10000;
+      let lastId = 0;
+      let allData: Buildings = [];
+
+      try {
+        // eslint-disable-next-line no-constant-condition -- バッチ処理のため無限ループ
+        while (true) {
+          const batch = await window.ipcRenderer.invoke(
+            "fetchBuildingsInBatches",
+            {
+              dataSetResultsId: 1,
+              batchSize,
+              lastId,
+            },
+          );
+
+          if (batch.length === 0) {
+            throw new Error("Network response was not ok");
+          }
+
+          allData = [...allData, ...batch];
+
+          if (batch.length < batchSize) {
+            // 最後のバッチを取得完了
+            break;
+          }
+
+          lastId = batch[batch.length - 1].id;
+        }
+
+        setBuildings(allData);
+        setIsLoading(false);
+      } catch (error) {
+        console.error("Error fetching data: ", error);
+        setIsLoading(false);
+      }
+    };
+
+    void fetchData();
+  }, []);
+
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <div>
