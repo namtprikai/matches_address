@@ -21,6 +21,8 @@ import { readResultViews } from "./read-result-views";
 import { filterDataSetForChart } from "./filter-data-set-for-chart";
 import { selectResultView } from "./select-result-view";
 import { filterDataSetForTable } from "./filter-data-set-for-table";
+import { deleteResultView } from "./delete-result-view";
+import { deleteResultSheet } from "./delete-result-sheet";
 
 export const ipcMainListeners = {
   getNames,
@@ -32,6 +34,7 @@ export const ipcMainListeners = {
   selectWorkbook,
   selectResultSheets,
   insertResultSheets,
+  deleteResultSheet,
   selectDataSetResults,
   createDataSetResults,
   updateResultSheets,
@@ -40,6 +43,7 @@ export const ipcMainListeners = {
   updateResultViews,
   readResultViews,
   selectResultView,
+  deleteResultView,
   filterDataSetForChart,
   filterDataSetForTable,
 };
