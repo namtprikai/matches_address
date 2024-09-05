@@ -2,6 +2,7 @@ import { type Map } from "maplibre-gl";
 import { type FeatureCollection } from "geojson";
 import { useState, useEffect } from "react";
 import { type VacancyLevels } from "../vacancy-level-checkbox";
+import { type data_set_detail_buildings } from "../../../schema";
 
 export const VACANCY_RATE_HIGH = 0.8;
 export const VACANCY_RATE_MEDIUM = 0.3;
@@ -9,11 +10,23 @@ export const VACANCY_RATE_MEDIUM = 0.3;
 export function addGeojsonSource(
   map: Map,
   sourceId: string,
-  geojsonData: FeatureCollection,
+  buildings: (typeof data_set_detail_buildings.$inferSelect)[],
 ): void {
   map.addSource(sourceId, {
     type: "geojson",
-    data: geojsonData,
+    data: {
+      type: "FeatureCollection",
+      features: buildings.map((building) => ({
+        type: "Feature",
+        geometry: {
+          type: "Polygon",
+          coordinates: JSON.parse(building.geometry),
+        },
+        properties: {
+          predicted_probability: building.predicted_probability,
+        },
+      })),
+    },
   });
 }
 

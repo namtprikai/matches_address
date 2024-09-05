@@ -5,7 +5,8 @@ import { Protocol } from "pmtiles";
 import { renderToString } from "react-dom/server";
 import { makeStyles } from "@fluentui/react-components";
 import { type VacancyLevels } from "../vacancy-level-checkbox";
-import { addGeojsonLayer, addGeojsonSource, useGeojsonData } from "./utils";
+import { type data_set_detail_buildings } from "../../../schema";
+import { addGeojsonLayer, addGeojsonSource } from "./utils";
 import { BuildingPopup } from "./building-popup";
 
 export interface Building {
@@ -60,20 +61,20 @@ const useMapComponentStyles = makeStyles({
 });
 
 interface Props {
-  data: BuildingData;
-  selectedYear: number;
+  buildings: (typeof data_set_detail_buildings.$inferSelect)[] | null;
+  // selectedYear: number;
   vacancyLevels: VacancyLevels;
 }
 
 export function MapComponent({
-  data,
-  selectedYear,
+  buildings,
+  // selectedYear,
   vacancyLevels,
 }: Props): JSX.Element {
   const styles = useMapComponentStyles();
   const containerRef = useRef<HTMLDivElement | null>(null);
   const [mapInstance, setMapInstance] = useState<Map | null>(null);
-  const geojsonData = useGeojsonData(vacancyLevels);
+  // const geojsonData = useGeojsonData(vacancyLevels);
 
   useEffect(function initializeMap() {
     if (!containerRef.current) return;
@@ -97,11 +98,11 @@ export function MapComponent({
   useEffect(
     function updateMap() {
       if (!mapInstance) return;
-      if (!geojsonData) return;
+      if (!buildings) return;
 
       const sourceId = "buildings";
       const layerId = "buildings-layer";
-      addGeojsonSource(mapInstance, sourceId, geojsonData);
+      addGeojsonSource(mapInstance, sourceId, buildings);
       addGeojsonLayer(mapInstance, layerId, sourceId);
       let popup: Popup | null = null;
       mapInstance.on("click", layerId, (e) => {
@@ -151,10 +152,10 @@ export function MapComponent({
       };
     },
     [
-      data,
-      geojsonData,
+      buildings,
+      // geojsonData,
       mapInstance,
-      selectedYear,
+      // selectedYear,
       vacancyLevels.high,
       vacancyLevels.low,
       vacancyLevels.medium,

@@ -5,8 +5,7 @@ import {
   VacancyLevelCheckbox,
   type VacancyLevels,
 } from "./vacancy-level-checkbox";
-import { type BuildingData, MapComponent } from "./map-component";
-import { DisplayPeriodDropdown } from "./display-period-dropdown";
+import { MapComponent } from "./map-component";
 
 const useStyles = makeStyles({
   filters: {
@@ -26,22 +25,25 @@ const useStyles = makeStyles({
 type Buildings = (typeof data_set_detail_buildings.$inferSelect)[];
 
 interface Props {
-  data: BuildingData;
+  dataSetResultsId: number;
+  type: "building" | "area";
 }
 
-export function Map({ data }: Props): JSX.Element {
+export function Map({ type, dataSetResultsId }: Props): JSX.Element {
   const styles = useStyles();
   const [vacancyLevels, setVacancyLevels] = useState<VacancyLevels>({
     low: true,
     medium: true,
     high: true,
   });
-  const [selectedYear, setSelectedYear] = useState<number>(data[0].year);
-  const [buildings, setBuildings] = useState<Buildings | undefined>(undefined);
+  // const [selectedYear, setSelectedYear] = useState<number>(data[0].year);
+  const [buildings, setBuildings] = useState<Buildings | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   // eslint-disable-next-line no-console -- for debugging
   console.log("buildings", buildings?.[0]);
+  // eslint-disable-next-line no-console -- for debugging
+  console.log("dataSetResultsId", dataSetResultsId);
 
   useEffect(() => {
     const fetchData = async (): Promise<void> => {
@@ -55,13 +57,13 @@ export function Map({ data }: Props): JSX.Element {
           const batch = await window.ipcRenderer.invoke(
             "fetchBuildingsInBatches",
             {
-              dataSetResultsId: 1,
+              dataSetResultsId,
               batchSize,
               lastId,
             },
           );
 
-          if (batch.length === 0) {
+          if (!batch) {
             throw new Error("Network response was not ok");
           }
 
@@ -84,7 +86,7 @@ export function Map({ data }: Props): JSX.Element {
     };
 
     void fetchData();
-  }, []);
+  }, [dataSetResultsId]);
 
   if (isLoading) {
     return <div>Loading...</div>;
@@ -104,19 +106,19 @@ export function Map({ data }: Props): JSX.Element {
         </div>
         <div className={styles.filter}>
           <div>表示期間</div>
-          <div>
+          {/* <div>
             <DisplayPeriodDropdown
               selectedYear={selectedYear}
               setSelectedYear={setSelectedYear}
               years={data.map((data) => data.year)}
             />
-          </div>
+          </div> */}
         </div>
       </div>
       <div className={styles.map}>
         <MapComponent
-          data={data}
-          selectedYear={selectedYear}
+          buildings={buildings}
+          // selectedYear={selectedYear}
           vacancyLevels={vacancyLevels}
         />
       </div>
