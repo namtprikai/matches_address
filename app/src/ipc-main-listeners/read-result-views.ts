@@ -2,15 +2,15 @@ import { eq, sql } from "drizzle-orm";
 import {
   result_views,
   data_set_results,
+  type SelectDataSetResult,
 } from "../schema";
 import { db } from "../utils/db";
 import { type SelectResultViewResponse } from "./select-result-view";
 import { type IpcMainListener } from ".";
 
-type DataSetResults = typeof data_set_results.$inferSelect;
 export type ReadResultViewsResponse = {
   result_views: SelectResultViewResponse;
-  data_set_results: DataSetResults;
+  data_set_results: SelectDataSetResult;
 }[];
 
 export const readResultViews = ((

@@ -9,18 +9,16 @@ import {
 } from "@fluentui/react-components";
 import { useRef, useState } from "react";
 import { type FormProps } from "react-router-dom";
-import { type result_sheets } from "../schema";
 import { useOnClickOutside } from "../hooks/use-on-click-outside";
+import { type SelectResultSheet } from "../schema";
 import { DialogSurface } from "./ui/dialog-surface";
 import { DialogBody } from "./ui/dialog-body";
 import { DialogTitle } from "./ui/dialog-title";
 import { DialogActions } from "./ui/dialog-actions";
 import { Button } from "./ui/button";
 
-type ResultSheet = typeof result_sheets.$inferSelect;
-
 type Props = {
-  resultSheet: Pick<ResultSheet, "id" | "title">;
+  resultSheet: Pick<SelectResultSheet, "id" | "title">;
 };
 
 const useStyles = makeStyles({

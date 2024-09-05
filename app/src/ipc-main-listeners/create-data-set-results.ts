@@ -2,11 +2,11 @@ import {
   data_set_detail_areas,
   data_set_detail_buildings,
   data_set_results,
+  type InsertDataSetDetailBuilding,
+  type InsertDataSetResult,
 } from "../schema";
 import { db } from "../utils/db";
 import { type IpcMainListener } from ".";
-
-type InsertDataSetResult = typeof data_set_results.$inferInsert;
 
 /** 開発用・実際にはアプリケーションからインサートすることはない */
 export const createDataSetResults = (async (
@@ -15,28 +15,37 @@ export const createDataSetResults = (async (
 ): Promise<void> => {
   await db.transaction(async (tx) => {
     const res = await tx.insert(data_set_results).values({ title }).returning();
-    await tx
-      .insert(data_set_detail_areas)
-      .values({ data_set_result_id: res[0].id, reference_date: "2021-01-01 12:00:00" });
-
+    await tx.insert(data_set_detail_areas).values({
+      data_set_result_id: res[0].id,
+      reference_date: "2021-01-01 12:00:00",
+    });
 
     /** 開発用のテストデータ生成ロジック、本番環境では利用しない  */
     for (let i = 0; i < 5; i++) {
-
-      const number_of_people_under_15_years_old = Math.floor(Math.random() * 10);
+      const number_of_people_under_15_years_old = Math.floor(
+        Math.random() * 10,
+      );
       const number_of_people_aged_15_to_64 = Math.floor(Math.random() * 10);
       const number_of_people_aged_65_and_over = Math.floor(Math.random() * 10);
-      const number_of_people_in_household = number_of_people_under_15_years_old + number_of_people_aged_15_to_64 + number_of_people_aged_65_and_over;
-      const composition_ratio_of_people_aged_15_to_64 = number_of_people_aged_15_to_64 / number_of_people_in_household;
-      const composition_ratio_of_people_aged_65_and_over = number_of_people_aged_65_and_over / number_of_people_in_household;
-      const composition_ratio_of_people_under_15_years_old = number_of_people_under_15_years_old / number_of_people_in_household
-      const number_of_male = Math.floor(Math.random() * number_of_people_in_household);
+      const number_of_people_in_household =
+        number_of_people_under_15_years_old +
+        number_of_people_aged_15_to_64 +
+        number_of_people_aged_65_and_over;
+      const composition_ratio_of_people_aged_15_to_64 =
+        number_of_people_aged_15_to_64 / number_of_people_in_household;
+      const composition_ratio_of_people_aged_65_and_over =
+        number_of_people_aged_65_and_over / number_of_people_in_household;
+      const composition_ratio_of_people_under_15_years_old =
+        number_of_people_under_15_years_old / number_of_people_in_household;
+      const number_of_male = Math.floor(
+        Math.random() * number_of_people_in_household,
+      );
       const number_of_female = number_of_people_in_household - number_of_male;
       const male_to_female_ratio = number_of_male / number_of_female;
 
       const pred = Math.random();
 
-      const insertion: typeof data_set_detail_buildings.$inferInsert = {
+      const insertion: InsertDataSetDetailBuilding = {
         data_set_result_id: res[0].id,
         household_code: `1000000${i}`,
         normalized_address: `東京都港区六本木${i}丁目`,
@@ -79,11 +88,9 @@ export const createDataSetResults = (async (
         name: `建物名${i}`,
         predicted_label: Math.round(pred),
         predicted_probability: pred,
-      }
+      };
 
-      await tx
-        .insert(data_set_detail_buildings)
-        .values(insertion);
+      await tx.insert(data_set_detail_buildings).values(insertion);
     }
   });
 }) satisfies IpcMainListener;

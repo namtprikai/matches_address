@@ -12,10 +12,8 @@ import {
   mergeClasses,
 } from "@fluentui/react-components";
 import { Link } from "react-router-dom";
-import { type workbooks } from "../schema";
 import { formatDate } from "../utils/format-date";
-
-type Workbook = typeof workbooks.$inferSelect;
+import { type SelectWorkbook } from "../schema";
 
 const useStyles = makeStyles({
   updatedAtHeaderCell: {
@@ -44,7 +42,7 @@ const useStyles = makeStyles({
 });
 
 export const TableWorkbook = (): JSX.Element => {
-  const [data, setData] = useState<Workbook[]>([]);
+  const [data, setData] = useState<SelectWorkbook[]>([]);
   const fetchData = async (): Promise<void> => {
     const result = await window.ipcRenderer.invoke("selectWorkbooks");
     setData(result);
