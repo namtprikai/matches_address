@@ -35,14 +35,8 @@ export function MapComponent({
     const protocol = new Protocol();
     addProtocol("pmtiles", protocol.tile);
 
-    const initializedMap = new Map({
-      container: containerRef.current,
-      style: "protomaps-basemaps.json",
-      center: [137.120435, 34.990565],
-      zoom: 19,
-      maxZoom: 18,
-      minZoom: 6,
-    });
+          zoom: 14,
+          maxZoom: 22,
 
     initializedMap.on("load", () => {
       setMapInstance(initializedMap);
