@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { addProtocol, Map } from "maplibre-gl";
 import { Protocol } from "pmtiles";
 import { makeStyles } from "@fluentui/react-components";
+import { type Polygon } from "geojson";
 import { type VacancyLevels } from "../vacancy-level-checkbox";
 import { addGeojsonLayer } from "./add-geojson-layer";
 
@@ -30,22 +31,48 @@ export function MapComponent({
   const containerRef = useRef<HTMLDivElement | null>(null);
   const [mapInstance, setMapInstance] = useState<Map | null>(null);
 
-  useEffect(function initializeMap() {
-    if (!containerRef.current) return;
-    const protocol = new Protocol();
-    addProtocol("pmtiles", protocol.tile);
+  useEffect(
+    function initializeMapEffect() {
+      const containerEl = containerRef.current;
+      if (!containerEl) return;
 
+      const protocol = new Protocol();
+      addProtocol("pmtiles", protocol.tile);
+
+      const initializeMap = async (): Promise<void> => {
+        const result = await window.ipcRenderer.invoke(
+          "fetchBuildingsInBatches",
+          {
+            dataSetResultsId,
+            batchSize: 1,
+          },
+        );
+
+        const coordinates: Polygon["coordinates"] = result?.[0].geometry
+          ? JSON.parse(result?.[0].geometry)
+          : null;
+        const center: [number, number] = coordinates
+          ? [coordinates[0][0][0], coordinates[0][0][1]]
+          : [137.120435, 34.990565];
+
+        const initializedMap = new Map({
+          container: containerEl,
+          style: "protomaps-basemaps.json",
+          center,
           zoom: 14,
           maxZoom: 22,
+          minZoom: 6,
+        });
 
-    initializedMap.on("load", () => {
-      setMapInstance(initializedMap);
-    });
+        initializedMap.on("load", () => {
+          setMapInstance(initializedMap);
+        });
+      };
 
-    return () => {
-      initializedMap.remove();
-    };
-  }, []);
+      void initializeMap();
+    },
+    [dataSetResultsId],
+  );
 
   useEffect(() => {
     if (!mapInstance) return;
