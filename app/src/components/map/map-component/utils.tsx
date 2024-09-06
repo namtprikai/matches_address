@@ -1,8 +1,10 @@
-import { type Map } from "maplibre-gl";
+import { Popup, type Map } from "maplibre-gl";
 import { type FeatureCollection } from "geojson";
 import { useState, useEffect } from "react";
+import { renderToString } from "react-dom/server";
 import { type VacancyLevels } from "../vacancy-level-checkbox";
 import { type data_set_detail_buildings } from "../../../schema";
+import { BuildingPopup } from "./building-popup";
 
 export const VACANCY_RATE_HIGH = 0.8;
 export const VACANCY_RATE_MEDIUM = 0.3;
@@ -32,8 +34,8 @@ export function addGeojsonSource(
 
 export function addGeojsonLayer(
   map: Map,
-  layerId: string,
   sourceId: string,
+  layerId: string,
 ): void {
   map.addLayer({
     id: layerId,
@@ -59,6 +61,45 @@ export function addGeojsonLayer(
         "#1B8C63", // 青 (30未満)
       ],
     },
+  });
+}
+
+export function addPopup(map: Map, layerId: string): void {
+  map.on("click", layerId, (e) => {
+    if (e.features && e.features.length > 0) {
+      const feature = e.features[0];
+      const properties = feature.properties;
+      const coordinates = e.lngLat;
+      const popupContent = renderToString(
+        <BuildingPopup
+          data={{
+            // デモデータ
+            address: "東京都千代田区丸の内1-1-1",
+            totalPopulation: 1000,
+            under14: 200,
+            between15And64: 600,
+            over65: 200,
+            waterUsage: "1000L",
+            waterStatus: "良好",
+            constructionDate: "2000年",
+            structureName: "RC造",
+            vacancyRate: properties?.predicted_probability,
+          }}
+        />,
+      );
+
+      new Popup().setLngLat(coordinates).setHTML(popupContent).addTo(map);
+    }
+  });
+
+  // ポリゴンレイヤーにマウスが乗ったときにカーソルを変更
+  map.on("mouseenter", layerId, () => {
+    map.getCanvas().style.cursor = "pointer";
+  });
+
+  // ポリゴンレイヤーからマウスが離れたときにカーソルを元に戻す
+  map.on("mouseleave", layerId, () => {
+    map.getCanvas().style.cursor = "";
   });
 }
 

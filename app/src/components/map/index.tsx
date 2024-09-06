@@ -22,8 +22,6 @@ const useStyles = makeStyles({
   },
 });
 
-type Buildings = (typeof data_set_detail_buildings.$inferSelect)[];
-
 interface Props {
   dataSetResultsId: number;
   type: "building" | "area";
@@ -37,60 +35,6 @@ export function Map({ type, dataSetResultsId }: Props): JSX.Element {
     high: true,
   });
   // const [selectedYear, setSelectedYear] = useState<number>(data[0].year);
-  const [buildings, setBuildings] = useState<Buildings | null>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
-
-  // eslint-disable-next-line no-console -- for debugging
-  console.log("buildings", buildings?.[0]);
-  // eslint-disable-next-line no-console -- for debugging
-  console.log("dataSetResultsId", dataSetResultsId);
-
-  useEffect(() => {
-    const fetchData = async (): Promise<void> => {
-      const batchSize = 10000;
-      let lastId = 0;
-      let allData: Buildings = [];
-
-      try {
-        // eslint-disable-next-line no-constant-condition -- バッチ処理のため無限ループ
-        while (true) {
-          const batch = await window.ipcRenderer.invoke(
-            "fetchBuildingsInBatches",
-            {
-              dataSetResultsId,
-              batchSize,
-              lastId,
-            },
-          );
-
-          if (!batch) {
-            throw new Error("Network response was not ok");
-          }
-
-          allData = [...allData, ...batch];
-
-          if (batch.length < batchSize) {
-            // 最後のバッチを取得完了
-            break;
-          }
-
-          lastId = batch[batch.length - 1].id;
-        }
-
-        setBuildings(allData);
-        setIsLoading(false);
-      } catch (error) {
-        console.error("Error fetching data: ", error);
-        setIsLoading(false);
-      }
-    };
-
-    void fetchData();
-  }, [dataSetResultsId]);
-
-  if (isLoading) {
-    return <div>Loading...</div>;
-  }
 
   return (
     <div>
@@ -117,7 +61,8 @@ export function Map({ type, dataSetResultsId }: Props): JSX.Element {
       </div>
       <div className={styles.map}>
         <MapComponent
-          buildings={buildings}
+          dataSetResultsId={dataSetResultsId}
+          type={type}
           // selectedYear={selectedYear}
           vacancyLevels={vacancyLevels}
         />

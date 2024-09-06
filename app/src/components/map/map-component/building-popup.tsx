@@ -2,7 +2,20 @@ import { forwardRef } from "react";
 import { mergeClasses } from "@fluentui/react-components";
 import styles from "./popup-styles.module.css";
 import { VACANCY_RATE_HIGH, VACANCY_RATE_MEDIUM } from "./utils";
-import { type Building } from ".";
+
+interface Building {
+  vacancyRate: number;
+  address: string;
+  totalPopulation: number;
+  under14: number;
+  between15And64: number;
+  over65: number;
+  waterUsage: string;
+  waterStatus: string;
+  constructionDate: string;
+  structureName: string;
+  coordinates: number[][][];
+}
 
 interface Props {
   data: Omit<Building, "coordinates"> | null;
