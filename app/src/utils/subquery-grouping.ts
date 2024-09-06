@@ -11,7 +11,7 @@ import {
 } from "drizzle-orm/sqlite-core";
 import { data_set_detail_buildings } from "../schema";
 
-type Condition =
+export type GroupingCondition =
     | {
         operation: "eq" | "noteq";
         value: string | number;
@@ -26,7 +26,7 @@ type Condition =
         includesLast?: boolean;
     })
 
-const conditionsToCaseQuery = (key: string, conditions: Condition[]): SQL => {
+const conditionsToCaseQuery = (key: string, conditions: GroupingCondition[]): SQL => {
     const conditionSQL: SQL[] = conditions.map((condition) => {
 
         if (condition.operation === "eq" || condition.operation === "noteq") {
@@ -150,7 +150,7 @@ export const subQueryFromConditions = <T extends SQLiteTableWithColumns<any>>(
     db: T,
     groupLabel: string,
     key: string,
-    conditions: Condition[],
+    conditions: GroupingCondition[],
 ) => {
     const caseQuery = conditionsToCaseQuery(key, conditions);
 
