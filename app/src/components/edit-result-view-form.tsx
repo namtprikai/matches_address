@@ -9,7 +9,7 @@ import {
 } from "@fluentui/react-components";
 import { useEffect } from "react";
 import { z } from "zod";
-import { data_set_detail_areas, result_views } from "../schema";
+import { result_views, type SelectResultView } from "../schema";
 import { LanguageMap } from "../lang";
 import { selectedResultViewIdAtom } from "../state/selected-result-view-id-atom";
 import { selectedResultViewAtom } from "../state/selected-result-view-atom";
@@ -99,9 +99,7 @@ export const EditResultViewForm = (): JSX.Element => {
     });
   }, [selectedResultView, reset]);
 
-  const resetParametersByStyle = (
-    style: (typeof result_views.$inferSelect)["style"],
-  ): void => {
+  const resetParametersByStyle = (style: SelectResultView["style"]): void => {
     if (!style) return;
     const option = RESULT_VIEW_CONFIG[style];
     if (!option) return;
@@ -127,8 +125,7 @@ export const EditResultViewForm = (): JSX.Element => {
           <Select
             {...register("style")}
             onChange={(e) => {
-              const value = e.target
-                .value as keyof (typeof result_views.$inferSelect)["style"];
+              const value = e.target.value as keyof SelectResultView["style"];
               // styleに合わせてparameterをリセット
               resetParametersByStyle(value);
               // スタイルの値を更新

@@ -4,15 +4,13 @@ import {
   makeStyles,
   tokens,
 } from "@fluentui/react-components";
-import { type data_set_results } from "../schema";
+import { type SelectDataSetResult } from "../schema";
 import { formatDate } from "../utils/format-date";
 import { Button } from "./ui/button";
 
-type DataSetResult = typeof data_set_results.$inferSelect;
-
 type Props = {
-  dataSetResults: DataSetResult[];
-  onClickItem?: (dataSetResult: DataSetResult) => void;
+  dataSetResults: SelectDataSetResult[];
+  onClickItem?: (dataSetResult: SelectDataSetResult) => void;
 };
 
 const useStyles = makeStyles({

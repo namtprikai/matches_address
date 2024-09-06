@@ -1,14 +1,12 @@
 import { sql } from "drizzle-orm";
-import { workbooks } from "../schema";
+import { type SelectWorkbook, workbooks } from "../schema";
 import { db } from "../utils/db";
 import { type IpcMainListener } from ".";
-
-type Workbook = typeof workbooks.$inferSelect;
 
 export const selectWorkbook = ((
   _: unknown,
   { id }: { id: number },
-): Workbook | undefined => {
+): SelectWorkbook | undefined => {
   const data = db
     .select()
     .from(workbooks)

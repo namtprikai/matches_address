@@ -11,7 +11,12 @@ import {
   Subtitle2,
   tokens,
 } from "@fluentui/react-components";
+import { useAtom } from "jotai";
 import { type data_set_results } from "../schema";
+import { THEME_COLORS } from "../config/theme-colors";
+import { type SelectResultViewResponse } from "../ipc-main-listeners/select-result-view";
+import { resultViewsAtom } from "../state/result-views-atom";
+import { type SelectDataSetResult } from "../schema";
 import { THEME_COLORS } from "../config/theme-colors";
 import { type SelectResultViewResponse } from "../ipc-main-listeners/select-result-view";
 import { TileViewStyle } from "./tile-view-style";
@@ -20,11 +25,10 @@ import { DialogBody } from "./ui/dialog-body";
 import { DialogTitle } from "./ui/dialog-title";
 import { DialogActions } from "./ui/dialog-actions";
 import { Button } from "./ui/button";
-type DataSetResults = typeof data_set_results.$inferSelect;
 
 type Props = CardProps & {
   resultView: SelectResultViewResponse;
-  dataSetResult: DataSetResults | null;
+  dataSetResult: SelectDataSetResult | null;
 };
 
 const useStyles = makeStyles({
@@ -54,6 +58,19 @@ export const TileResultView = ({
   ...cardProps
 }: Props): JSX.Element => {
   const styles = useStyles();
+
+  const [, refreshResultViews] = useAtom(resultViewsAtom);
+
+  const deleteResultView = async (): Promise<void> => {
+    await window.ipcRenderer.invoke("deleteResultView", {
+      resultViewId: resultView.id,
+    });
+  };
+
+  const handleDelete = async (): Promise<void> => {
+    await deleteResultView();
+    refreshResultViews();
+  };
 
   if (
     !resultView.style ||
@@ -108,7 +125,9 @@ export const TileResultView = ({
                     <Button>キャンセル</Button>
                   </DialogActions>
                   <DialogActions position="end">
-                    <Button appearance="primary">削除</Button>
+                    <Button appearance="primary" onClick={handleDelete}>
+                      削除
+                    </Button>
                   </DialogActions>
                 </DialogBody>
               </DialogSurface>

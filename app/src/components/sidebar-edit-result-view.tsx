@@ -18,8 +18,6 @@ import { EditResultViewForm } from "./edit-result-view-form";
 import { EditResultViewFilterFields } from "./edit-result-view-filter-fields";
 import { ListDataSetResults } from "./list-data-set-results";
 
-/** 開発用 */
-
 const useStyles = makeStyles({
   heading: {
     fontSize: tokens.fontSizeBase400,
