@@ -48,9 +48,13 @@ export function MapComponent({
           },
         );
 
-        const coordinates: Polygon["coordinates"] = result?.[0].geometry
-          ? JSON.parse(result?.[0].geometry)
-          : null;
+        if (!result?.length) return;
+
+        const [firstItem] = result;
+
+        const coordinates: Polygon["coordinates"] = JSON.parse(
+          firstItem.geometry,
+        );
         const center: [number, number] = coordinates
           ? [coordinates[0][0][0], coordinates[0][0][1]]
           : [137.120435, 34.990565];
