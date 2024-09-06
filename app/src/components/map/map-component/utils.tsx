@@ -1,20 +1,17 @@
 import { Popup, type Map } from "maplibre-gl";
-import { type FeatureCollection } from "geojson";
-import { useState, useEffect } from "react";
 import { renderToString } from "react-dom/server";
-import { type VacancyLevels } from "../vacancy-level-checkbox";
 import { type data_set_detail_buildings } from "../../../schema";
 import { BuildingPopup } from "./building-popup";
 
 export const VACANCY_RATE_HIGH = 0.8;
 export const VACANCY_RATE_MEDIUM = 0.3;
 
-export function addGeojsonSource(
+export function addGeojsonLayer(
   map: Map,
-  sourceId: string,
+  layerId: string,
   buildings: (typeof data_set_detail_buildings.$inferSelect)[],
 ): void {
-  map.addSource(sourceId, {
+  map.addSource(layerId, {
     type: "geojson",
     data: {
       type: "FeatureCollection",
@@ -30,17 +27,11 @@ export function addGeojsonSource(
       })),
     },
   });
-}
 
-export function addGeojsonLayer(
-  map: Map,
-  sourceId: string,
-  layerId: string,
-): void {
   map.addLayer({
     id: layerId,
     type: "fill",
-    source: sourceId,
+    source: layerId,
     maxzoom: 22,
     minzoom: 14,
     paint: {

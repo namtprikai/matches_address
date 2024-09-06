@@ -1,10 +1,10 @@
 import "maplibre-gl/dist/maplibre-gl.css";
 import { useEffect, useRef, useState } from "react";
-import { addProtocol, Map, Popup } from "maplibre-gl";
+import { addProtocol, Map } from "maplibre-gl";
 import { Protocol } from "pmtiles";
 import { makeStyles } from "@fluentui/react-components";
 import { type VacancyLevels } from "../vacancy-level-checkbox";
-import { addGeojsonLayer, addGeojsonSource, addPopup } from "./utils";
+import { addGeojsonLayer, addPopup } from "./utils";
 
 const useMapComponentStyles = makeStyles({
   map: {
@@ -77,9 +77,7 @@ export function MapComponent({
           }
 
           const layerId = lastId.toString();
-          const sourceId = lastId.toString();
-          addGeojsonSource(mapInstance, sourceId, batch);
-          addGeojsonLayer(mapInstance, sourceId, layerId);
+          addGeojsonLayer(mapInstance, layerId, batch);
           addPopup(mapInstance, layerId);
 
           if (batch.length < batchSize) {
