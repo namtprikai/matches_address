@@ -53,9 +53,7 @@ export function addGeojsonLayer(
       ],
     },
   });
-}
 
-export function addPopup(map: Map, layerId: string): void {
   map.on("click", layerId, (e) => {
     if (e.features && e.features.length > 0) {
       const feature = e.features[0];

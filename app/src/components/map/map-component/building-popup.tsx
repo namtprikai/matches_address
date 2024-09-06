@@ -1,7 +1,7 @@
 import { forwardRef } from "react";
 import { mergeClasses } from "@fluentui/react-components";
 import styles from "./popup-styles.module.css";
-import { VACANCY_RATE_HIGH, VACANCY_RATE_MEDIUM } from "./utils";
+import { VACANCY_RATE_HIGH, VACANCY_RATE_MEDIUM } from "./add-geojson-layer";
 
 interface Building {
   vacancyRate: number;

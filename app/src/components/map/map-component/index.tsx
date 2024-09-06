@@ -4,7 +4,7 @@ import { addProtocol, Map } from "maplibre-gl";
 import { Protocol } from "pmtiles";
 import { makeStyles } from "@fluentui/react-components";
 import { type VacancyLevels } from "../vacancy-level-checkbox";
-import { addGeojsonLayer, addPopup } from "./utils";
+import { addGeojsonLayer } from "./add-geojson-layer";
 
 const useMapComponentStyles = makeStyles({
   map: {
@@ -78,7 +78,6 @@ export function MapComponent({
 
           const layerId = lastId.toString();
           addGeojsonLayer(mapInstance, layerId, batch);
-          addPopup(mapInstance, layerId);
 
           if (batch.length < batchSize) {
             // 最後のバッチを取得完了
