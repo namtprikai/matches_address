@@ -78,9 +78,9 @@ export function MapComponent({
 
           const layerId = lastId.toString();
           const sourceId = lastId.toString();
-          addPopup(mapInstance, layerId);
           addGeojsonSource(mapInstance, sourceId, batch);
           addGeojsonLayer(mapInstance, sourceId, layerId);
+          addPopup(mapInstance, layerId);
 
           if (batch.length < batchSize) {
             // 最後のバッチを取得完了
