@@ -7,7 +7,6 @@ import { type Parameter } from "../@types/charts";
 import { BarChart } from "./bar-charts";
 import { LineChart } from "./line-charts";
 import { PieChart } from "./pie-charts";
-import { _dummyBuildingData } from "./map/_dummy-data";
 import { Map } from "./map";
 import { TableView } from "./table-view";
 
