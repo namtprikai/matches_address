@@ -78,46 +78,49 @@ export function MapComponent({
     [dataSetResultsId],
   );
 
-  useEffect(() => {
-    if (!mapInstance) return;
+  useEffect(
+    function addBuildingsLayerEffect() {
+      if (!mapInstance) return;
 
-    const fetchData = async (): Promise<void> => {
-      const batchSize = 1000;
-      let lastId = 0;
+      const addBuildingsLayer = async (): Promise<void> => {
+        const batchSize = 1000;
+        let lastId = 0;
 
-      try {
-        // eslint-disable-next-line no-constant-condition -- 無限ループでデータを全量取得する
-        while (true) {
-          const batch = await window.ipcRenderer.invoke(
-            "fetchBuildingsInBatches",
-            {
-              dataSetResultsId,
-              batchSize,
-              lastId,
-            },
-          );
+        try {
+          // eslint-disable-next-line no-constant-condition -- 無限ループでデータを全量取得する
+          while (true) {
+            const batch = await window.ipcRenderer.invoke(
+              "fetchBuildingsInBatches",
+              {
+                dataSetResultsId,
+                batchSize,
+                lastId,
+              },
+            );
 
-          if (!batch) {
-            throw new Error("Network response was not ok");
+            if (!batch) {
+              throw new Error("Network response was not ok");
+            }
+
+            const layerId = lastId.toString();
+            addGeojsonLayer(mapInstance, layerId, batch);
+
+            if (batch.length < batchSize) {
+              // 最後のバッチを取得完了
+              break;
+            }
+
+            lastId = batch[batch.length - 1].id;
           }
-
-          const layerId = lastId.toString();
-          addGeojsonLayer(mapInstance, layerId, batch);
-
-          if (batch.length < batchSize) {
-            // 最後のバッチを取得完了
-            break;
-          }
-
-          lastId = batch[batch.length - 1].id;
+        } catch (error) {
+          console.error("Error fetching data: ", error);
         }
-      } catch (error) {
-        console.error("Error fetching data: ", error);
-      }
-    };
+      };
 
-    void fetchData();
-  }, [dataSetResultsId, mapInstance]);
+      void addBuildingsLayer();
+    },
+    [dataSetResultsId, mapInstance],
+  );
 
   return <div ref={containerRef} className={styles.map} />;
 }
