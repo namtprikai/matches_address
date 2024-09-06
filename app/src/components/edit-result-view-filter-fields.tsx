@@ -10,6 +10,9 @@ import {
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useAtomValue } from "jotai";
+import { useEffect, useState } from "react";
+import { selectedResultViewAtom } from "../state/selected-result-view-atom";
 import { Button } from "./ui/button";
 import { DialogSurface } from "./ui/dialog-surface";
 import { DialogTitle } from "./ui/dialog-title";
@@ -37,28 +40,6 @@ const useStyles = makeStyles({
   },
 });
 
-/** 仮 */
-const AREA_ITEMS = [
-  "中区",
-  "中村区",
-  "中川区",
-  "昭和区",
-  "瑞穂区",
-  "熱田区",
-  "千種区",
-  "東区",
-  "北区",
-  "西区",
-  "名東区",
-  "港区",
-  "南区",
-  "守山区",
-  "天白区",
-  "緑区",
-  "北名古屋市",
-  "弥富市",
-];
-
 const LOWER_LIMIT = "下限なし";
 const UPPER_LIMIT = "上限なし";
 
@@ -76,6 +57,8 @@ const form_id = "edit-result-view-filter-fields";
 export const EditResultViewFilterFields = (): JSX.Element => {
   const styles = useStyles();
 
+  const [areaItems, setAreaItems] = useState<(string | null)[]>([]);
+
   const { register, handleSubmit, watch, setValue } = useForm<FormType>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -83,9 +66,33 @@ export const EditResultViewFilterFields = (): JSX.Element => {
     },
   });
 
-  const onSubmit = handleSubmit((data) => {
-    console.log(data);
+  const onSubmit = handleSubmit(() => {
+    //
   });
+
+  const resultView = useAtomValue(selectedResultViewAtom);
+
+  useEffect(() => {
+    // 地域を取得する処理
+    (async () => {
+      if (!resultView?.data_set_result_id) return;
+      const res = await window.ipcRenderer.invoke("readArea", {
+        dataSetResultId: resultView.data_set_result_id,
+      });
+
+      /** @todo parse xml(readAreaが仮でxmlを返すため必要な処理)・ローカルで読むようになったらいらなくなる予定 */
+      const parser = new DOMParser();
+      if (!res) return;
+      const xml = parser.parseFromString(res, "text/xml");
+      const citiesList = Array.from(xml.querySelectorAll("city")).map(
+        (city) => {
+          return city.textContent;
+        },
+      );
+
+      setAreaItems(citiesList);
+    })().catch(console.error);
+  }, [resultView]);
 
   const areas = watch("areas");
 
@@ -155,16 +162,19 @@ export const EditResultViewFilterFields = (): JSX.Element => {
                 <DialogBody>
                   <DialogTitle>地域でフィルター</DialogTitle>
                   <DialogContent>
-                    {AREA_ITEMS.map((item) => (
-                      <Checkbox
-                        key={item}
-                        checked={areas?.includes(item)}
-                        id={item}
-                        label={item}
-                        value={item}
-                        {...register("areas")}
-                      />
-                    ))}
+                    {areaItems.map(
+                      (item) =>
+                        item && (
+                          <Checkbox
+                            key={item}
+                            checked={areas?.includes(item)}
+                            id={item}
+                            label={item}
+                            value={item}
+                            {...register("areas")}
+                          />
+                        ),
+                    )}
                   </DialogContent>
                   <DialogActions position="start">
                     <Button

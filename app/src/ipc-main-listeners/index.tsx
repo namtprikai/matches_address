@@ -23,6 +23,7 @@ import { selectResultView } from "./select-result-view";
 import { filterDataSetForTable } from "./filter-data-set-for-table";
 import { deleteResultView } from "./delete-result-view";
 import { deleteResultSheet } from "./delete-result-sheet";
+import { readArea } from "./read-area";
 
 export const ipcMainListeners = {
   getNames,
@@ -46,6 +47,7 @@ export const ipcMainListeners = {
   deleteResultView,
   filterDataSetForChart,
   filterDataSetForTable,
+  readArea,
 };
 
 export const execFileAsync = promisify(execFile);
