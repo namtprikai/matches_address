@@ -76,11 +76,11 @@ export const EditResultViewFilterFields = (): JSX.Element => {
     // 地域を取得する処理
     (async () => {
       if (!resultView?.data_set_result_id) return;
-      const res = await window.ipcRenderer.invoke("readArea", {
+      const res = await window.ipcRenderer.invoke("readDataSetArea", {
         dataSetResultId: resultView.data_set_result_id,
       });
 
-      /** @todo parse xml(readAreaが仮でxmlを返すため必要な処理)・ローカルで読むようになったらいらなくなる予定 */
+      /** @todo parse xml(readDataSetAreaが仮でxmlを返すため必要な処理)・ローカルで読むようになったらいらなくなる予定 */
       const parser = new DOMParser();
       if (!res) return;
       const xml = parser.parseFromString(res, "text/xml");

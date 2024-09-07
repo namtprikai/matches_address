@@ -8,7 +8,7 @@ import { type IpcMainListener } from ".";
  * - 複数の都道府県をまたがない前提の処理
  * @todo ローカルで取得できるように改修する必要がある
  */
-export const readArea = (async (
+export const readDataSetArea = (async (
   _: unknown,
   { dataSetResultId }: { dataSetResultId: number },
 ): Promise<null | string> => {
