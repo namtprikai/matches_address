@@ -24,6 +24,7 @@ import { filterDataSetForTable } from "./filter-data-set-for-table";
 import { deleteResultView } from "./delete-result-view";
 import { deleteResultSheet } from "./delete-result-sheet";
 import { readDataSetArea } from "./read-data-set-area";
+import { readDataSetYear } from "./read-data-set-year";
 
 export const ipcMainListeners = {
   getNames,
@@ -48,6 +49,7 @@ export const ipcMainListeners = {
   filterDataSetForChart,
   filterDataSetForTable,
   readDataSetArea,
+  readDataSetYear,
 };
 
 export const execFileAsync = promisify(execFile);

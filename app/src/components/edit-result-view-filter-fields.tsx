@@ -58,6 +58,7 @@ export const EditResultViewFilterFields = (): JSX.Element => {
   const styles = useStyles();
 
   const [areaItems, setAreaItems] = useState<(string | null)[]>([]);
+  const [yearItems, setYearItems] = useState<string[]>([]);
 
   const { register, handleSubmit, watch, setValue } = useForm<FormType>({
     resolver: zodResolver(formSchema),
@@ -94,6 +95,18 @@ export const EditResultViewFilterFields = (): JSX.Element => {
     })().catch(console.error);
   }, [resultView]);
 
+  useEffect(() => {
+    // 期間を取得する処理
+    (async () => {
+      if (!resultView?.data_set_result_id) return;
+      const res = await window.ipcRenderer.invoke("readDataSetYear", {
+        dataSetResultId: resultView.data_set_result_id,
+      });
+
+      setYearItems(res);
+    })().catch(console.error);
+  }, [resultView]);
+
   const areas = watch("areas");
 
   return (
@@ -110,14 +123,11 @@ export const EditResultViewFilterFields = (): JSX.Element => {
               })}
             >
               <option value={LOWER_LIMIT}>{LOWER_LIMIT}</option>
-              {[...Array(5)]
-                .map((_, i) => new Date().getFullYear() - i)
-                .reverse()
-                .map((item) => (
-                  <option key={item} value={item}>
-                    {item}
-                  </option>
-                ))}
+              {yearItems.map((item) => (
+                <option key={item} value={item}>
+                  {item}
+                </option>
+              ))}
             </Select>
             <span>〜</span>
             <Select
@@ -127,14 +137,11 @@ export const EditResultViewFilterFields = (): JSX.Element => {
               })}
             >
               <option value={UPPER_LIMIT}>{UPPER_LIMIT}</option>
-              {[...Array(5)]
-                .map((_, i) => new Date().getFullYear() - i)
-                .reverse()
-                .map((item) => (
-                  <option key={item} value={item}>
-                    {item}
-                  </option>
-                ))}
+              {yearItems.map((item) => (
+                <option key={item} value={item}>
+                  {item}
+                </option>
+              ))}
             </Select>
           </div>
         </Field>
