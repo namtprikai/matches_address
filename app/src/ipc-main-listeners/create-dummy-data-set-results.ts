@@ -160,7 +160,7 @@ export const createDummyDataSetResults = (async (
 
           const progress = (processedBuildings / totalBuildings) * 100;
           console.info(
-            `${chunkIndex}: Year ${year}: Processed ${processedBuildings}/${totalBuildings} buildings (${progress.toFixed(2)}%)`,
+            `Year ${year}: Processed ${processedBuildings}/${totalBuildings} buildings (${progress.toFixed(2)}%)`,
           );
         }
 
