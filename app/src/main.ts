@@ -206,8 +206,8 @@ async function createDummyDataSetResults(): Promise<void> {
               predicted_probability: pred,
               geometry:
                 feature.geometry.type === "Polygon"
-                  ? JSON.stringify(feature.geometry.coordinates) // 多重配列を文字列に変換する
-                  : undefined,
+                  ? JSON.stringify(feature.geometry.coordinates) // 多重配列はsqliteに入らないので文字列に変換する
+                  : "",
             };
             await tx.insert(data_set_detail_buildings).values(insertion);
           }),
