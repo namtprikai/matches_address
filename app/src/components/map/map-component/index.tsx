@@ -55,9 +55,10 @@ export function MapComponent({
         const coordinates: Polygon["coordinates"] = JSON.parse(
           firstItem.geometry,
         );
-        const center: [number, number] = coordinates
-          ? [coordinates[0][0][0], coordinates[0][0][1]]
-          : [137.120435, 34.990565];
+        const center: [number, number] =
+          coordinates[0][0][0] && coordinates[0][0][1]
+            ? [coordinates[0][0][0], coordinates[0][0][1]]
+            : [137.120435, 34.990565];
 
         const initializedMap = new Map({
           container: containerEl,
