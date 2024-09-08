@@ -1,6 +1,6 @@
 import "maplibre-gl/dist/maplibre-gl.css";
 import { useEffect, useRef, useState } from "react";
-import { addProtocol, Map } from "maplibre-gl";
+import { addProtocol, type FilterSpecification, Map } from "maplibre-gl";
 import { Protocol } from "pmtiles";
 import { makeStyles } from "@fluentui/react-components";
 import { type Polygon } from "geojson";
@@ -30,6 +30,7 @@ export function MapComponent({
   const styles = useMapComponentStyles();
   const containerRef = useRef<HTMLDivElement | null>(null);
   const [mapInstance, setMapInstance] = useState<Map | null>(null);
+  const [layerIds, setLayerIds] = useState<string[]>([]);
 
   useEffect(
     function initializeMapEffect() {
@@ -104,6 +105,7 @@ export function MapComponent({
             }
 
             const layerId = lastId.toString();
+            setLayerIds((prevLayerIds) => [...prevLayerIds, layerId]);
             addGeojsonLayer(mapInstance, layerId, batch);
 
             if (batch.length < batchSize) {
@@ -121,6 +123,42 @@ export function MapComponent({
       void addBuildingsLayer();
     },
     [dataSetResultsId, mapInstance],
+  );
+
+  useEffect(
+    function applyFiltersEffect() {
+      if (!mapInstance || !layerIds.length) return;
+
+      layerIds.forEach((layerId) => {
+        const filters = [];
+        if (vacancyLevels.low) {
+          filters.push(["<", ["get", "predicted_probability"], 0.3]);
+        }
+        if (vacancyLevels.medium) {
+          filters.push([
+            "all",
+            [">=", ["get", "predicted_probability"], 0.3],
+            ["<", ["get", "predicted_probability"], 0.8],
+          ]);
+        }
+        if (vacancyLevels.high) {
+          filters.push([">=", ["get", "predicted_probability"], 0.8]);
+        }
+
+        const mapLibreFilter: FilterSpecification | undefined =
+          filters.length > 0
+            ? (["any", ...filters] as FilterSpecification)
+            : undefined;
+        mapInstance.setFilter(layerId, mapLibreFilter);
+      });
+    },
+    [
+      layerIds,
+      mapInstance,
+      vacancyLevels.high,
+      vacancyLevels.low,
+      vacancyLevels.medium,
+    ],
   );
 
   return <div ref={containerRef} className={styles.map} />;
