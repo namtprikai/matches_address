@@ -1,8 +1,15 @@
 import { app, BrowserWindow, ipcMain } from "electron";
 import path from "path";
+import { readFileSync } from "fs";
 import { migrate } from "drizzle-orm/better-sqlite3/migrator";
+import { type FeatureCollection } from "geojson";
 import { ipcMainListeners } from "./ipc-main-listeners";
 import { db } from "./utils/db";
+import {
+  data_set_detail_areas,
+  data_set_detail_buildings,
+  data_set_results,
+} from "./schema";
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (require("electron-squirrel-startup")) {
@@ -34,19 +41,19 @@ const createWindow = (): void => {
   }
 };
 
-void app.whenReady().then(() => {
-  const migrationsFolder =
-    process.env.NODE_ENV === "development"
-      ? "drizzle"
-      : path.join(process.resourcesPath, "drizzle");
-  migrate(db, { migrationsFolder });
-
+void app.whenReady().then(async () => {
   createWindow();
 
   // ipcMain.handle()のハンドラ関数を登録する
   Object.entries(ipcMainListeners).forEach(([channel, listener]) => {
     ipcMain.handle(channel, listener);
   });
+
+  const migrationsFolder =
+    process.env.NODE_ENV === "development"
+      ? "drizzle"
+      : path.join(process.resourcesPath, "drizzle");
+  migrate(db, { migrationsFolder });
 
   app.on("activate", () => {
     // On OS X it's common to re-create a window in the app when the

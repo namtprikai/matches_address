@@ -1,56 +1,11 @@
 import "maplibre-gl/dist/maplibre-gl.css";
 import { useEffect, useRef, useState } from "react";
-import { addProtocol, Map, Popup } from "maplibre-gl";
+import { addProtocol, type FilterSpecification, Map } from "maplibre-gl";
 import { Protocol } from "pmtiles";
-import { renderToString } from "react-dom/server";
 import { makeStyles } from "@fluentui/react-components";
+import { type Polygon } from "geojson";
 import { type VacancyLevels } from "../vacancy-level-checkbox";
-import { addGeojsonLayer, addGeojsonSource, useGeojsonData } from "./utils";
-import { BuildingPopup } from "./building-popup";
-
-export interface Building {
-  vacancyRate: number;
-  address: string;
-  totalPopulation: number;
-  under14: number;
-  between15And64: number;
-  over65: number;
-  waterUsage: string;
-  waterStatus: string;
-  constructionDate: string;
-  structureName: string;
-  coordinates: number[][][];
-}
-
-export interface Area {
-  vacancyRate: number;
-  address: string;
-  totalPopulation: number;
-  malePopulation: number;
-  femalePopulation: number;
-  averageAge: number;
-  waterUsageAverage: number;
-  waterUsageMax: number;
-  waterUsageMin: number;
-  averageConstructionAge: number;
-  minConstructionAge: number;
-  maxConstructionAge: number;
-  riskLevelA: number;
-  riskLevelB: number;
-  riskLevelC: number;
-  area: number;
-  coordinates: number[][][];
-}
-
-export type BuildingData = {
-  year: number;
-  buildings: Building[];
-}[];
-
-export type AreaData = {
-  year: number;
-  areas: Area[];
-}[];
+import { addGeojsonLayer } from "./add-geojson-layer";
 
 const useMapComponentStyles = makeStyles({
   map: {
@@ -60,101 +15,148 @@ const useMapComponentStyles = makeStyles({
 });
 
 interface Props {
-  data: BuildingData;
-  selectedYear: number;
+  dataSetResultsId: number;
+  type: "building" | "area";
+  selectedDate: string;
   vacancyLevels: VacancyLevels;
 }
 
 export function MapComponent({
-  data,
-  selectedYear,
+  dataSetResultsId,
+  type,
+  selectedDate,
   vacancyLevels,
 }: Props): JSX.Element {
   const styles = useMapComponentStyles();
   const containerRef = useRef<HTMLDivElement | null>(null);
   const [mapInstance, setMapInstance] = useState<Map | null>(null);
-  const geojsonData = useGeojsonData(vacancyLevels);
-
-  useEffect(function initializeMap() {
-    if (!containerRef.current) return;
-    const protocol = new Protocol();
-    addProtocol("pmtiles", protocol.tile);
-
-    const initializedMap = new Map({
-      container: containerRef.current,
-      style: "protomaps-basemaps.json",
-      center: [137.120435, 34.990565],
-      zoom: 19,
-      maxZoom: 18,
-      minZoom: 6,
-    });
-
-    initializedMap.on("load", () => {
-      setMapInstance(initializedMap);
-    });
-  }, []);
+  const [layerIds, setLayerIds] = useState<string[]>([]);
 
   useEffect(
-    function updateMap() {
-      if (!mapInstance) return;
-      if (!geojsonData) return;
+    function initializeMapEffect() {
+      const containerEl = containerRef.current;
+      if (!containerEl) return;
 
-      const sourceId = "buildings";
-      const layerId = "buildings-layer";
-      addGeojsonSource(mapInstance, sourceId, geojsonData);
-      addGeojsonLayer(mapInstance, layerId, sourceId);
-      let popup: Popup | null = null;
-      mapInstance.on("click", layerId, (e) => {
-        if (e.features && e.features.length > 0) {
-          const feature = e.features[0];
-          const properties = feature.properties;
-          const coordinates = e.lngLat;
-          const popupContent = renderToString(
-            <BuildingPopup
-              data={{
-                // デモデータ
-                address: "東京都千代田区丸の内1-1-1",
-                totalPopulation: 1000,
-                under14: 200,
-                between15And64: 600,
-                over65: 200,
-                waterUsage: "1000L",
-                waterStatus: "良好",
-                constructionDate: "2000年",
-                structureName: "RC造",
-                vacancyRate: properties?.predicted_probability,
-              }}
-            />,
-          );
+      const protocol = new Protocol();
+      addProtocol("pmtiles", protocol.tile);
 
-          popup = new Popup()
-            .setLngLat(coordinates)
-            .setHTML(popupContent)
-            .addTo(mapInstance);
-        }
-      });
+      const initializeMap = async (): Promise<void> => {
+        const result = await window.ipcRenderer.invoke(
+          "fetchBuildingsInBatches",
+          {
+            dataSetResultsId,
+            referenceDate: selectedDate,
+            batchSize: 1,
+          },
+        );
 
-      // ポリゴンレイヤーにマウスが乗ったときにカーソルを変更
-      mapInstance.on("mouseenter", layerId, () => {
-        mapInstance.getCanvas().style.cursor = "pointer";
-      });
+        if (!result?.length) return;
 
-      // ポリゴンレイヤーからマウスが離れたときにカーソルを元に戻す
-      mapInstance.on("mouseleave", layerId, () => {
-        mapInstance.getCanvas().style.cursor = "";
-      });
+        const [firstItem] = result;
 
-      return () => {
-        popup?.remove(); // FIXME: ポップアップが消えないで残る場合がある
-        mapInstance.removeLayer(layerId);
-        mapInstance.removeSource(sourceId);
+        const coordinates: Polygon["coordinates"] = JSON.parse(
+          firstItem.geometry,
+        );
+        const center: [number, number] =
+          coordinates[0][0][0] && coordinates[0][0][1]
+            ? [coordinates[0][0][0], coordinates[0][0][1]]
+            : [137.120435, 34.990565];
+
+        const initializedMap = new Map({
+          container: containerEl,
+          style: "protomaps-basemaps.json",
+          center,
+          zoom: 14,
+          maxZoom: 22,
+          minZoom: 6,
+        });
+
+        initializedMap.on("load", () => {
+          setMapInstance(initializedMap);
+        });
       };
+
+      void initializeMap();
+    },
+    [dataSetResultsId, selectedDate],
+  );
+
+  useEffect(
+    function addBuildingsLayerEffect() {
+      if (!mapInstance) return;
+
+      const addBuildingsLayer = async (): Promise<void> => {
+        const batchSize = 1000;
+        let lastId = 0;
+
+        try {
+          // eslint-disable-next-line no-constant-condition -- 無限ループでデータを全量取得する
+          while (true) {
+            const batch = await window.ipcRenderer.invoke(
+              "fetchBuildingsInBatches",
+              {
+                dataSetResultsId,
+                referenceDate: selectedDate,
+                batchSize,
+                lastId,
+              },
+            );
+
+            if (!batch) {
+              throw new Error("Network response was not ok");
+            }
+
+            const layerId = lastId.toString();
+            setLayerIds((prevLayerIds) => [...prevLayerIds, layerId]);
+            addGeojsonLayer(mapInstance, layerId, batch);
+
+            if (batch.length < batchSize) {
+              // 最後のバッチを取得完了
+              break;
+            }
+
+            lastId = batch[batch.length - 1].id;
+          }
+        } catch (error) {
+          console.error("Error fetching data: ", error);
+        }
+      };
+
+      void addBuildingsLayer();
+    },
+    [dataSetResultsId, mapInstance, selectedDate],
+  );
+
+  useEffect(
+    function applyFiltersEffect() {
+      if (!mapInstance || !layerIds.length) return;
+
+      layerIds.forEach((layerId) => {
+        const filters = [];
+        if (vacancyLevels.low) {
+          filters.push(["<", ["get", "predicted_probability"], 0.3]);
+        }
+        if (vacancyLevels.medium) {
+          filters.push([
+            "all",
+            [">=", ["get", "predicted_probability"], 0.3],
+            ["<", ["get", "predicted_probability"], 0.8],
+          ]);
+        }
+        if (vacancyLevels.high) {
+          filters.push([">=", ["get", "predicted_probability"], 0.8]);
+        }
+
+        const mapLibreFilter: FilterSpecification | undefined =
+          filters.length > 0
+            ? (["any", ...filters] as FilterSpecification)
+            : undefined;
+        mapInstance.setFilter(layerId, mapLibreFilter);
+      });
     },
     [
-      data,
-      geojsonData,
+      layerIds,
       mapInstance,
-      selectedYear,
       vacancyLevels.high,
       vacancyLevels.low,
       vacancyLevels.medium,

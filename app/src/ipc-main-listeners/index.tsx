@@ -2,6 +2,8 @@ import { type ipcMain } from "electron";
 import { execFile } from "child_process";
 import path from "path";
 import { promisify } from "util";
+import { fetchBuildingsInBatches } from "../components/map/fetch-buildings-in-batches";
+import { fetchReferenceDates } from "../components/map/fetch-reference-dates";
 import { getNames } from "./get-names";
 import { saveName } from "./save-name";
 import { helloFromPython } from "./hello-from-python";
@@ -25,6 +27,7 @@ import { deleteResultView } from "./delete-result-view";
 import { deleteResultSheet } from "./delete-result-sheet";
 import { readDataSetArea } from "./read-data-set-area";
 import { readDataSetYear } from "./read-data-set-year";
+import { createDummyDataSetResults } from "./create-dummy-data-set-results";
 
 export const ipcMainListeners = {
   getNames,
@@ -50,6 +53,9 @@ export const ipcMainListeners = {
   filterDataSetForTable,
   readDataSetArea,
   readDataSetYear,
+  fetchBuildingsInBatches,
+  fetchReferenceDates,
+  createDummyDataSetResults,
 };
 
 export const execFileAsync = promisify(execFile);
