@@ -21,9 +21,9 @@ export type GroupingCondition =
         operation: "range";
         label: string;
         startValue: number | undefined;
-        includesStart: boolean;
+        includesStart: boolean | undefined;
         lastValue: number | undefined;
-        includesLast: boolean;
+        includesLast: boolean | undefined;
     })
 
 const operationToQuery = (operation: GroupingCondition["operation"]): string => {
