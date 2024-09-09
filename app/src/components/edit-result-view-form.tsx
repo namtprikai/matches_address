@@ -1,12 +1,7 @@
 import { useFieldArray, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useAtom } from "jotai";
-import {
-  Dialog,
-  DialogTrigger,
-  makeStyles,
-  tokens,
-} from "@fluentui/react-components";
+import { makeStyles, tokens } from "@fluentui/react-components";
 import { useEffect } from "react";
 import { z } from "zod";
 import { result_views, type SelectResultView } from "../schema";
@@ -16,17 +11,15 @@ import { selectedResultViewAtom } from "../state/selected-result-view-atom";
 import { RESULT_VIEW_CONFIG } from "../config/result-view-config";
 import { getResultViewFieldOption } from "../utils/get-view-field-option";
 import { resultViewsAtom } from "../state/result-views-atom";
+import { type GroupingCondition } from "../utils/subquery-grouping";
 import { Fieldset } from "./ui/fieldset";
 import { FieldLegend } from "./ui/field-legend";
 import { Field } from "./ui/field";
 import { Input } from "./ui/input";
 import { Select } from "./ui/select";
 import { Button } from "./ui/button";
-import { DialogSurface } from "./ui/dialog-surface";
-import { DialogActions } from "./ui/dialog-actions";
-import { DialogBody } from "./ui/dialog-body";
-import { DialogTitle } from "./ui/dialog-title";
 import { DynamicParameterInput } from "./dynamic-parameter-input";
+import { EditorGroupingForm } from "./editor-grouping-form";
 
 const schema = z.object({
   title: z.string().max(255).optional(),
@@ -37,6 +30,27 @@ const schema = z.object({
       key: z.string(),
       value: z.string(),
     })
+    .or(
+      z.object({
+        key: z.string(),
+        value: z
+          .object({
+            operation: z.enum(["eq", "noteq", "gt", "gte", "lt", "lte"]),
+            value: z.number().nullable(),
+            label: z.string(),
+          })
+          .or(
+            z.object({
+              operation: z.enum(["range"]),
+              startValue: z.number().nullable(),
+              lastValue: z.number().nullable(),
+              includesStart: z.boolean(),
+              includesLast: z.boolean(),
+              label: z.string(),
+            }),
+          ),
+      }),
+    )
     .array(),
 });
 
@@ -88,6 +102,10 @@ export const EditResultViewForm = (): JSX.Element => {
   const { fields, replace, update } = useFieldArray({
     control,
     name: "parameters",
+  });
+
+  const groupingFields = fields.filter((field) => {
+    return field.key.startsWith("group_");
   });
 
   useEffect(() => {
@@ -159,7 +177,7 @@ export const EditResultViewForm = (): JSX.Element => {
                   });
                 }}
                 unit={unit}
-                value={field.value}
+                value={field.value as string}
               />
             );
           }
@@ -178,7 +196,7 @@ export const EditResultViewForm = (): JSX.Element => {
                   if (data.optionValue === undefined) return;
 
                   // 更新前の値をカンマ区切りの文字列としてデータクレンジングした上で配列化
-                  const prevValue = field.value
+                  const prevValue = (field.value as string)
                     .split(",")
                     .filter((value) => value !== "");
 
@@ -195,7 +213,7 @@ export const EditResultViewForm = (): JSX.Element => {
                   });
                 }}
                 unit={unit}
-                value={field.value}
+                value={field.value as string}
               />
             );
           }
@@ -205,20 +223,18 @@ export const EditResultViewForm = (): JSX.Element => {
 
         {RESULT_VIEW_CONFIG[style] &&
           RESULT_VIEW_CONFIG[style].grouping.enabled && (
-            <Dialog>
-              <DialogTrigger>
-                <Button size="medium">グループを編集</Button>
-              </DialogTrigger>
-              <DialogSurface>
-                <DialogTitle>グループを編集</DialogTitle>
-                <DialogBody>
-                  <p>グループを編集</p>
-                </DialogBody>
-                <DialogActions>
-                  <Button>保存</Button>
-                </DialogActions>
-              </DialogSurface>
-            </Dialog>
+            <EditorGroupingForm
+              onSave={(parameters) => {
+                console.log(parameters);
+                replace([...fields, ...parameters]);
+              }}
+              parameters={
+                groupingFields as {
+                  key: string;
+                  value: GroupingCondition;
+                }[]
+              }
+            />
           )}
         <Field label="集計単位">
           <Select
