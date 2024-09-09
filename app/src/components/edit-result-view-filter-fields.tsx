@@ -45,8 +45,14 @@ const UPPER_LIMIT = "上限なし";
 
 const formSchema = z.object({
   year: z.object({
-    start: z.number().or(z.enum([LOWER_LIMIT]).optional().default(LOWER_LIMIT)),
-    end: z.number().or(z.enum([UPPER_LIMIT]).optional().default(UPPER_LIMIT)),
+    start: z
+      .number()
+      .or(z.enum([LOWER_LIMIT]).optional().default(LOWER_LIMIT))
+      .nullable(),
+    end: z
+      .number()
+      .or(z.enum([UPPER_LIMIT]).optional().default(UPPER_LIMIT))
+      .nullable(),
   }),
   areas: z.array(z.string()).optional().default([]),
 });
@@ -119,7 +125,7 @@ export const EditResultViewFilterFields = (): JSX.Element => {
             <Select
               {...register("year.start", {
                 setValueAs: (v: FormType["year"]["start"]) =>
-                  v === LOWER_LIMIT ? v : Number(v),
+                  v === LOWER_LIMIT ? null : Number(v),
               })}
             >
               <option value={LOWER_LIMIT}>{LOWER_LIMIT}</option>
@@ -133,7 +139,7 @@ export const EditResultViewFilterFields = (): JSX.Element => {
             <Select
               {...register("year.end", {
                 setValueAs: (v: FormType["year"]["end"]) =>
-                  v === UPPER_LIMIT ? v : Number(v),
+                  v === UPPER_LIMIT ? null : Number(v),
               })}
             >
               <option value={UPPER_LIMIT}>{UPPER_LIMIT}</option>
