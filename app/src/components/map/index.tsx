@@ -6,6 +6,7 @@ import {
   type VacancyLevels,
 } from "./vacancy-level-checkbox";
 import { MapComponent } from "./map-component";
+import { ReferenceDateDropdown } from "./reference-date-dropdown";
 
 const useStyles = makeStyles({
   filters: {
@@ -34,7 +35,25 @@ export function Map({ type, dataSetResultsId }: Props): JSX.Element {
     medium: true,
     high: true,
   });
-  // const [selectedYear, setSelectedYear] = useState<number>(data[0].year);
+  const [referenceDates, setReferenceDates] = useState<string[] | undefined>(
+    undefined,
+  );
+  const [selectedDate, setSelectedDate] = useState<string | undefined>(
+    undefined,
+  );
+
+  useEffect(
+    function fetchReferenceDatesEffect() {
+      const fetchReferenceDates = async (): Promise<void> => {
+        const result = await window.ipcRenderer.invoke("fetchReferenceDates");
+        setReferenceDates(result);
+        setSelectedDate(result[0]);
+      };
+
+      void fetchReferenceDates();
+    },
+    [dataSetResultsId],
+  );
 
   return (
     <div>
@@ -50,13 +69,13 @@ export function Map({ type, dataSetResultsId }: Props): JSX.Element {
         </div>
         <div className={styles.filter}>
           <div>表示期間</div>
-          {/* <div>
-            <DisplayPeriodDropdown
-              selectedYear={selectedYear}
-              setSelectedYear={setSelectedYear}
-              years={data.map((data) => data.year)}
+          <div>
+            <ReferenceDateDropdown
+              referenceDates={referenceDates}
+              selectedDate={selectedDate}
+              setSelectedDate={setSelectedDate}
             />
-          </div> */}
+          </div>
         </div>
       </div>
       <div className={styles.map}>

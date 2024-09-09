@@ -2,7 +2,7 @@ import { type IpcMainListener } from "../../ipc-main-listeners";
 import { data_set_detail_buildings } from "../../schema";
 import { db } from "../../utils/db";
 
-export const fetchReferenceYears = ((
+export const fetchReferenceDates = ((
   _: unknown,
 ): (typeof data_set_detail_buildings.$inferSelect)["reference_date"][] => {
   const result = db
