@@ -1,117 +1,169 @@
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import {
-  data_set_detail_areas,
-  data_set_detail_buildings,
-  type SelectDataSetDetailArea,
-  type SelectDataSetDetailBuilding,
+    data_set_detail_areas,
+    data_set_detail_buildings,
+    type SelectDataSetDetailArea,
+    type SelectDataSetDetailBuilding,
 } from "../schema";
 import { db } from "../utils/db";
 import { type ChartProps } from "../@types/charts";
 import {
-  DATA_SET_DETAIL_AREA_COLUMN_CONFIG,
-  DATA_SET_DETAIL_BUILDING_COLUMN_CONFIG,
+    DATA_SET_DETAIL_AREA_COLUMN_CONFIG,
+    DATA_SET_DETAIL_BUILDING_COLUMN_CONFIG,
 } from "../config/data-columns";
 import { formatChartValue } from "../utils/format-chart-value";
+import { subQueryFromConditions, type GroupingCondition } from "../utils/subquery-grouping";
 import { type IpcMainListener } from ".";
 
 export type FilterDataSetForChartResponse = ChartProps;
 
 export const filterDataSetForChart = ((
-  _: unknown,
-  {
-    resultId,
-    type,
-    x,
-    y,
-  }: { resultId: number } & (
-    | {
-        type: "building";
-        x: keyof SelectDataSetDetailBuilding;
-        y: keyof SelectDataSetDetailBuilding;
-      }
-    | {
-        type: "area";
-        x: keyof SelectDataSetDetailArea;
-        y: keyof SelectDataSetDetailArea;
-      }
-  ),
+    _: unknown,
+    {
+        resultId,
+        type,
+        x,
+        y,
+        groupingConditions
+    }: { resultId: number, groupingConditions?: GroupingCondition[] } & (
+        | {
+            type: "building";
+            x: keyof SelectDataSetDetailBuilding;
+            y: keyof SelectDataSetDetailBuilding;
+        }
+        | {
+            type: "area";
+            x: keyof SelectDataSetDetailArea;
+            y: keyof SelectDataSetDetailArea;
+        }
+    ),
 ): FilterDataSetForChartResponse => {
-  if (type === "area") {
-    const all = db
-      .select()
-      .from(data_set_detail_areas)
-      .where(eq(data_set_detail_areas.data_set_result_id, resultId))
-      .all();
+    if (type === "area") {
+        // eslint-disable-next-line @typescript-eslint/explicit-function-return-type -- ignore
+        const getAll = () => {
+            if (groupingConditions && groupingConditions.length > 0) {
+                const groupLabel = x + "_group";
 
-    // @ts-expect-error TODO: この辺りの型定義は別途修正が必要
-    const percentage = DATA_SET_DETAIL_AREA_COLUMN_CONFIG[y].percentage;
+                const subQuery = subQueryFromConditions(
+                    db,
+                    data_set_detail_areas,
+                    groupLabel,
+                    x,
+                    groupingConditions,
+                );
+
+                return db
+                    .select({
+                        [groupLabel]: sql.raw(`${groupLabel}`),
+                        [y]: sql.raw(`avg(${y}) as ${y}`),
+                    })
+                    .from(subQuery.as("groups"))
+                    .groupBy(sql.raw(`${groupLabel}`))
+                    .all();
+            }
+
+            return db
+                .select()
+                .from(data_set_detail_areas)
+                .where(eq(data_set_detail_areas.data_set_result_id, resultId))
+                .all();
+        }
+        const all = getAll();
+        // @ts-expect-error TODO: この辺りの型定義は別途修正が必要
+        const percentage = DATA_SET_DETAIL_AREA_COLUMN_CONFIG[y].percentage;
+
+        return {
+            data: all.map((row) => {
+                return {
+                    x: groupingConditions ? row[x + "_group"] as string : row[x] as string,
+                    // TODO: この辺りの型定義は別途修正が必要
+                    y: formatChartValue(row[y] ?? "", percentage) as number,
+                };
+            }),
+            xAxisColumn: {
+                type: "string",
+                // @ts-expect-error TODO: この辺りの型定義は別途修正が必要
+                unit: DATA_SET_DETAIL_AREA_COLUMN_CONFIG[x].unit,
+                // @ts-expect-error TODO: この辺りの型定義は別途修正が必要
+                label: DATA_SET_DETAIL_AREA_COLUMN_CONFIG[x].label,
+            },
+            yAxisColumn: {
+                type: "number",
+                // @ts-expect-error TODO: この辺りの型定義は別途修正が必要
+                unit: DATA_SET_DETAIL_AREA_COLUMN_CONFIG[y].unit,
+                // @ts-expect-error TODO: この辺りの型定義は別途修正が必要
+                label: DATA_SET_DETAIL_AREA_COLUMN_CONFIG[y].label,
+            },
+        };
+    }
+    if (type === "building") {
+        // eslint-disable-next-line @typescript-eslint/explicit-function-return-type -- ignore
+        const getAll = () => {
+            if (groupingConditions && groupingConditions.length > 0) {
+                const groupLabel = x + "_group";
+
+                const subQuery = subQueryFromConditions(
+                    db,
+                    data_set_detail_buildings,
+                    groupLabel,
+                    x,
+                    groupingConditions,
+                );
+
+                return db
+                    .select({
+                        [groupLabel]: sql.raw(`${groupLabel}`),
+                        [y]: sql.raw(`avg(${y}) as ${y}`),
+                    })
+                    .from(subQuery.as("groups"))
+                    .groupBy(sql.raw(`${groupLabel}`))
+                    .having(sql.raw(`${groupLabel} <> ''`))
+                    .all();
+            }
+
+            return db
+                .select()
+                .from(data_set_detail_areas)
+                .where(eq(data_set_detail_areas.data_set_result_id, resultId))
+                .all();
+        }
+        const all = getAll();
+
+        // @ts-expect-error TODO: この辺りの型定義は別途修正が必要
+        const percentage = DATA_SET_DETAIL_BUILDING_COLUMN_CONFIG[y].percentage;
+
+        return {
+            data: all.map((row) => {
+                return {
+                    x: groupingConditions ? row[x + "_group"] as string : row[x] as string,
+                    // TODO: この辺りの型定義は別途修正が必要
+                    y: formatChartValue(row[y] ?? "", percentage) as number,
+                };
+            }),
+            xAxisColumn: {
+                type: "string",
+                // @ts-expect-error TODO: この辺りの型定義は別途修正が必要
+                unit: DATA_SET_DETAIL_BUILDING_COLUMN_CONFIG[x].unit,
+                // @ts-expect-error TODO: この辺りの型定義は別途修正が必要
+                label: DATA_SET_DETAIL_BUILDING_COLUMN_CONFIG[x].label,
+            },
+            yAxisColumn: {
+                type: "number",
+                // @ts-expect-error TODO: この辺りの型定義は別途修正が必要
+                unit: DATA_SET_DETAIL_BUILDING_COLUMN_CONFIG[y].unit,
+                // @ts-expect-error TODO: この辺りの型定義は別途修正が必要
+                label: DATA_SET_DETAIL_BUILDING_COLUMN_CONFIG[y].label,
+            },
+        };
+    }
 
     return {
-      data: all.map((row: SelectDataSetDetailArea) => {
-        return {
-          x: row[x] as string,
-          // TODO: この辺りの型定義は別途修正が必要
-          y: formatChartValue(row[y] ?? "", percentage) as number,
-        };
-      }),
-      xAxisColumn: {
-        type: "string",
-        // @ts-expect-error TODO: この辺りの型定義は別途修正が必要
-        unit: DATA_SET_DETAIL_AREA_COLUMN_CONFIG[x].unit,
-        // @ts-expect-error TODO: この辺りの型定義は別途修正が必要
-        label: DATA_SET_DETAIL_AREA_COLUMN_CONFIG[x].label,
-      },
-      yAxisColumn: {
-        type: "number",
-        // @ts-expect-error TODO: この辺りの型定義は別途修正が必要
-        unit: DATA_SET_DETAIL_AREA_COLUMN_CONFIG[y].unit,
-        // @ts-expect-error TODO: この辺りの型定義は別途修正が必要
-        label: DATA_SET_DETAIL_AREA_COLUMN_CONFIG[y].label,
-      },
+        data: [],
+        xAxisColumn: {
+            type: "string",
+        },
+        yAxisColumn: {
+            type: "number",
+        },
     };
-  }
-  if (type === "building") {
-    const all = db
-      .select()
-      .from(data_set_detail_buildings)
-      .where(eq(data_set_detail_buildings.data_set_result_id, resultId))
-      .all();
-
-    // @ts-expect-error TODO: この辺りの型定義は別途修正が必要
-    const percentage = DATA_SET_DETAIL_BUILDING_COLUMN_CONFIG[y].percentage;
-
-    return {
-      data: all.map((row: SelectDataSetDetailBuilding) => {
-        return {
-          x: row[x] as string,
-          // TODO: この辺りの型定義は別途修正が必要
-          y: formatChartValue(row[y] ?? "", percentage) as number,
-        };
-      }),
-      xAxisColumn: {
-        type: "string",
-        // @ts-expect-error TODO: この辺りの型定義は別途修正が必要
-        unit: DATA_SET_DETAIL_BUILDING_COLUMN_CONFIG[x].unit,
-        // @ts-expect-error TODO: この辺りの型定義は別途修正が必要
-        label: DATA_SET_DETAIL_BUILDING_COLUMN_CONFIG[x].label,
-      },
-      yAxisColumn: {
-        type: "number",
-        // @ts-expect-error TODO: この辺りの型定義は別途修正が必要
-        unit: DATA_SET_DETAIL_BUILDING_COLUMN_CONFIG[y].unit,
-        // @ts-expect-error TODO: この辺りの型定義は別途修正が必要
-        label: DATA_SET_DETAIL_BUILDING_COLUMN_CONFIG[y].label,
-      },
-    };
-  }
-
-  return {
-    data: [],
-    xAxisColumn: {
-      type: "string",
-    },
-    yAxisColumn: {
-      type: "number",
-    },
-  };
 }) satisfies IpcMainListener;
