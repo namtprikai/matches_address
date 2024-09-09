@@ -10,6 +10,7 @@ export function addGeojsonLayer(
   map: Map,
   layerId: string,
   buildings: (typeof data_set_detail_buildings.$inferSelect)[],
+  selectedDate: string,
 ): void {
   map.addSource(layerId, {
     type: "geojson",
@@ -21,9 +22,7 @@ export function addGeojsonLayer(
           type: "Polygon",
           coordinates: JSON.parse(building.geometry),
         },
-        properties: {
-          predicted_probability: building.predicted_probability,
-        },
+        properties: building,
       })),
     },
   });
@@ -54,6 +53,7 @@ export function addGeojsonLayer(
     },
   });
 
+  const popup = new Popup();
   map.on("click", layerId, (e) => {
     if (e.features && e.features.length > 0) {
       const feature = e.features[0];
@@ -70,15 +70,19 @@ export function addGeojsonLayer(
             over65: 200,
             waterUsage: "1000L",
             waterStatus: "良好",
-            constructionDate: "2000年",
+            constructionDate: selectedDate,
             structureName: "RC造",
             vacancyRate: properties?.predicted_probability,
           }}
         />,
       );
 
-      new Popup().setLngLat(coordinates).setHTML(popupContent).addTo(map);
+      popup.setLngLat(coordinates).setHTML(popupContent).addTo(map);
     }
+  });
+
+  map.on("closeAllPopups", () => {
+    popup.remove();
   });
 
   // ポリゴンレイヤーにマウスが乗ったときにカーソルを変更

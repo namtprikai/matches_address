@@ -1,15 +1,8 @@
 import { app, BrowserWindow, ipcMain } from "electron";
 import path from "path";
-import { readFileSync } from "fs";
 import { migrate } from "drizzle-orm/better-sqlite3/migrator";
-import { type FeatureCollection } from "geojson";
 import { ipcMainListeners } from "./ipc-main-listeners";
 import { db } from "./utils/db";
-import {
-  data_set_detail_areas,
-  data_set_detail_buildings,
-  data_set_results,
-} from "./schema";
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (require("electron-squirrel-startup")) {
@@ -19,8 +12,8 @@ if (require("electron-squirrel-startup")) {
 const createWindow = (): void => {
   // Create the browser window.
   const mainWindow = new BrowserWindow({
-    width: 800,
-    height: 600,
+    width: 1200,
+    height: 900,
     webPreferences: {
       preload: path.join(__dirname, "preload.js"),
     },

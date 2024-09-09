@@ -43,14 +43,14 @@ export const createDummyDataSetResults = (async (
     );
 
     await db.transaction(async (tx) => {
+      const res = await tx
+        .insert(data_set_results)
+        .values({ title: `分析結果` })
+        .returning();
+      const data_set_result_id = res[0].id;
+
       for (const year of [2019, 2020, 2021, 2022, 2023]) {
         const reference_date = `${year}-04-02`;
-        const res = await tx
-          .insert(data_set_results)
-          .values({ title: `分析結果${year}` })
-          .returning();
-        const data_set_result_id = res[0].id;
-
         await tx.insert(data_set_detail_areas).values({
           data_set_result_id,
           reference_date,
