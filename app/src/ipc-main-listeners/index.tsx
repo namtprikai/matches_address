@@ -2,6 +2,8 @@ import { type ipcMain } from "electron";
 import { execFile } from "child_process";
 import path from "path";
 import { promisify } from "util";
+import { fetchBuildingsInBatches } from "../components/map/fetch-buildings-in-batches";
+import { fetchReferenceYears } from "../components/map/fetch-reference-years";
 import { getNames } from "./get-names";
 import { saveName } from "./save-name";
 import { helloFromPython } from "./hello-from-python";
@@ -46,6 +48,8 @@ export const ipcMainListeners = {
   deleteResultView,
   filterDataSetForChart,
   filterDataSetForTable,
+  fetchBuildingsInBatches,
+  fetchReferenceYears,
 };
 
 export const execFileAsync = promisify(execFile);

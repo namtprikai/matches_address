@@ -13,20 +13,10 @@ import { useEffect, useState } from "react";
 import { useFetchDataSetResults } from "../hooks/use-fetch-data-set-results";
 import { resultViewsAtom } from "../state/result-views-atom";
 import { selectedResultSheetIdAtom } from "../state/selected-result-sheet-id-atom";
-import { type SelectDataSetResult } from "../schema";
 import { Button } from "./ui/button";
 import { EditResultViewForm } from "./edit-result-view-form";
 import { EditResultViewFilterFields } from "./edit-result-view-filter-fields";
 import { ListDataSetResults } from "./list-data-set-results";
-
-/** 開発用 */
-const addDataSetResult = async (
-  dataSetResults: SelectDataSetResult[],
-): Promise<void> => {
-  await window.ipcRenderer.invoke("createDataSetResults", {
-    title: `分析結果${dataSetResults.length + 1}`,
-  });
-};
 
 const useStyles = makeStyles({
   heading: {
@@ -120,16 +110,6 @@ export const SidebarEditResultView = (): JSX.Element => {
                     }
                   />
                 </div>
-              </div>
-              <div>
-                <Button
-                  onClick={(): void => {
-                    addDataSetResult(dataSetResults).catch;
-                  }}
-                  size="small"
-                >
-                  データセットを追加(開発用)
-                </Button>
               </div>
             </>
           )}

@@ -88,6 +88,15 @@ export const createDataSetResults = (async (
         name: `建物名${i}`,
         predicted_label: Math.round(pred),
         predicted_probability: pred,
+        geometry: JSON.stringify([
+          [
+            [137.120435, 34.990565],
+            [137.12052, 34.990551],
+            [137.120504, 34.990487],
+            [137.120419, 34.990501],
+            [137.120435, 34.990565],
+          ],
+        ]),
       };
 
       await tx.insert(data_set_detail_buildings).values(insertion);

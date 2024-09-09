@@ -1,11 +1,11 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { makeStyles, tokens } from "@fluentui/react-components";
+import { type data_set_detail_buildings } from "../../schema";
 import {
   VacancyLevelCheckbox,
   type VacancyLevels,
 } from "./vacancy-level-checkbox";
-import { DisplayPeriodDropdown } from "./display-period-dropdown";
-import { type BuildingData, MapComponent } from "./map-component";
+import { MapComponent } from "./map-component";
 
 const useStyles = makeStyles({
   filters: {
@@ -23,17 +23,18 @@ const useStyles = makeStyles({
 });
 
 interface Props {
-  data: BuildingData;
+  dataSetResultsId: number;
+  type: "building" | "area";
 }
 
-export function Map({ data }: Props): JSX.Element {
+export function Map({ type, dataSetResultsId }: Props): JSX.Element {
   const styles = useStyles();
   const [vacancyLevels, setVacancyLevels] = useState<VacancyLevels>({
     low: true,
     medium: true,
     high: true,
   });
-  const [selectedYear, setSelectedYear] = useState<number>(data[0].year);
+  // const [selectedYear, setSelectedYear] = useState<number>(data[0].year);
 
   return (
     <div>
@@ -49,19 +50,20 @@ export function Map({ data }: Props): JSX.Element {
         </div>
         <div className={styles.filter}>
           <div>表示期間</div>
-          <div>
+          {/* <div>
             <DisplayPeriodDropdown
               selectedYear={selectedYear}
               setSelectedYear={setSelectedYear}
               years={data.map((data) => data.year)}
             />
-          </div>
+          </div> */}
         </div>
       </div>
       <div className={styles.map}>
         <MapComponent
-          data={data}
-          selectedYear={selectedYear}
+          dataSetResultsId={dataSetResultsId}
+          type={type}
+          // selectedYear={selectedYear}
           vacancyLevels={vacancyLevels}
         />
       </div>
