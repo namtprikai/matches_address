@@ -13,30 +13,40 @@ import { data_set_detail_buildings } from "../schema";
 
 export type GroupingCondition =
     | {
-        operation: "eq" | "noteq";
-        value: string | number;
+        operation: "eq" | "noteq" | "gt" | "lt" | "gte" | "lte";
+        value: number;
         label: string;
     }
     | ({
         operation: "range";
         label: string;
-        startValue?: number;
-        includesStart?: boolean;
-        lastValue?: number;
-        includesLast?: boolean;
+        startValue: number;
+        includesStart: boolean;
+        lastValue: number;
+        includesLast: boolean;
     })
+
+const operationToQuery = (operation: GroupingCondition["operation"]): string => {
+    switch (operation) {
+        case "eq":
+            return "=";
+        case "noteq":
+            return "<>";
+        case "gt":
+            return ">";
+        case "lt":
+            return "<";
+        case "gte":
+            return ">=";
+        case "lte":
+            return "<=";
+    }
+}
 
 const conditionsToCaseQuery = (key: string, conditions: GroupingCondition[]): SQL => {
     const conditionSQL: SQL[] = conditions.map((condition) => {
 
-        if (condition.operation === "eq" || condition.operation === "noteq") {
-            return sql.raw(
-                `when ${key} ${condition.operation === "eq" ? "=" : "<>"} ${condition.value} then '${condition.label}'`,
-            );
-        }
-
         if (condition.operation === "range") {
-
             if (condition.startValue === undefined && condition.lastValue === undefined) {
                 return sql.raw("");
             }
@@ -47,20 +57,16 @@ const conditionsToCaseQuery = (key: string, conditions: GroupingCondition[]): SQ
             const includesLast = condition.includesLast;
 
             // 開始値の条件クエリを作成
-            const startQuery = startValue === undefined ? "" : `${key} ${includesStart === true ? ">=" : ">"} ${startValue}`;
+            const startQuery = `${key} ${includesStart === true ? ">=" : ">"} ${startValue}`;
             // 終了値の条件クエリを作成
-            const lastQuery = lastValue === undefined ? "" : `${key} ${includesLast === true ? "<=" : "<"} ${lastValue}`;
+            const lastQuery = `${key} ${includesLast === true ? "<=" : "<"} ${lastValue}`;
 
-            if (startQuery && !lastQuery) { // 範囲条件で始まりのみの場合
-                return sql.raw(`when ${startQuery} then '${condition.label}'`);
-            } else if (lastQuery && !startQuery) { // 範囲条件で終わりのみの場合                
-                return sql.raw(`when ${lastQuery} then '${condition.label}'`);
-            }
             return sql.raw(`when ${startQuery} and ${lastQuery} then '${condition.label}'`);
         }
 
-        return sql.raw("");
-
+        return sql.raw(
+            `when ${key} ${operationToQuery(condition.operation)} ${condition.value} then '${condition.label}'`,
+        );
     });
 
     return sql`*, case ${sql.join(conditionSQL, sql.raw(" "))} end`;
