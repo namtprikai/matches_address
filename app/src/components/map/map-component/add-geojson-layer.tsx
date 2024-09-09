@@ -1,6 +1,6 @@
 import { Popup, type Map } from "maplibre-gl";
 import { renderToString } from "react-dom/server";
-import { type data_set_detail_buildings } from "../../../schema";
+import { type SelectDataSetDetailBuilding } from "../../../schema";
 import { BuildingPopup } from "./building-popup";
 
 export const VACANCY_RATE_HIGH = 0.8;
@@ -9,7 +9,7 @@ export const VACANCY_RATE_MEDIUM = 0.3;
 export function addGeojsonLayer(
   map: Map,
   layerId: string,
-  buildings: (typeof data_set_detail_buildings.$inferSelect)[],
+  buildings: SelectDataSetDetailBuilding[],
   selectedDate: string,
 ): void {
   map.addSource(layerId, {
