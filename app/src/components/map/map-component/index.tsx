@@ -17,7 +17,7 @@ const useMapComponentStyles = makeStyles({
 interface Props {
   dataSetResultsId: number;
   type: "building" | "area";
-  selectedDate: string;
+  selectedDate: string | undefined;
   vacancyLevels: VacancyLevels;
 }
 
@@ -30,7 +30,7 @@ export function MapComponent({
   const styles = useMapComponentStyles();
   const containerRef = useRef<HTMLDivElement | null>(null);
   const [mapInstance, setMapInstance] = useState<Map | null>(null);
-  const [layerIds, setLayerIds] = useState<string[]>([]);
+  const [layerIds, setLayerIds] = useState<string[] | null>(null);
 
   useEffect(
     function initializeMapEffect() {
@@ -83,7 +83,7 @@ export function MapComponent({
 
   useEffect(
     function addBuildingsLayerEffect() {
-      if (!mapInstance) return;
+      if (!mapInstance || !selectedDate) return;
 
       const addBuildingsLayer = async (): Promise<void> => {
         const batchSize = 1000;
@@ -107,8 +107,10 @@ export function MapComponent({
             }
 
             const layerId = lastId.toString();
-            setLayerIds((prevLayerIds) => [...prevLayerIds, layerId]);
-            addGeojsonLayer(mapInstance, layerId, batch);
+            setLayerIds((prevLayerIds) =>
+              prevLayerIds ? [...prevLayerIds, layerId] : [layerId],
+            );
+            addGeojsonLayer(mapInstance, layerId, batch, selectedDate);
 
             if (batch.length < batchSize) {
               // 最後のバッチを取得完了
@@ -129,9 +131,9 @@ export function MapComponent({
 
   useEffect(
     function applyFiltersEffect() {
-      if (!mapInstance || !layerIds.length) return;
+      if (!mapInstance) return;
 
-      layerIds.forEach((layerId) => {
+      layerIds?.forEach((layerId) => {
         const filters = [];
         if (vacancyLevels.low) {
           filters.push(["<", ["get", "predicted_probability"], 0.3]);

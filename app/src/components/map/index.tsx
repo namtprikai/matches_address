@@ -81,8 +81,8 @@ export function Map({ type, dataSetResultsId }: Props): JSX.Element {
       <div className={styles.map}>
         <MapComponent
           dataSetResultsId={dataSetResultsId}
+          selectedDate={selectedDate}
           type={type}
-          // selectedYear={selectedYear}
           vacancyLevels={vacancyLevels}
         />
       </div>

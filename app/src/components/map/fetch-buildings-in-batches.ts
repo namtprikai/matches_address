@@ -12,7 +12,7 @@ export const fetchBuildingsInBatches = ((
     lastId,
   }: {
     dataSetResultsId: number;
-    referenceDate: string;
+    referenceDate: string | undefined;
     batchSize: number;
     lastId?: number;
   },
@@ -24,7 +24,9 @@ export const fetchBuildingsInBatches = ((
       .where(
         and(
           eq(data_set_detail_buildings.data_set_result_id, dataSetResultsId),
-          eq(data_set_detail_buildings.reference_date, referenceDate),
+          referenceDate
+            ? eq(data_set_detail_buildings.reference_date, referenceDate)
+            : undefined,
           lastId ? gt(data_set_detail_buildings.id, lastId) : undefined,
         ),
       )
