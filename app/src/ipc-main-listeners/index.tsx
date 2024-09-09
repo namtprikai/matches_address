@@ -25,6 +25,8 @@ import { selectResultView } from "./select-result-view";
 import { filterDataSetForTable } from "./filter-data-set-for-table";
 import { deleteResultView } from "./delete-result-view";
 import { deleteResultSheet } from "./delete-result-sheet";
+import { readDataSetArea } from "./read-data-set-area";
+import { readDataSetYear } from "./read-data-set-year";
 import { createDummyDataSetResults } from "./create-dummy-data-set-results";
 
 export const ipcMainListeners = {
@@ -49,6 +51,8 @@ export const ipcMainListeners = {
   deleteResultView,
   filterDataSetForChart,
   filterDataSetForTable,
+  readDataSetArea,
+  readDataSetYear,
   fetchBuildingsInBatches,
   fetchReferenceDates,
   createDummyDataSetResults,
