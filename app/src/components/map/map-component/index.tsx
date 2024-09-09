@@ -32,15 +32,32 @@ export function MapComponent({
   const [mapInstance, setMapInstance] = useState<Map | null>(null);
   const [layerIds, setLayerIds] = useState<string[] | null>(null);
 
+  useEffect(function initializeMapEffect() {
+    const containerEl = containerRef.current;
+    if (!containerEl) return;
+
+    const protocol = new Protocol();
+    addProtocol("pmtiles", protocol.tile);
+
+    const initializedMap = new Map({
+      container: containerEl,
+      style: "protomaps-basemaps.json",
+      center: [137.120435, 34.990565],
+      zoom: 14,
+      maxZoom: 22,
+      minZoom: 6,
+    });
+
+    initializedMap.on("load", () => {
+      setMapInstance(initializedMap);
+    });
+  }, []);
+
   useEffect(
-    function initializeMapEffect() {
-      const containerEl = containerRef.current;
-      if (!containerEl) return;
+    function setMapCenterEffect() {
+      if (!mapInstance || !selectedDate) return;
 
-      const protocol = new Protocol();
-      addProtocol("pmtiles", protocol.tile);
-
-      const initializeMap = async (): Promise<void> => {
+      const setMapCenter = async (): Promise<void> => {
         const result = await window.ipcRenderer.invoke(
           "fetchBuildingsInBatches",
           {
@@ -53,7 +70,6 @@ export function MapComponent({
         if (!result?.length) return;
 
         const [firstItem] = result;
-
         const coordinates: Polygon["coordinates"] = JSON.parse(
           firstItem.geometry,
         );
@@ -62,28 +78,18 @@ export function MapComponent({
             ? [coordinates[0][0][0], coordinates[0][0][1]]
             : [137.120435, 34.990565];
 
-        const initializedMap = new Map({
-          container: containerEl,
-          style: "protomaps-basemaps.json",
-          center,
-          zoom: 14,
-          maxZoom: 22,
-          minZoom: 6,
-        });
-
-        initializedMap.on("load", () => {
-          setMapInstance(initializedMap);
-        });
+        mapInstance.setCenter(center);
       };
 
-      void initializeMap();
+      void setMapCenter();
     },
-    [dataSetResultsId, selectedDate],
+    [dataSetResultsId, mapInstance, selectedDate],
   );
 
   useEffect(
     function addBuildingsLayerEffect() {
       if (!mapInstance || !selectedDate) return;
+      let ignore = false;
 
       const addBuildingsLayer = async (): Promise<void> => {
         const batchSize = 1000;
@@ -92,6 +98,8 @@ export function MapComponent({
         try {
           // eslint-disable-next-line no-constant-condition -- 無限ループでデータを全量取得する
           while (true) {
+            if (ignore) break;
+
             const batch = await window.ipcRenderer.invoke(
               "fetchBuildingsInBatches",
               {
@@ -107,10 +115,10 @@ export function MapComponent({
             }
 
             const layerId = lastId.toString();
+            addGeojsonLayer(mapInstance, layerId, batch, selectedDate);
             setLayerIds((prevLayerIds) =>
               prevLayerIds ? [...prevLayerIds, layerId] : [layerId],
             );
-            addGeojsonLayer(mapInstance, layerId, batch, selectedDate);
 
             if (batch.length < batchSize) {
               // 最後のバッチを取得完了
@@ -125,15 +133,31 @@ export function MapComponent({
       };
 
       void addBuildingsLayer();
+
+      return () => {
+        ignore = true;
+        setLayerIds((prevLayerIds) => {
+          prevLayerIds?.forEach((layerId) => {
+            if (mapInstance.getLayer(layerId)) {
+              mapInstance.removeLayer(layerId);
+            }
+            if (mapInstance.getSource(layerId)) {
+              mapInstance.removeSource(layerId);
+            }
+          });
+          return null;
+        });
+        mapInstance.fire("closeAllPopups");
+      };
     },
     [dataSetResultsId, mapInstance, selectedDate],
   );
 
   useEffect(
     function applyFiltersEffect() {
-      if (!mapInstance) return;
+      if (!mapInstance || !layerIds?.length) return;
 
-      layerIds?.forEach((layerId) => {
+      for (const layerId of layerIds) {
         const filters = [];
         if (vacancyLevels.low) {
           filters.push(["<", ["get", "predicted_probability"], 0.3]);
@@ -154,7 +178,7 @@ export function MapComponent({
             ? (["any", ...filters] as FilterSpecification)
             : undefined;
         mapInstance.setFilter(layerId, mapLibreFilter);
-      });
+      }
     },
     [
       layerIds,

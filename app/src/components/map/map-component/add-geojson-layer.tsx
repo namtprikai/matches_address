@@ -81,6 +81,10 @@ export function addGeojsonLayer(
     }
   });
 
+  map.on("closeAllPopups", () => {
+    popup.remove();
+  });
+
   // ポリゴンレイヤーにマウスが乗ったときにカーソルを変更
   map.on("mouseenter", layerId, () => {
     map.getCanvas().style.cursor = "pointer";
