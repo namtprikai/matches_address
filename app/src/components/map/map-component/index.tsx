@@ -17,14 +17,14 @@ const useMapComponentStyles = makeStyles({
 interface Props {
   dataSetResultsId: number;
   type: "building" | "area";
-  // selectedYear: number;
+  selectedDate: string;
   vacancyLevels: VacancyLevels;
 }
 
 export function MapComponent({
   dataSetResultsId,
   type,
-  // selectedYear,
+  selectedDate,
   vacancyLevels,
 }: Props): JSX.Element {
   const styles = useMapComponentStyles();
@@ -45,6 +45,7 @@ export function MapComponent({
           "fetchBuildingsInBatches",
           {
             dataSetResultsId,
+            referenceDate: selectedDate,
             batchSize: 1,
           },
         );
@@ -77,7 +78,7 @@ export function MapComponent({
 
       void initializeMap();
     },
-    [dataSetResultsId],
+    [dataSetResultsId, selectedDate],
   );
 
   useEffect(
@@ -95,6 +96,7 @@ export function MapComponent({
               "fetchBuildingsInBatches",
               {
                 dataSetResultsId,
+                referenceDate: selectedDate,
                 batchSize,
                 lastId,
               },
@@ -122,7 +124,7 @@ export function MapComponent({
 
       void addBuildingsLayer();
     },
-    [dataSetResultsId, mapInstance],
+    [dataSetResultsId, mapInstance, selectedDate],
   );
 
   useEffect(

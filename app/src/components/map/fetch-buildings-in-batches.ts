@@ -7,9 +7,15 @@ export const fetchBuildingsInBatches = ((
   _: unknown,
   {
     dataSetResultsId,
+    referenceDate,
     batchSize,
     lastId,
-  }: { dataSetResultsId: number; batchSize: number; lastId?: number },
+  }: {
+    dataSetResultsId: number;
+    referenceDate: string;
+    batchSize: number;
+    lastId?: number;
+  },
 ): (typeof data_set_detail_buildings.$inferSelect)[] | null => {
   try {
     const result = db
@@ -18,6 +24,7 @@ export const fetchBuildingsInBatches = ((
       .where(
         and(
           eq(data_set_detail_buildings.data_set_result_id, dataSetResultsId),
+          eq(data_set_detail_buildings.reference_date, referenceDate),
           lastId ? gt(data_set_detail_buildings.id, lastId) : undefined,
         ),
       )
