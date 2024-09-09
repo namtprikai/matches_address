@@ -6,8 +6,7 @@ import { db } from "../../utils/db";
 export const fetchBuildingsInBatches = ((
   _: unknown,
   {
-    // FIXME: いったんreferenceDateだけで建物データを取得しているためコメントアウトする
-    // dataSetResultsId,
+    dataSetResultsId,
     referenceDate,
     batchSize,
     lastId,
@@ -24,7 +23,7 @@ export const fetchBuildingsInBatches = ((
       .from(data_set_detail_buildings)
       .where(
         and(
-          // eq(data_set_detail_buildings.data_set_result_id, dataSetResultsId),
+          eq(data_set_detail_buildings.data_set_result_id, dataSetResultsId),
           referenceDate
             ? eq(data_set_detail_buildings.reference_date, referenceDate)
             : undefined,
