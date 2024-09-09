@@ -3,7 +3,7 @@ import { execFile } from "child_process";
 import path from "path";
 import { promisify } from "util";
 import { fetchBuildingsInBatches } from "../components/map/fetch-buildings-in-batches";
-import { fetchReferenceYears } from "../components/map/fetch-reference-years";
+import { fetchReferenceDates } from "../components/map/fetch-reference-dates";
 import { getNames } from "./get-names";
 import { saveName } from "./save-name";
 import { helloFromPython } from "./hello-from-python";
@@ -25,6 +25,7 @@ import { selectResultView } from "./select-result-view";
 import { filterDataSetForTable } from "./filter-data-set-for-table";
 import { deleteResultView } from "./delete-result-view";
 import { deleteResultSheet } from "./delete-result-sheet";
+import { createDummyDataSetResults } from "./create-dummy-data-set-results";
 
 export const ipcMainListeners = {
   getNames,
@@ -49,7 +50,8 @@ export const ipcMainListeners = {
   filterDataSetForChart,
   filterDataSetForTable,
   fetchBuildingsInBatches,
-  fetchReferenceYears,
+  fetchReferenceDates,
+  createDummyDataSetResults,
 };
 
 export const execFileAsync = promisify(execFile);

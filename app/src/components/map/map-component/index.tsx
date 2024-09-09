@@ -1,6 +1,6 @@
 import "maplibre-gl/dist/maplibre-gl.css";
 import { useEffect, useRef, useState } from "react";
-import { addProtocol, Map } from "maplibre-gl";
+import { addProtocol, type FilterSpecification, Map } from "maplibre-gl";
 import { Protocol } from "pmtiles";
 import { makeStyles } from "@fluentui/react-components";
 import { type Polygon } from "geojson";
@@ -17,19 +17,20 @@ const useMapComponentStyles = makeStyles({
 interface Props {
   dataSetResultsId: number;
   type: "building" | "area";
-  // selectedYear: number;
+  selectedDate: string;
   vacancyLevels: VacancyLevels;
 }
 
 export function MapComponent({
   dataSetResultsId,
   type,
-  // selectedYear,
+  selectedDate,
   vacancyLevels,
 }: Props): JSX.Element {
   const styles = useMapComponentStyles();
   const containerRef = useRef<HTMLDivElement | null>(null);
   const [mapInstance, setMapInstance] = useState<Map | null>(null);
+  const [layerIds, setLayerIds] = useState<string[]>([]);
 
   useEffect(
     function initializeMapEffect() {
@@ -44,6 +45,7 @@ export function MapComponent({
           "fetchBuildingsInBatches",
           {
             dataSetResultsId,
+            referenceDate: selectedDate,
             batchSize: 1,
           },
         );
@@ -55,9 +57,10 @@ export function MapComponent({
         const coordinates: Polygon["coordinates"] = JSON.parse(
           firstItem.geometry,
         );
-        const center: [number, number] = coordinates
-          ? [coordinates[0][0][0], coordinates[0][0][1]]
-          : [137.120435, 34.990565];
+        const center: [number, number] =
+          coordinates[0][0][0] && coordinates[0][0][1]
+            ? [coordinates[0][0][0], coordinates[0][0][1]]
+            : [137.120435, 34.990565];
 
         const initializedMap = new Map({
           container: containerEl,
@@ -75,7 +78,7 @@ export function MapComponent({
 
       void initializeMap();
     },
-    [dataSetResultsId],
+    [dataSetResultsId, selectedDate],
   );
 
   useEffect(
@@ -93,6 +96,7 @@ export function MapComponent({
               "fetchBuildingsInBatches",
               {
                 dataSetResultsId,
+                referenceDate: selectedDate,
                 batchSize,
                 lastId,
               },
@@ -103,6 +107,7 @@ export function MapComponent({
             }
 
             const layerId = lastId.toString();
+            setLayerIds((prevLayerIds) => [...prevLayerIds, layerId]);
             addGeojsonLayer(mapInstance, layerId, batch);
 
             if (batch.length < batchSize) {
@@ -119,7 +124,43 @@ export function MapComponent({
 
       void addBuildingsLayer();
     },
-    [dataSetResultsId, mapInstance],
+    [dataSetResultsId, mapInstance, selectedDate],
+  );
+
+  useEffect(
+    function applyFiltersEffect() {
+      if (!mapInstance || !layerIds.length) return;
+
+      layerIds.forEach((layerId) => {
+        const filters = [];
+        if (vacancyLevels.low) {
+          filters.push(["<", ["get", "predicted_probability"], 0.3]);
+        }
+        if (vacancyLevels.medium) {
+          filters.push([
+            "all",
+            [">=", ["get", "predicted_probability"], 0.3],
+            ["<", ["get", "predicted_probability"], 0.8],
+          ]);
+        }
+        if (vacancyLevels.high) {
+          filters.push([">=", ["get", "predicted_probability"], 0.8]);
+        }
+
+        const mapLibreFilter: FilterSpecification | undefined =
+          filters.length > 0
+            ? (["any", ...filters] as FilterSpecification)
+            : undefined;
+        mapInstance.setFilter(layerId, mapLibreFilter);
+      });
+    },
+    [
+      layerIds,
+      mapInstance,
+      vacancyLevels.high,
+      vacancyLevels.low,
+      vacancyLevels.medium,
+    ],
   );
 
   return <div ref={containerRef} className={styles.map} />;

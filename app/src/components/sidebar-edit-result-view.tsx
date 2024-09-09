@@ -111,6 +111,34 @@ export const SidebarEditResultView = (): JSX.Element => {
                   />
                 </div>
               </div>
+              <div>
+                <Button
+                  onClick={async () => {
+                    console.info("Look at your editor console!");
+                    await window.ipcRenderer.invoke(
+                      "createDummyDataSetResults",
+                      { full: true },
+                    );
+                  }}
+                  size="small"
+                >
+                  開発用のデータセットを追加(フル)
+                </Button>
+              </div>
+              <div>
+                <Button
+                  onClick={async () => {
+                    console.info("Look at your editor console!");
+                    await window.ipcRenderer.invoke(
+                      "createDummyDataSetResults",
+                      { full: false },
+                    );
+                  }}
+                  size="small"
+                >
+                  開発用のデータセットを追加(1/10)
+                </Button>
+              </div>
             </>
           )}
           {!isAddView && (
