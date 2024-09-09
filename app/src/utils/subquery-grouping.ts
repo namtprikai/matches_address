@@ -14,15 +14,15 @@ import { data_set_detail_buildings } from "../schema";
 export type GroupingCondition =
     | {
         operation: "eq" | "noteq" | "gt" | "lt" | "gte" | "lte";
-        value: number;
+        value: number | undefined;
         label: string;
     }
     | ({
         operation: "range";
         label: string;
-        startValue: number;
+        startValue: number | undefined;
         includesStart: boolean;
-        lastValue: number;
+        lastValue: number | undefined;
         includesLast: boolean;
     })
 
@@ -40,6 +40,8 @@ const operationToQuery = (operation: GroupingCondition["operation"]): string => 
             return ">=";
         case "lte":
             return "<=";
+        default:
+            return "";
     }
 }
 
@@ -90,7 +92,7 @@ if (import.meta.vitest) {
         );
     });
 
-    it("範囲条件で開始値、終了値どちらも含むcaseクエリを作成する", () => {
+    it("範囲条件のcaseクエリを作成する", () => {
         expect(
             sqliteDialect.sqlToQuery(
                 conditionsToCaseQuery("age", [
@@ -111,16 +113,11 @@ if (import.meta.vitest) {
         );
     });
 
-    it("範囲条件で開始値のみ含むcaseクエリを作成する", () => {
+    it("以上のcaseクエリを作成する", () => {
         expect(
             sqliteDialect.sqlToQuery(
                 conditionsToCaseQuery("age", [
-                    {
-                        operation: "range",
-                        label: "a",
-                        startValue: 1,
-                        includesStart: true
-                    },
+                    { operation: "gte", value: 1, label: "a" },
                 ]),
             ),
         ).toStrictEqual(
@@ -130,21 +127,16 @@ if (import.meta.vitest) {
         );
     });
 
-    it("範囲条件で終了値のみ含むcaseクエリを作成する", () => {
+    it("以下のcaseクエリを作成する", () => {
         expect(
             sqliteDialect.sqlToQuery(
                 conditionsToCaseQuery("age", [
-                    {
-                        operation: "range",
-                        label: "a",
-                        lastValue: 10,
-                        includesLast: false,
-                    },
+                    { operation: "lte", value: 1, label: "a" },
                 ]),
             ),
         ).toStrictEqual(
             sqliteDialect.sqlToQuery(
-                sql`*, case when age < 10 then 'a' end`,
+                sql`*, case when age <= 1 then 'a' end`,
             ),
         );
     });
