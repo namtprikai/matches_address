@@ -121,7 +121,11 @@ export const SidebarEditResultView = (): JSX.Element => {
               >
                 <div>
                   <h4>開発用のデータセットを追加</h4>
-                  <small>※実際には表示されません</small>
+                  <small>
+                    ※実際には表示されません
+                    <br />
+                    ※ボタンクリック後リロードしてください
+                  </small>
                 </div>
                 <Button
                   onClick={async () => {
