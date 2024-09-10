@@ -169,6 +169,10 @@ export function MapComponent({
           mapInstance.setLayoutProperty(layerId, "visibility", "none");
         }
         return;
+      } else {
+        for (const layerId of layerIds) {
+          mapInstance.setLayoutProperty(layerId, "visibility", "visible");
+        }
       }
 
       for (const layerId of layerIds) {
