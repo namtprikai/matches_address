@@ -1,11 +1,11 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { makeStyles, tokens } from "@fluentui/react-components";
 import {
   VacancyLevelCheckbox,
   type VacancyLevels,
 } from "./vacancy-level-checkbox";
-import { DisplayPeriodDropdown } from "./display-period-dropdown";
-import { type BuildingData, MapComponent } from "./map-component";
+import { MapComponent } from "./map-component";
+import { ReferenceDateDropdown } from "./reference-date-dropdown";
 
 const useStyles = makeStyles({
   filters: {
@@ -23,17 +23,36 @@ const useStyles = makeStyles({
 });
 
 interface Props {
-  data: BuildingData;
+  dataSetResultsId: number;
+  type: "building" | "area";
 }
 
-export function Map({ data }: Props): JSX.Element {
+export function Map({ type, dataSetResultsId }: Props): JSX.Element {
   const styles = useStyles();
   const [vacancyLevels, setVacancyLevels] = useState<VacancyLevels>({
     low: true,
     medium: true,
     high: true,
   });
-  const [selectedYear, setSelectedYear] = useState<number>(data[0].year);
+  const [referenceDates, setReferenceDates] = useState<string[] | undefined>(
+    undefined,
+  );
+  const [selectedDate, setSelectedDate] = useState<string | undefined>(
+    undefined,
+  );
+
+  useEffect(
+    function fetchReferenceDatesEffect() {
+      const fetchReferenceDates = async (): Promise<void> => {
+        const result = await window.ipcRenderer.invoke("fetchReferenceDates");
+        setReferenceDates(result);
+        setSelectedDate(result[0]);
+      };
+
+      void fetchReferenceDates();
+    },
+    [dataSetResultsId],
+  );
 
   return (
     <div>
@@ -50,18 +69,19 @@ export function Map({ data }: Props): JSX.Element {
         <div className={styles.filter}>
           <div>表示期間</div>
           <div>
-            <DisplayPeriodDropdown
-              selectedYear={selectedYear}
-              setSelectedYear={setSelectedYear}
-              years={data.map((data) => data.year)}
+            <ReferenceDateDropdown
+              referenceDates={referenceDates}
+              selectedDate={selectedDate}
+              setSelectedDate={setSelectedDate}
             />
           </div>
         </div>
       </div>
       <div className={styles.map}>
         <MapComponent
-          data={data}
-          selectedYear={selectedYear}
+          dataSetResultsId={dataSetResultsId}
+          selectedDate={selectedDate}
+          type={type}
           vacancyLevels={vacancyLevels}
         />
       </div>

@@ -274,7 +274,7 @@ export const data_set_detail_buildings = sqliteTable(
      *
      * 文字列：任意の文字列
      */
-    geometry: text("geometry"),
+    geometry: text("geometry").notNull(),
 
     /**
      * 計測高

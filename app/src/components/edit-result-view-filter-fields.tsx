@@ -10,6 +10,9 @@ import {
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useAtomValue } from "jotai";
+import { useEffect, useState } from "react";
+import { selectedResultViewAtom } from "../state/selected-result-view-atom";
 import { Button } from "./ui/button";
 import { DialogSurface } from "./ui/dialog-surface";
 import { DialogTitle } from "./ui/dialog-title";
@@ -25,36 +28,32 @@ const useStyles = makeStyles({
     display: "grid",
     gap: tokens.spacingVerticalXXL,
   },
+  year: {
+    display: "grid",
+    gridTemplateColumns: "1fr auto 1fr",
+    alignItems: "center",
+    gap: tokens.spacingHorizontalXS,
+  },
   area: {
     display: "flex",
     justifyContent: "space-between",
   },
 });
 
-/** 仮 */
-const AREA_ITEMS = [
-  "中区",
-  "中村区",
-  "中川区",
-  "昭和区",
-  "瑞穂区",
-  "熱田区",
-  "千種区",
-  "東区",
-  "北区",
-  "西区",
-  "名東区",
-  "港区",
-  "南区",
-  "守山区",
-  "天白区",
-  "緑区",
-  "北名古屋市",
-  "弥富市",
-];
+const LOWER_LIMIT = "下限なし";
+const UPPER_LIMIT = "上限なし";
 
 const formSchema = z.object({
-  period: z.string().optional() /** 仮: 範囲指定になるらしい */,
+  year: z.object({
+    start: z
+      .number()
+      .or(z.enum([LOWER_LIMIT]).optional().default(LOWER_LIMIT))
+      .nullable(),
+    end: z
+      .number()
+      .or(z.enum([UPPER_LIMIT]).optional().default(UPPER_LIMIT))
+      .nullable(),
+  }),
   areas: z.array(z.string()).optional().default([]),
 });
 
@@ -64,6 +63,9 @@ const form_id = "edit-result-view-filter-fields";
 export const EditResultViewFilterFields = (): JSX.Element => {
   const styles = useStyles();
 
+  const [areaItems, setAreaItems] = useState<(string | null)[]>([]);
+  const [yearItems, setYearItems] = useState<string[]>([]);
+
   const { register, handleSubmit, watch, setValue } = useForm<FormType>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -71,9 +73,45 @@ export const EditResultViewFilterFields = (): JSX.Element => {
     },
   });
 
-  const onSubmit = handleSubmit((data) => {
-    console.log(data);
+  const onSubmit = handleSubmit(() => {
+    //
   });
+
+  const resultView = useAtomValue(selectedResultViewAtom);
+
+  useEffect(() => {
+    // 地域を取得する処理
+    (async () => {
+      if (!resultView?.data_set_result_id) return;
+      const res = await window.ipcRenderer.invoke("readDataSetArea", {
+        dataSetResultId: resultView.data_set_result_id,
+      });
+
+      /** @todo parse xml(readDataSetAreaが仮でxmlを返すため必要な処理)・ローカルで読むようになったらいらなくなる予定 */
+      const parser = new DOMParser();
+      if (!res) return;
+      const xml = parser.parseFromString(res, "text/xml");
+      const citiesList = Array.from(xml.querySelectorAll("city")).map(
+        (city) => {
+          return city.textContent;
+        },
+      );
+
+      setAreaItems(citiesList);
+    })().catch(console.error);
+  }, [resultView]);
+
+  useEffect(() => {
+    // 期間を取得する処理
+    (async () => {
+      if (!resultView?.data_set_result_id) return;
+      const res = await window.ipcRenderer.invoke("readDataSetYear", {
+        dataSetResultId: resultView.data_set_result_id,
+      });
+
+      setYearItems(res);
+    })().catch(console.error);
+  }, [resultView]);
 
   const areas = watch("areas");
 
@@ -83,19 +121,35 @@ export const EditResultViewFilterFields = (): JSX.Element => {
         <FieldLegend>フィルター</FieldLegend>
 
         <Field label="期間">
-          <Select
-            {...register("period")}
-            defaultValue={new Date().getFullYear()}
-          >
-            {[...Array(30)]
-              .map((_, i) => new Date().getFullYear() - i)
-              .reverse()
-              .map((item) => (
+          <div className={styles.year}>
+            <Select
+              {...register("year.start", {
+                setValueAs: (v: FormType["year"]["start"]) =>
+                  v === LOWER_LIMIT ? null : Number(v),
+              })}
+            >
+              <option value={LOWER_LIMIT}>{LOWER_LIMIT}</option>
+              {yearItems.map((item) => (
                 <option key={item} value={item}>
                   {item}
                 </option>
               ))}
-          </Select>
+            </Select>
+            <span>〜</span>
+            <Select
+              {...register("year.end", {
+                setValueAs: (v: FormType["year"]["end"]) =>
+                  v === UPPER_LIMIT ? null : Number(v),
+              })}
+            >
+              <option value={UPPER_LIMIT}>{UPPER_LIMIT}</option>
+              {yearItems.map((item) => (
+                <option key={item} value={item}>
+                  {item}
+                </option>
+              ))}
+            </Select>
+          </div>
         </Field>
 
         <Field label="地域">
@@ -121,16 +175,19 @@ export const EditResultViewFilterFields = (): JSX.Element => {
                 <DialogBody>
                   <DialogTitle>地域でフィルター</DialogTitle>
                   <DialogContent>
-                    {AREA_ITEMS.map((item) => (
-                      <Checkbox
-                        key={item}
-                        checked={areas?.includes(item)}
-                        id={item}
-                        label={item}
-                        value={item}
-                        {...register("areas")}
-                      />
-                    ))}
+                    {areaItems.map(
+                      (item) =>
+                        item && (
+                          <Checkbox
+                            key={item}
+                            checked={areas?.includes(item)}
+                            id={item}
+                            label={item}
+                            value={item}
+                            {...register("areas")}
+                          />
+                        ),
+                    )}
                   </DialogContent>
                   <DialogActions position="start">
                     <Button

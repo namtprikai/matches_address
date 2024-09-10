@@ -1,0 +1,19 @@
+import { type IpcMainListener } from "../../ipc-main-listeners";
+import {
+  data_set_detail_buildings,
+  type SelectDataSetDetailBuilding,
+} from "../../schema";
+import { db } from "../../utils/db";
+
+export const fetchReferenceDates = ((
+  _: unknown,
+): SelectDataSetDetailBuilding["reference_date"][] => {
+  const result = db
+    .selectDistinct({
+      reference_date: data_set_detail_buildings.reference_date,
+    })
+    .from(data_set_detail_buildings)
+    .all();
+
+  return result.map((r) => r.reference_date);
+}) satisfies IpcMainListener;

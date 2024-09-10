@@ -12,8 +12,8 @@ if (require("electron-squirrel-startup")) {
 const createWindow = (): void => {
   // Create the browser window.
   const mainWindow = new BrowserWindow({
-    width: 800,
-    height: 600,
+    width: 1200,
+    height: 900,
     webPreferences: {
       preload: path.join(__dirname, "preload.js"),
     },
@@ -34,19 +34,19 @@ const createWindow = (): void => {
   }
 };
 
-void app.whenReady().then(() => {
-  const migrationsFolder =
-    process.env.NODE_ENV === "development"
-      ? "drizzle"
-      : path.join(process.resourcesPath, "drizzle");
-  migrate(db, { migrationsFolder });
-
+void app.whenReady().then(async () => {
   createWindow();
 
   // ipcMain.handle()のハンドラ関数を登録する
   Object.entries(ipcMainListeners).forEach(([channel, listener]) => {
     ipcMain.handle(channel, listener);
   });
+
+  const migrationsFolder =
+    process.env.NODE_ENV === "development"
+      ? "drizzle"
+      : path.join(process.resourcesPath, "drizzle");
+  migrate(db, { migrationsFolder });
 
   app.on("activate", () => {
     // On OS X it's common to re-create a window in the app when the

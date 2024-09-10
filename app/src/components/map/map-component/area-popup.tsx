@@ -1,6 +1,25 @@
 import { forwardRef } from "react";
-import styles from "./popup-styles.module.css";
-import { type Area } from ".";
+import styles from "./area-popup.module.css";
+
+interface Area {
+  vacancyRate: number;
+  address: string;
+  totalPopulation: number;
+  malePopulation: number;
+  femalePopulation: number;
+  averageAge: number;
+  waterUsageAverage: number;
+  waterUsageMax: number;
+  waterUsageMin: number;
+  averageConstructionAge: number;
+  minConstructionAge: number;
+  maxConstructionAge: number;
+  riskLevelA: number;
+  riskLevelB: number;
+  riskLevelC: number;
+  area: number;
+  coordinates: number[][][];
+}
 
 interface Props {
   areaInfo: Area | null;

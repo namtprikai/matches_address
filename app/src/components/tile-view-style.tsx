@@ -8,7 +8,6 @@ import { type GroupingCondition } from "../utils/subquery-grouping";
 import { BarChart } from "./bar-charts";
 import { LineChart } from "./line-charts";
 import { PieChart } from "./pie-charts";
-import { _dummyBuildingData } from "./map/_dummy-data";
 import { Map } from "./map";
 import { TableView } from "./table-view";
 
@@ -125,14 +124,13 @@ export const TileViewStyle = ({
     );
   }
 
-  switch (style) {
-    case "map":
-      return (
-        <div>
-          <Map data={_dummyBuildingData} />
-        </div>
-      );
-    default:
-      return <>未設定</>;
+  if (style === "map") {
+    return (
+      <div>
+        <Map dataSetResultsId={dataSetResults.id} type="building" />
+      </div>
+    );
   }
+
+  return <>未設定</>;
 };
