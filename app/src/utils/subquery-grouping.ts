@@ -1,5 +1,5 @@
 import Database from "better-sqlite3";
-import { type SQL, sql } from "drizzle-orm";
+import { type SQL, sql, type Subquery } from "drizzle-orm";
 import {
     drizzle,
     type BetterSQLite3Database,
@@ -7,8 +7,10 @@ import {
 import { migrate } from "drizzle-orm/better-sqlite3/migrator";
 import {
     SQLiteSyncDialect,
+    type SQLiteTable,
     type SQLiteTableWithColumns,
 } from "drizzle-orm/sqlite-core";
+import { type SQLiteViewBase } from "drizzle-orm/sqlite-core/view-base";
 import { data_set_detail_buildings } from "../schema";
 
 export type GroupingCondition =
@@ -143,9 +145,9 @@ if (import.meta.vitest) {
 }
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type -- ignore
-export const subQueryFromConditions = <T extends SQLiteTableWithColumns<any>>(
+export const subQueryFromConditions = (
     drizzle: BetterSQLite3Database,
-    db: T,
+    db: SQLiteTable | Subquery | SQLiteViewBase | SQL,
     groupLabel: string,
     key: string,
     conditions: GroupingCondition[],

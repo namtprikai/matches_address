@@ -22,6 +22,10 @@ import { CustomTooltip } from "./custom-tooltip";
 export type BarChartProps = {
   resultId: number;
   groupingConditions?: GroupingCondition[];
+  filterByYear: {
+    startValue: number | undefined;
+    endValue: number | undefined;
+  };
 } & (
   | {
       type: "building";
@@ -41,6 +45,7 @@ export const BarChart = ({
   x,
   y,
   groupingConditions,
+  filterByYear,
 }: BarChartProps): JSX.Element => {
   // @ts-expect-error TODO: Unionが正しく分配されない
   const { chartProps } = useFetchFilterDataSetForChart({
@@ -49,6 +54,7 @@ export const BarChart = ({
     x,
     y,
     groupingConditions,
+    filterByYear,
   });
 
   const data = chartProps.data;

@@ -57,28 +57,22 @@ export const EditResultViewForm = (): JSX.Element => {
     const parameters = data.parameters;
 
     /** もっと良い書き方ありそう */
-    if (data.year.start) {
-      parameters.push({
-        key: "year.start",
-        value: data.year.start.toString(),
-      });
-    } else {
-      parameters.push({
-        key: "year.start",
-        value: "",
-      });
-    }
-    if (data.year.end) {
-      parameters.push({
-        key: "year.end",
-        value: data.year.end.toString(),
-      });
-    } else {
-      parameters.push({
-        key: "year.end",
-        value: "",
-      });
-    }
+    const yearExcludedParameters = parameters.filter(
+      (parameter) =>
+        parameter.key !== "year.start" && parameter.key !== "year.end",
+    );
+
+    const startYear = {
+      key: "year.start",
+      value: data.year.start,
+      type: "filter",
+    };
+
+    const endYear = {
+      key: "year.end",
+      value: data.year.end,
+      type: "filter",
+    };
 
     await window.ipcRenderer.invoke("updateResultViews", {
       resultViewId: selectedResultViewId,
@@ -86,7 +80,7 @@ export const EditResultViewForm = (): JSX.Element => {
         title: data.title?.length === 0 ? undefined : data.title,
         style: data.style,
         unit: data.unit,
-        parameters,
+        parameters: [...yearExcludedParameters, startYear, endYear],
       },
     });
     refresh();
@@ -102,6 +96,10 @@ export const EditResultViewForm = (): JSX.Element => {
       parameters: selectedResultView?.parameters ?? [],
     });
   }, [selectedResultView, reset]);
+
+  const year = methods.watch("year");
+
+  console.log(year);
 
   return (
     <FormProvider {...methods}>

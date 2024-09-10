@@ -1,4 +1,5 @@
 import { useFieldArray, useFormContext } from "react-hook-form";
+import { Fragment } from "react/jsx-runtime";
 import { result_views, type SelectResultView } from "../schema";
 import { LanguageMap } from "../lang";
 import { RESULT_VIEW_CONFIG } from "../config/result-view-config";
@@ -47,6 +48,9 @@ export const EditResultViewFileds = (): JSX.Element => {
     return field.type === "column";
   });
 
+  console.log(fields);
+  console.log(formState.errors);
+
   return (
     <>
       <Field label="データセット">
@@ -85,7 +89,7 @@ export const EditResultViewFileds = (): JSX.Element => {
 
           if (fieldOption.type === "select") {
             return (
-              <div key={field.id}>
+              <Fragment key={field.id}>
                 <DynamicParameterInput
                   type={fieldOption.type}
                   {...register(`parameters.${index}.value`)}
@@ -113,7 +117,7 @@ export const EditResultViewFileds = (): JSX.Element => {
                     parameters={groupingFields}
                   />
                 )}
-              </div>
+              </Fragment>
             );
           }
 

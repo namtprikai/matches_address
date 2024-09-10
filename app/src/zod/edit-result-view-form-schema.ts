@@ -37,7 +37,7 @@ export const editResultViewFormSchema = z.object({
       z.object({
         key: z.string(),
         type: z.literal("filter"),
-        value: z.string(),
+        value: z.string().or(z.number()).nullable(),
       }),
     ])
     .array(),

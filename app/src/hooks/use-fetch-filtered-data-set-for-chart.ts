@@ -11,22 +11,26 @@ export const useFetchFilterDataSetForChart = ({
     type,
     x,
     y,
-    groupingConditions
-}: { resultId: number, groupingConditions?: GroupingCondition[] } & (
-    | {
-        type: "building";
-        x: keyof SelectDataSetDetailBuilding;
-        y: keyof SelectDataSetDetailBuilding;
-    }
-    | {
-        type: "area";
-        x: keyof SelectDataSetDetailArea;
-        y: keyof SelectDataSetDetailArea;
-    }
-)): {
-    chartProps: ChartProps;
-    refetch: () => Promise<void>;
-} => {
+    groupingConditions,
+    filterByYear
+}: {
+    resultId: number; groupingConditions?: GroupingCondition[]; filterByYear:
+    { startValue: number | undefined; endValue: number | undefined; }
+} & (
+        | {
+            type: "building";
+            x: keyof SelectDataSetDetailBuilding;
+            y: keyof SelectDataSetDetailBuilding;
+        }
+        | {
+            type: "area";
+            x: keyof SelectDataSetDetailArea;
+            y: keyof SelectDataSetDetailArea;
+        }
+    )): {
+        chartProps: ChartProps;
+        refetch: () => Promise<void>;
+    } => {
     const [chartProps, setChartProps] = useState<
         | ChartProps
         | {
@@ -47,7 +51,8 @@ export const useFetchFilterDataSetForChart = ({
                 type: "area",
                 x,
                 y,
-                groupingConditions
+                groupingConditions,
+                filterByYear
             });
             setChartProps(result);
         }
@@ -57,11 +62,12 @@ export const useFetchFilterDataSetForChart = ({
                 type: "building",
                 x,
                 y,
-                groupingConditions
+                groupingConditions,
+                filterByYear
             });
             setChartProps(result);
         }
-    }, [resultId, x, y, type, groupingConditions]);
+    }, [resultId, x, y, type, groupingConditions, filterByYear]);
 
     useEffect(() => {
         fetchFilteredDataSetForChart().catch(console.error);
