@@ -18,11 +18,23 @@ export const editResultViewFormSchema = z.object({
   year: z.object({
     start: z
       .number()
-      .or(z.enum([YEAR_LOWER_LIMIT]).optional().default(YEAR_LOWER_LIMIT))
+      .or(
+        z
+          .enum([YEAR_LOWER_LIMIT])
+          .optional()
+          .default(YEAR_LOWER_LIMIT)
+          .transform((v) => (v === YEAR_LOWER_LIMIT ? null : v)),
+      )
       .nullable(),
     end: z
       .number()
-      .or(z.enum([YEAR_UPPER_LIMIT]).optional().default(YEAR_UPPER_LIMIT))
+      .or(
+        z
+          .enum([YEAR_UPPER_LIMIT])
+          .optional()
+          .default(YEAR_UPPER_LIMIT)
+          .transform((v) => (v === YEAR_UPPER_LIMIT ? null : v)),
+      )
       .nullable(),
   }),
   areas: z.array(z.string()).optional().default([]),

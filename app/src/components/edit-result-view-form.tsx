@@ -51,13 +51,40 @@ export const EditResultViewForm = (): JSX.Element => {
 
   const onSubmit = methods.handleSubmit(async (data) => {
     if (!selectedResultViewId) return;
+
+    const parameters = data.parameters;
+
+    /** もっと良い書き方ありそう */
+    if (data.year.start) {
+      parameters.push({
+        key: "year.start",
+        value: data.year.start.toString(),
+      });
+    } else {
+      parameters.push({
+        key: "year.start",
+        value: "",
+      });
+    }
+    if (data.year.end) {
+      parameters.push({
+        key: "year.end",
+        value: data.year.end.toString(),
+      });
+    } else {
+      parameters.push({
+        key: "year.end",
+        value: "",
+      });
+    }
+
     await window.ipcRenderer.invoke("updateResultViews", {
       resultViewId: selectedResultViewId,
       value: {
         title: data.title?.length === 0 ? undefined : data.title,
         style: data.style,
         unit: data.unit,
-        parameters: data.parameters,
+        parameters,
       },
     });
     refresh();
