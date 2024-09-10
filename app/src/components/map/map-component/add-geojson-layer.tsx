@@ -52,7 +52,6 @@ export function addGeojsonLayer(
     },
   });
 
-  const popup = new Popup();
   map.on("click", layerId, (e) => {
     if (e.features && e.features.length > 0) {
       const feature = e.features[0];
@@ -62,12 +61,15 @@ export function addGeojsonLayer(
         <BuildingPopup properties={properties} />,
       );
 
-      popup.setLngLat(coordinates).setHTML(popupContent).addTo(map);
-    }
-  });
+      const popup = new Popup()
+        .setLngLat(coordinates)
+        .setHTML(popupContent)
+        .addTo(map);
 
-  map.on("closeAllPopups", () => {
-    popup.remove();
+      map.on("closeAllPopups", () => {
+        popup.remove();
+      });
+    }
   });
 
   // ポリゴンレイヤーにマウスが乗ったときにカーソルを変更
