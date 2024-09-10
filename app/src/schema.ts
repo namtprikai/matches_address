@@ -488,7 +488,7 @@ export const data_set_detail_areas = sqliteTable("data_set_detail_areas", {
    *
    * 文字列：任意の文字列
    */
-  geometry: text("geometry"),
+  geometry: text("geometry").notNull(),
 
   /**
    * KEYCODE
