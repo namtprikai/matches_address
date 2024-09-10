@@ -5,8 +5,23 @@ import { formatDate } from "../../../utils/format-date";
 import styles from "./building-popup.module.css";
 import { VACANCY_RATE_HIGH, VACANCY_RATE_MEDIUM } from "./add-geojson-layer";
 
+export type BuildingProperties = Pick<
+  SelectDataSetDetailBuilding,
+  | "geometry"
+  | "predicted_probability"
+  | "normalized_address"
+  | "household_size"
+  | "members_under_15"
+  | "members_15_to_64"
+  | "members_over_65"
+  | "total_water_usage"
+  | "water_disconnection_flag"
+  | "registration_date"
+  | "structure_name"
+>;
+
 interface Props {
-  properties: SelectDataSetDetailBuilding;
+  properties: BuildingProperties;
 }
 
 export const BuildingPopup = forwardRef<HTMLDivElement, Props>(

@@ -7,6 +7,7 @@ import { makeStyles } from "@fluentui/react-components";
 import { type Polygon } from "geojson";
 import { type VacancyLevels } from "../vacancy-level-checkbox";
 import { addGeojsonLayer } from "./add-geojson-layer";
+import { type BuildingProperties } from "./building-popup";
 
 const useMapComponentStyles = makeStyles({
   map: {
@@ -120,7 +121,22 @@ export function MapComponent({
             }
 
             const layerId = lastId.toString();
-            addGeojsonLayer(mapInstance, layerId, batch);
+            const filteredBatch: BuildingProperties[] = batch.map(
+              (building) => ({
+                geometry: building.geometry,
+                predicted_probability: building.predicted_probability,
+                normalized_address: building.normalized_address,
+                household_size: building.household_size,
+                members_under_15: building.members_under_15,
+                members_15_to_64: building.members_15_to_64,
+                members_over_65: building.members_over_65,
+                total_water_usage: building.total_water_usage,
+                water_disconnection_flag: building.water_disconnection_flag,
+                registration_date: building.registration_date,
+                structure_name: building.structure_name,
+              }),
+            );
+            addGeojsonLayer(mapInstance, layerId, filteredBatch);
             setLayerIds((prevLayerIds) =>
               prevLayerIds ? [...prevLayerIds, layerId] : [layerId],
             );
