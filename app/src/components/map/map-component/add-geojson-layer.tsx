@@ -31,7 +31,7 @@ export function addGeojsonLayer(
     type: "fill",
     source: layerId,
     maxzoom: 22,
-    minzoom: 10,
+    minzoom: 12,
     paint: {
       "fill-color": [
         "case",
