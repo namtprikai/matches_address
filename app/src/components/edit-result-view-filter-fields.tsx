@@ -1,3 +1,4 @@
+import { watch } from "original-fs";
 import { makeStyles, tokens } from "@fluentui/react-components";
 import { useFormContext } from "react-hook-form";
 import { useAtomValue } from "jotai";
@@ -35,7 +36,7 @@ export const EditResultViewFilterFields = (): JSX.Element => {
 
   const [yearItems, setYearItems] = useState<string[]>([]);
 
-  const { register } = useFormContext<EditResultViewFormType>();
+  const { register, watch } = useFormContext<EditResultViewFormType>();
 
   const resultView = useAtomValue(selectedResultViewAtom);
 
@@ -51,6 +52,8 @@ export const EditResultViewFilterFields = (): JSX.Element => {
     })().catch(console.error);
   }, [resultView]);
 
+  const year = watch("year");
+
   return (
     <Fieldset>
       <FieldLegend>フィルター</FieldLegend>
@@ -58,6 +61,7 @@ export const EditResultViewFilterFields = (): JSX.Element => {
       <Field label="期間">
         <div className={styles.year}>
           <Select
+            value={year.start}
             {...register("year.start", {
               setValueAs: (v: EditResultViewFormType["year"]["start"]) =>
                 v === YEAR_LOWER_LIMIT ? null : Number(v),
@@ -72,6 +76,7 @@ export const EditResultViewFilterFields = (): JSX.Element => {
           </Select>
           <span>〜</span>
           <Select
+            value={year.end}
             {...register("year.end", {
               setValueAs: (v: EditResultViewFormType["year"]["end"]) =>
                 v === YEAR_UPPER_LIMIT ? null : Number(v),

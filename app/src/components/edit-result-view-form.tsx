@@ -26,6 +26,13 @@ export const EditResultViewForm = (): JSX.Element => {
   const [selectedResultView, refresh] = useAtom(selectedResultViewAtom);
   const [, refreshResultViews] = useAtom(resultViewsAtom);
 
+  const yearStart = selectedResultView?.parameters.find(
+    (parameter) => parameter.key === "year.start",
+  )?.value;
+  const yearEnd = selectedResultView?.parameters.find(
+    (parameter) => parameter.key === "year.end",
+  )?.value;
+
   const methods = useForm<EditResultViewFormType>({
     resolver: zodResolver(editResultViewFormSchema),
     defaultValues: {
@@ -33,7 +40,10 @@ export const EditResultViewForm = (): JSX.Element => {
       style: selectedResultView?.style ?? "map",
       unit: selectedResultView?.unit ?? "building",
       parameters: selectedResultView?.parameters ?? [],
-
+      year: {
+        start: Number(yearStart) ?? null,
+        end: Number(yearEnd) ?? null,
+      },
       areas: [],
     },
   });
@@ -46,10 +56,13 @@ export const EditResultViewForm = (): JSX.Element => {
       style: selectedResultView?.style ?? "map",
       unit: selectedResultView?.unit ?? "building",
       parameters: selectedResultView?.parameters ?? [],
-
+      year: {
+        start: Number(yearStart) ?? null,
+        end: Number(yearEnd) ?? null,
+      },
       areas: [],
     });
-  }, [selectedResultView, reset]);
+  }, [selectedResultView, reset, yearStart, yearEnd]);
 
   const onSubmit = handleSubmit(async (data) => {
     if (!selectedResultViewId) return;
@@ -87,19 +100,6 @@ export const EditResultViewForm = (): JSX.Element => {
     // resultViewsの再取得を行い、更新されたデータを反映する
     refreshResultViews();
   });
-
-  useEffect(() => {
-    reset({
-      title: selectedResultView?.title ?? "",
-      style: selectedResultView?.style ?? "map",
-      unit: selectedResultView?.unit ?? "building",
-      parameters: selectedResultView?.parameters ?? [],
-    });
-  }, [selectedResultView, reset]);
-
-  const year = methods.watch("year");
-
-  console.log(year);
 
   return (
     <FormProvider {...methods}>
