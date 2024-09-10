@@ -12,7 +12,7 @@ import { type IpcMainListener } from ".";
 // 開発用
 export const createDummyDataSetResults = (async (
   _: unknown,
-  { full = false }: { full: boolean },
+  { full = false, title }: { full: boolean; title: string },
 ): Promise<Promise<void>> => {
   try {
     // すでにデータがある場合はテーブルの内容を削除してリセットする
@@ -45,7 +45,7 @@ export const createDummyDataSetResults = (async (
     await db.transaction(async (tx) => {
       const res = await tx
         .insert(data_set_results)
-        .values({ title: `分析結果` })
+        .values({ title })
         .returning();
       const data_set_result_id = res[0].id;
 
