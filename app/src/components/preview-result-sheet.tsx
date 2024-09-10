@@ -1,5 +1,6 @@
 import { makeStyles } from "@fluentui/react-components";
 import { useAtom } from "jotai";
+import { useEffect } from "react";
 import { resultViewsAtom } from "../state/result-views-atom";
 import { selectedResultViewIdAtom } from "../state/selected-result-view-id-atom";
 import { TileResultView } from "./tile-result-view";
@@ -26,6 +27,11 @@ export const PreviewResultSheet = (): JSX.Element => {
   );
 
   const [data] = useAtom(resultViewsAtom);
+
+  useEffect(() => {
+    if (data.length === 0) return;
+    setSelectedResultViewId(data[0].result_views.id);
+  }, [data, setSelectedResultViewId]);
 
   /** 仮 */
   if (data.length === 0) return <div style={{ height: "60vh" }}></div>;
