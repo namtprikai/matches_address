@@ -26,31 +26,37 @@ const schema = z.object({
   unit: z.enum(result_views.unit.enumValues).default("building"),
   style: z.enum(result_views.style.enumValues).default("map"),
   parameters: z
-    .object({
-      key: z.string(),
-      value: z.string(),
-    })
-    .or(
+    .discriminatedUnion("type", [
       z.object({
         key: z.string(),
-        value: z
-          .object({
-            operation: z.enum(["eq", "noteq", "gt", "gte", "lt", "lte"]),
-            value: z.number().nullable(),
-            label: z.string(),
-          })
-          .or(
-            z.object({
-              operation: z.enum(["range"]),
-              startValue: z.number().nullable(),
-              lastValue: z.number().nullable(),
-              includesStart: z.boolean(),
-              includesLast: z.boolean(),
-              label: z.string(),
-            }),
-          ),
+        value: z.string(),
+        type: z.literal("column"),
       }),
-    )
+      z.object({
+        key: z.string(),
+        type: z.literal("group"),
+        value: z.discriminatedUnion("operation", [
+          z.object({
+            operation: z.enum(["eq", "noteq", "gt", "gte", "lt", "lte"]),
+            value: z.number().optional(),
+            label: z.string(),
+          }),
+          z.object({
+            operation: z.enum(["range"]),
+            startValue: z.number().optional(),
+            lastValue: z.number().optional(),
+            includesStart: z.boolean().optional(),
+            includesLast: z.boolean().optional(),
+            label: z.string(),
+          }),
+        ]),
+      }),
+      z.object({
+        key: z.string(),
+        type: z.literal("filter"),
+        value: z.string(),
+      }),
+    ])
     .array(),
 });
 
@@ -69,7 +75,7 @@ export const EditResultViewForm = (): JSX.Element => {
   const [, refreshResultViews] = useAtom(resultViewsAtom);
 
   const styles = useStyles();
-  const { register, handleSubmit, watch, reset, control, setValue } =
+  const { register, handleSubmit, watch, reset, control, setValue, formState } =
     useForm<EditResultViewFormType>({
       resolver: zodResolver(schema),
       defaultValues: {
@@ -81,6 +87,7 @@ export const EditResultViewForm = (): JSX.Element => {
     });
 
   const onSubmit = handleSubmit(async (data) => {
+    console.log(data);
     if (!selectedResultViewId) return;
     await window.ipcRenderer.invoke("updateResultViews", {
       resultViewId: selectedResultViewId,
@@ -96,6 +103,8 @@ export const EditResultViewForm = (): JSX.Element => {
     refreshResultViews();
   });
 
+  console.log(formState.errors);
+
   const style = watch("style");
   const unit = watch("unit");
 
@@ -105,6 +114,8 @@ export const EditResultViewForm = (): JSX.Element => {
   });
 
   const groupingFields = fields.filter((field) => {
+    if (!field.key) return false;
+
     return field.key.startsWith("group_");
   });
 
@@ -121,7 +132,13 @@ export const EditResultViewForm = (): JSX.Element => {
     if (!style) return;
     const option = RESULT_VIEW_CONFIG[style];
     if (!option) return;
-    replace(option.fields.map((field) => ({ key: field.key, value: "" })));
+    replace(
+      option.fields.map((field) => ({
+        key: field.key,
+        value: "",
+        type: "column",
+      })),
+    );
   };
 
   return (
@@ -174,6 +191,7 @@ export const EditResultViewForm = (): JSX.Element => {
                   update(index, {
                     key: field.key,
                     value: e.target.value,
+                    type: "column",
                   });
                 }}
                 unit={unit}
@@ -210,6 +228,7 @@ export const EditResultViewForm = (): JSX.Element => {
                   update(index, {
                     key: field.key,
                     value: newValue.join(","),
+                    type: "column",
                   });
                 }}
                 unit={unit}
@@ -225,13 +244,18 @@ export const EditResultViewForm = (): JSX.Element => {
           RESULT_VIEW_CONFIG[style].grouping.enabled && (
             <EditorGroupingForm
               onSave={(parameters) => {
-                console.log(parameters);
-                replace([...fields, ...parameters]);
+                const excludeNewFields = fields.filter((field) => {
+                  return !field.key.startsWith("group_");
+                });
+
+                console.log([...excludeNewFields, ...parameters]);
+                replace([...excludeNewFields, ...parameters]);
               }}
               parameters={
                 groupingFields as {
                   key: string;
                   value: GroupingCondition;
+                  type: "group";
                 }[]
               }
             />

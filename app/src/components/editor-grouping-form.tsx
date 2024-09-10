@@ -5,6 +5,9 @@ import {
   DialogTrigger,
   makeStyles,
 } from "@fluentui/react-components";
+import { useFieldArray, useForm, useWatch } from "react-hook-form";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { type GroupingCondition } from "../utils/subquery-grouping";
 import { Field } from "./ui/field";
 import { Button } from "./ui/button";
@@ -18,17 +21,13 @@ type Props = {
   parameters: {
     key: string;
     value: GroupingCondition;
+    type: "group";
   }[];
-  onChange?: (
-    parameters: {
-      key: string;
-      value: GroupingCondition;
-    }[],
-  ) => void;
   onSave: (
     parameters: {
       key: string;
       value: GroupingCondition;
+      type: "group";
     }[],
   ) => void;
 };
@@ -40,25 +39,34 @@ const useStyles = makeStyles({
   },
 });
 
+const schema = z.object({
+  conditions: z
+    .object({
+      key: z.string(),
+      value: z.discriminatedUnion("operation", [
+        z.object({
+          operation: z.enum(["eq", "noteq", "gt", "gte", "lt", "lte"]),
+          value: z.number().nullable(),
+          label: z.string(),
+        }),
+        z.object({
+          operation: z.enum(["range"]),
+          startValue: z.number().nullable(),
+          lastValue: z.number().nullable(),
+          includesStart: z.boolean(),
+          includesLast: z.boolean(),
+          label: z.string(),
+        }),
+      ]),
+      type: z.literal("group"),
+    })
+    .array(),
+});
+
 export const EditorGroupingForm = ({
   parameters,
   onSave,
 }: Props): JSX.Element => {
-  const [state, setState] = useState<
-    {
-      key: string;
-      value: GroupingCondition;
-    }[]
-  >(
-    parameters.length === 0
-      ? [
-          {
-            key: "group_0",
-            value: { operation: "eq", value: undefined, label: "" },
-          },
-        ]
-      : parameters,
-  );
   const [open, setOpen] = useState(false);
 
   const styles = useStyles();
@@ -69,91 +77,62 @@ export const EditorGroupingForm = ({
     label: "",
   };
 
-  const update = (key: string, newValue: Partial<GroupingCondition>): void => {
-    console.log(newValue);
+  const { watch, control, register, handleSubmit, formState } = useForm({
+    resolver: zodResolver(schema),
+    defaultValues: {
+      conditions: parameters,
+    },
+  });
+  const { fields, append, remove } = useFieldArray({
+    control,
+    name: "conditions",
+  });
 
-    setState((prev) =>
-      prev.map((field) => {
-        const prevValue = field.value;
-
-        // keyが一致しない場合はスキップ
-        if (field.key !== key) {
-          return field;
-        }
-
-        // valueの条件演算子が range の場合
-        if (newValue.operation === "range") {
-          // 元のvalueの条件演算子が同じ range の場合
-          if (prevValue.operation === "range") {
-            return {
-              key: field.key,
-              value: {
-                ...prevValue,
-                ...newValue,
-              },
-            };
-          }
-
-          // 元のvalueの条件演算子が range でない場合、range に変換
-          return {
-            key: field.key,
-            value: {
-              operation: "range",
-              label: newValue.label ?? prevValue.label ?? "",
-              startValue: newValue.startValue,
-              includesStart: newValue.includesStart,
-              lastValue: newValue.lastValue,
-              includesLast: newValue.includesLast,
-            },
-          };
-        }
-
-        // 新しいvalueの条件演算子が range でない場合
-        if (newValue.operation !== undefined) {
-          // 元のvalueの条件演算子が range の場合、range を解除
-          if (prevValue.operation === "range") {
-            return {
-              key: field.key,
-              value: {
-                operation: newValue.operation,
-                value: "value" in newValue ? newValue.value : undefined,
-                label: newValue.label ?? prevValue.label ?? "",
-              },
-            };
-          }
-
-          // 元のvalueの条件演算子が range でない場合
-          return {
-            key: field.key,
-            value: {
-              ...prevValue,
-              ...newValue,
-              operation: newValue.operation,
-            },
-          };
-        }
-
-        return field;
-      }),
-    );
-  };
-
-  const append = (): void => {
-    setState((prev) => [
-      ...prev,
-      {
-        key: "group_" + prev.length,
-        value: defaultCondition,
-      },
-    ]);
-  };
+  const conditions = useWatch({
+    control,
+    name: "conditions",
+  });
 
   const handleSave = (): void => {
-    onSave(state);
+    onSave(
+      conditions.map((condition) => {
+        if (condition.value.operation === "range") {
+          return {
+            ...condition,
+            value: {
+              ...condition.value,
+              startValue: Number(condition.value.startValue),
+              lastValue: Number(condition.value.lastValue),
+            },
+          };
+        }
+
+        return {
+          ...condition,
+          value: {
+            ...condition.value,
+            value: Number(condition.value.value),
+          },
+        };
+      }),
+    );
     setOpen(false);
   };
 
-  console.log(state);
+  const handleAppend = (): void => {
+    append({
+      key:
+        "group_" +
+        (new Date().getTime() + Math.floor(10000 * Math.random())).toString(16),
+      value: defaultCondition,
+      type: "group",
+    });
+  };
+
+  const handleRemove = (index: number): void => {
+    remove(index);
+    console.log("remove", index);
+  };
 
   return (
     <Dialog
@@ -163,38 +142,28 @@ export const EditorGroupingForm = ({
       open={open}
     >
       <DialogTrigger>
-        <Button size="medium">グループを編集</Button>
+        <Button
+          appearance={conditions.length === 0 ? "outline" : "primary"}
+          size="medium"
+        >
+          {conditions.length === 0 ? "グループを追加" : "グループを編集"}
+        </Button>
       </DialogTrigger>
       <DialogSurface>
         <DialogTitle>グループを編集</DialogTitle>
         <DialogBody>
           <div>
-            {state.map((field) => {
+            {fields.map((field, index) => {
               return (
-                <Field
-                  key={field.key}
-                  className={styles.groupField}
-                  label={field.key}
-                >
+                <Field key={field.id} className={styles.groupField}>
                   <Input
                     defaultValue={field.value.label}
-                    onChange={(e) => {
-                      update(field.key, {
-                        ...field.value,
-                        label: e.target.value,
-                      });
-                    }}
                     placeholder="グループ名"
+                    {...register(`conditions.${index}.value.label`)}
                   />
                   <select
                     defaultValue={field.value.operation ?? "eq"}
-                    onChange={(e) => {
-                      update(field.key, {
-                        ...field.value,
-                        operation: e.target
-                          .value as GroupingCondition["operation"],
-                      });
-                    }}
+                    {...register(`conditions.${index}.value.operation`)}
                   >
                     <option value="eq">等しい</option>
                     <option value="noteq">等しくない</option>
@@ -214,16 +183,15 @@ export const EditorGroupingForm = ({
                         }
                         placeholder="開始値"
                         type="number"
+                        {...register(`conditions.${index}.value.startValue`)}
                       />
                       <div>
                         <span>含</span>
                         <Checkbox
                           defaultChecked={field.value.includesStart ?? false}
-                          onChange={(e) => {
-                            update(field.key, {
-                              includesStart: e.target.checked,
-                            });
-                          }}
+                          {...register(
+                            `conditions.${index}.value.includesStart`,
+                          )}
                         />
                       </div>
                       <Input
@@ -234,16 +202,15 @@ export const EditorGroupingForm = ({
                         }
                         placeholder="終了値"
                         type="number"
+                        {...register(`conditions.${index}.value.lastValue`)}
                       />
                       <div>
                         <span>含</span>
                         <Checkbox
                           defaultChecked={field.value.includesLast ?? false}
-                          onChange={(e) => {
-                            update(field.key, {
-                              includesLast: e.target.checked,
-                            });
-                          }}
+                          {...register(
+                            `conditions.${index}.value.includesLast`,
+                          )}
                         />
                       </div>
                     </>
@@ -253,23 +220,29 @@ export const EditorGroupingForm = ({
                       defaultValue={
                         field.value.value ? field.value.value.toString() : ""
                       }
-                      onChange={(e) => {
-                        update(field.key, {
-                          ...field.value,
-                          value: Number(e.target.value),
-                        });
-                      }}
+                      {...register(`conditions.${index}.value.value`)}
                       placeholder="値"
+                      type="number"
                     />
                   )}
+                  <button
+                    onClick={() => {
+                      handleRemove(index);
+                    }}
+                    type="button"
+                  >
+                    x
+                  </button>
                 </Field>
               );
             })}
-            <Button onClick={append}>追加</Button>
+            <Button onClick={handleAppend}>追加</Button>
           </div>
         </DialogBody>
         <DialogActions>
-          <Button onClick={handleSave}>保存</Button>
+          <Button onClick={handleSave} type="button">
+            保存
+          </Button>
         </DialogActions>
       </DialogSurface>
     </Dialog>
