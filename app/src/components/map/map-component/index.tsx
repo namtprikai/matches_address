@@ -52,6 +52,10 @@ export function MapComponent({
     initializedMap.on("load", () => {
       setMapInstance(initializedMap);
     });
+
+    return () => {
+      initializedMap.remove();
+    };
   }, []);
 
   useEffect(
