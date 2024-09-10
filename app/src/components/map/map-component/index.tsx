@@ -185,10 +185,6 @@ export function MapComponent({
           mapInstance.setLayoutProperty(layerId, "visibility", "none");
         }
         return;
-      } else {
-        for (const layerId of layerIds) {
-          mapInstance.setLayoutProperty(layerId, "visibility", "visible");
-        }
       }
 
       for (const layerId of layerIds) {
@@ -209,6 +205,7 @@ export function MapComponent({
 
         const mapLibreFilter = ["any", ...filters] as FilterSpecification;
 
+        mapInstance.setLayoutProperty(layerId, "visibility", "visible");
         mapInstance.setFilter(layerId, mapLibreFilter);
       }
     },
