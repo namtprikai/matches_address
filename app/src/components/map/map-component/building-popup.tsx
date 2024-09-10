@@ -1,31 +1,19 @@
 import { forwardRef } from "react";
 import { mergeClasses } from "@fluentui/react-components";
-import styles from "./popup-styles.module.css";
+import { type SelectDataSetDetailBuilding } from "../../../schema";
+import { formatDate } from "../../../utils/format-date";
+import styles from "./building-popup.module.css";
 import { VACANCY_RATE_HIGH, VACANCY_RATE_MEDIUM } from "./add-geojson-layer";
 
-interface Building {
-  vacancyRate: number;
-  address: string;
-  totalPopulation: number;
-  under14: number;
-  between15And64: number;
-  over65: number;
-  waterUsage: string;
-  waterStatus: string;
-  constructionDate: string;
-  structureName: string;
-  coordinates: number[][][];
-}
-
 interface Props {
-  data: Omit<Building, "coordinates"> | null;
+  properties: SelectDataSetDetailBuilding;
 }
 
 export const BuildingPopup = forwardRef<HTMLDivElement, Props>(
-  ({ data }, ref) => {
+  ({ properties }, ref) => {
     const vacancyRateColorStyle = (() => {
-      if (!data) return "";
-      const vacancyRate = data.vacancyRate;
+      if (!properties) return "";
+      const vacancyRate = properties.predicted_probability || 0;
       if (vacancyRate >= VACANCY_RATE_HIGH) {
         return styles.high;
       } else if (vacancyRate >= VACANCY_RATE_MEDIUM) {
@@ -41,9 +29,14 @@ export const BuildingPopup = forwardRef<HTMLDivElement, Props>(
           <span className={styles.circleIcon} />
           <div>
             <span className={styles.vacancyRate}>
-              {data?.vacancyRate ? (data?.vacancyRate * 100).toFixed(0) : "??"}%
+              {properties.predicted_probability
+                ? (properties.predicted_probability * 100).toFixed(0)
+                : "??"}
+              %
             </span>
-            <div className={styles.address}>{data?.address}</div>
+            <div className={styles.address}>
+              {properties.normalized_address}
+            </div>
           </div>
         </div>
         <div className={styles.info}>
@@ -57,20 +50,26 @@ export const BuildingPopup = forwardRef<HTMLDivElement, Props>(
             <div className={styles.item}>
               <span className={styles.itemLabel}>世帯人数</span>
               <span className={styles.itemValue}>
-                {data?.totalPopulation}人
+                {properties.household_size}人
               </span>
             </div>
             <div className={styles.item}>
               <span className={styles.itemLabel}>〜14歳</span>
-              <span className={styles.itemValue}>{data?.under14}人</span>
+              <span className={styles.itemValue}>
+                {properties.members_under_15}人
+              </span>
             </div>
             <div className={styles.item}>
               <span className={styles.itemLabel}>15-64歳</span>
-              <span className={styles.itemValue}>{data?.between15And64}人</span>
+              <span className={styles.itemValue}>
+                {properties.members_15_to_64}人
+              </span>
             </div>
             <div className={styles.item}>
               <span className={styles.itemLabel}>65歳〜</span>
-              <span className={styles.itemValue}>{data?.over65}人</span>
+              <span className={styles.itemValue}>
+                {properties.members_over_65}人
+              </span>
             </div>
           </div>
           <div>
@@ -80,11 +79,15 @@ export const BuildingPopup = forwardRef<HTMLDivElement, Props>(
             </h3>
             <div className={styles.item}>
               <span className={styles.itemLabel}>水道使用量</span>
-              <span className={styles.itemValue}>{data?.waterUsage}</span>
+              <span className={styles.itemValue}>
+                {properties.total_water_usage}L
+              </span>
             </div>
             <div className={styles.item}>
               <span className={styles.itemLabel}>水道使用状況</span>
-              <span className={styles.itemValue}>{data?.waterStatus}</span>
+              <span className={styles.itemValue}>
+                {properties.water_disconnection_flag ? "開" : "閉"}
+              </span>
             </div>
           </div>
           <div>
@@ -96,11 +99,15 @@ export const BuildingPopup = forwardRef<HTMLDivElement, Props>(
             </h3>
             <div className={styles.item}>
               <span className={styles.itemLabel}>築年月</span>
-              <span className={styles.itemValue}>{data?.constructionDate}</span>
+              <span className={styles.itemValue}>
+                {formatDate(properties.registration_date || "", "YYYY/MM/DD")}
+              </span>
             </div>
             <div className={styles.item}>
               <span className={styles.itemLabel}>構造名称</span>
-              <span className={styles.itemValue}>{data?.structureName}</span>
+              <span className={styles.itemValue}>
+                {properties.structure_name}
+              </span>
             </div>
           </div>
           <div>

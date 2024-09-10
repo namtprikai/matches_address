@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { makeStyles, tokens } from "@fluentui/react-components";
-import { type data_set_detail_buildings } from "../../schema";
 import {
   VacancyLevelCheckbox,
   type VacancyLevels,
@@ -81,8 +80,8 @@ export function Map({ type, dataSetResultsId }: Props): JSX.Element {
       <div className={styles.map}>
         <MapComponent
           dataSetResultsId={dataSetResultsId}
+          selectedDate={selectedDate}
           type={type}
-          // selectedYear={selectedYear}
           vacancyLevels={vacancyLevels}
         />
       </div>

@@ -1,5 +1,5 @@
 import { forwardRef } from "react";
-import styles from "./popup-styles.module.css";
+import styles from "./area-popup.module.css";
 
 interface Area {
   vacancyRate: number;

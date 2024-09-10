@@ -1,6 +1,9 @@
 import { and, eq, gt } from "drizzle-orm";
 import { type IpcMainListener } from "../../ipc-main-listeners";
-import { data_set_detail_buildings } from "../../schema";
+import {
+  data_set_detail_buildings,
+  type SelectDataSetDetailBuilding,
+} from "../../schema";
 import { db } from "../../utils/db";
 
 export const fetchBuildingsInBatches = ((
@@ -12,11 +15,11 @@ export const fetchBuildingsInBatches = ((
     lastId,
   }: {
     dataSetResultsId: number;
-    referenceDate: string;
+    referenceDate: string | undefined;
     batchSize: number;
     lastId?: number;
   },
-): (typeof data_set_detail_buildings.$inferSelect)[] | null => {
+): SelectDataSetDetailBuilding[] | null => {
   try {
     const result = db
       .select()
@@ -24,7 +27,9 @@ export const fetchBuildingsInBatches = ((
       .where(
         and(
           eq(data_set_detail_buildings.data_set_result_id, dataSetResultsId),
-          eq(data_set_detail_buildings.reference_date, referenceDate),
+          referenceDate
+            ? eq(data_set_detail_buildings.reference_date, referenceDate)
+            : undefined,
           lastId ? gt(data_set_detail_buildings.id, lastId) : undefined,
         ),
       )
