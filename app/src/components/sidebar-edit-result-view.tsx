@@ -110,32 +110,61 @@ export const SidebarEditResultView = (): JSX.Element => {
                   />
                 </div>
               </div>
-              <div>
+              <div
+                style={{
+                  display: "grid",
+                  gap: 8,
+                  background: "#eee",
+                  padding: 4,
+                }}
+              >
+                <div>
+                  <h4>開発用のデータセットを追加</h4>
+                  <small>
+                    ※実際には表示されません
+                    <br />
+                    ※ボタンクリック後リロードしてください
+                  </small>
+                </div>
                 <Button
                   onClick={async () => {
                     console.info("Look at your editor console!");
                     await window.ipcRenderer.invoke(
                       "createDummyDataSetResults",
-                      { full: true },
+                      {
+                        full: true,
+                        title: `分析結果(32万件)-${dataSetResults.length + 1}`,
+                      },
                     );
                   }}
                   size="small"
                 >
-                  開発用のデータセットを追加(フル)
+                  32万件のデータセットを追加(最大)
                 </Button>
-              </div>
-              <div>
                 <Button
                   onClick={async () => {
                     console.info("Look at your editor console!");
                     await window.ipcRenderer.invoke(
                       "createDummyDataSetResults",
-                      { full: false },
+                      {
+                        full: false,
+                        title: `分析結果(3.2万件)-${dataSetResults.length + 1}`,
+                      },
                     );
                   }}
                   size="small"
                 >
-                  開発用のデータセットを追加(1/10)
+                  3.2万件のデータセットを追加
+                </Button>
+                <Button
+                  onClick={async () => {
+                    await window.ipcRenderer.invoke("createDataSetResults", {
+                      title: `分析結果(軽量版)-${dataSetResults.length + 1}`,
+                    });
+                  }}
+                  size="small"
+                >
+                  軽量版のデータセットを追加
                 </Button>
               </div>
             </>
