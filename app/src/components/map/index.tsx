@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { makeStyles, tokens } from "@fluentui/react-components";
-import { type data_set_detail_buildings } from "../../schema";
 import {
   VacancyLevelCheckbox,
   type VacancyLevels,
