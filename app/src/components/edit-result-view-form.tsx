@@ -2,6 +2,7 @@ import { useAtom } from "jotai";
 import { FormProvider, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect } from "react";
+import { makeStyles } from "@fluentui/react-components";
 import { type EditResultViewFormType } from "../@types/form-schema";
 import { editResultViewFormSchema } from "../zod/edit-result-view-form-schema";
 import { selectedResultViewAtom } from "../state/selected-result-view-atom";
@@ -9,8 +10,18 @@ import { selectedResultViewIdAtom } from "../state/selected-result-view-id-atom"
 import { resultViewsAtom } from "../state/result-views-atom";
 import { EditResultViewFileds } from "./edit-result-view-fields";
 import { EditResultViewFilterFields } from "./edit-result-view-filter-fields";
+import { Button } from "./ui/button";
+
+const useStyles = makeStyles({
+  form: {
+    display: "grid",
+    gap: "24px",
+  },
+});
 
 export const EditResultViewForm = (): JSX.Element => {
+  const styles = useStyles();
+
   const [selectedResultViewId] = useAtom(selectedResultViewIdAtom);
   const [selectedResultView, refresh] = useAtom(selectedResultViewAtom);
   const [, refreshResultViews] = useAtom(resultViewsAtom);
@@ -56,10 +67,10 @@ export const EditResultViewForm = (): JSX.Element => {
 
   return (
     <FormProvider {...methods}>
-      <form onSubmit={onSubmit}>
+      <form className={styles.form} onSubmit={onSubmit}>
         <EditResultViewFileds />
         <EditResultViewFilterFields />
-        <button type="submit">保存</button>
+        <Button type="submit">フィルター・パラメータを保存する</Button>
       </form>
     </FormProvider>
   );

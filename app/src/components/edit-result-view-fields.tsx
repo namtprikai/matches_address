@@ -52,7 +52,6 @@ export const EditResultViewFileds = (): JSX.Element => {
 
   return (
     <>
-      <button hidden type="submit" />
       <Field label="データセット">
         <Input disabled placeholder="選択中のデータセット名が入る" />
       </Field>
@@ -181,10 +180,6 @@ export const EditResultViewFileds = (): JSX.Element => {
           </Select>
         </Field>
       </Fieldset>
-      {/** 開発用のため後で削除する  */}
-      <Button size="medium" type="submit">
-        パラーメーター反映(開発用)
-      </Button>
     </>
   );
 };
