@@ -46,4 +46,5 @@ export type ResultViewFieldOption = {
     type: ChartDynamicColumnInput;
     accept: readonly ChartColumnType[];
     multiple?: boolean;
+    grouping: boolean;
 }

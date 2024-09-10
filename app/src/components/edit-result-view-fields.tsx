@@ -1,38 +1,19 @@
 import { useFieldArray, useFormContext } from "react-hook-form";
-import { Dialog, DialogTrigger } from "@fluentui/react-components";
-import { z } from "zod";
 import { result_views, type SelectResultView } from "../schema";
 import { LanguageMap } from "../lang";
 import { RESULT_VIEW_CONFIG } from "../config/result-view-config";
 import { getResultViewFieldOption } from "../utils/get-view-field-option";
+import { type EditResultViewFormType } from "../@types/form-schema";
 import { Fieldset } from "./ui/fieldset";
 import { FieldLegend } from "./ui/field-legend";
 import { Field } from "./ui/field";
 import { Input } from "./ui/input";
 import { Select } from "./ui/select";
-import { Button } from "./ui/button";
-import { DialogSurface } from "./ui/dialog-surface";
-import { DialogActions } from "./ui/dialog-actions";
-import { DialogBody } from "./ui/dialog-body";
-import { DialogTitle } from "./ui/dialog-title";
 import { DynamicParameterInput } from "./dynamic-parameter-input";
-
-const schema = z.object({
-  title: z.string().max(255).optional(),
-  unit: z.enum(result_views.unit.enumValues).default("building"),
-  style: z.enum(result_views.style.enumValues).default("map"),
-  parameters: z
-    .object({
-      key: z.string(),
-      value: z.string(),
-    })
-    .array(),
-});
-
-type EditResultViewFormType = z.infer<typeof schema>;
+import { EditorGroupingForm } from "./editor-grouping-form";
 
 export const EditResultViewFileds = (): JSX.Element => {
-  const { register, watch, control, setValue } =
+  const { register, watch, control, setValue, formState } =
     useFormContext<EditResultViewFormType>();
 
   const style = watch("style");
@@ -47,8 +28,24 @@ export const EditResultViewFileds = (): JSX.Element => {
     if (!style) return;
     const option = RESULT_VIEW_CONFIG[style];
     if (!option) return;
-    replace(option.fields.map((field) => ({ key: field.key, value: "" })));
+    replace(
+      option.fields.map((field) => ({
+        key: field.key,
+        value: "",
+        type: "column",
+      })),
+    );
   };
+
+  const groupingFields = fields.filter((field) => {
+    if (!field) return false;
+    return field.type === "group";
+  });
+
+  const columnFields = fields.filter((field) => {
+    if (!field) return false;
+    return field.type === "column";
+  });
 
   return (
     <>
@@ -81,28 +78,42 @@ export const EditResultViewFileds = (): JSX.Element => {
             ))}
           </Select>
         </Field>
-        {fields.map((field, index) => {
+        {columnFields.map((field, index) => {
           const fieldOption = getResultViewFieldOption(style, field.key);
 
           if (!fieldOption) return null;
 
           if (fieldOption.type === "select") {
             return (
-              <DynamicParameterInput
-                type={fieldOption.type}
-                {...register(`parameters.${index}.value`)}
-                key={field.id}
-                // @ts-expect-error TODO: この辺りの型定義は別途修正が必要
-                fieldOption={fieldOption}
-                onChange={(e) => {
-                  update(index, {
-                    key: field.key,
-                    value: e.target.value,
-                  });
-                }}
-                unit={unit}
-                value={field.value}
-              />
+              <div key={field.id}>
+                <DynamicParameterInput
+                  type={fieldOption.type}
+                  {...register(`parameters.${index}.value`)}
+                  // @ts-expect-error TODO: この辺りの型定義は別途修正が必要
+                  fieldOption={fieldOption}
+                  onChange={(e) => {
+                    update(index, {
+                      key: field.key,
+                      value: e.target.value,
+                      type: "column",
+                    });
+                  }}
+                  unit={unit}
+                  value={field.value}
+                />
+                {fieldOption?.grouping && (
+                  <EditorGroupingForm
+                    onSave={(parameters) => {
+                      const prevOtherParameters = fields.filter((f) => {
+                        if (!f) return false;
+                        return !f.key.startsWith("group_");
+                      });
+                      replace([...prevOtherParameters, ...parameters]);
+                    }}
+                    parameters={groupingFields}
+                  />
+                )}
+              </div>
             );
           }
 
@@ -134,6 +145,7 @@ export const EditResultViewFileds = (): JSX.Element => {
                   update(index, {
                     key: field.key,
                     value: newValue.join(","),
+                    type: "column",
                   });
                 }}
                 unit={unit}
@@ -145,23 +157,6 @@ export const EditResultViewFileds = (): JSX.Element => {
           return <></>;
         })}
 
-        {RESULT_VIEW_CONFIG[style] &&
-          RESULT_VIEW_CONFIG[style].grouping.enabled && (
-            <Dialog>
-              <DialogTrigger>
-                <Button size="medium">グループを編集</Button>
-              </DialogTrigger>
-              <DialogSurface>
-                <DialogTitle>グループを編集</DialogTitle>
-                <DialogBody>
-                  <p>グループを編集</p>
-                </DialogBody>
-                <DialogActions>
-                  <Button>保存</Button>
-                </DialogActions>
-              </DialogSurface>
-            </Dialog>
-          )}
         <Field label="集計単位">
           <Select
             {...register("unit")}
