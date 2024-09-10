@@ -1,12 +1,4 @@
-import {
-  Checkbox,
-  Dialog,
-  DialogContent,
-  DialogTrigger,
-  makeStyles,
-  Text,
-  tokens,
-} from "@fluentui/react-components";
+import { makeStyles, tokens } from "@fluentui/react-components";
 import { useFormContext } from "react-hook-form";
 import { useAtomValue } from "jotai";
 import { useEffect, useState } from "react";
@@ -16,11 +8,6 @@ import {
   YEAR_LOWER_LIMIT,
   YEAR_UPPER_LIMIT,
 } from "../zod/edit-result-view-form-schema";
-import { Button } from "./ui/button";
-import { DialogSurface } from "./ui/dialog-surface";
-import { DialogTitle } from "./ui/dialog-title";
-import { DialogBody } from "./ui/dialog-body";
-import { DialogActions } from "./ui/dialog-actions";
 import { Field } from "./ui/field";
 import { Select } from "./ui/select";
 import { Fieldset } from "./ui/fieldset";
@@ -46,35 +33,11 @@ const useStyles = makeStyles({
 export const EditResultViewFilterFields = (): JSX.Element => {
   const styles = useStyles();
 
-  const [areaItems, setAreaItems] = useState<(string | null)[]>([]);
   const [yearItems, setYearItems] = useState<string[]>([]);
 
-  const { register, watch, setValue } =
-    useFormContext<EditResultViewFormType>();
+  const { register } = useFormContext<EditResultViewFormType>();
 
   const resultView = useAtomValue(selectedResultViewAtom);
-
-  useEffect(() => {
-    // 地域を取得する処理
-    (async () => {
-      if (!resultView?.data_set_result_id) return;
-      const res = await window.ipcRenderer.invoke("readDataSetArea", {
-        dataSetResultId: resultView.data_set_result_id,
-      });
-
-      /** @todo parse xml(readDataSetAreaが仮でxmlを返すため必要な処理)・ローカルで読むようになったらいらなくなる予定 */
-      const parser = new DOMParser();
-      if (!res) return;
-      const xml = parser.parseFromString(res, "text/xml");
-      const citiesList = Array.from(xml.querySelectorAll("city")).map(
-        (city) => {
-          return city.textContent;
-        },
-      );
-
-      setAreaItems(citiesList);
-    })().catch(console.error);
-  }, [resultView]);
 
   useEffect(() => {
     // 期間を取得する処理
@@ -87,8 +50,6 @@ export const EditResultViewFilterFields = (): JSX.Element => {
       setYearItems(res);
     })().catch(console.error);
   }, [resultView]);
-
-  const areas = watch("areas");
 
   return (
     <Fieldset>
@@ -123,62 +84,6 @@ export const EditResultViewFilterFields = (): JSX.Element => {
               </option>
             ))}
           </Select>
-        </div>
-      </Field>
-
-      <Field label="地域">
-        <div className={styles.area}>
-          <div>
-            {areas.map((item, inedx) =>
-              areas.length - 1 === inedx ? (
-                <Text key={item}>{item}</Text>
-              ) : (
-                <Text key={item}>
-                  {item}
-                  <span>/</span>
-                </Text>
-              ),
-            )}
-          </div>
-
-          <Dialog>
-            <DialogTrigger disableButtonEnhancement>
-              <Button>変更</Button>
-            </DialogTrigger>
-            <DialogSurface>
-              <DialogBody>
-                <DialogTitle>地域でフィルター</DialogTitle>
-                <DialogContent>
-                  {areaItems.map(
-                    (item) =>
-                      item && (
-                        <Checkbox
-                          key={item}
-                          checked={areas?.includes(item)}
-                          id={item}
-                          label={item}
-                          value={item}
-                          {...register("areas")}
-                        />
-                      ),
-                  )}
-                </DialogContent>
-                <DialogActions position="start">
-                  <Button
-                    appearance="subtle"
-                    onClick={() => setValue("areas", [])}
-                  >
-                    すべてクリア
-                  </Button>
-                </DialogActions>
-                <DialogActions position="end">
-                  <DialogTrigger>
-                    <Button appearance="primary">変更内容を適用</Button>
-                  </DialogTrigger>
-                </DialogActions>
-              </DialogBody>
-            </DialogSurface>
-          </Dialog>
         </div>
       </Field>
     </Fieldset>
