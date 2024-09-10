@@ -72,10 +72,7 @@ export const TileResultView = ({
   if (
     !resultView.style ||
     !resultView.unit ||
-    (resultView.style !== "map" &&
-      (!resultView.parameters ||
-        resultView.parameters.filter((parameter) => parameter.value === "")
-          .length > 0))
+    (resultView.style !== "map" && !resultView.parameters)
   ) {
     return (
       <Card
