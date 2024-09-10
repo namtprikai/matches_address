@@ -1,7 +1,8 @@
 import { forwardRef } from "react";
 import { mergeClasses } from "@fluentui/react-components";
 import { type SelectDataSetDetailBuilding } from "../../../schema";
-import styles from "./popup-styles.module.css";
+import { formatDate } from "../../../utils/format-date";
+import styles from "./building-popup.module.css";
 import { VACANCY_RATE_HIGH, VACANCY_RATE_MEDIUM } from "./add-geojson-layer";
 
 interface Props {
@@ -79,13 +80,13 @@ export const BuildingPopup = forwardRef<HTMLDivElement, Props>(
             <div className={styles.item}>
               <span className={styles.itemLabel}>水道使用量</span>
               <span className={styles.itemValue}>
-                {properties.total_water_usage}
+                {properties.total_water_usage}L
               </span>
             </div>
             <div className={styles.item}>
               <span className={styles.itemLabel}>水道使用状況</span>
               <span className={styles.itemValue}>
-                {properties.water_disconnection_flag}
+                {properties.water_disconnection_flag ? "開" : "閉"}
               </span>
             </div>
           </div>
@@ -99,7 +100,7 @@ export const BuildingPopup = forwardRef<HTMLDivElement, Props>(
             <div className={styles.item}>
               <span className={styles.itemLabel}>築年月</span>
               <span className={styles.itemValue}>
-                {properties.registration_date}
+                {formatDate(properties.registration_date || "", "YYYY/MM/DD")}
               </span>
             </div>
             <div className={styles.item}>
