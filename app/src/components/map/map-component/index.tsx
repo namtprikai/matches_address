@@ -52,6 +52,10 @@ export function MapComponent({
     initializedMap.on("load", () => {
       setMapInstance(initializedMap);
     });
+
+    return () => {
+      initializedMap.remove();
+    };
   }, []);
 
   useEffect(
@@ -158,6 +162,15 @@ export function MapComponent({
     function applyFiltersEffect() {
       if (!mapInstance || !layerIds?.length) return;
 
+      const allFalse =
+        !vacancyLevels.low && !vacancyLevels.medium && !vacancyLevels.high;
+      if (allFalse) {
+        for (const layerId of layerIds) {
+          mapInstance.setLayoutProperty(layerId, "visibility", "none");
+        }
+        return;
+      }
+
       for (const layerId of layerIds) {
         const filters = [];
         if (vacancyLevels.low) {
@@ -174,10 +187,8 @@ export function MapComponent({
           filters.push([">=", ["get", "predicted_probability"], 0.8]);
         }
 
-        const mapLibreFilter: FilterSpecification | undefined =
-          filters.length > 0
-            ? (["any", ...filters] as FilterSpecification)
-            : undefined;
+        const mapLibreFilter = ["any", ...filters] as FilterSpecification;
+
         mapInstance.setFilter(layerId, mapLibreFilter);
       }
     },
