@@ -15,7 +15,6 @@ import { resultViewsAtom } from "../state/result-views-atom";
 import { selectedResultSheetIdAtom } from "../state/selected-result-sheet-id-atom";
 import { Button } from "./ui/button";
 import { EditResultViewForm } from "./edit-result-view-form";
-import { EditResultViewFilterFields } from "./edit-result-view-filter-fields";
 import { ListDataSetResults } from "./list-data-set-results";
 
 const useStyles = makeStyles({
@@ -141,12 +140,7 @@ export const SidebarEditResultView = (): JSX.Element => {
               </div>
             </>
           )}
-          {!isAddView && (
-            <>
-              <EditResultViewForm />
-              <EditResultViewFilterFields />
-            </>
-          )}
+          {!isAddView && <EditResultViewForm />}
         </div>
       </DrawerBody>
     </InlineDrawer>

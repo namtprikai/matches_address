@@ -7,12 +7,15 @@ import {
   Text,
   tokens,
 } from "@fluentui/react-components";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
+import { useFormContext } from "react-hook-form";
 import { useAtomValue } from "jotai";
 import { useEffect, useState } from "react";
 import { selectedResultViewAtom } from "../state/selected-result-view-atom";
+import { type EditResultViewFormType } from "../@types/form-schema";
+import {
+  YEAR_LOWER_LIMIT,
+  YEAR_UPPER_LIMIT,
+} from "../zod/edit-result-view-form-schema";
 import { Button } from "./ui/button";
 import { DialogSurface } from "./ui/dialog-surface";
 import { DialogTitle } from "./ui/dialog-title";
@@ -40,42 +43,14 @@ const useStyles = makeStyles({
   },
 });
 
-const LOWER_LIMIT = "下限なし";
-const UPPER_LIMIT = "上限なし";
-
-const formSchema = z.object({
-  year: z.object({
-    start: z
-      .number()
-      .or(z.enum([LOWER_LIMIT]).optional().default(LOWER_LIMIT))
-      .nullable(),
-    end: z
-      .number()
-      .or(z.enum([UPPER_LIMIT]).optional().default(UPPER_LIMIT))
-      .nullable(),
-  }),
-  areas: z.array(z.string()).optional().default([]),
-});
-
-type FormType = z.infer<typeof formSchema>;
-const form_id = "edit-result-view-filter-fields";
-
 export const EditResultViewFilterFields = (): JSX.Element => {
   const styles = useStyles();
 
   const [areaItems, setAreaItems] = useState<(string | null)[]>([]);
   const [yearItems, setYearItems] = useState<string[]>([]);
 
-  const { register, handleSubmit, watch, setValue } = useForm<FormType>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      areas: [],
-    },
-  });
-
-  const onSubmit = handleSubmit(() => {
-    //
-  });
+  const { register, watch, setValue } =
+    useFormContext<EditResultViewFormType>();
 
   const resultView = useAtomValue(selectedResultViewAtom);
 
@@ -116,100 +91,96 @@ export const EditResultViewFilterFields = (): JSX.Element => {
   const areas = watch("areas");
 
   return (
-    <form className={styles.form} id={form_id} onSubmit={onSubmit}>
-      <Fieldset>
-        <FieldLegend>フィルター</FieldLegend>
+    <Fieldset>
+      <FieldLegend>フィルター</FieldLegend>
 
-        <Field label="期間">
-          <div className={styles.year}>
-            <Select
-              {...register("year.start", {
-                setValueAs: (v: FormType["year"]["start"]) =>
-                  v === LOWER_LIMIT ? null : Number(v),
-              })}
-            >
-              <option value={LOWER_LIMIT}>{LOWER_LIMIT}</option>
-              {yearItems.map((item) => (
-                <option key={item} value={item}>
+      <Field label="期間">
+        <div className={styles.year}>
+          <Select
+            {...register("year.start", {
+              setValueAs: (v: EditResultViewFormType["year"]["start"]) =>
+                v === YEAR_LOWER_LIMIT ? null : Number(v),
+            })}
+          >
+            <option value={YEAR_LOWER_LIMIT}>{YEAR_LOWER_LIMIT}</option>
+            {yearItems.map((item) => (
+              <option key={item} value={item}>
+                {item}
+              </option>
+            ))}
+          </Select>
+          <span>〜</span>
+          <Select
+            {...register("year.end", {
+              setValueAs: (v: EditResultViewFormType["year"]["end"]) =>
+                v === YEAR_UPPER_LIMIT ? null : Number(v),
+            })}
+          >
+            <option value={YEAR_UPPER_LIMIT}>{YEAR_UPPER_LIMIT}</option>
+            {yearItems.map((item) => (
+              <option key={item} value={item}>
+                {item}
+              </option>
+            ))}
+          </Select>
+        </div>
+      </Field>
+
+      <Field label="地域">
+        <div className={styles.area}>
+          <div>
+            {areas.map((item, inedx) =>
+              areas.length - 1 === inedx ? (
+                <Text key={item}>{item}</Text>
+              ) : (
+                <Text key={item}>
                   {item}
-                </option>
-              ))}
-            </Select>
-            <span>〜</span>
-            <Select
-              {...register("year.end", {
-                setValueAs: (v: FormType["year"]["end"]) =>
-                  v === UPPER_LIMIT ? null : Number(v),
-              })}
-            >
-              <option value={UPPER_LIMIT}>{UPPER_LIMIT}</option>
-              {yearItems.map((item) => (
-                <option key={item} value={item}>
-                  {item}
-                </option>
-              ))}
-            </Select>
+                  <span>/</span>
+                </Text>
+              ),
+            )}
           </div>
-        </Field>
 
-        <Field label="地域">
-          <div className={styles.area}>
-            <div>
-              {areas.map((item, inedx) =>
-                areas.length - 1 === inedx ? (
-                  <Text key={item}>{item}</Text>
-                ) : (
-                  <Text key={item}>
-                    {item}
-                    <span>/</span>
-                  </Text>
-                ),
-              )}
-            </div>
-
-            <Dialog>
-              <DialogTrigger disableButtonEnhancement>
-                <Button>変更</Button>
-              </DialogTrigger>
-              <DialogSurface>
-                <DialogBody>
-                  <DialogTitle>地域でフィルター</DialogTitle>
-                  <DialogContent>
-                    {areaItems.map(
-                      (item) =>
-                        item && (
-                          <Checkbox
-                            key={item}
-                            checked={areas?.includes(item)}
-                            id={item}
-                            label={item}
-                            value={item}
-                            {...register("areas")}
-                          />
-                        ),
-                    )}
-                  </DialogContent>
-                  <DialogActions position="start">
-                    <Button
-                      appearance="subtle"
-                      onClick={() => setValue("areas", [])}
-                    >
-                      すべてクリア
-                    </Button>
-                  </DialogActions>
-                  <DialogActions position="end">
-                    <DialogTrigger>
-                      <Button appearance="primary">変更内容を適用</Button>
-                    </DialogTrigger>
-                  </DialogActions>
-                </DialogBody>
-              </DialogSurface>
-            </Dialog>
-          </div>
-        </Field>
-      </Fieldset>
-
-      <Button type="submit">フィルターを実行</Button>
-    </form>
+          <Dialog>
+            <DialogTrigger disableButtonEnhancement>
+              <Button>変更</Button>
+            </DialogTrigger>
+            <DialogSurface>
+              <DialogBody>
+                <DialogTitle>地域でフィルター</DialogTitle>
+                <DialogContent>
+                  {areaItems.map(
+                    (item) =>
+                      item && (
+                        <Checkbox
+                          key={item}
+                          checked={areas?.includes(item)}
+                          id={item}
+                          label={item}
+                          value={item}
+                          {...register("areas")}
+                        />
+                      ),
+                  )}
+                </DialogContent>
+                <DialogActions position="start">
+                  <Button
+                    appearance="subtle"
+                    onClick={() => setValue("areas", [])}
+                  >
+                    すべてクリア
+                  </Button>
+                </DialogActions>
+                <DialogActions position="end">
+                  <DialogTrigger>
+                    <Button appearance="primary">変更内容を適用</Button>
+                  </DialogTrigger>
+                </DialogActions>
+              </DialogBody>
+            </DialogSurface>
+          </Dialog>
+        </div>
+      </Field>
+    </Fieldset>
   );
 };
