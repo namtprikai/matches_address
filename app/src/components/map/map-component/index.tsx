@@ -92,7 +92,7 @@ export function MapComponent({
       let ignore = false;
 
       const addBuildingsLayer = async (): Promise<void> => {
-        const batchSize = 1000;
+        const batchSize = 500;
         let lastId = 0;
 
         try {
