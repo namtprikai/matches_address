@@ -1,0 +1,4 @@
+# Akiya ML codes
+## Docs
+* [コンパイル方法](https://microgeodata.sharepoint.com/:w:/r/sites/ProjectLINKS-ProjectLINKS/Shared%20Documents/LINKS07%20%E8%A1%8C%E6%94%BF%E6%83%85%E5%A0%B1%E3%82%92%E6%B4%BB%E7%94%A8%E3%81%97%E3%81%9F%E7%A9%BA%E3%81%8D%E5%AE%B6%E3%83%87%E3%83%BC%E3%82%BF%E3%81%AE%E6%95%B4%E5%82%99%E3%83%BB%E6%B4%BB%E7%94%A8%E5%AE%9F%E8%A8%BC%E8%AA%BF%E6%9F%BB/99_%E3%81%9D%E3%81%AE%E4%BB%96/%E3%83%87%E3%83%BC%E3%82%BF%E3%81%AE%E8%A9%B3%E7%B4%B0%E3%83%BB%E5%87%A6%E7%90%86/%E3%82%B3%E3%83%B3%E3%83%91%E3%82%A4%E3%83%AB/%E3%82%B3%E3%83%B3%E3%83%91%E3%82%A4%E3%83%AB%E6%96%B9%E6%B3%95.docx?d=w1b221ab24468460c8980e2cf9ab81752&csf=1&web=1&e=hbcJEi)
+* [実行方法](https://docs.google.com/spreadsheets/d/1eF9TXJiAIpCCtU5aqNpxwDG8eyxt8knS-KJcVeHkhWA/edit?gid=1824293693#gid=1824293693)
