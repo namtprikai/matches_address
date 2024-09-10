@@ -59,14 +59,14 @@ export const filterDataSetForChart = ((
                     })
                     .from(subQuery.as("groups"))
                     .groupBy(sql.raw(`${groupLabel}`))
-                    .all();
+                    .limit(100);
             }
 
             return db
                 .select()
                 .from(data_set_detail_areas)
                 .where(eq(data_set_detail_areas.data_set_result_id, resultId))
-                .all();
+                .limit(100);
         }
         const all = getAll();
         // @ts-expect-error TODO: この辺りの型定義は別途修正が必要
@@ -119,14 +119,14 @@ export const filterDataSetForChart = ((
                     .from(subQuery.as("groups"))
                     .groupBy(sql.raw(`${groupLabel}`))
                     .having(sql.raw(`${groupLabel} <> ''`))
-                    .all();
+                    .limit(100);
             }
 
             return db
                 .select()
                 .from(data_set_detail_buildings)
                 .where(eq(data_set_detail_buildings.data_set_result_id, resultId))
-                .all();
+                .limit(100);
         }
         const all = getAll();
 
