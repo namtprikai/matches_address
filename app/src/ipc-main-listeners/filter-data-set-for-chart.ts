@@ -99,6 +99,7 @@ export const filterDataSetForChart = ((
     if (type === "building") {
         // eslint-disable-next-line @typescript-eslint/explicit-function-return-type -- ignore
         const getAll = () => {
+
             if (groupingConditions && groupingConditions.length > 0) {
                 const groupLabel = x + "_group";
 
@@ -123,8 +124,8 @@ export const filterDataSetForChart = ((
 
             return db
                 .select()
-                .from(data_set_detail_areas)
-                .where(eq(data_set_detail_areas.data_set_result_id, resultId))
+                .from(data_set_detail_buildings)
+                .where(eq(data_set_detail_buildings.data_set_result_id, resultId))
                 .all();
         }
         const all = getAll();
@@ -135,7 +136,7 @@ export const filterDataSetForChart = ((
         return {
             data: all.map((row) => {
                 return {
-                    x: groupingConditions ? row[x + "_group"] as string : row[x] as string,
+                    x: (groupingConditions && groupingConditions.length > 0) ? row[x + "_group"] as string : row[x] as string,
                     // TODO: この辺りの型定義は別途修正が必要
                     y: formatChartValue(row[y] ?? "", percentage) as number,
                 };
