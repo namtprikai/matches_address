@@ -115,7 +115,7 @@ export function MapComponent({
             }
 
             const layerId = lastId.toString();
-            addGeojsonLayer(mapInstance, layerId, batch, selectedDate);
+            addGeojsonLayer(mapInstance, layerId, batch);
             setLayerIds((prevLayerIds) =>
               prevLayerIds ? [...prevLayerIds, layerId] : [layerId],
             );

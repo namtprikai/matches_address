@@ -10,7 +10,6 @@ export function addGeojsonLayer(
   map: Map,
   layerId: string,
   buildings: SelectDataSetDetailBuilding[],
-  selectedDate: string,
 ): void {
   map.addSource(layerId, {
     type: "geojson",
@@ -57,24 +56,10 @@ export function addGeojsonLayer(
   map.on("click", layerId, (e) => {
     if (e.features && e.features.length > 0) {
       const feature = e.features[0];
-      const properties = feature.properties;
+      const properties = feature.properties as SelectDataSetDetailBuilding;
       const coordinates = e.lngLat;
       const popupContent = renderToString(
-        <BuildingPopup
-          data={{
-            // デモデータ
-            address: "東京都千代田区丸の内1-1-1",
-            totalPopulation: 1000,
-            under14: 200,
-            between15And64: 600,
-            over65: 200,
-            waterUsage: "1000L",
-            waterStatus: "良好",
-            constructionDate: selectedDate,
-            structureName: "RC造",
-            vacancyRate: properties?.predicted_probability,
-          }}
-        />,
+        <BuildingPopup properties={properties} />,
       );
 
       popup.setLngLat(coordinates).setHTML(popupContent).addTo(map);
