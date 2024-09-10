@@ -1,4 +1,5 @@
 import "maplibre-gl/dist/maplibre-gl.css";
+import "./maplibre-gl.css";
 import { useEffect, useRef, useState } from "react";
 import { addProtocol, type FilterSpecification, Map } from "maplibre-gl";
 import { Protocol } from "pmtiles";
@@ -92,7 +93,7 @@ export function MapComponent({
       let ignore = false;
 
       const addBuildingsLayer = async (): Promise<void> => {
-        const batchSize = 1000;
+        const batchSize = 500;
         let lastId = 0;
 
         try {
@@ -115,7 +116,7 @@ export function MapComponent({
             }
 
             const layerId = lastId.toString();
-            addGeojsonLayer(mapInstance, layerId, batch, selectedDate);
+            addGeojsonLayer(mapInstance, layerId, batch);
             setLayerIds((prevLayerIds) =>
               prevLayerIds ? [...prevLayerIds, layerId] : [layerId],
             );

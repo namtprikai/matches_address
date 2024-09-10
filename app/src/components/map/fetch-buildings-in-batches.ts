@@ -1,6 +1,9 @@
 import { and, eq, gt } from "drizzle-orm";
 import { type IpcMainListener } from "../../ipc-main-listeners";
-import { data_set_detail_buildings } from "../../schema";
+import {
+  data_set_detail_buildings,
+  type SelectDataSetDetailBuilding,
+} from "../../schema";
 import { db } from "../../utils/db";
 
 export const fetchBuildingsInBatches = ((
@@ -16,7 +19,7 @@ export const fetchBuildingsInBatches = ((
     batchSize: number;
     lastId?: number;
   },
-): (typeof data_set_detail_buildings.$inferSelect)[] | null => {
+): SelectDataSetDetailBuilding[] | null => {
   try {
     const result = db
       .select()
