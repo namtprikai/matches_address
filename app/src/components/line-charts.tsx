@@ -19,9 +19,15 @@ import {
   type data_set_detail_buildings,
 } from "../schema";
 import { useFetchFilterDataSetForChart } from "../hooks/use-fetch-filtered-data-set-for-chart";
+import { type GroupingCondition } from "../utils/subquery-grouping";
 
 export type LineChartProps = {
   resultId: number;
+  groupingConditions?: GroupingCondition[];
+  filterByYear: {
+    startValue: number | undefined;
+    endValue: number | undefined;
+  };
 } & (
   | {
       type: "building";
@@ -130,6 +136,8 @@ export const LineChart = ({
   type,
   x,
   y,
+  groupingConditions,
+  filterByYear,
 }: LineChartProps): JSX.Element => {
   // @ts-expect-error TODO: Unionが正しく分配されない
   const { chartProps } = useFetchFilterDataSetForChart({
@@ -137,6 +145,8 @@ export const LineChart = ({
     type,
     x,
     y,
+    groupingConditions,
+    filterByYear,
   });
 
   const data = chartProps.data;

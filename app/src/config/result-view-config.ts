@@ -14,17 +14,16 @@ export const RESULT_VIEW_CONFIG = {
                 label: "ラベル", // フィールドのラベル、DBには保存せずkeyから引く形をとる
                 type: "select", // フィールドの入力方法を指定
                 accept: ["string", "date", "integer", "float"], // 設定可能なカラムの型を指定
+                grouping: true
             },
             {
                 key: "value",
                 label: "値",
                 type: "select",
                 accept: ["integer", "float"],
+                grouping: false
             },
         ],
-        grouping: {
-            enabled: true,
-        },
     },
     bar: {
         fields: [
@@ -33,17 +32,16 @@ export const RESULT_VIEW_CONFIG = {
                 label: "X軸",
                 type: "select",
                 accept: ["string", "date", "integer", "float"],
+                grouping: true
             },
             {
                 key: "yAxis",
                 label: "Y軸",
                 type: "select",
                 accept: ["integer", "float"],
+                grouping: false
             },
         ],
-        grouping: {
-            enabled: true,
-        },
     },
     line: {
         fields: [
@@ -52,23 +50,19 @@ export const RESULT_VIEW_CONFIG = {
                 label: "X軸",
                 type: "select",
                 accept: ["string", "date", "integer", "float"],
+                grouping: true
             },
             {
                 key: "yAxis",
                 label: "Y軸",
                 type: "select",
                 accept: ["integer", "float"],
+                grouping: false
             },
         ],
-        grouping: {
-            enabled: false,
-        },
     },
     map: {
         fields: [],
-        grouping: {
-            enabled: false,
-        },
     },
     table: {
         fields: [
@@ -78,11 +72,9 @@ export const RESULT_VIEW_CONFIG = {
                 type: "dropdown",
                 accept: ["string", "date", "integer", "float"],
                 mutliple: true,
+                grouping: false
             }
         ],
-        grouping: {
-            enabled: false,
-        },
     },
 } satisfies {
     [k in ChartStyle]: {
@@ -92,9 +84,7 @@ export const RESULT_VIEW_CONFIG = {
             type: ChartDynamicColumnInput;
             accept: ChartColumnType[];
             mutliple?: boolean;
+            grouping: boolean
         }[];
-        grouping: {
-            enabled: boolean;
-        };
     }
 };

@@ -1,5 +1,5 @@
 import Database from "better-sqlite3";
-import { type SQL, sql } from "drizzle-orm";
+import { type SQL, sql, type Subquery } from "drizzle-orm";
 import {
     drizzle,
     type BetterSQLite3Database,
@@ -7,36 +7,50 @@ import {
 import { migrate } from "drizzle-orm/better-sqlite3/migrator";
 import {
     SQLiteSyncDialect,
+    type SQLiteTable,
     type SQLiteTableWithColumns,
 } from "drizzle-orm/sqlite-core";
+import { type SQLiteViewBase } from "drizzle-orm/sqlite-core/view-base";
 import { data_set_detail_buildings } from "../schema";
 
-type Condition =
+export type GroupingCondition =
     | {
-        operation: "eq" | "noteq";
-        value: string | number;
+        operation: "eq" | "noteq" | "gt" | "lt" | "gte" | "lte";
+        value: number | undefined;
         label: string;
     }
     | ({
         operation: "range";
         label: string;
-        startValue?: number;
-        includesStart?: boolean;
-        lastValue?: number;
-        includesLast?: boolean;
+        startValue: number | undefined;
+        includesStart: boolean | undefined;
+        lastValue: number | undefined;
+        includesLast: boolean | undefined;
     })
 
-const conditionsToCaseQuery = (key: string, conditions: Condition[]): SQL => {
+const operationToQuery = (operation: GroupingCondition["operation"]): string => {
+    switch (operation) {
+        case "eq":
+            return "=";
+        case "noteq":
+            return "<>";
+        case "gt":
+            return ">";
+        case "lt":
+            return "<";
+        case "gte":
+            return ">=";
+        case "lte":
+            return "<=";
+        default:
+            return "";
+    }
+}
+
+const conditionsToCaseQuery = (key: string, conditions: GroupingCondition[]): SQL => {
     const conditionSQL: SQL[] = conditions.map((condition) => {
 
-        if (condition.operation === "eq" || condition.operation === "noteq") {
-            return sql.raw(
-                `when ${key} ${condition.operation === "eq" ? "=" : "<>"} ${condition.value} then '${condition.label}'`,
-            );
-        }
-
         if (condition.operation === "range") {
-
             if (condition.startValue === undefined && condition.lastValue === undefined) {
                 return sql.raw("");
             }
@@ -47,20 +61,16 @@ const conditionsToCaseQuery = (key: string, conditions: Condition[]): SQL => {
             const includesLast = condition.includesLast;
 
             // 開始値の条件クエリを作成
-            const startQuery = startValue === undefined ? "" : `${key} ${includesStart === true ? ">=" : ">"} ${startValue}`;
+            const startQuery = `${key} ${includesStart === true ? ">=" : ">"} ${startValue}`;
             // 終了値の条件クエリを作成
-            const lastQuery = lastValue === undefined ? "" : `${key} ${includesLast === true ? "<=" : "<"} ${lastValue}`;
+            const lastQuery = `${key} ${includesLast === true ? "<=" : "<"} ${lastValue}`;
 
-            if (startQuery && !lastQuery) { // 範囲条件で始まりのみの場合
-                return sql.raw(`when ${startQuery} then '${condition.label}'`);
-            } else if (lastQuery && !startQuery) { // 範囲条件で終わりのみの場合                
-                return sql.raw(`when ${lastQuery} then '${condition.label}'`);
-            }
             return sql.raw(`when ${startQuery} and ${lastQuery} then '${condition.label}'`);
         }
 
-        return sql.raw("");
-
+        return sql.raw(
+            `when ${key} ${operationToQuery(condition.operation)} ${condition.value} then '${condition.label}'`,
+        );
     });
 
     return sql`*, case ${sql.join(conditionSQL, sql.raw(" "))} end`;
@@ -84,7 +94,7 @@ if (import.meta.vitest) {
         );
     });
 
-    it("範囲条件で開始値、終了値どちらも含むcaseクエリを作成する", () => {
+    it("範囲条件のcaseクエリを作成する", () => {
         expect(
             sqliteDialect.sqlToQuery(
                 conditionsToCaseQuery("age", [
@@ -105,16 +115,11 @@ if (import.meta.vitest) {
         );
     });
 
-    it("範囲条件で開始値のみ含むcaseクエリを作成する", () => {
+    it("以上のcaseクエリを作成する", () => {
         expect(
             sqliteDialect.sqlToQuery(
                 conditionsToCaseQuery("age", [
-                    {
-                        operation: "range",
-                        label: "a",
-                        startValue: 1,
-                        includesStart: true
-                    },
+                    { operation: "gte", value: 1, label: "a" },
                 ]),
             ),
         ).toStrictEqual(
@@ -124,33 +129,28 @@ if (import.meta.vitest) {
         );
     });
 
-    it("範囲条件で終了値のみ含むcaseクエリを作成する", () => {
+    it("以下のcaseクエリを作成する", () => {
         expect(
             sqliteDialect.sqlToQuery(
                 conditionsToCaseQuery("age", [
-                    {
-                        operation: "range",
-                        label: "a",
-                        lastValue: 10,
-                        includesLast: false,
-                    },
+                    { operation: "lte", value: 1, label: "a" },
                 ]),
             ),
         ).toStrictEqual(
             sqliteDialect.sqlToQuery(
-                sql`*, case when age < 10 then 'a' end`,
+                sql`*, case when age <= 1 then 'a' end`,
             ),
         );
     });
 }
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type -- ignore
-export const subQueryFromConditions = <T extends SQLiteTableWithColumns<any>>(
+export const subQueryFromConditions = (
     drizzle: BetterSQLite3Database,
-    db: T,
+    db: SQLiteTable | Subquery | SQLiteViewBase | SQL,
     groupLabel: string,
     key: string,
-    conditions: Condition[],
+    conditions: GroupingCondition[],
 ) => {
     const caseQuery = conditionsToCaseQuery(key, conditions);
 

@@ -33,6 +33,7 @@ export interface TableProps {
 export interface Parameter {
     key: string;
     value: string;
+    type: "column" | "group" | "filter";
 }
 
 export type ChartDynamicColumnInput = "select" | "input" | "dropdown";
@@ -45,4 +46,5 @@ export type ResultViewFieldOption = {
     type: ChartDynamicColumnInput;
     accept: readonly ChartColumnType[];
     multiple?: boolean;
+    grouping: boolean;
 }

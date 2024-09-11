@@ -16,10 +16,16 @@ import {
   type SelectDataSetDetailBuilding,
   type SelectDataSetDetailArea,
 } from "../schema";
+import { type GroupingCondition } from "../utils/subquery-grouping";
 import { CustomTooltip } from "./custom-tooltip";
 
 export type BarChartProps = {
   resultId: number;
+  groupingConditions?: GroupingCondition[];
+  filterByYear: {
+    startValue: number | undefined;
+    endValue: number | undefined;
+  };
 } & (
   | {
       type: "building";
@@ -38,6 +44,8 @@ export const BarChart = ({
   type,
   x,
   y,
+  groupingConditions,
+  filterByYear,
 }: BarChartProps): JSX.Element => {
   // @ts-expect-error TODO: Unionが正しく分配されない
   const { chartProps } = useFetchFilterDataSetForChart({
@@ -45,6 +53,8 @@ export const BarChart = ({
     type,
     x,
     y,
+    groupingConditions,
+    filterByYear,
   });
 
   const data = chartProps.data;

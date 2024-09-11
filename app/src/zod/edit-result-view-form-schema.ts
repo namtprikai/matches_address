@@ -9,10 +9,37 @@ export const editResultViewFormSchema = z.object({
   unit: z.enum(result_views.unit.enumValues).default("building"),
   style: z.enum(result_views.style.enumValues).default("map"),
   parameters: z
-    .object({
-      key: z.string(),
-      value: z.string(),
-    })
+    .discriminatedUnion("type", [
+      z.object({
+        key: z.string(),
+        value: z.string(),
+        type: z.literal("column"),
+      }),
+      z.object({
+        key: z.string(),
+        type: z.literal("group"),
+        value: z.discriminatedUnion("operation", [
+          z.object({
+            operation: z.enum(["eq", "noteq", "gt", "gte", "lt", "lte"]),
+            value: z.number().optional(),
+            label: z.string(),
+          }),
+          z.object({
+            operation: z.enum(["range"]),
+            startValue: z.number().optional(),
+            lastValue: z.number().optional(),
+            includesStart: z.boolean().optional(),
+            includesLast: z.boolean().optional(),
+            label: z.string(),
+          }),
+        ]),
+      }),
+      z.object({
+        key: z.string(),
+        type: z.literal("filter"),
+        value: z.string().or(z.number()).nullable(),
+      }),
+    ])
     .array(),
 
   year: z.object({

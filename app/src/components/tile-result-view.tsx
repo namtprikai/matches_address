@@ -12,13 +12,10 @@ import {
   tokens,
 } from "@fluentui/react-components";
 import { useAtom } from "jotai";
-import { type data_set_results } from "../schema";
+import { type data_set_results, type SelectDataSetResult } from "../schema";
 import { THEME_COLORS } from "../config/theme-colors";
 import { type SelectResultViewResponse } from "../ipc-main-listeners/select-result-view";
 import { resultViewsAtom } from "../state/result-views-atom";
-import { type SelectDataSetResult } from "../schema";
-import { THEME_COLORS } from "../config/theme-colors";
-import { type SelectResultViewResponse } from "../ipc-main-listeners/select-result-view";
 import { TileViewStyle } from "./tile-view-style";
 import { DialogSurface } from "./ui/dialog-surface";
 import { DialogBody } from "./ui/dialog-body";
@@ -75,10 +72,7 @@ export const TileResultView = ({
   if (
     !resultView.style ||
     !resultView.unit ||
-    (resultView.style !== "map" &&
-      (!resultView.parameters ||
-        resultView.parameters.filter((parameter) => parameter.value === "")
-          .length > 0))
+    (resultView.style !== "map" && !resultView.parameters)
   ) {
     return (
       <Card

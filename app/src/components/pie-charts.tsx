@@ -11,9 +11,15 @@ import {
   type SelectDataSetDetailBuilding,
   type SelectDataSetDetailArea,
 } from "../schema";
+import { type GroupingCondition } from "../utils/subquery-grouping";
 
 export type PieChartProps = {
   resultId: number;
+  groupingConditions?: GroupingCondition[];
+  filterByYear: {
+    startValue: number | undefined;
+    endValue: number | undefined;
+  };
 } & (
   | {
       type: "building";
@@ -32,6 +38,8 @@ export const PieChart = ({
   type,
   x,
   y,
+  groupingConditions,
+  filterByYear,
 }: PieChartProps): JSX.Element => {
   // @ts-expect-error TODO: Unionが正しく分配されない
   const { chartProps } = useFetchFilterDataSetForChart({
@@ -39,6 +47,8 @@ export const PieChart = ({
     type,
     x,
     y,
+    groupingConditions,
+    filterByYear,
   });
 
   const data = chartProps.data;

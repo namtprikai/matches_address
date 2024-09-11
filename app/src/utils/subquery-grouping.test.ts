@@ -69,7 +69,7 @@ describe("サブクエリを利用したグルーピングのテスト", () => {
         })
             .from(subQuery.as("groups"))
             .groupBy(sql.raw(`${groupLabel}`))
-            .having(sql.raw(`${groupLabel} <> ''`)).all();;
+            .having(sql.raw(`${groupLabel} <> ''`)).all();
 
         expect(res).toStrictEqual(
             [
@@ -91,7 +91,7 @@ describe("サブクエリを利用したグルーピングのテスト", () => {
         })
             .from(subQuery.as("groups"))
             .groupBy(sql.raw(`${groupLabel}`))
-            .having(sql.raw(`${groupLabel} <> ''`)).all();;
+            .having(sql.raw(`${groupLabel} <> ''`)).all();
 
         expect(res).toStrictEqual(
             [

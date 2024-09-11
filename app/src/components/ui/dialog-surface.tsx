@@ -11,7 +11,8 @@ const useStyles = makeStyles({
   dialogSurface: {
     boxShadow: tokens.shadow28,
     borderRadius: tokens.borderRadiusXLarge,
-    maxWidth: "450px",
+    minWidth: "450px",
+    maxWidth: "800px",
   },
 });
 
@@ -23,7 +24,7 @@ export const DialogSurface = forwardRef<HTMLDivElement, DialogSurfaceProps>(
       <FUIDialogSurface
         {...props}
         ref={ref}
-        className={mergeClasses(className, styles.dialogSurface)}
+        className={mergeClasses(styles.dialogSurface, className)}
       />
     );
   },
