@@ -4,10 +4,12 @@ import {
   Dialog,
   DialogTrigger,
   makeStyles,
+  tokens,
 } from "@fluentui/react-components";
 import { useFieldArray, useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Delete20Regular } from "@fluentui/react-icons";
 import { type GroupingCondition } from "../utils/subquery-grouping";
 import { Field } from "./ui/field";
 import { Button } from "./ui/button";
@@ -16,6 +18,7 @@ import { DialogBody } from "./ui/dialog-body";
 import { DialogSurface } from "./ui/dialog-surface";
 import { DialogTitle } from "./ui/dialog-title";
 import { DialogActions } from "./ui/dialog-actions";
+import { Select } from "./ui/select";
 
 type Props = {
   parameters: {
@@ -36,6 +39,50 @@ const useStyles = makeStyles({
   groupField: {
     display: "flex",
     gap: "8px",
+    alignItems: "center",
+  },
+  includesField: {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    gap: "2px",
+    justifyContent: "center",
+    fontSize: "12px",
+    lineHeight: "12px",
+    height: "36px",
+    marginBottom: 0,
+  },
+  checkbox: {
+    "&  div": {
+      margin: "0",
+    },
+  },
+  inputValue: {
+    flexGrow: 1,
+    flexBasis: "128px",
+    flexShrink: 1,
+  },
+  inputRangeValue: {
+    flexGrow: 1,
+    width: "128px",
+  },
+  inputLabelValue: {
+    width: "128px",
+  },
+  dialogSurface: {
+    width: "700px",
+  },
+  dialogInner: {
+    display: "flex",
+    flexDirection: "column",
+    justifyContent: "center",
+    gap: `${tokens.spacingVerticalM}`,
+    padding: `${tokens.spacingVerticalL} 0`,
+    width: "100%",
+  },
+  dialogBody: {
+    display: "flex",
+    flexDirection: "column",
   },
 });
 
@@ -131,7 +178,6 @@ export const EditorGroupingForm = ({
 
   const handleRemove = (index: number): void => {
     remove(index);
-    console.log("remove", index);
   };
 
   return (
@@ -149,19 +195,20 @@ export const EditorGroupingForm = ({
           {conditions.length === 0 ? "グループを追加" : "グループを編集"}
         </Button>
       </DialogTrigger>
-      <DialogSurface>
+      <DialogSurface className={styles.dialogSurface}>
         <DialogTitle>グループを編集</DialogTitle>
-        <DialogBody>
-          <div>
+        <DialogBody className={styles.dialogBody}>
+          <div className={styles.dialogInner}>
             {fields.map((field, index) => {
               return (
                 <Field key={field.id} className={styles.groupField}>
                   <Input
+                    className={styles.inputLabelValue}
                     defaultValue={field.value.label}
                     placeholder="グループ名"
                     {...register(`conditions.${index}.value.label`)}
                   />
-                  <select
+                  <Select
                     defaultValue={field.value.operation ?? "eq"}
                     {...register(`conditions.${index}.value.operation`)}
                   >
@@ -172,7 +219,7 @@ export const EditorGroupingForm = ({
                     <option value="gte">以上</option>
                     <option value="lte">以下</option>
                     <option value="range">次の範囲</option>
-                  </select>
+                  </Select>
                   {field.value.operation === "range" && (
                     <>
                       <Input
@@ -184,16 +231,19 @@ export const EditorGroupingForm = ({
                         placeholder="開始値"
                         type="number"
                         {...register(`conditions.${index}.value.startValue`)}
+                        className={styles.inputRangeValue}
                       />
-                      <div>
+                      <div className={styles.includesField}>
                         <span>含</span>
                         <Checkbox
+                          className={styles.checkbox}
                           defaultChecked={field.value.includesStart ?? false}
                           {...register(
                             `conditions.${index}.value.includesStart`,
                           )}
                         />
                       </div>
+                      <span>〜</span>
                       <Input
                         defaultValue={
                           field.value.startValue
@@ -203,10 +253,12 @@ export const EditorGroupingForm = ({
                         placeholder="終了値"
                         type="number"
                         {...register(`conditions.${index}.value.lastValue`)}
+                        className={styles.inputRangeValue}
                       />
-                      <div>
+                      <div className={styles.includesField}>
                         <span>含</span>
                         <Checkbox
+                          className={styles.checkbox}
                           defaultChecked={field.value.includesLast ?? false}
                           {...register(
                             `conditions.${index}.value.includesLast`,
@@ -221,18 +273,19 @@ export const EditorGroupingForm = ({
                         field.value.value ? field.value.value.toString() : ""
                       }
                       {...register(`conditions.${index}.value.value`)}
+                      className={styles.inputValue}
                       placeholder="値"
                       type="number"
                     />
                   )}
-                  <button
+                  <Button
+                    appearance="subtle"
+                    icon={<Delete20Regular />}
                     onClick={() => {
                       handleRemove(index);
                     }}
                     type="button"
-                  >
-                    x
-                  </button>
+                  ></Button>
                 </Field>
               );
             })}
