@@ -81,12 +81,13 @@ export const createDummyDataSetResults = (async (
               await tx.insert(data_set_detail_areas).values({
                 data_set_result_id,
                 reference_date,
+                predicted_probability: Math.random(),
                 address: `東京都港区六本木${i}丁目`,
                 young_population_ratio: Math.floor(Math.random() * 100),
                 elderly_population_ratio: Math.floor(Math.random() * 100),
                 total_building_count: Math.floor(Math.random() * 100),
-                vacant_house_ratio: Math.floor(Math.random() * 100),
                 area: Math.floor(Math.random() * 100),
+                vacant_house_count: Math.floor(Math.random() * 100),
                 geometry:
                   feature.geometry.type === "Polygon"
                     ? JSON.stringify(feature.geometry.coordinates) // 多重配列はsqliteに入らないので文字列に変換する
