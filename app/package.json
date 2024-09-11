@@ -25,6 +25,7 @@
     "@electron-forge/plugin-fuses": "^7.4.0",
     "@electron-forge/plugin-vite": "^7.4.0",
     "@electron/fuses": "^1.8.0",
+    "@playwright/test": "^1.47.0",
     "@types/better-sqlite3": "^7.6.11",
     "@types/geojson": "^7946.0.14",
     "@types/react": "^18.3.3",

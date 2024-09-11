@@ -144,6 +144,9 @@ export const TileViewStyle = ({
   if (style === "table") {
     const columns = parameters.find((p) => p.key === "columns");
 
+    const startYearParameter = parameters.find((p) => p.key === "year.start");
+    const endYearParameter = parameters.find((p) => p.key === "year.end");
+
     if (!columns) {
       return <div>パラメーターの値を正しく設定してください</div>;
     }
@@ -152,6 +155,10 @@ export const TileViewStyle = ({
       <div>
         <TableView
           columns={columns.value.split(",")}
+          filterByYear={{
+            startValue: Number(startYearParameter?.value),
+            endValue: Number(endYearParameter?.value),
+          }}
           resultId={dataSetResults.id}
           type={type}
         />
