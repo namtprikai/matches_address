@@ -64,7 +64,7 @@ export function MapComponent({
   }, []);
 
   useEffect(
-    function setMapCenterEffect() {
+    function updateMapEffect() {
       if (!mapInstance || !selectedDate) return;
       let ignore = false;
 
