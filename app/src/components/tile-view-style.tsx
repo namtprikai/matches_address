@@ -43,6 +43,13 @@ export const TileViewStyle = ({
     const xAxis = parameters.find((p) => p.key === "label");
     const yAxis = parameters.find((p) => p.key === "value");
 
+    const groupingParameters = parameters.filter((p) =>
+      p.key.startsWith("group_"),
+    );
+
+    const startYearParameter = parameters.find((p) => p.key === "year.start");
+    const endYearParameter = parameters.find((p) => p.key === "year.end");
+
     if (!xAxis || !yAxis) {
       return <div>パラメーターの値を正しく設定してください</div>;
     }
@@ -50,6 +57,13 @@ export const TileViewStyle = ({
     return (
       <div>
         <PieChart
+          filterByYear={{
+            startValue: Number(startYearParameter?.value),
+            endValue: Number(endYearParameter?.value),
+          }}
+          groupingConditions={
+            groupingParameters.map((p) => p.value) as GroupingCondition[]
+          }
           resultId={dataSetResults.id}
           type={type}
           x={xAxis.value}
@@ -97,6 +111,13 @@ export const TileViewStyle = ({
     const xAxis = parameters.find((p) => p.key === "xAxis");
     const yAxis = parameters.find((p) => p.key === "yAxis");
 
+    const groupingParameters = parameters.filter((p) =>
+      p.key.startsWith("group_"),
+    );
+
+    const startYearParameter = parameters.find((p) => p.key === "year.start");
+    const endYearParameter = parameters.find((p) => p.key === "year.end");
+
     if (!xAxis || !yAxis) {
       return <div>パラメーターの値を正しく設定してください</div>;
     }
@@ -104,6 +125,13 @@ export const TileViewStyle = ({
     return (
       <div>
         <LineChart
+          filterByYear={{
+            startValue: Number(startYearParameter?.value),
+            endValue: Number(endYearParameter?.value),
+          }}
+          groupingConditions={
+            groupingParameters.map((p) => p.value) as GroupingCondition[]
+          }
           resultId={dataSetResults.id}
           type={type}
           x={xAxis.value}
