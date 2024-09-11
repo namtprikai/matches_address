@@ -34,12 +34,23 @@ export const createDummyDataSetResults = (async (
         return jsonData;
       },
     );
-    // feature = 建物データ
-    const features = d902.flatMap((f) => f.features);
+    const d903 = (() => {
+      const filePath = path.resolve(`./public/D903.json`);
+      const rawData = readFileSync(filePath);
+      const jsonData: FeatureCollection = JSON.parse(rawData.toString());
+      return jsonData;
+    })();
+    const buildingFeatures = d902.flatMap((f) => f.features);
+    const areaFeatures = d903.features;
     const chunkSize = 5000;
-    const chunkedFeatures = Array.from(
-      { length: Math.ceil(features.length / chunkSize) },
-      (_, i) => features.slice(i * chunkSize, i * chunkSize + chunkSize),
+    const chunkedBuildingFeatures = Array.from(
+      { length: Math.ceil(buildingFeatures.length / chunkSize) },
+      (_, i) =>
+        buildingFeatures.slice(i * chunkSize, i * chunkSize + chunkSize),
+    );
+    const chunkedAreaFeatures = Array.from(
+      { length: Math.ceil(areaFeatures.length / chunkSize) },
+      (_, i) => areaFeatures.slice(i * chunkSize, i * chunkSize + chunkSize),
     );
 
     await db.transaction(async (tx) => {
@@ -49,24 +60,58 @@ export const createDummyDataSetResults = (async (
         .returning();
       const data_set_result_id = res[0].id;
 
-      for (const year of [2019, 2020, 2021, 2022, 2023]) {
-        const reference_date = `${year}-04-02`;
-        await tx.insert(data_set_detail_areas).values({
-          data_set_result_id,
-          reference_date,
-        });
+      const years = [2019, 2020, 2021, 2022, 2023];
 
-        const totalBuildings = chunkedFeatures.flat().length;
+      for (const year of years) {
+        const reference_date = `${year}-04-02`;
+        const totalAreas = areaFeatures.length;
         console.info(
-          `Starting data insertion for year ${year}. Total buildings: ${totalBuildings}`,
+          `Area: Starting data insertion for year ${year}. Total areas: ${totalAreas}`,
         );
 
         for (
           let chunkIndex = 0;
-          chunkIndex < chunkedFeatures.length;
+          chunkIndex < chunkedAreaFeatures.length;
           chunkIndex++
         ) {
-          const features = chunkedFeatures[chunkIndex];
+          const features = chunkedAreaFeatures[chunkIndex];
+
+          await Promise.all(
+            features.map(async (feature, i) => {
+              await tx.insert(data_set_detail_areas).values({
+                data_set_result_id,
+                reference_date,
+                predicted_probability: Math.random(),
+                address: `東京都港区六本木${i}丁目`,
+                young_population_ratio: Math.floor(Math.random() * 100),
+                elderly_population_ratio: Math.floor(Math.random() * 100),
+                total_building_count: Math.floor(Math.random() * 100),
+                area: Math.floor(Math.random() * 100),
+                vacant_house_count: Math.floor(Math.random() * 100),
+                geometry:
+                  feature.geometry.type === "Polygon"
+                    ? JSON.stringify(feature.geometry.coordinates) // 多重配列はsqliteに入らないので文字列に変換する
+                    : "",
+                key_code: `key_code_${i}`,
+              });
+            }),
+          );
+        }
+      }
+
+      for (const year of years) {
+        const reference_date = `${year}-04-02`;
+        const totalBuildings = buildingFeatures.length;
+        console.info(
+          `Buildings: Starting data insertion for year ${year}. Total buildings: ${totalBuildings}`,
+        );
+
+        for (
+          let chunkIndex = 0;
+          chunkIndex < chunkedBuildingFeatures.length;
+          chunkIndex++
+        ) {
+          const features = chunkedBuildingFeatures[chunkIndex];
 
           await Promise.all(
             features.map(async (feature, i) => {

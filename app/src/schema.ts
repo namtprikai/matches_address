@@ -469,11 +469,11 @@ export const data_set_detail_areas = sqliteTable("data_set_detail_areas", {
   total_building_count: integer("total_building_count"),
 
   /**
-   * 空き家率
+   * 空き家件数
    *
-   * 0~1の小数で表現（8byte 浮動小数点）
+   * 0以上の整数
    */
-  vacant_house_ratio: real("vacant_house_ratio"),
+  vacant_house_count: integer("vacant_house_count"),
 
   /**
    * 面積
@@ -488,7 +488,7 @@ export const data_set_detail_areas = sqliteTable("data_set_detail_areas", {
    *
    * 文字列：任意の文字列
    */
-  geometry: text("geometry"),
+  geometry: text("geometry").notNull(),
 
   /**
    * KEYCODE
@@ -496,6 +496,13 @@ export const data_set_detail_areas = sqliteTable("data_set_detail_areas", {
    * 任意の文字列
    */
   key_code: text("key_code"),
+
+  /**
+   * 空き家確率
+   *
+   * 0~1の小数で表現（8byte 浮動小数点）
+   */
+  predicted_probability: real("predicted_probability"),
 
   created_at: text("created_at")
     .default(sql`(CURRENT_TIMESTAMP)`)

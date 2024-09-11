@@ -1,27 +1,25 @@
 import { Popup, type Map } from "maplibre-gl";
 import { renderToString } from "react-dom/server";
 import { type SelectDataSetDetailBuilding } from "../../../schema";
-import { BuildingPopup } from "./building-popup";
+import { BuildingPopup, type BuildingProperties } from "./building-popup";
+import { VACANCY_RATE_HIGH, VACANCY_RATE_MEDIUM } from ".";
 
-export const VACANCY_RATE_HIGH = 0.8;
-export const VACANCY_RATE_MEDIUM = 0.3;
-
-export function addGeojsonLayer(
+export function addBuildingLayer(
   map: Map,
   layerId: string,
-  buildings: SelectDataSetDetailBuilding[],
+  buildings: BuildingProperties[],
 ): void {
   map.addSource(layerId, {
     type: "geojson",
     data: {
       type: "FeatureCollection",
-      features: buildings.map((building) => ({
+      features: buildings.map(({ geometry, ...properties }) => ({
         type: "Feature",
         geometry: {
           type: "Polygon",
-          coordinates: JSON.parse(building.geometry),
+          coordinates: JSON.parse(geometry),
         },
-        properties: building,
+        properties,
       })),
     },
   });

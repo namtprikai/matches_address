@@ -4,6 +4,7 @@ import path from "path";
 import { promisify } from "util";
 import { fetchBuildingsInBatches } from "../components/map/fetch-buildings-in-batches";
 import { fetchReferenceDates } from "../components/map/fetch-reference-dates";
+import { fetchAreasInBatches } from "../components/map/fetch-areas";
 import { getNames } from "./get-names";
 import { saveName } from "./save-name";
 import { helloFromPython } from "./hello-from-python";
@@ -56,6 +57,7 @@ export const ipcMainListeners = {
   fetchBuildingsInBatches,
   fetchReferenceDates,
   createDummyDataSetResults,
+  fetchAreasInBatches,
 };
 
 export const execFileAsync = promisify(execFile);
