@@ -6,8 +6,12 @@ import { Protocol } from "pmtiles";
 import { makeStyles } from "@fluentui/react-components";
 import { type Polygon } from "geojson";
 import { type VacancyLevels } from "../vacancy-level-checkbox";
-import { addGeojsonLayer } from "./add-geojson-layer";
+import { addBuildingLayer } from "./add-building-layer";
 import { type BuildingProperties } from "./building-popup";
+import { addAreaLayer } from "./add-area-layer";
+
+export const VACANCY_RATE_HIGH = 0.8;
+export const VACANCY_RATE_MEDIUM = 0.3;
 
 const useMapComponentStyles = makeStyles({
   map: {
@@ -62,98 +66,174 @@ export function MapComponent({
   useEffect(
     function setMapCenterEffect() {
       if (!mapInstance || !selectedDate) return;
-
-      const setMapCenter = async (): Promise<void> => {
-        const result = await window.ipcRenderer.invoke(
-          "fetchBuildingsInBatches",
-          {
-            dataSetResultsId,
-            referenceDate: selectedDate,
-            batchSize: 1,
-          },
-        );
-
-        if (!result?.length) return;
-
-        const [firstItem] = result;
-        const coordinates: Polygon["coordinates"] = JSON.parse(
-          firstItem.geometry,
-        );
-        const center: [number, number] =
-          coordinates[0][0][0] && coordinates[0][0][1]
-            ? [coordinates[0][0][0], coordinates[0][0][1]]
-            : [137.120435, 34.990565];
-
-        mapInstance.setCenter(center);
-      };
-
-      void setMapCenter();
-    },
-    [dataSetResultsId, mapInstance, selectedDate],
-  );
-
-  useEffect(
-    function addBuildingsLayerEffect() {
-      if (!mapInstance || !selectedDate) return;
       let ignore = false;
 
-      const addBuildingsLayer = async (): Promise<void> => {
-        const batchSize = 500;
-        let lastId = 0;
+      switch (type) {
+        case "building":
+          {
+            const setBuildingMapCenter = async (): Promise<void> => {
+              const result = await window.ipcRenderer.invoke(
+                "fetchBuildingsInBatches",
+                {
+                  dataSetResultsId,
+                  referenceDate: selectedDate,
+                  batchSize: 1,
+                },
+              );
 
-        try {
-          // eslint-disable-next-line no-constant-condition -- 無限ループでデータを全量取得する
-          while (true) {
-            if (ignore) break;
+              if (!result?.length) return;
 
-            const batch = await window.ipcRenderer.invoke(
-              "fetchBuildingsInBatches",
-              {
-                dataSetResultsId,
-                referenceDate: selectedDate,
-                batchSize,
-                lastId,
-              },
-            );
+              const [firstItem] = result;
+              const coordinates: Polygon["coordinates"] = JSON.parse(
+                firstItem.geometry,
+              );
+              const center: [number, number] =
+                coordinates[0][0][0] && coordinates[0][0][1]
+                  ? [coordinates[0][0][0], coordinates[0][0][1]]
+                  : [137.120435, 34.990565];
 
-            if (!batch) {
-              throw new Error("Network response was not ok");
-            }
+              mapInstance.setCenter(center);
+            };
 
-            const layerId = lastId.toString();
-            const filteredBatch: BuildingProperties[] = batch.map(
-              (building) => ({
-                geometry: building.geometry,
-                predicted_probability: building.predicted_probability,
-                normalized_address: building.normalized_address,
-                household_size: building.household_size,
-                members_under_15: building.members_under_15,
-                members_15_to_64: building.members_15_to_64,
-                members_over_65: building.members_over_65,
-                total_water_usage: building.total_water_usage,
-                water_disconnection_flag: building.water_disconnection_flag,
-                registration_date: building.registration_date,
-                structure_name: building.structure_name,
-              }),
-            );
-            addGeojsonLayer(mapInstance, layerId, filteredBatch);
-            setLayerIds((prevLayerIds) =>
-              prevLayerIds ? [...prevLayerIds, layerId] : [layerId],
-            );
+            const addBuildingLayers = async (): Promise<void> => {
+              const batchSize = 500;
+              let lastId = 0;
 
-            if (batch.length < batchSize) {
-              // 最後のバッチを取得完了
-              break;
-            }
+              try {
+                // eslint-disable-next-line no-constant-condition -- 無限ループでデータを全量取得する
+                while (true) {
+                  if (ignore) break;
 
-            lastId = batch[batch.length - 1].id;
+                  const batch = await window.ipcRenderer.invoke(
+                    "fetchBuildingsInBatches",
+                    {
+                      dataSetResultsId,
+                      referenceDate: selectedDate,
+                      batchSize,
+                      lastId,
+                    },
+                  );
+
+                  if (!batch) {
+                    throw new Error("Network response was not ok");
+                  }
+
+                  const layerId = lastId.toString();
+                  const filteredBatch: BuildingProperties[] = batch.map(
+                    (building) => ({
+                      geometry: building.geometry,
+                      predicted_probability: building.predicted_probability,
+                      normalized_address: building.normalized_address,
+                      household_size: building.household_size,
+                      members_under_15: building.members_under_15,
+                      members_15_to_64: building.members_15_to_64,
+                      members_over_65: building.members_over_65,
+                      total_water_usage: building.total_water_usage,
+                      water_disconnection_flag:
+                        building.water_disconnection_flag,
+                      registration_date: building.registration_date,
+                      structure_name: building.structure_name,
+                    }),
+                  );
+                  addBuildingLayer(mapInstance, layerId, filteredBatch);
+                  setLayerIds((prevLayerIds) =>
+                    prevLayerIds ? [...prevLayerIds, layerId] : [layerId],
+                  );
+
+                  if (batch.length < batchSize) {
+                    // 最後のバッチを取得完了
+                    break;
+                  }
+
+                  lastId = batch[batch.length - 1].id;
+                }
+              } catch (error) {
+                console.error("Error fetching data: ", error);
+              }
+            };
+
+            void addBuildingLayers();
+            void setBuildingMapCenter();
           }
-        } catch (error) {
-          console.error("Error fetching data: ", error);
-        }
-      };
+          break;
 
-      void addBuildingsLayer();
+        case "area":
+          {
+            const setAreaMapCenter = async (): Promise<void> => {
+              const result = await window.ipcRenderer.invoke(
+                "fetchAreasInBatches",
+                {
+                  dataSetResultsId,
+                  referenceDate: selectedDate,
+                  batchSize: 1,
+                },
+              );
+
+              if (!result?.length) return;
+
+              const [firstItem] = result;
+              const coordinates: Polygon["coordinates"] = JSON.parse(
+                firstItem.geometry,
+              );
+              const center: [number, number] =
+                coordinates[0][0][0] && coordinates[0][0][1]
+                  ? [coordinates[0][0][0], coordinates[0][0][1]]
+                  : [137.120435, 34.990565];
+
+              mapInstance.setCenter(center);
+            };
+
+            const addAreaLayers = async (): Promise<void> => {
+              const batchSize = 500;
+              let lastId = 0;
+
+              try {
+                // eslint-disable-next-line no-constant-condition -- 無限ループでデータを全量取得する
+                while (true) {
+                  if (ignore) break;
+
+                  const batch = await window.ipcRenderer.invoke(
+                    "fetchAreasInBatches",
+                    {
+                      dataSetResultsId,
+                      referenceDate: selectedDate,
+                      batchSize,
+                      lastId,
+                    },
+                  );
+
+                  if (!batch) {
+                    throw new Error("Network response was not ok");
+                  }
+
+                  const layerId = lastId.toString();
+                  addAreaLayer(mapInstance, layerId, batch);
+                  setLayerIds((prevLayerIds) =>
+                    prevLayerIds ? [...prevLayerIds, layerId] : [layerId],
+                  );
+
+                  if (batch.length < batchSize) {
+                    // 最後のバッチを取得完了
+                    break;
+                  }
+
+                  lastId = batch[batch.length - 1].id;
+                }
+              } catch (error) {
+                console.error("Error fetching data: ", error);
+              }
+            };
+
+            void setAreaMapCenter();
+            void addAreaLayers();
+          }
+          break;
+
+        default: {
+          const exhaustiveCheck: never = type;
+          throw new Error(`Unhandled type: ${exhaustiveCheck}`);
+        }
+      }
 
       return () => {
         ignore = true;
@@ -171,7 +251,7 @@ export function MapComponent({
         mapInstance.fire("closeAllPopups");
       };
     },
-    [dataSetResultsId, mapInstance, selectedDate],
+    [dataSetResultsId, mapInstance, selectedDate, type],
   );
 
   useEffect(

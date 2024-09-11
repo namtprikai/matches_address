@@ -1,38 +1,31 @@
 import { forwardRef } from "react";
+import { type SelectDataSetDetailArea } from "../../../schema";
 import styles from "./area-popup.module.css";
+import { VACANCY_RATE_HIGH, VACANCY_RATE_MEDIUM } from ".";
 
-interface Area {
-  vacancyRate: number;
-  address: string;
-  totalPopulation: number;
-  malePopulation: number;
-  femalePopulation: number;
-  averageAge: number;
-  waterUsageAverage: number;
-  waterUsageMax: number;
-  waterUsageMin: number;
-  averageConstructionAge: number;
-  minConstructionAge: number;
-  maxConstructionAge: number;
-  riskLevelA: number;
-  riskLevelB: number;
-  riskLevelC: number;
-  area: number;
-  coordinates: number[][][];
-}
+export type AreaProperties = Pick<
+  SelectDataSetDetailArea,
+  | "geometry"
+  | "predicted_probability"
+  | "address"
+  | "young_population_ratio"
+  | "elderly_population_ratio"
+  | "area"
+  | "vacant_house_count"
+>;
 
 interface Props {
-  areaInfo: Area | null;
+  properties: AreaProperties;
 }
 
 export const AreaPopup = forwardRef<HTMLDivElement, Props>(
-  ({ areaInfo }, ref) => {
-    const riskRateColorStyle = (() => {
-      if (!areaInfo) return "";
-      const riskRate = areaInfo.vacancyRate;
-      if (riskRate >= 80) {
+  ({ properties }, ref) => {
+    const vacancyRateColorStyle = (() => {
+      if (!properties) return "";
+      const vacancyRate = properties.predicted_probability || 0;
+      if (vacancyRate >= VACANCY_RATE_HIGH) {
         return styles.high;
-      } else if (riskRate >= 30) {
+      } else if (vacancyRate >= VACANCY_RATE_MEDIUM) {
         return styles.medium;
       } else {
         return styles.low;
@@ -41,11 +34,16 @@ export const AreaPopup = forwardRef<HTMLDivElement, Props>(
 
     return (
       <div ref={ref} className={styles.container} tabIndex={-1}>
-        <div className={`${styles.header} ${riskRateColorStyle}`}>
+        <div className={`${styles.header} ${vacancyRateColorStyle}`}>
           <span className={styles.circleIcon} />
           <div>
-            <span className={styles.vacancyRate}>{areaInfo?.vacancyRate}%</span>
-            <div className={styles.address}>{areaInfo?.address}</div>
+            <span className={styles.vacancyRate}>
+              {properties.predicted_probability
+                ? (properties.predicted_probability * 100).toFixed(0)
+                : "??"}
+              %
+            </span>
+            <div className={styles.address}>{properties.address}</div>
           </div>
         </div>
         <div className={styles.info}>
@@ -55,114 +53,31 @@ export const AreaPopup = forwardRef<HTMLDivElement, Props>(
               世帯情報
             </h3>
             <div className={styles.item}>
-              <span className={styles.itemLabel}>世帯数</span>
+              <span className={styles.itemLabel}>若年層率</span>
               <span className={styles.itemValue}>
-                {areaInfo?.totalPopulation}人
+                {properties.young_population_ratio}人
               </span>
             </div>
             <div className={styles.item}>
-              <span className={styles.itemLabel}>男性人数</span>
+              <span className={styles.itemLabel}>高年者率</span>
               <span className={styles.itemValue}>
-                {areaInfo?.malePopulation}人 (
-                {(
-                  ((areaInfo?.malePopulation || 0) /
-                    (areaInfo?.totalPopulation || 1)) *
-                  100
-                ).toFixed(0)}
-                %)
-              </span>
-            </div>
-            <div className={styles.item}>
-              <span className={styles.itemLabel}>女性人数</span>
-              <span className={styles.itemValue}>
-                {areaInfo?.femalePopulation}人 (
-                {(
-                  ((areaInfo?.femalePopulation || 0) /
-                    (areaInfo?.totalPopulation || 1)) *
-                  100
-                ).toFixed(0)}
-                %)
-              </span>
-            </div>
-            <div className={styles.item}>
-              <span className={styles.itemLabel}>平均年齢</span>
-              <span className={styles.itemValue}>
-                {areaInfo?.averageAge.toFixed(2)}歳
+                {properties.elderly_population_ratio}
               </span>
             </div>
           </div>
           <div>
             <h3 className={styles.heading}>
-              <span className={`${styles.square} ${styles.waterIcon}`} />
-              水道情報
+              <span className={`${styles.square} ${styles.landIcon}`} />
+              土地情報
             </h3>
-            <div className={styles.item}>
-              <span className={styles.itemLabel}>水道使用量平均</span>
-              <span className={styles.itemValue}>
-                {areaInfo?.waterUsageAverage}L
-              </span>
-            </div>
-            <div className={styles.item}>
-              <span className={styles.itemLabel}>最大水道使用量</span>
-              <span className={styles.itemValue}>
-                {areaInfo?.waterUsageMax}L
-              </span>
-            </div>
-            <div className={styles.item}>
-              <span className={styles.itemLabel}>最小水道使用量</span>
-              <span className={styles.itemValue}>
-                {areaInfo?.waterUsageMin}L
-              </span>
-            </div>
-          </div>
-          <div>
-            <h3 className={styles.heading}>
-              <span className={`${styles.square} ${styles.buildingIcon}`} />
-              建築情報
-            </h3>
-            <div className={styles.item}>
-              <span className={styles.itemLabel}>平均築年数</span>
-              <span className={styles.itemValue}>
-                {areaInfo?.averageConstructionAge}年
-              </span>
-            </div>
-            <div className={styles.item}>
-              <span className={styles.itemLabel}>最小築年数</span>
-              <span className={styles.itemValue}>
-                {areaInfo?.minConstructionAge}年
-              </span>
-            </div>
-            <div className={styles.item}>
-              <span className={styles.itemLabel}>最大築年数</span>
-              <span className={styles.itemValue}>
-                {areaInfo?.maxConstructionAge}年
-              </span>
-            </div>
-          </div>
-          <div>
-            <h3 className={styles.heading}>
-              <span className={`${styles.square} ${styles.otherIcon}`} />
-              その他
-            </h3>
-            <div className={styles.item}>
-              <span className={styles.itemLabel}>空き家調査結果での危険度</span>
-            </div>
-            <div className={styles.item}>
-              <span className={styles.itemLabel}>A</span>
-              <span className={styles.itemValue}>{areaInfo?.riskLevelA}</span>
-            </div>
-            <div className={styles.item}>
-              <span className={styles.itemLabel}>B</span>
-              <span className={styles.itemValue}>{areaInfo?.riskLevelB}</span>
-            </div>
-            <div className={styles.item}>
-              <span className={styles.itemLabel}>C</span>
-              <span className={styles.itemValue}>{areaInfo?.riskLevelC}</span>
-            </div>
             <div className={styles.item}>
               <span className={styles.itemLabel}>面積</span>
+              <span className={styles.itemValue}>{properties.area}m2</span>
+            </div>
+            <div className={styles.item}>
+              <span className={styles.itemLabel}>空き家件数</span>
               <span className={styles.itemValue}>
-                {areaInfo?.area.toLocaleString()}㎡
+                {properties.vacant_house_count}
               </span>
             </div>
           </div>

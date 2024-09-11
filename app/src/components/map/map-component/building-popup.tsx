@@ -3,7 +3,7 @@ import { mergeClasses } from "@fluentui/react-components";
 import { type SelectDataSetDetailBuilding } from "../../../schema";
 import { formatDate } from "../../../utils/format-date";
 import styles from "./building-popup.module.css";
-import { VACANCY_RATE_HIGH, VACANCY_RATE_MEDIUM } from "./add-geojson-layer";
+import { VACANCY_RATE_HIGH, VACANCY_RATE_MEDIUM } from ".";
 
 export type BuildingProperties = Pick<
   SelectDataSetDetailBuilding,

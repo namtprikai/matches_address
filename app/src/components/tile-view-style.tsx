@@ -119,7 +119,7 @@ export const TileViewStyle = ({
   if (style === "map") {
     return (
       <div>
-        <Map dataSetResultsId={dataSetResults.id} type="building" />
+        <Map dataSetResultsId={dataSetResults.id} type={type} />
       </div>
     );
   }
