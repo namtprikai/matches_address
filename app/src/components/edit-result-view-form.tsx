@@ -26,10 +26,10 @@ export const EditResultViewForm = (): JSX.Element => {
   const [selectedResultView, refresh] = useAtom(selectedResultViewAtom);
   const [, refreshResultViews] = useAtom(resultViewsAtom);
 
-  const yearStart = selectedResultView?.parameters.find(
+  const yearStart = selectedResultView?.parameters?.find(
     (parameter) => parameter.key === "year.start",
   )?.value;
-  const yearEnd = selectedResultView?.parameters.find(
+  const yearEnd = selectedResultView?.parameters?.find(
     (parameter) => parameter.key === "year.end",
   )?.value;
 
