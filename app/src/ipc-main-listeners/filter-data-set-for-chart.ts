@@ -83,7 +83,7 @@ export const filterDataSetForChart = ((
             return db
                 .select()
                 .from(filterSubQuery)
-                .where(eq(data_set_detail_areas.data_set_result_id, resultId))
+                .where(eq(filterSubQuery.data_set_result_id, resultId))
                 .limit(100).all();
         }
         const all = getAll();
@@ -151,6 +151,7 @@ export const filterDataSetForChart = ((
             return db
                 .select()
                 .from(filterSubQuery)
+                .where(eq(filterSubQuery.data_set_result_id, resultId))
                 .limit(100).all();
         }
         const all = getAll();

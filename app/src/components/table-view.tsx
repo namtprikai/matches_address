@@ -34,6 +34,10 @@ const useStyles = makeStyles({
 
 type TableViewProps = {
   resultId: number;
+  filterByYear: {
+    startValue: number | undefined;
+    endValue: number | undefined;
+  };
 } & (
   | {
       type: "building";
@@ -51,11 +55,13 @@ export const TableView = ({
   columns,
   resultId,
   type,
+  filterByYear,
 }: TableViewProps): JSX.Element => {
   const { tableProps } = useFetchFilterDataSetForTable({
     resultId,
     type,
     columns,
+    filterByYear,
   });
 
   const styles = useStyles();

@@ -20,9 +20,6 @@ test.afterAll(async () => {
 test('分析ページへ移動し、ワークブックを作成', async () => {
     const page = await electronApp.firstWindow()
 
-    const analysisButton = await page.getByText("分析")
-    await analysisButton.click()
-
     const createWorkbookButton = await page.getByRole("button", { name: "新規ワークブック作成" })
 
     expect(createWorkbookButton).not.toBeNull()

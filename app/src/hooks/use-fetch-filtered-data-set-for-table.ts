@@ -6,13 +6,19 @@ export const useFetchFilterDataSetForTable = ({
   resultId,
   type,
   columns,
-}: { resultId: number } & (
-  | { type: "building"; columns: (keyof SelectDataSetDetailBuilding)[] }
-  | { type: "area"; columns: (keyof SelectDataSetDetailBuilding)[] }
-)): {
-  tableProps: TableProps;
-  refetch: () => Promise<void>;
-} => {
+  filterByYear
+}: {
+  resultId: number, filterByYear: {
+    startValue: number | undefined;
+    endValue: number | undefined;
+  }
+} & (
+    | { type: "building"; columns: (keyof SelectDataSetDetailBuilding)[] }
+    | { type: "area"; columns: (keyof SelectDataSetDetailBuilding)[] }
+  )): {
+    tableProps: TableProps;
+    refetch: () => Promise<void>;
+  } => {
   const [props, setProps] = useState<TableProps>({ columns: [], data: [] });
 
   const fetchFilteredDataSetDetailForTable =
@@ -21,9 +27,10 @@ export const useFetchFilterDataSetForTable = ({
         resultId,
         type,
         columns,
+        filterByYear
       });
       setProps(result);
-    }, [resultId, type, columns]);
+    }, [resultId, type, columns, filterByYear]);
 
   useEffect(() => {
     fetchFilteredDataSetDetailForTable().catch(console.error);
