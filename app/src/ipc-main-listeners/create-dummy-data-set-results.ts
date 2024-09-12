@@ -28,7 +28,7 @@ export const createDummyDataSetResults = (async (
     // 建物データをJSONファイルから取得する
     const d902 = await Promise.all(
       Array.from({ length: full ? 10 : 1 }, (_, i) => i + 1).map(async (i) => {
-        const filePath = path.resolve(`./public/D902/${i}.json`);
+        const filePath = path.resolve(`./assets/D902/${i}.json`);
         const rawData = await readFile(filePath, { encoding: "utf8" });
         const jsonData: FeatureCollection = JSON.parse(rawData.toString());
         return jsonData;
@@ -36,7 +36,7 @@ export const createDummyDataSetResults = (async (
     );
 
     const d903 = await (async () => {
-      const filePath = path.resolve(`./public/D903.json`);
+      const filePath = path.resolve(`./assets/D903.json`);
       const rawData = await readFile(filePath, { encoding: "utf8" });
       const jsonData: FeatureCollection = JSON.parse(rawData.toString());
       return jsonData;
