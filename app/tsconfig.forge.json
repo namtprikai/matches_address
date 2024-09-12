@@ -1,3 +1,4 @@
+// forge.config.ts用のtsconfigファイル
 {
   "compilerOptions": {
     "module": "NodeNext",
