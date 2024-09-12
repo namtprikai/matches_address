@@ -1,4 +1,4 @@
-import { readFileSync } from "fs";
+import { readFile } from "fs/promises";
 import path from "path";
 import { type FeatureCollection } from "geojson";
 import {
@@ -26,23 +26,25 @@ export const createDummyDataSetResults = (async (
     console.info("Creating dummy data set results...");
 
     // 建物データをJSONファイルから取得する
-    const d902 = Array.from({ length: full ? 10 : 1 }, (_, i) => i + 1).map(
-      (i) => {
+    const d902 = await Promise.all(
+      Array.from({ length: full ? 10 : 1 }, (_, i) => i + 1).map(async (i) => {
         const filePath = path.resolve(`./public/D902/${i}.json`);
-        const rawData = readFileSync(filePath);
+        const rawData = await readFile(filePath, { encoding: "utf8" });
         const jsonData: FeatureCollection = JSON.parse(rawData.toString());
         return jsonData;
-      },
+      }),
     );
-    const d903 = (() => {
+
+    const d903 = await (async () => {
       const filePath = path.resolve(`./public/D903.json`);
-      const rawData = readFileSync(filePath);
+      const rawData = await readFile(filePath, { encoding: "utf8" });
       const jsonData: FeatureCollection = JSON.parse(rawData.toString());
       return jsonData;
     })();
+
     const buildingFeatures = d902.flatMap((f) => f.features);
     const areaFeatures = d903.features;
-    const chunkSize = 5000;
+    const chunkSize = 500;
     const chunkedBuildingFeatures = Array.from(
       { length: Math.ceil(buildingFeatures.length / chunkSize) },
       (_, i) =>
@@ -195,6 +197,7 @@ export const createDummyDataSetResults = (async (
                     : "",
               };
               await tx.insert(data_set_detail_buildings).values(insertion);
+              await new Promise((resolve) => setTimeout(resolve, 10));
             }),
           );
 
