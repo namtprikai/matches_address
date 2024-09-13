@@ -13,7 +13,7 @@ import { type IpcMainListener } from ".";
 export const createDummyDataSetResults = (async (
   _: unknown,
   { full = false, title }: { full: boolean; title: string },
-): Promise<Promise<void>> => {
+): Promise<void> => {
   try {
     // すでにデータがある場合はテーブルの内容を削除してリセットする
     const result = await db.select().from(data_set_results);
