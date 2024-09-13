@@ -29,6 +29,7 @@ import { deleteResultSheet } from "./delete-result-sheet";
 import { readDataSetArea } from "./read-data-set-area";
 import { readDataSetYear } from "./read-data-set-year";
 import { createDummyDataSetResults } from "./create-dummy-data-set-results";
+import { getChubuPmtiles } from "./get-chubu-pmtiles";
 
 export const ipcMainListeners = {
   getNames,
@@ -58,6 +59,7 @@ export const ipcMainListeners = {
   fetchReferenceDates,
   createDummyDataSetResults,
   fetchAreasInBatches,
+  getChubuPmtiles,
 };
 
 export const execFileAsync = promisify(execFile);

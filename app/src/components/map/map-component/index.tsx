@@ -6,11 +6,13 @@ import {
   type FilterSpecification,
   Map,
   removeProtocol,
+  type StyleSpecification,
 } from "maplibre-gl";
-import { Protocol } from "pmtiles";
+import { type FileSource, PMTiles, Protocol, type Source } from "pmtiles";
 import { makeStyles } from "@fluentui/react-components";
 import { type Polygon } from "geojson";
 import { type VacancyLevels } from "../vacancy-level-checkbox";
+import protomapsBasemapsJson from "../../../../assets/protomaps-basemaps.json";
 import { addBuildingLayer } from "./add-building-layer";
 import { type BuildingProperties } from "./building-popup";
 import { addAreaLayer } from "./add-area-layer";
@@ -47,24 +49,39 @@ export function MapComponent({
     const containerEl = containerRef.current;
     if (!containerEl) return;
 
-    const protocol = new Protocol();
-    addProtocol("pmtiles", protocol.tile);
+    const initializeMap = async (): Promise<void> => {
+      const protocol = new Protocol();
+      const buffer = await window.ipcRenderer.invoke("getChubuPmtiles");
+      const fileSource: FileSource = {
+        file: buffer as unknown as File,
+        getKey: () => "chubu.pmtiles",
+        getBytes: async (offset, length) => {
+          return {
+            data: buffer.buffer.slice(offset, offset + length),
+          };
+        },
+      };
+      const p = new PMTiles(fileSource);
+      protocol.add(p);
+      addProtocol("pmtiles", protocol.tile);
 
-    const initializedMap = new Map({
-      container: containerEl,
-      style: "protomaps-basemaps.json",
-      center: [137.120435, 34.990565],
-      zoom: 14,
-      maxZoom: 22,
-      minZoom: 6,
-    });
+      const initializedMap = new Map({
+        container: containerEl,
+        style: protomapsBasemapsJson as StyleSpecification,
+        center: [137.120435, 34.990565],
+        zoom: 14,
+        maxZoom: 22,
+        minZoom: 6,
+      });
 
-    initializedMap.on("load", () => {
-      setMapInstance(initializedMap);
-    });
+      initializedMap.on("load", () => {
+        setMapInstance(initializedMap);
+      });
+    };
+
+    void initializeMap();
 
     return () => {
-      initializedMap.remove();
       removeProtocol("pmtiles");
     };
   }, []);
@@ -78,6 +95,7 @@ export function MapComponent({
         case "building":
           {
             const setBuildingMapCenter = async (): Promise<void> => {
+              void window.ipcRenderer.invoke("getChubuPmtiles");
               const result = await window.ipcRenderer.invoke(
                 "fetchBuildingsInBatches",
                 {
@@ -243,6 +261,7 @@ export function MapComponent({
 
       return () => {
         ignore = true;
+        mapInstance.fire("closeAllPopups");
         setLayerIds((prevLayerIds) => {
           prevLayerIds?.forEach((layerId) => {
             if (mapInstance.getLayer(layerId)) {
@@ -254,7 +273,6 @@ export function MapComponent({
           });
           return null;
         });
-        mapInstance.fire("closeAllPopups");
       };
     },
     [dataSetResultsId, mapInstance, selectedDate, type],
