@@ -39,5 +39,10 @@
     "composite": true
   },
   "exclude": ["node_modules", "dist", "forge.config.ts"],
-  "include": ["**/*.ts", "**/*.tsx", "package.json"]
+  "include": [
+    "**/*.ts",
+    "**/*.tsx",
+    "package.json",
+    "assets/protomaps-basemaps.json"
+  ]
 }
