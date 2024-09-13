@@ -1,7 +1,12 @@
 import "maplibre-gl/dist/maplibre-gl.css";
 import "./maplibre-gl.css";
 import { useEffect, useRef, useState } from "react";
-import { addProtocol, type FilterSpecification, Map } from "maplibre-gl";
+import {
+  addProtocol,
+  type FilterSpecification,
+  Map,
+  removeProtocol,
+} from "maplibre-gl";
 import { Protocol } from "pmtiles";
 import { makeStyles } from "@fluentui/react-components";
 import { type Polygon } from "geojson";
@@ -60,6 +65,7 @@ export function MapComponent({
 
     return () => {
       initializedMap.remove();
+      removeProtocol("pmtiles");
     };
   }, []);
 
