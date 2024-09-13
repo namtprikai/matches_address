@@ -14,6 +14,8 @@ export const createDummyDataSetResults = (async (
   _: unknown,
   { full = false, title }: { full: boolean; title: string },
 ): Promise<void> => {
+  const isDev = process.env.NODE_ENV === "development";
+
   try {
     // すでにデータがある場合はテーブルの内容を削除してリセットする
     const result = await db.select().from(data_set_results);
@@ -28,7 +30,9 @@ export const createDummyDataSetResults = (async (
     // 建物データをJSONファイルから取得する
     const d902 = await Promise.all(
       Array.from({ length: full ? 10 : 1 }, (_, i) => i + 1).map(async (i) => {
-        const filePath = path.resolve(`./assets/D902/${i}.json`);
+        const filePath = isDev
+          ? path.resolve(`./assets/D902/${i}.json`)
+          : path.join(process.resourcesPath, "assets", "D902", `${i}.json`);
         const rawData = await readFile(filePath, { encoding: "utf8" });
         const jsonData: FeatureCollection = JSON.parse(rawData.toString());
         return jsonData;
@@ -36,7 +40,9 @@ export const createDummyDataSetResults = (async (
     );
 
     const d903 = await (async () => {
-      const filePath = path.resolve(`./assets/D903.json`);
+      const filePath = isDev
+        ? path.resolve(`./assets/D903.json`)
+        : path.join(process.resourcesPath, "assets", "D903.json");
       const rawData = await readFile(filePath, { encoding: "utf8" });
       const jsonData: FeatureCollection = JSON.parse(rawData.toString());
       return jsonData;

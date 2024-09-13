@@ -7,7 +7,7 @@ export const getChubuPmtiles = (async (_: unknown): Promise<Buffer> => {
   const assetsDirectory = path.resolve("./assets");
   const filePath = isDev
     ? path.join(assetsDirectory, "chubu.pmtiles")
-    : path.resolve(process.resourcesPath, "chubu.pmtiles");
+    : path.join(process.resourcesPath, "assets", "chubu.pmtiles");
   const fileContent = await readFile(filePath);
 
   return fileContent;
