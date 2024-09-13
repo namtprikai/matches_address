@@ -70,7 +70,7 @@ export const PieChart = ({
           data={data}
           dataKey="y"
           labelLine={false}
-          nameKey={"y"}
+          nameKey={"x"}
           startAngle={0}
         >
           {data.map((_, index) => {
