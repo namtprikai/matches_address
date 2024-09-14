@@ -90,6 +90,7 @@ export function MapComponent({
     function updateMapEffect() {
       if (!mapInstance || !selectedDate) return;
       let ignore = false;
+      const batchSize = 1000;
 
       switch (type) {
         case "building":
@@ -111,16 +112,15 @@ export function MapComponent({
               const coordinates: Polygon["coordinates"] = JSON.parse(
                 firstItem.geometry,
               );
-              const center: [number, number] =
-                coordinates[0][0][0] && coordinates[0][0][1]
-                  ? [coordinates[0][0][0], coordinates[0][0][1]]
-                  : [137.120435, 34.990565];
+              const center: [number, number] = [
+                coordinates[0][0][0],
+                coordinates[0][0][1],
+              ];
 
               mapInstance.setCenter(center);
             };
 
             const addBuildingLayers = async (): Promise<void> => {
-              const batchSize = 500;
               let lastId = 0;
 
               try {
@@ -170,6 +170,7 @@ export function MapComponent({
                   }
 
                   lastId = batch[batch.length - 1].id;
+                  await new Promise((resolve) => setTimeout(resolve, 10));
                 }
               } catch (error) {
                 console.error("Error fetching data: ", error);
@@ -199,16 +200,15 @@ export function MapComponent({
               const coordinates: Polygon["coordinates"] = JSON.parse(
                 firstItem.geometry,
               );
-              const center: [number, number] =
-                coordinates[0][0][0] && coordinates[0][0][1]
-                  ? [coordinates[0][0][0], coordinates[0][0][1]]
-                  : [137.120435, 34.990565];
+              const center: [number, number] = [
+                coordinates[0][0][0],
+                coordinates[0][0][1],
+              ];
 
               mapInstance.setCenter(center);
             };
 
             const addAreaLayers = async (): Promise<void> => {
-              const batchSize = 500;
               let lastId = 0;
 
               try {
