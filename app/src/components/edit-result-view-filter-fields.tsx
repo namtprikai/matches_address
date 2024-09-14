@@ -44,7 +44,7 @@ export const EditResultViewFilterFields = (): JSX.Element => {
     // 期間を取得する処理
     (async () => {
       if (!resultView?.data_set_result_id) return;
-      const res = await window.ipcRenderer.invoke("readDataSetYear", {
+      const res = await window.ipcRenderer.invoke("fetchReferenceDates", {
         dataSetResultId: resultView.data_set_result_id,
       });
 

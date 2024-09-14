@@ -44,7 +44,9 @@ export function Map({ type, dataSetResultId }: Props): JSX.Element {
   useEffect(
     function fetchReferenceDatesEffect() {
       const fetchReferenceDates = async (): Promise<void> => {
-        const result = await window.ipcRenderer.invoke("fetchReferenceDates");
+        const result = await window.ipcRenderer.invoke("fetchReferenceDates", {
+          dataSetResultId,
+        });
         setReferenceDates(result);
         setSelectedDate(result[0]);
       };
