@@ -1,13 +1,9 @@
-import path from "path";
 import { readFile } from "fs/promises";
+import { getFilePathInAssets } from "../utils/get-file-path-in-assets";
 import { type IpcMainListener } from ".";
 
 export const getChubuPmtiles = (async (_: unknown): Promise<Buffer> => {
-  const isDev = process.env.NODE_ENV === "development";
-  const assetsDirectory = path.resolve("./assets");
-  const filePath = isDev
-    ? path.join(assetsDirectory, "chubu.pmtiles")
-    : path.join(process.resourcesPath, "assets", "chubu.pmtiles");
+  const filePath = getFilePathInAssets("chubu.pmtiles");
   const fileContent = await readFile(filePath);
 
   return fileContent;
