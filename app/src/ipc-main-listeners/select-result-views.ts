@@ -14,11 +14,11 @@ type Result = {
   data_set_results: SelectDataSetResult | null;
 };
 
-export const selectResultViews = ((
+export const selectResultViews = (async (
   _: unknown,
   { sheetId }: { sheetId: number },
-): Result[] => {
-  const all = db
+): Promise<Result[]> => {
+  const all = await db
     .select()
     .from(result_views)
     .where(sql`${result_views.sheet_id} = ${sheetId}`)

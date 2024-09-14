@@ -8,11 +8,11 @@ export type SelectResultViewResponse = SelectResultView & {
   parameters: Parameter[];
 };
 
-export const selectResultView = ((
+export const selectResultView = (async (
   _: unknown,
   { resultViewId }: { resultViewId: number },
-): SelectResultViewResponse | undefined => {
-  const data = db
+): Promise<SelectResultViewResponse | undefined> => {
+  const data = await db
     .select()
     .from(result_views)
     .where(sql`${result_views.id} = ${resultViewId}`)
