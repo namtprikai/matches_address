@@ -8,7 +8,7 @@ import {
   removeProtocol,
   type StyleSpecification,
 } from "maplibre-gl";
-import { type FileSource, PMTiles, Protocol, type Source } from "pmtiles";
+import { type FileSource, PMTiles, Protocol } from "pmtiles";
 import { makeStyles } from "@fluentui/react-components";
 import { type Polygon } from "geojson";
 import { type VacancyLevels } from "../vacancy-level-checkbox";
