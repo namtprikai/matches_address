@@ -1,4 +1,4 @@
-import { sql } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import {
   type InsertResultView,
   result_views,
@@ -25,7 +25,7 @@ export const updateResultViews = (async (
   const res = await db
     .update(result_views)
     .set({ title, style, unit, parameters })
-    .where(sql`${result_views.id} = ${resultViewId}`)
+    .where(eq(result_views.id, resultViewId))
     .returning();
   return res;
 }) satisfies IpcMainListener;

@@ -1,4 +1,4 @@
-import { sql } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import {
   type InsertResultSheet,
   result_sheets,
@@ -17,7 +17,7 @@ export const updateResultSheets = (async (
   const res = await db
     .update(result_sheets)
     .set({ title })
-    .where(sql`${result_sheets.id} = ${resultSheetId}`)
+    .where(eq(result_sheets.id, resultSheetId))
     .returning();
 
   return res;
