@@ -28,14 +28,14 @@ const useMapComponentStyles = makeStyles({
 });
 
 interface Props {
-  dataSetResultsId: number;
+  dataSetResultId: number;
   type: "building" | "area";
   selectedDate: string | undefined;
   vacancyLevels: VacancyLevels;
 }
 
 export function MapComponent({
-  dataSetResultsId,
+  dataSetResultId,
   type,
   selectedDate,
   vacancyLevels,
@@ -99,7 +99,7 @@ export function MapComponent({
               const result = await window.ipcRenderer.invoke(
                 "fetchBuildingsInBatches",
                 {
-                  dataSetResultsId,
+                  dataSetResultId,
                   referenceDate: selectedDate,
                   batchSize: 1,
                 },
@@ -131,7 +131,7 @@ export function MapComponent({
                   const batch = await window.ipcRenderer.invoke(
                     "fetchBuildingsInBatches",
                     {
-                      dataSetResultsId,
+                      dataSetResultId,
                       referenceDate: selectedDate,
                       batchSize,
                       lastId,
@@ -187,7 +187,7 @@ export function MapComponent({
               const result = await window.ipcRenderer.invoke(
                 "fetchAreasInBatches",
                 {
-                  dataSetResultsId,
+                  dataSetResultId,
                   referenceDate: selectedDate,
                   batchSize: 1,
                 },
@@ -219,7 +219,7 @@ export function MapComponent({
                   const batch = await window.ipcRenderer.invoke(
                     "fetchAreasInBatches",
                     {
-                      dataSetResultsId,
+                      dataSetResultId,
                       referenceDate: selectedDate,
                       batchSize,
                       lastId,
@@ -275,7 +275,7 @@ export function MapComponent({
         });
       };
     },
-    [dataSetResultsId, mapInstance, selectedDate, type],
+    [dataSetResultId, mapInstance, selectedDate, type],
   );
 
   useEffect(

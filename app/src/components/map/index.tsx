@@ -23,11 +23,11 @@ const useStyles = makeStyles({
 });
 
 interface Props {
-  dataSetResultsId: number;
+  dataSetResultId: number;
   type: "building" | "area";
 }
 
-export function Map({ type, dataSetResultsId }: Props): JSX.Element {
+export function Map({ type, dataSetResultId }: Props): JSX.Element {
   const styles = useStyles();
   const [vacancyLevels, setVacancyLevels] = useState<VacancyLevels>({
     low: true,
@@ -51,7 +51,7 @@ export function Map({ type, dataSetResultsId }: Props): JSX.Element {
 
       void fetchReferenceDates();
     },
-    [dataSetResultsId],
+    [dataSetResultId],
   );
 
   return (
@@ -79,7 +79,7 @@ export function Map({ type, dataSetResultsId }: Props): JSX.Element {
       </div>
       <div className={styles.map}>
         <MapComponent
-          dataSetResultsId={dataSetResultsId}
+          dataSetResultId={dataSetResultId}
           selectedDate={selectedDate}
           type={type}
           vacancyLevels={vacancyLevels}
