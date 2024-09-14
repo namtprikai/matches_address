@@ -96,7 +96,6 @@ export function MapComponent({
         case "building":
           {
             const setBuildingMapCenter = async (): Promise<void> => {
-              void window.ipcRenderer.invoke("getChubuPmtiles");
               const result = await window.ipcRenderer.invoke(
                 "fetchBuildingsInBatches",
                 {
