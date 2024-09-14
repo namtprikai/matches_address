@@ -3,6 +3,7 @@ import { data_set_detail_buildings } from "../schema";
 import { db } from "../utils/db";
 import { type IpcMainListener } from ".";
 
+// 使われていない。削除していいかもしれない？
 /**
  * DataSetに含まれる都市名から、エリアを読み取る
  * - 複数の都道府県をまたがない前提の処理

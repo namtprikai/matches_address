@@ -2,6 +2,7 @@ import { dbPath } from "../utils/db";
 import { getErrorMessage } from "../utils/get-error-message";
 import { type IpcMainListener, execFileAsync, binaryPath } from ".";
 
+// TODO: Pythonスクリプトを呼び出すサンプル。いずれ削除する
 export const saveNameFromPython = (async (
   _: unknown,
   name: string,
