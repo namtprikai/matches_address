@@ -5,8 +5,6 @@ import { promisify } from "util";
 import { fetchBuildingsInBatches } from "../components/map/fetch-buildings-in-batches";
 import { fetchReferenceDates } from "../components/map/fetch-reference-dates";
 import { fetchAreasInBatches } from "../components/map/fetch-areas";
-import { getNames } from "./get-names";
-import { saveName } from "./save-name";
 import { helloFromPython } from "./hello-from-python";
 import { saveNameFromPython } from "./save-name-from-python";
 import { createWorkbooks } from "./create-workbooks";
@@ -32,8 +30,6 @@ import { createDummyDataSetResults } from "./create-dummy-data-set-results";
 import { getChubuPmtiles } from "./get-chubu-pmtiles";
 
 export const ipcMainListeners = {
-  getNames,
-  saveName,
   helloFromPython,
   saveNameFromPython,
   createWorkbooks,
