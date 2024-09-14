@@ -15,14 +15,6 @@ export const createDummyDataSetResults = (async (
   { full = false, title }: { full: boolean; title: string },
 ): Promise<void> => {
   try {
-    // すでにデータがある場合はテーブルの内容を削除してリセットする
-    const result = await db.select().from(data_set_results);
-    if (result.length > 0) {
-      await db.delete(data_set_results);
-      await db.delete(data_set_detail_areas);
-      await db.delete(data_set_detail_buildings);
-    }
-
     console.info("Creating dummy data set results...");
 
     // 建物データをJSONファイルから取得する
