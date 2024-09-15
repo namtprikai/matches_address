@@ -11,6 +11,7 @@ import {
 import { type FileSource, PMTiles, Protocol } from "pmtiles";
 import { makeStyles } from "@fluentui/react-components";
 import { type Polygon } from "geojson";
+import useSWR from "swr";
 import { type VacancyLevels } from "../vacancy-level-checkbox";
 import protomapsBasemapsJson from "../../../../assets/protomaps-basemaps.json";
 import { addBuildingLayer } from "./add-building-layer";
@@ -34,6 +35,9 @@ interface Props {
   vacancyLevels: VacancyLevels;
 }
 
+const pmtilesFetcher = (): Promise<Buffer> =>
+  window.ipcRenderer.invoke("getChubuPmtiles");
+
 export function MapComponent({
   dataSetResultId,
   type,
@@ -44,14 +48,14 @@ export function MapComponent({
   const containerRef = useRef<HTMLDivElement | null>(null);
   const [mapInstance, setMapInstance] = useState<Map | null>(null);
   const [layerIds, setLayerIds] = useState<string[] | null>(null);
+  const { data: buffer } = useSWR("getChubuPmtiles", pmtilesFetcher);
 
-  useEffect(function initializeMapEffect() {
-    const containerEl = containerRef.current;
-    if (!containerEl) return;
+  useEffect(
+    function initializeMapEffect() {
+      const containerEl = containerRef.current;
+      if (!containerEl || !buffer) return;
 
-    const initializeMap = async (): Promise<void> => {
       const protocol = new Protocol();
-      const buffer = await window.ipcRenderer.invoke("getChubuPmtiles");
       const fileSource: FileSource = {
         file: buffer as unknown as File,
         getKey: () => "chubu.pmtiles",
@@ -77,14 +81,14 @@ export function MapComponent({
       initializedMap.on("load", () => {
         setMapInstance(initializedMap);
       });
-    };
 
-    void initializeMap();
-
-    return () => {
-      removeProtocol("pmtiles");
-    };
-  }, []);
+      return () => {
+        initializedMap.remove();
+        removeProtocol("pmtiles");
+      };
+    },
+    [buffer],
+  );
 
   useEffect(
     function updateMapEffect() {
