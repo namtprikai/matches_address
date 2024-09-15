@@ -11,9 +11,10 @@ import {
 import { type FileSource, PMTiles, Protocol } from "pmtiles";
 import { makeStyles } from "@fluentui/react-components";
 import { type Polygon } from "geojson";
-import useSWR from "swr";
+import useSWR, { type Fetcher } from "swr";
 import { type VacancyLevels } from "../vacancy-level-checkbox";
 import protomapsBasemapsJson from "../../../../assets/protomaps-basemaps.json";
+import { type getChubuPmtiles } from "../../../ipc-main-listeners/get-chubu-pmtiles";
 import { addBuildingLayer } from "./add-building-layer";
 import { type BuildingProperties } from "./building-popup";
 import { addAreaLayer } from "./add-area-layer";
@@ -35,8 +36,10 @@ interface Props {
   vacancyLevels: VacancyLevels;
 }
 
-const pmtilesFetcher = (): Promise<Buffer> =>
-  window.ipcRenderer.invoke("getChubuPmtiles");
+const pmtilesFetcher: Fetcher<
+  Awaited<ReturnType<typeof getChubuPmtiles>>,
+  string
+> = () => window.ipcRenderer.invoke("getChubuPmtiles");
 
 export function MapComponent({
   dataSetResultId,
