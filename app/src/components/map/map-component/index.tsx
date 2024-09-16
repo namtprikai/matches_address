@@ -86,7 +86,6 @@ export function MapComponent({
       });
 
       return () => {
-        initializedMap.remove();
         removeProtocol("pmtiles");
       };
     },
