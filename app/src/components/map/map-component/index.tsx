@@ -291,12 +291,14 @@ export function MapComponent({
         !vacancyLevels.low && !vacancyLevels.medium && !vacancyLevels.high;
       if (allFalse) {
         for (const layerId of layerIds) {
+          if (!mapInstance.getLayer(layerId)) return;
           mapInstance.setLayoutProperty(layerId, "visibility", "none");
         }
         return;
       }
 
       for (const layerId of layerIds) {
+        if (!mapInstance.getLayer(layerId)) return;
         const filters = [];
         if (vacancyLevels.low) {
           filters.push(["<", ["get", "predicted_probability"], 0.3]);
