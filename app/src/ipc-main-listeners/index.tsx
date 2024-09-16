@@ -24,7 +24,6 @@ import { selectResultView } from "./select-result-view";
 import { filterDataSetForTable } from "./filter-data-set-for-table";
 import { deleteResultView } from "./delete-result-view";
 import { deleteResultSheet } from "./delete-result-sheet";
-import { readDataSetArea } from "./read-data-set-area";
 import { createDummyDataSetResults } from "./create-dummy-data-set-results";
 import { getChubuPmtiles } from "./get-chubu-pmtiles";
 
@@ -48,7 +47,6 @@ export const ipcMainListeners = {
   deleteResultView,
   filterDataSetForChart,
   filterDataSetForTable,
-  readDataSetArea,
   fetchBuildingsInBatches,
   fetchReferenceDates,
   createDummyDataSetResults,
