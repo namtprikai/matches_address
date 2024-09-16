@@ -1,4 +1,4 @@
-import { sql } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { data_set_detail_buildings } from "../schema";
 import { db } from "../utils/db";
 import { type IpcMainListener } from ".";
@@ -16,9 +16,7 @@ export const readDataSetArea = (async (
   const building = db
     .select()
     .from(data_set_detail_buildings)
-    .where(
-      sql`${data_set_detail_buildings.data_set_result_id} = ${dataSetResultId}`,
-    )
+    .where(eq(data_set_detail_buildings.data_set_result_id, dataSetResultId))
     .get();
 
   if (!building) return null;
