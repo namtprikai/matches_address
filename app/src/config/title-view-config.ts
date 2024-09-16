@@ -1,11 +1,11 @@
-import { type ChartColumnType, type ChartDynamicColumnInput, type ChartStyle } from "../@types/charts";
+import { type ChartColumnType, type ChartDynamicColumnInput, type TileViewStyle } from "../@types/charts";
 
 /**
  * 各チャートのパラーメーターやグルーピング可能かどうかなどの設定をハードコードで定義している
  * 永続化の必要がない（＝エンドユーザーが変更しない）点、
  * JSONで記述するよりも型補完が効く点を踏まえ柔軟にコードができるためにTypeScriptで記述した
  */
-export const RESULT_VIEW_CONFIG = {
+export const TILE_VIEW_CONFIG = {
     // チャートスタイルごとにコンフィグを定義
     pie: {
         fields: [ // fieldsはパラメーターやフィルターの設定を行う
@@ -77,7 +77,7 @@ export const RESULT_VIEW_CONFIG = {
         ],
     },
 } satisfies {
-    [k in ChartStyle]: {
+    [k in TileViewStyle]: {
         fields: {
             key: string;
             label: string;

@@ -1,12 +1,12 @@
-import { type ResultViewFieldOption } from "../@types/charts";
-import { RESULT_VIEW_CONFIG } from "../config/result-view-config";
+import { type TileViewFieldOption } from "../@types/charts";
+import { TILE_VIEW_CONFIG } from "../config/title-view-config";
 
 export const getResultViewFieldOption = (
     style: "pie" | "bar" | "line" | "table" | "map",
-    key: string): ResultViewFieldOption | undefined => {
+    key: string): TileViewFieldOption | undefined => {
 
     // ハードコーディングされたチャートごとの設定を取得
-    const options = RESULT_VIEW_CONFIG[style];
+    const options = TILE_VIEW_CONFIG[style];
 
     // チャート設定からパラメーターフィールドに使う値を取得
     const optionFields = options ? options.fields : [];

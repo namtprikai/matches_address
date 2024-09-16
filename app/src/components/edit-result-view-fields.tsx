@@ -2,7 +2,7 @@ import { useFieldArray, useFormContext } from "react-hook-form";
 import { Fragment } from "react/jsx-runtime";
 import { result_views, type SelectResultView } from "../schema";
 import { LanguageMap } from "../lang";
-import { RESULT_VIEW_CONFIG } from "../config/result-view-config";
+import { TILE_VIEW_CONFIG } from "../config/title-view-config";
 import { getResultViewFieldOption } from "../utils/get-view-field-option";
 import { type EditResultViewFormType } from "../@types/form-schema";
 import { Fieldset } from "./ui/fieldset";
@@ -27,7 +27,7 @@ export const EditResultViewFileds = (): JSX.Element => {
 
   const resetParametersByStyle = (style: SelectResultView["style"]): void => {
     if (!style) return;
-    const option = RESULT_VIEW_CONFIG[style];
+    const option = TILE_VIEW_CONFIG[style];
     if (!option) return;
     replace(
       option.fields.map((field) => ({

@@ -38,9 +38,9 @@ export interface Parameter {
 
 export type ChartDynamicColumnInput = "select" | "input" | "dropdown";
 
-export type ChartStyle = "pie" | "bar" | "line" | "table" | "map";
+export type TileViewStyle = "pie" | "bar" | "line" | "table" | "map";
 
-export type ResultViewFieldOption = {
+export type TileViewFieldOption = {
     key: string;
     label: string;
     type: ChartDynamicColumnInput;
