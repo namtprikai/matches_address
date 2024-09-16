@@ -11,7 +11,7 @@ import { type Parameter, type ChartProps } from "../@types/charts";
 import {
     DATA_SET_DETAIL_AREA_COLUMN_CONFIG,
     DATA_SET_DETAIL_BUILDING_COLUMN_CONFIG,
-} from "../config/data-columns";
+} from "../config/column-list";
 import { formatChartValue } from "../utils/format-chart-value";
 import { subQueryFromConditions, type GroupingCondition } from "../utils/subquery-grouping";
 import { type IpcMainListener } from ".";

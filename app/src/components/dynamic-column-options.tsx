@@ -4,11 +4,11 @@ import {
   type ChartColumnType,
 } from "../@types/charts";
 import {
-  DATA_SET_DETAIL_AREA_COLUMN,
+  AREA_DATASET_COLUMN,
   DATA_SET_DETAIL_AREA_COLUMN_CONFIG,
   DATA_SET_DETAIL_BUILDING_COLUMN,
   DATA_SET_DETAIL_BUILDING_COLUMN_CONFIG,
-} from "../config/data-columns";
+} from "../config/column-list";
 
 type Props = {
   unit: "building" | "area";
@@ -58,7 +58,7 @@ export const DynamicColumnOptions = ({
   }
 
   if (unit === "area") {
-    return DATA_SET_DETAIL_AREA_COLUMN.filter((column) => {
+    return AREA_DATASET_COLUMN.filter((column) => {
       const matchedType = fieldOption.accept.filter((type) => {
         return DATA_SET_DETAIL_AREA_COLUMN_CONFIG[column].type === type;
       });

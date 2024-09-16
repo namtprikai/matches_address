@@ -4,7 +4,7 @@ import { type TileViewFieldOption } from "../@types/charts";
 import {
   DATA_SET_DETAIL_AREA_COLUMN_CONFIG,
   DATA_SET_DETAIL_BUILDING_COLUMN_CONFIG,
-} from "../config/data-columns";
+} from "../config/column-list";
 import { Select } from "./ui/select";
 import { DynamicColumnOptions } from "./dynamic-column-options";
 import { Field } from "./ui/field";

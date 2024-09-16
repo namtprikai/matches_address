@@ -9,7 +9,7 @@ import { db } from "../utils/db";
 import {
     DATA_SET_DETAIL_AREA_COLUMN_CONFIG,
     DATA_SET_DETAIL_BUILDING_COLUMN_CONFIG,
-} from "../config/data-columns";
+} from "../config/column-list";
 import { columnsToSelectField } from "../utils/columns-to-select-field";
 import { type TableProps } from "../@types/charts";
 import { formatChartValue } from "../utils/format-chart-value";

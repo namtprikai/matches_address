@@ -2,7 +2,7 @@
  * チャートのカラムが受け付けられる型
  * JavaScriptではdateとstring, floatとintegerを区別できないため、明示する必要がある
  */
-export type ChartColumnType = "string" | "integer" | "date" | "float"
+export type ChartColumnType = "text" | "integer" | "date" | "float"
 
 export interface ChartColumn {
     type: "string" | "number";

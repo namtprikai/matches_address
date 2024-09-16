@@ -87,4 +87,4 @@ export const TILE_VIEW_CONFIG = {
             grouping: boolean
         }[];
     }
-};
+}; 
