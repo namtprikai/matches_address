@@ -51,6 +51,7 @@ export const createDataSetResults = (async (
         data_set_result_id: res[0].id,
         household_code: `1000000${i}`,
         normalized_address: `東京都港区六本木${i}丁目`,
+        area_group: `エリアグループ${i}`,
         reference_date: `202${i}-01-01`,
         household_size: number_of_people_in_household,
         members_under_15: number_of_people_under_15_years_old,

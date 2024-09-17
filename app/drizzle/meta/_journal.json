@@ -57,6 +57,13 @@
       "when": 1726014326325,
       "tag": "0007_remarkable_sway",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "6",
+      "when": 1726564220615,
+      "tag": "0008_ancient_shooting_star",
+      "breakpoints": true
     }
   ]
 }
