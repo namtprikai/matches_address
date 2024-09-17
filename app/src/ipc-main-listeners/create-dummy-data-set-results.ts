@@ -1,5 +1,4 @@
 import { readFile } from "fs/promises";
-import path from "path";
 import { type FeatureCollection } from "geojson";
 import {
   data_set_results,
@@ -7,28 +6,22 @@ import {
   data_set_detail_buildings,
 } from "../schema";
 import { db } from "../utils/db";
+import { getFilePathInAssets } from "../utils/get-file-path-in-assets";
+import { TOYOTA_AREAS } from "./dummy-area";
 import { type IpcMainListener } from ".";
 
 // 開発用
 export const createDummyDataSetResults = (async (
   _: unknown,
   { full = false, title }: { full: boolean; title: string },
-): Promise<Promise<void>> => {
+): Promise<void> => {
   try {
-    // すでにデータがある場合はテーブルの内容を削除してリセットする
-    const result = await db.select().from(data_set_results);
-    if (result.length > 0) {
-      await db.delete(data_set_results);
-      await db.delete(data_set_detail_areas);
-      await db.delete(data_set_detail_buildings);
-    }
-
     console.info("Creating dummy data set results...");
 
     // 建物データをJSONファイルから取得する
     const d902 = await Promise.all(
       Array.from({ length: full ? 10 : 1 }, (_, i) => i + 1).map(async (i) => {
-        const filePath = path.resolve(`./public/D902/${i}.json`);
+        const filePath = getFilePathInAssets("D902", `${i}.json`);
         const rawData = await readFile(filePath, { encoding: "utf8" });
         const jsonData: FeatureCollection = JSON.parse(rawData.toString());
         return jsonData;
@@ -36,7 +29,7 @@ export const createDummyDataSetResults = (async (
     );
 
     const d903 = await (async () => {
-      const filePath = path.resolve(`./public/D903.json`);
+      const filePath = getFilePathInAssets("D903.json");
       const rawData = await readFile(filePath, { encoding: "utf8" });
       const jsonData: FeatureCollection = JSON.parse(rawData.toString());
       return jsonData;
@@ -84,7 +77,8 @@ export const createDummyDataSetResults = (async (
                 data_set_result_id,
                 reference_date,
                 predicted_probability: Math.random(),
-                address: `東京都港区六本木${i}丁目`,
+                area_group:
+                  TOYOTA_AREAS[Math.floor(Math.random() * TOYOTA_AREAS.length)],
                 young_population_ratio: Math.floor(Math.random() * 100),
                 elderly_population_ratio: Math.floor(Math.random() * 100),
                 total_building_count: Math.floor(Math.random() * 100),
@@ -146,11 +140,14 @@ export const createDummyDataSetResults = (async (
               const male_to_female_ratio = number_of_male / number_of_female;
               const pred = Math.random();
 
+              const area_group =
+                TOYOTA_AREAS[Math.floor(Math.random() * TOYOTA_AREAS.length)];
               const insertion: typeof data_set_detail_buildings.$inferInsert = {
                 reference_date,
                 data_set_result_id: res[0].id,
                 household_code: `1000000${i}`,
-                normalized_address: `東京都港区六本木${i}丁目`,
+                area_group,
+                normalized_address: `愛知県豊田市${area_group}${i}丁目`,
                 household_size: number_of_people_in_household,
                 members_under_15: number_of_people_under_15_years_old,
                 percentage_under_15:
@@ -173,7 +170,7 @@ export const createDummyDataSetResults = (async (
                 registration_date: reference_date,
                 registration_source_info: `登記所${i}`,
                 vacant_house_id: `1000000${i}`,
-                vacant_house_address: `東京都港区六本木${i}丁目`,
+                vacant_house_address: `愛知県豊田市${area_group}${i}丁目`,
                 gml_id: `1000000${i}`,
                 measuredheight: Math.floor(Math.random() * 100),
                 rank: Math.floor(Math.random() * 100),

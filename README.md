@@ -5,7 +5,7 @@
 ### 地図データをプロジェクトに配置する
 
 1. [chubu.pmtiles.zip](https://drive.google.com/file/d/1OKhf6Xsbd2nhwOT_A_LNGowJ3Tv4zpOj/view?usp=drive_link)をダウンロードする
-2. 上記の zip ファイルを解凍して`chubu.pmtiles`を`app/public`配下に配置する
+2. 上記の zip ファイルを解凍して`chubu.pmtiles`を`app/assets`配下に配置する
 
 ## development
 
@@ -44,4 +44,4 @@ npm run make
 
 - `npm run build`もしくは`npm run make --workspace=app`でビルド
 - `npm run test:e2e --workspace`を実行
-- テストは `tests/sample.e2e.ts` をコピーして作成すること。ファイル名は`*.e2e.ts`にすること（詳しくはplaywright.config.tsを見てください）
+- テストは `tests/sample.e2e.ts` をコピーして作成すること。ファイル名は`*.e2e.ts`にすること（詳しくは playwright.config.ts を見てください）
