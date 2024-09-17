@@ -57,6 +57,7 @@ export const SidebarEditResultView = (): JSX.Element => {
       data_set_result_id: dataSetResultId,
       sheet_id: selectedResultSheetId,
     });
+    // TODO: できればリロードせずに更新したい
     refresh();
   };
 
