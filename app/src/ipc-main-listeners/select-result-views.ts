@@ -1,4 +1,4 @@
-import { eq, sql } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import {
   data_set_results,
   result_views,
@@ -21,7 +21,7 @@ export const selectResultViews = (async (
   const all = await db
     .select()
     .from(result_views)
-    .where(sql`${result_views.sheet_id} = ${sheetId}`)
+    .where(eq(result_views.sheet_id, sheetId))
     // 同時にdata_set_resultsも取得する
     .leftJoin(
       data_set_results,
