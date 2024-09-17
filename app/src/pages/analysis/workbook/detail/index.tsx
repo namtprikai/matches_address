@@ -1,5 +1,5 @@
 import { EditFilled } from "@fluentui/react-icons";
-import { useEffect } from "react";
+import { Suspense, useEffect } from "react";
 import { makeStyles, TabList, tokens } from "@fluentui/react-components";
 import { useParams } from "react-router-dom";
 import { Button } from "../../../../components/ui/button";
@@ -85,7 +85,9 @@ export function DetailWorkbook(): JSX.Element {
             className={styles.resultSheets}
             hidden={selectedValue !== item.id}
           >
-            <ResultSheet sheetId={item.id} />
+            <Suspense>
+              <ResultSheet sheetId={item.id} />
+            </Suspense>
           </div>
         ))}
       </div>
