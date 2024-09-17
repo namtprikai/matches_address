@@ -9,7 +9,7 @@ import { formatDate } from "../utils/format-date";
 import { Button } from "./ui/button";
 
 type Props = {
-  dataSetResults: SelectDataSetResult[];
+  dataSetResults: SelectDataSetResult[] | undefined;
   onClickItem?: (dataSetResult: SelectDataSetResult) => void;
 };
 
@@ -40,7 +40,7 @@ export const ListDataSetResults = ({
   const styles = useStyles();
   return (
     <div className={styles.root}>
-      {dataSetResults.map((item) => (
+      {dataSetResults?.map((item) => (
         <Button
           key={item.id}
           appearance="subtle"

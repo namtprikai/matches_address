@@ -48,7 +48,7 @@ export function DetailWorkbook(): JSX.Element {
   const { onTabSelect, selectedValue, setSelectedValue } = useTabs();
 
   useEffect(() => {
-    setSelectedValue(resultSheets[0]?.id);
+    setSelectedValue(resultSheets?.[0]?.id);
   }, [resultSheets, setSelectedValue]);
 
   return (
@@ -71,7 +71,7 @@ export function DetailWorkbook(): JSX.Element {
           onTabSelect={onTabSelect}
           selectedValue={selectedValue}
         >
-          {resultSheets.map((item) => (
+          {resultSheets?.map((item) => (
             <Tab key={item.id} id={item.title || ""} value={item.id}>
               {item.title}
             </Tab>
@@ -79,7 +79,7 @@ export function DetailWorkbook(): JSX.Element {
         </TabList>
       ) : null}
       <div>
-        {resultSheets.map((item) => (
+        {resultSheets?.map((item) => (
           <div
             key={item.id}
             className={styles.resultSheets}

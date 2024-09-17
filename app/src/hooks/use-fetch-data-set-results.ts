@@ -1,22 +1,14 @@
-import { useEffect, useState } from "react";
+import useSWR, { type SWRResponse } from "swr";
 import { type SelectDataSetResult } from "../schema";
 
-export const useFetchDataSetResults = (): {
-  data: SelectDataSetResult[];
-  refetch: () => Promise<void>;
-} => {
-  const [dataSetResults, setDataSetResults] = useState<SelectDataSetResult[]>(
-    [],
-  );
+const fetcher = (): Promise<SelectDataSetResult[]> => {
+  const result = window.ipcRenderer.invoke("selectDataSetResults");
+  return result;
+};
 
-  const fetchDataSetResults = async (): Promise<void> => {
-    const result = await window.ipcRenderer.invoke("selectDataSetResults");
-    setDataSetResults(result);
-  };
-
-  useEffect(() => {
-    fetchDataSetResults().catch(console.error);
-  }, []);
-
-  return { data: dataSetResults, refetch: fetchDataSetResults };
+export const useFetchDataSetResults = (): SWRResponse<
+  SelectDataSetResult[]
+> => {
+  const swr = useSWR("useFetchDataSetResults", fetcher);
+  return swr;
 };

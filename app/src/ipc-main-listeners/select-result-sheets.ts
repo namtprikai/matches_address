@@ -1,4 +1,4 @@
-import { sql } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { result_sheets, type SelectResultSheet } from "../schema";
 import { db } from "../utils/db";
 import { type IpcMainListener } from ".";
@@ -10,8 +10,7 @@ export const selectResultSheets = (async (
   const all = await db
     .select()
     .from(result_sheets)
-    .where(sql`${result_sheets.workbook_id} = ${workbookId}`)
-    .all();
+    .where(eq(result_sheets.workbook_id, workbookId));
 
   return all;
 }) satisfies IpcMainListener;
