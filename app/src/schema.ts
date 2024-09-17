@@ -103,6 +103,7 @@ export const data_set_detail_buildings = sqliteTable(
 
     household_code: text("household_code"),
     normalized_address: text("normalized_address"),
+    area_group: text("area_group"),
 
     /**
      * 基準日
@@ -445,7 +446,7 @@ export const data_set_detail_areas = sqliteTable("data_set_detail_areas", {
    *
    * 文字列：任意の文字列
    */
-  address: text("address"),
+  area_group: text("area_group"),
 
   /**
    * 若年層率
