@@ -128,14 +128,17 @@ export const SidebarEditResultView = (): JSX.Element => {
                 </div>
                 <Button
                   onClick={async () => {
-                    console.info("Look at your editor console!");
-                    await window.ipcRenderer.invoke(
-                      "createDummyDataSetResults",
-                      {
+                    console.info("Start creating dummy data set results!");
+                    await window.ipcRenderer
+                      .invoke("createDummyDataSetResults", {
                         full: true,
                         title: `分析結果(32万件)-${dataSetResults.length + 1}`,
-                      },
-                    );
+                      })
+                      .then(() =>
+                        console.info(
+                          "Finish creating dummy data set results🎉",
+                        ),
+                      );
                   }}
                   size="small"
                 >
@@ -143,14 +146,17 @@ export const SidebarEditResultView = (): JSX.Element => {
                 </Button>
                 <Button
                   onClick={async () => {
-                    console.info("Look at your editor console!");
-                    await window.ipcRenderer.invoke(
-                      "createDummyDataSetResults",
-                      {
+                    console.info("Start creating dummy data set results!");
+                    await window.ipcRenderer
+                      .invoke("createDummyDataSetResults", {
                         full: false,
                         title: `分析結果(3.2万件)-${dataSetResults.length + 1}`,
-                      },
-                    );
+                      })
+                      .then(() =>
+                        console.info(
+                          "Finish creating dummy data set results🎉",
+                        ),
+                      );
                   }}
                   size="small"
                 >
@@ -158,9 +164,16 @@ export const SidebarEditResultView = (): JSX.Element => {
                 </Button>
                 <Button
                   onClick={async () => {
-                    await window.ipcRenderer.invoke("createDataSetResults", {
-                      title: `分析結果(軽量版)-${dataSetResults.length + 1}`,
-                    });
+                    console.info("Start creating dummy data set results!");
+                    await window.ipcRenderer
+                      .invoke("createDataSetResults", {
+                        title: `分析結果(軽量版)-${dataSetResults.length + 1}`,
+                      })
+                      .then(() =>
+                        console.info(
+                          "Finish creating dummy data set results🎉",
+                        ),
+                      );
                   }}
                   size="small"
                 >

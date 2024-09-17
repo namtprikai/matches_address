@@ -16,7 +16,7 @@ if (isDev && !existsSync(dbDirectory)) {
   mkdirSync(dbDirectory, { recursive: true });
 }
 
-export const betterSqlite3 = new Database(dbPath);
+const betterSqlite3 = new Database(dbPath);
 
 // パフォーマンス向上のためWALモードを有効にする
 // ref: https://github.com/WiseLibs/better-sqlite3/blob/master/docs/performance.md
