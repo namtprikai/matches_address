@@ -1,3 +1,8 @@
+import {
+  type AREA_DATASET_COLUMN,
+  type BUILDING_DATASET_COLUMN,
+} from "../config/column-metadata";
+
 /**
  * チャートのカラムが受け付けられる型
  * JavaScriptではdateとstring, floatとintegerを区別できないため、明示する必要がある
@@ -50,8 +55,34 @@ export type TileViewStyle = "pie" | "bar" | "line" | "table" | "map";
 export type TileViewFieldOption = {
   key: string;
   label: string;
-  type: ChartDynamicColumnInput;
-  accept: readonly ChartColumnType[];
   multiple?: boolean;
   grouping: boolean;
-};
+} & (
+  | {
+      type: "select";
+      option: (
+        | {
+            unit: "building";
+            value: BUILDING_DATASET_COLUMN;
+          }
+        | {
+            unit: "area";
+            value: AREA_DATASET_COLUMN;
+          }
+      )[];
+    }
+  | {
+      type: "dropdown";
+      multiple: boolean;
+      option: (
+        | {
+            unit: "building";
+            value: BUILDING_DATASET_COLUMN;
+          }
+        | {
+            unit: "area";
+            value: AREA_DATASET_COLUMN;
+          }
+      )[];
+    }
+);

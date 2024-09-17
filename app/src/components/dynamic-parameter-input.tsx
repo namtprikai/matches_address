@@ -2,9 +2,9 @@ import { type ForwardedRef, forwardRef } from "react";
 import { type DropdownProps } from "@fluentui/react-components";
 import { type TileViewFieldOption } from "../@types/charts";
 import {
-  DATA_SET_DETAIL_AREA_COLUMN_CONFIG,
-  DATA_SET_DETAIL_BUILDING_COLUMN_CONFIG,
-} from "../config/column-list";
+  AREA_DATASET_COLUMN_METADATA,
+  BUILDING_DATASET_COLUMN_METADATA,
+} from "../config/column-metadata";
 import { Select } from "./ui/select";
 import { DynamicColumnOptions } from "./dynamic-column-options";
 import { Field } from "./ui/field";
@@ -24,12 +24,12 @@ type Props = {
       type: "dropdown";
       onChange: DropdownProps["onOptionSelect"];
       multiple: boolean;
-      fieldOption: Omit<TileViewFieldOption, "type"> & { type: "dropdowwn" };
+      fieldOption: Omit<TileViewFieldOption, "type"> & { type: "dropdown" };
     }
   | {
       type: "input";
       onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-      fileldOption: Omit<TileViewFieldOption, "type"> & { type: "input" };
+      fieldOption: Omit<TileViewFieldOption, "type"> & { type: "input" };
     }
 );
 
@@ -70,12 +70,12 @@ export const DynamicParameterInput = forwardRef<
           ? props.value
               .split(",")
               // @ts-expect-error TODO: この辺りの型定義は別途修正が必要
-              .map((v) => DATA_SET_DETAIL_BUILDING_COLUMN_CONFIG[v].label)
+              .map((v) => BUILDING_DATASET_COLUMN_METADATA[v].label)
               .join(",")
           : props.value
               .split(",")
               // @ts-expect-error TODO: この辺りの型定義は別途修正が必要
-              .map((v) => DATA_SET_DETAIL_AREA_COLUMN_CONFIG[v].label)
+              .map((v) => AREA_DATASET_COLUMN_METADATA[v].label)
               .join(",")
         : "";
 

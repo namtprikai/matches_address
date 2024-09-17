@@ -93,7 +93,6 @@ export const EditResultViewFileds = (): JSX.Element => {
                 <DynamicParameterInput
                   type={fieldOption.type}
                   {...register(`parameters.${index}.value`)}
-                  // @ts-expect-error TODO: この辺りの型定義は別途修正が必要
                   fieldOption={fieldOption}
                   onChange={(e) => {
                     update(index, {
@@ -103,7 +102,13 @@ export const EditResultViewFileds = (): JSX.Element => {
                     });
                   }}
                   unit={unit}
-                  value={field.value}
+                  value={
+                    typeof field.value === "number"
+                      ? field.value.toString()
+                      : typeof field.value === "string"
+                        ? field.value
+                        : ""
+                  }
                 />
                 {fieldOption?.grouping && (
                   <EditorGroupingForm
@@ -127,7 +132,6 @@ export const EditResultViewFileds = (): JSX.Element => {
                 type={fieldOption.type}
                 {...register(`parameters.${index}.value`)}
                 key={field.id}
-                // @ts-expect-error TODO: この辺りの型定義は別途修正が必要
                 fieldOption={fieldOption}
                 multiple={fieldOption.multiple ?? false}
                 onChange={(_, data) => {
@@ -153,7 +157,13 @@ export const EditResultViewFileds = (): JSX.Element => {
                   });
                 }}
                 unit={unit}
-                value={field.value}
+                value={
+                  typeof field.value === "number"
+                    ? field.value.toString()
+                    : typeof field.value === "string"
+                      ? field.value
+                      : ""
+                }
               />
             );
           }

@@ -1,22 +1,16 @@
 import { Option } from "@fluentui/react-components";
 import {
   type ChartDynamicColumnInput,
-  type ChartColumnType,
+  type TileViewFieldOption,
 } from "../@types/charts";
 import {
-  AREA_DATASET_COLUMN,
-  DATA_SET_DETAIL_AREA_COLUMN_CONFIG,
-  DATA_SET_DETAIL_BUILDING_COLUMN,
-  DATA_SET_DETAIL_BUILDING_COLUMN_CONFIG,
-} from "../config/column-list";
+  AREA_DATASET_COLUMN_METADATA,
+  BUILDING_DATASET_COLUMN_METADATA,
+} from "../config/column-metadata";
 
 type Props = {
   unit: "building" | "area";
-  fieldOption: {
-    key: string;
-    label: string;
-    accept: readonly ChartColumnType[];
-  };
+  fieldOption: TileViewFieldOption;
   type: ChartDynamicColumnInput;
 };
 
@@ -26,68 +20,60 @@ export const DynamicColumnOptions = ({
   type,
 }: Props): JSX.Element[] | null => {
   if (unit === "building") {
-    return DATA_SET_DETAIL_BUILDING_COLUMN.filter((column) => {
-      const matchedType = fieldOption.accept.filter((type) => {
-        return DATA_SET_DETAIL_BUILDING_COLUMN_CONFIG[column].type === type;
-      });
+    const columns = fieldOption.option.filter((option) => {
+      return option.unit === "building";
+    });
 
-      if (matchedType.length === 0) return false;
+    return columns.map(({ value: column, unit }) => {
+      const columnMetadata =
+        column in BUILDING_DATASET_COLUMN_METADATA
+          ? // @ts-expect-error TODO: この辺りの型定義は別途修正が必要
+            BUILDING_DATASET_COLUMN_METADATA[column]
+          : null;
 
-      return true;
-    }).map((column) => {
       if (type === "select") {
         return (
           <option key={column} value={column}>
-            {DATA_SET_DETAIL_BUILDING_COLUMN_CONFIG[column].label}
+            {columnMetadata.label}
           </option>
         );
       }
       if (type === "dropdown") {
         return (
-          <Option
-            key={column}
-            text={DATA_SET_DETAIL_BUILDING_COLUMN_CONFIG[column].label}
-            value={column}
-          >
-            {DATA_SET_DETAIL_BUILDING_COLUMN_CONFIG[column].label}
+          <Option key={column} text={columnMetadata.label} value={column}>
+            {columnMetadata.label}
+          </Option>
+        );
+      }
+      return <></>;
+    });
+  } else {
+    const columns = fieldOption.option.filter((option) => {
+      return option.unit === "area";
+    });
+
+    return columns.map(({ value: column }) => {
+      const columnMetadata =
+        column in AREA_DATASET_COLUMN_METADATA
+          ? // @ts-expect-error TODO: この辺りの型定義は別途修正が必要
+            AREA_DATASET_COLUMN_METADATA[column]
+          : null;
+
+      if (type === "select") {
+        return (
+          <option key={column} value={column}>
+            {columnMetadata.label}
+          </option>
+        );
+      }
+      if (type === "dropdown") {
+        return (
+          <Option key={column} text={columnMetadata.label} value={column}>
+            {columnMetadata.label}
           </Option>
         );
       }
       return <></>;
     });
   }
-
-  if (unit === "area") {
-    return AREA_DATASET_COLUMN.filter((column) => {
-      const matchedType = fieldOption.accept.filter((type) => {
-        return DATA_SET_DETAIL_AREA_COLUMN_CONFIG[column].type === type;
-      });
-
-      if (matchedType.length === 0) return false;
-
-      return true;
-    }).map((column) => {
-      if (type === "select") {
-        return (
-          <option key={column} value={column}>
-            {DATA_SET_DETAIL_AREA_COLUMN_CONFIG[column].label}
-          </option>
-        );
-      }
-      if (type === "dropdown") {
-        return (
-          <Option
-            key={column}
-            text={DATA_SET_DETAIL_AREA_COLUMN_CONFIG[column].label}
-            value={column}
-          >
-            {DATA_SET_DETAIL_AREA_COLUMN_CONFIG[column].label}
-          </Option>
-        );
-      }
-      return <></>;
-    });
-  }
-
-  return null;
 };

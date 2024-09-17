@@ -1,8 +1,4 @@
-import { type TileViewStyle } from "../@types/charts";
-import {
-  type SelectDataSetDetailArea,
-  type SelectDataSetDetailBuilding,
-} from "../schema";
+import { type TileViewFieldOption, type TileViewStyle } from "../@types/charts";
 
 /**
  * 各チャートのパラーメーターやグルーピング可能かどうかなどの設定をハードコードで定義している
@@ -23,6 +19,7 @@ export const TILE_VIEW_CONFIG = {
           { unit: "building", value: "household_size" },
           { unit: "building", value: "members_under_15" },
           { unit: "building", value: "members_15_to_64" },
+          { unit: "building", value: "percentage_under_15" },
           { unit: "building", value: "members_over_65" },
           { unit: "building", value: "percentage_15_to_64" },
           { unit: "building", value: "percentage_over_65" },
@@ -49,6 +46,7 @@ export const TILE_VIEW_CONFIG = {
           { unit: "building", value: "members_under_15" },
           { unit: "building", value: "members_15_to_64" },
           { unit: "building", value: "members_over_65" },
+          { unit: "building", value: "percentage_under_15" },
           { unit: "building", value: "percentage_15_to_64" },
           { unit: "building", value: "percentage_over_65" },
           { unit: "building", value: "duration" },
@@ -72,7 +70,7 @@ export const TILE_VIEW_CONFIG = {
         key: "xAxis",
         label: "X軸",
         type: "select",
-        option: [{ unit: "building", value: "normalized_address" }],
+        option: [{ unit: "building", value: "area_group" }],
         grouping: true,
       },
       {
@@ -145,39 +143,6 @@ export const TILE_VIEW_CONFIG = {
   },
 } satisfies {
   [k in TileViewStyle]: {
-    fields: ({
-      key: string;
-      label: string;
-      multiple?: boolean;
-      grouping: boolean;
-    } & (
-      | {
-          type: "select";
-          option: (
-            | {
-                unit: "building";
-                value: keyof SelectDataSetDetailBuilding;
-              }
-            | {
-                unit: "area";
-                value: keyof SelectDataSetDetailArea;
-              }
-          )[];
-        }
-      | {
-          type: "dropdown";
-          multiple: boolean;
-          option: (
-            | {
-                unit: "building";
-                value: keyof SelectDataSetDetailBuilding;
-              }
-            | {
-                unit: "area";
-                value: keyof SelectDataSetDetailArea;
-              }
-          )[];
-        }
-    ))[];
+    fields: TileViewFieldOption[];
   };
 };

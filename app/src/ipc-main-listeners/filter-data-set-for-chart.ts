@@ -1,10 +1,5 @@
 import { and, eq, gte, lte, sql } from "drizzle-orm";
-import {
-  data_set_detail_areas,
-  data_set_detail_buildings,
-  type SelectDataSetDetailArea,
-  type SelectDataSetDetailBuilding,
-} from "../schema";
+import { data_set_detail_areas, data_set_detail_buildings } from "../schema";
 import { db } from "../utils/db";
 import { type ChartProps } from "../@types/charts";
 import { formatChartValue } from "../utils/format-chart-value";
@@ -12,6 +7,12 @@ import {
   subQueryFromConditions,
   type GroupingCondition,
 } from "../utils/subquery-grouping";
+import {
+  type AREA_DATASET_COLUMN,
+  AREA_DATASET_COLUMN_METADATA,
+  type BUILDING_DATASET_COLUMN,
+  BUILDING_DATASET_COLUMN_METADATA,
+} from "../config/column-metadata";
 import { type IpcMainListener } from ".";
 
 export type FilterDataSetForChartResponse = ChartProps;
@@ -36,13 +37,13 @@ export const filterDataSetForChart = ((
   } & (
     | {
         type: "building";
-        x: keyof SelectDataSetDetailBuilding;
-        y: keyof SelectDataSetDetailBuilding;
+        x: BUILDING_DATASET_COLUMN;
+        y: BUILDING_DATASET_COLUMN;
       }
     | {
         type: "area";
-        x: keyof SelectDataSetDetailArea;
-        y: keyof SelectDataSetDetailArea;
+        x: AREA_DATASET_COLUMN;
+        y: AREA_DATASET_COLUMN;
       }
   ),
 ): FilterDataSetForChartResponse => {
@@ -102,32 +103,29 @@ export const filterDataSetForChart = ((
         .all();
     };
     const all = getAll();
-    // @ts-expect-error TODO: この辺りの型定義は別途修正が必要
-    const percentage = DATA_SET_DETAIL_AREA_COLUMN_CONFIG[y].percentage;
+
+    const columnYMetadata = AREA_DATASET_COLUMN_METADATA[y];
+    const columnXMetadata = AREA_DATASET_COLUMN_METADATA[x];
+
+    const percentage =
+      "percentage" in columnYMetadata ? columnYMetadata.percentage : false;
 
     return {
       data: all.map((row) => {
         return {
-          x: groupingConditions
-            ? (row[x + "_group"] as string)
-            : (row[x] as string),
-          // TODO: この辺りの型定義は別途修正が必要
+          x: groupingConditions ? row[x + "_group"] : (row[x] as string),
           y: formatChartValue(row[y] ?? "", percentage) as number,
         };
       }),
       xAxisColumn: {
         type: "string",
-        // @ts-expect-error TODO: この辺りの型定義は別途修正が必要
-        unit: DATA_SET_DETAIL_AREA_COLUMN_CONFIG[x].unit,
-        // @ts-expect-error TODO: この辺りの型定義は別途修正が必要
-        label: DATA_SET_DETAIL_AREA_COLUMN_CONFIG[x].label,
+        unit: columnXMetadata.unit,
+        label: columnXMetadata.label,
       },
       yAxisColumn: {
         type: "number",
-        // @ts-expect-error TODO: この辺りの型定義は別途修正が必要
-        unit: DATA_SET_DETAIL_AREA_COLUMN_CONFIG[y].unit,
-        // @ts-expect-error TODO: この辺りの型定義は別途修正が必要
-        label: DATA_SET_DETAIL_AREA_COLUMN_CONFIG[y].label,
+        unit: columnYMetadata.unit,
+        label: columnYMetadata.label,
       },
     };
   }
@@ -188,8 +186,11 @@ export const filterDataSetForChart = ((
     };
     const all = getAll();
 
-    // @ts-expect-error TODO: この辺りの型定義は別途修正が必要
-    const percentage = DATA_SET_DETAIL_BUILDING_COLUMN_CONFIG[y].percentage;
+    const columnYMetadata = BUILDING_DATASET_COLUMN_METADATA[y];
+    const columnXMetadata = BUILDING_DATASET_COLUMN_METADATA[x];
+
+    const percentage =
+      "percentage" in columnYMetadata ? columnYMetadata.percentage : false;
 
     return {
       data: all.map((row) => {
@@ -204,17 +205,13 @@ export const filterDataSetForChart = ((
       }),
       xAxisColumn: {
         type: "string",
-        // @ts-expect-error TODO: この辺りの型定義は別途修正が必要
-        unit: DATA_SET_DETAIL_BUILDING_COLUMN_CONFIG[x].unit,
-        // @ts-expect-error TODO: この辺りの型定義は別途修正が必要
-        label: DATA_SET_DETAIL_BUILDING_COLUMN_CONFIG[x].label,
+        unit: columnXMetadata.unit,
+        label: columnXMetadata.label,
       },
       yAxisColumn: {
         type: "number",
-        // @ts-expect-error TODO: この辺りの型定義は別途修正が必要
-        unit: DATA_SET_DETAIL_BUILDING_COLUMN_CONFIG[y].unit,
-        // @ts-expect-error TODO: この辺りの型定義は別途修正が必要
-        label: DATA_SET_DETAIL_BUILDING_COLUMN_CONFIG[y].label,
+        unit: columnYMetadata.unit,
+        label: columnYMetadata.label,
       },
     };
   }
