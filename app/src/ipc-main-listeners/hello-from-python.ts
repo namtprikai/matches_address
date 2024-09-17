@@ -1,6 +1,7 @@
 import { getErrorMessage } from "../utils/get-error-message";
 import { binaryPath, execFileAsync, type IpcMainListener } from ".";
 
+// TODO: Pythonスクリプトを呼び出すサンプル。いずれ削除する
 export const helloFromPython = (async (
   _: unknown,
   name: string,

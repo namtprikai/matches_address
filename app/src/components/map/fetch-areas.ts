@@ -9,12 +9,12 @@ import { db } from "../../utils/db";
 export const fetchAreasInBatches = ((
   _: unknown,
   {
-    dataSetResultsId,
+    dataSetResultId,
     referenceDate,
     batchSize,
     lastId,
   }: {
-    dataSetResultsId: number;
+    dataSetResultId: number;
     referenceDate: string | undefined;
     batchSize: number;
     lastId?: number;
@@ -26,7 +26,7 @@ export const fetchAreasInBatches = ((
       .from(data_set_detail_areas)
       .where(
         and(
-          eq(data_set_detail_areas.data_set_result_id, dataSetResultsId),
+          eq(data_set_detail_areas.data_set_result_id, dataSetResultId),
           referenceDate
             ? eq(data_set_detail_areas.reference_date, referenceDate)
             : undefined,

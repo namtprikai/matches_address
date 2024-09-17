@@ -1,16 +1,16 @@
-import { sql } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { type SelectWorkbook, workbooks } from "../schema";
 import { db } from "../utils/db";
 import { type IpcMainListener } from ".";
 
-export const selectWorkbook = ((
+export const selectWorkbook = (async (
   _: unknown,
   { id }: { id: number },
-): SelectWorkbook | undefined => {
-  const data = db
+): Promise<SelectWorkbook | undefined> => {
+  const data = await db
     .select()
     .from(workbooks)
-    .where(sql`${workbooks.id} = ${id}`)
+    .where(eq(workbooks.id, id))
     .get();
 
   return data;

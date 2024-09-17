@@ -8,7 +8,7 @@ import {
   removeProtocol,
   type StyleSpecification,
 } from "maplibre-gl";
-import { type FileSource, PMTiles, Protocol, type Source } from "pmtiles";
+import { type FileSource, PMTiles, Protocol } from "pmtiles";
 import { makeStyles } from "@fluentui/react-components";
 import { type Polygon } from "geojson";
 import { type VacancyLevels } from "../vacancy-level-checkbox";
@@ -28,14 +28,14 @@ const useMapComponentStyles = makeStyles({
 });
 
 interface Props {
-  dataSetResultsId: number;
+  dataSetResultId: number;
   type: "building" | "area";
   selectedDate: string | undefined;
   vacancyLevels: VacancyLevels;
 }
 
 export function MapComponent({
-  dataSetResultsId,
+  dataSetResultId,
   type,
   selectedDate,
   vacancyLevels,
@@ -90,16 +90,16 @@ export function MapComponent({
     function updateMapEffect() {
       if (!mapInstance || !selectedDate) return;
       let ignore = false;
+      const batchSize = 1000;
 
       switch (type) {
         case "building":
           {
             const setBuildingMapCenter = async (): Promise<void> => {
-              void window.ipcRenderer.invoke("getChubuPmtiles");
               const result = await window.ipcRenderer.invoke(
                 "fetchBuildingsInBatches",
                 {
-                  dataSetResultsId,
+                  dataSetResultId,
                   referenceDate: selectedDate,
                   batchSize: 1,
                 },
@@ -111,16 +111,15 @@ export function MapComponent({
               const coordinates: Polygon["coordinates"] = JSON.parse(
                 firstItem.geometry,
               );
-              const center: [number, number] =
-                coordinates[0][0][0] && coordinates[0][0][1]
-                  ? [coordinates[0][0][0], coordinates[0][0][1]]
-                  : [137.120435, 34.990565];
+              const center: [number, number] = [
+                coordinates[0][0][0],
+                coordinates[0][0][1],
+              ];
 
               mapInstance.setCenter(center);
             };
 
             const addBuildingLayers = async (): Promise<void> => {
-              const batchSize = 500;
               let lastId = 0;
 
               try {
@@ -131,7 +130,7 @@ export function MapComponent({
                   const batch = await window.ipcRenderer.invoke(
                     "fetchBuildingsInBatches",
                     {
-                      dataSetResultsId,
+                      dataSetResultId,
                       referenceDate: selectedDate,
                       batchSize,
                       lastId,
@@ -170,6 +169,7 @@ export function MapComponent({
                   }
 
                   lastId = batch[batch.length - 1].id;
+                  await new Promise((resolve) => setTimeout(resolve, 10));
                 }
               } catch (error) {
                 console.error("Error fetching data: ", error);
@@ -187,7 +187,7 @@ export function MapComponent({
               const result = await window.ipcRenderer.invoke(
                 "fetchAreasInBatches",
                 {
-                  dataSetResultsId,
+                  dataSetResultId,
                   referenceDate: selectedDate,
                   batchSize: 1,
                 },
@@ -199,16 +199,15 @@ export function MapComponent({
               const coordinates: Polygon["coordinates"] = JSON.parse(
                 firstItem.geometry,
               );
-              const center: [number, number] =
-                coordinates[0][0][0] && coordinates[0][0][1]
-                  ? [coordinates[0][0][0], coordinates[0][0][1]]
-                  : [137.120435, 34.990565];
+              const center: [number, number] = [
+                coordinates[0][0][0],
+                coordinates[0][0][1],
+              ];
 
               mapInstance.setCenter(center);
             };
 
             const addAreaLayers = async (): Promise<void> => {
-              const batchSize = 500;
               let lastId = 0;
 
               try {
@@ -219,7 +218,7 @@ export function MapComponent({
                   const batch = await window.ipcRenderer.invoke(
                     "fetchAreasInBatches",
                     {
-                      dataSetResultsId,
+                      dataSetResultId,
                       referenceDate: selectedDate,
                       batchSize,
                       lastId,
@@ -275,7 +274,7 @@ export function MapComponent({
         });
       };
     },
-    [dataSetResultsId, mapInstance, selectedDate, type],
+    [dataSetResultId, mapInstance, selectedDate, type],
   );
 
   useEffect(

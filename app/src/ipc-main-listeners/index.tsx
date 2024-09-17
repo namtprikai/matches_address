@@ -3,10 +3,8 @@ import { execFile } from "child_process";
 import path from "path";
 import { promisify } from "util";
 import { fetchBuildingsInBatches } from "../components/map/fetch-buildings-in-batches";
-import { fetchReferenceDates } from "../components/map/fetch-reference-dates";
 import { fetchAreasInBatches } from "../components/map/fetch-areas";
-import { getNames } from "./get-names";
-import { saveName } from "./save-name";
+import { fetchReferenceDates } from "./fetch-reference-dates";
 import { helloFromPython } from "./hello-from-python";
 import { saveNameFromPython } from "./save-name-from-python";
 import { createWorkbooks } from "./create-workbooks";
@@ -26,14 +24,10 @@ import { selectResultView } from "./select-result-view";
 import { filterDataSetForTable } from "./filter-data-set-for-table";
 import { deleteResultView } from "./delete-result-view";
 import { deleteResultSheet } from "./delete-result-sheet";
-import { readDataSetArea } from "./read-data-set-area";
-import { readDataSetYear } from "./read-data-set-year";
 import { createDummyDataSetResults } from "./create-dummy-data-set-results";
 import { getChubuPmtiles } from "./get-chubu-pmtiles";
 
 export const ipcMainListeners = {
-  getNames,
-  saveName,
   helloFromPython,
   saveNameFromPython,
   createWorkbooks,
@@ -53,8 +47,6 @@ export const ipcMainListeners = {
   deleteResultView,
   filterDataSetForChart,
   filterDataSetForTable,
-  readDataSetArea,
-  readDataSetYear,
   fetchBuildingsInBatches,
   fetchReferenceDates,
   createDummyDataSetResults,
