@@ -124,7 +124,7 @@ export const EditorGroupingForm = ({
     label: "",
   };
 
-  const { watch, control, register, handleSubmit, formState } = useForm({
+  const { control, register } = useForm({
     resolver: zodResolver(schema),
     defaultValues: {
       conditions: parameters,
@@ -182,7 +182,7 @@ export const EditorGroupingForm = ({
 
   return (
     <Dialog
-      onOpenChange={(e) => {
+      onOpenChange={() => {
         setOpen((prev) => !prev);
       }}
       open={open}
