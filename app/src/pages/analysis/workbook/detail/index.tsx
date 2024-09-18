@@ -167,9 +167,9 @@ function DeleteWorkbookButton({
               </DialogTrigger>
             }
           >
-            タイルを削除しますか？
+            ワークブックを削除しますか？
           </DialogTitle>
-          <DialogContent>削除したタイルはもとに戻せません</DialogContent>
+          <DialogContent>削除したワークブックはもとに戻せません</DialogContent>
           <DialogActions position="start">
             <Button>キャンセル</Button>
           </DialogActions>
