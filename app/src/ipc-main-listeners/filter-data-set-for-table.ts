@@ -19,6 +19,8 @@ export type FilterDataSetForTableArgs = {
     startValue: string | undefined;
     endValue: string | undefined;
   };
+  limit: number;
+  offset: number;
 } & (
   | { type: "building"; columns: BUILDING_DATASET_COLUMN[] }
   | {
@@ -29,7 +31,14 @@ export type FilterDataSetForTableArgs = {
 
 export const filterDataSetForTable = (async (
   _: unknown,
-  { resultId, type, columns, filterByYear }: FilterDataSetForTableArgs,
+  {
+    resultId,
+    type,
+    columns,
+    filterByYear,
+    limit,
+    offset,
+  }: FilterDataSetForTableArgs,
 ): Promise<FilterDataSetForTableResponse> => {
   if (type === "building") {
     const all = await db
@@ -52,7 +61,8 @@ export const filterDataSetForTable = (async (
             : undefined,
         ),
       )
-      .limit(100)
+      .limit(limit)
+      .offset(offset)
       .all();
 
     return {
@@ -99,7 +109,8 @@ export const filterDataSetForTable = (async (
             : undefined,
         ),
       )
-      .limit(100)
+      .limit(limit)
+      .offset(offset)
       .all();
 
     return {
