@@ -43,7 +43,7 @@ export const EditResultViewFilterFields = (): JSX.Element => {
         dataSetResultId: resultView.data_set_result_id,
       });
 
-      setYearItems(res);
+      setYearItems(res.map((r) => new Date(r).getFullYear().toString()));
     })().catch(console.error);
   }, [resultView]);
 

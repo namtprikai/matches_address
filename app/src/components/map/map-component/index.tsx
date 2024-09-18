@@ -19,8 +19,8 @@ import { addBuildingLayer } from "./add-building-layer";
 import { type BuildingProperties } from "./building-popup";
 import { addAreaLayer } from "./add-area-layer";
 
-export const VACANCY_RATE_HIGH = 0.8;
-export const VACANCY_RATE_MEDIUM = 0.3;
+export const VACANCY_RATE_HIGH = 80;
+export const VACANCY_RATE_MEDIUM = 30;
 
 const useMapComponentStyles = makeStyles({
   map: {
@@ -301,17 +301,25 @@ export function MapComponent({
         if (!mapInstance.getLayer(layerId)) return;
         const filters = [];
         if (vacancyLevels.low) {
-          filters.push(["<", ["get", "predicted_probability"], 0.3]);
+          filters.push([
+            "<",
+            ["get", "predicted_probability"],
+            VACANCY_RATE_MEDIUM,
+          ]);
         }
         if (vacancyLevels.medium) {
           filters.push([
             "all",
-            [">=", ["get", "predicted_probability"], 0.3],
-            ["<", ["get", "predicted_probability"], 0.8],
+            [">=", ["get", "predicted_probability"], VACANCY_RATE_MEDIUM],
+            ["<", ["get", "predicted_probability"], VACANCY_RATE_HIGH],
           ]);
         }
         if (vacancyLevels.high) {
-          filters.push([">=", ["get", "predicted_probability"], 0.8]);
+          filters.push([
+            ">=",
+            ["get", "predicted_probability"],
+            VACANCY_RATE_HIGH,
+          ]);
         }
 
         const mapLibreFilter = ["any", ...filters] as FilterSpecification;
