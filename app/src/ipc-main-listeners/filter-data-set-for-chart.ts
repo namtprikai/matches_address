@@ -16,6 +16,7 @@ export type FilterDataSetForChartResponse = ChartProps;
 export type FilterDataSetForChartArgs = {
   resultId: number;
   groupingConditions?: GroupingCondition[];
+  groupingCalc?: "avg" | "sum";
   filterByYear: {
     startValue: string | undefined;
     endValue: string | undefined;
@@ -43,6 +44,7 @@ export const filterDataSetForChart = ((
     y,
     groupingConditions,
     filterByYear,
+    groupingCalc: cal = "avg",
   }: FilterDataSetForChartArgs,
 ): FilterDataSetForChartResponse => {
   if (type === "area") {
@@ -84,7 +86,7 @@ export const filterDataSetForChart = ((
         return db
           .select({
             [groupLabel]: sql.raw(`${groupLabel}`),
-            [y]: sql.raw(`avg(${y}) as ${y}`),
+            [y]: sql.raw(`${cal}(${y}) as ${y}`),
           })
           .from(subQuery.as("groups"))
           .groupBy(sql.raw(`${groupLabel}`))
@@ -175,7 +177,7 @@ export const filterDataSetForChart = ((
         return db
           .select({
             [groupLabel]: sql.raw(`${groupLabel}`),
-            [y]: sql.raw(`avg(${y}) as ${y}`),
+            [y]: sql.raw(`${cal}(${y}) as ${y}`),
           })
           .from(subQuery.as("groups"))
           .groupBy(sql.raw(`${groupLabel}`))

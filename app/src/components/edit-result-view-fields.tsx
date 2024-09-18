@@ -1,5 +1,6 @@
 import { useFieldArray, useFormContext } from "react-hook-form";
 import { Fragment } from "react/jsx-runtime";
+import { useEffect } from "react";
 import { result_views, type SelectResultView } from "../schema";
 import { LanguageMap } from "../lang";
 import { TILE_VIEW_CONFIG } from "../config/tile-view-config";
@@ -52,6 +53,10 @@ export const EditResultViewFileds = (): JSX.Element => {
   const columnFields = fields.filter((field) => {
     return field.type === "column";
   });
+
+  const groupCalc = fields.find(
+    (f) => f.key === "group_calc" && f.type === "group_option",
+  );
 
   return (
     <>
@@ -112,6 +117,13 @@ export const EditResultViewFileds = (): JSX.Element => {
                   {...register(`parameters.${index}.value`)}
                   fieldOption={fieldOption}
                   onChange={(e) => {
+                    if (field.key === "label" || field.key === "xAxis") {
+                      const parametersWithoutGroup = fields.filter((f) => {
+                        return f.type !== "group";
+                      });
+                      replace(parametersWithoutGroup);
+                    }
+
                     update(index, {
                       key: field.key,
                       value: e.target.value,
@@ -137,6 +149,29 @@ export const EditResultViewFileds = (): JSX.Element => {
                     parameters={groupingFields}
                   />
                 )}
+                {fieldOption.grouping === false &&
+                  groupingFields.length > 0 && (
+                    <Select
+                      onChange={(e) => {
+                        const prevOtherParameters = fields.filter((f) => {
+                          return f.type !== "group_option";
+                        });
+                        const newParameters = [
+                          ...prevOtherParameters,
+                          {
+                            key: "group_calc",
+                            value: e.target.value as "avg" | "sum",
+                            type: "group_option",
+                          },
+                        ] as SelectResultView["parameters"];
+                        replace(newParameters);
+                      }}
+                      value={groupCalc?.value}
+                    >
+                      <option value="avg">平均</option>
+                      <option value="sum">合計</option>
+                    </Select>
+                  )}
               </Fragment>
             );
           }

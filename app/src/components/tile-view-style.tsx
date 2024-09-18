@@ -32,6 +32,10 @@ export const TileViewStyle = ({
       (p) => p.key === "year" && p.type === "filter",
     );
 
+    const groupingCalc = parameters.find(
+      (p) => p.key === "group_calc" && p.type === "group_option",
+    );
+
     if (!xAxis || !yAxis) {
       return <div>パラメーターの値を正しく設定してください</div>;
     }
@@ -44,6 +48,7 @@ export const TileViewStyle = ({
               startValue: yearParameter?.value?.start,
               endValue: yearParameter?.value?.end,
             }}
+            groupingCalc={groupingCalc?.value as "avg" | "sum"}
             groupingConditions={groupingParameters.map((p) => p.value)}
             resultId={resultId}
             type={type}
@@ -61,6 +66,7 @@ export const TileViewStyle = ({
             startValue: yearParameter?.value?.start,
             endValue: yearParameter?.value?.end,
           }}
+          groupingCalc={groupingCalc?.value as "avg" | "sum"}
           groupingConditions={groupingParameters.map((p) => p.value)}
           resultId={resultId}
           type={type}
@@ -81,6 +87,10 @@ export const TileViewStyle = ({
       (p) => p.key === "year" && p.type === "filter",
     );
 
+    const groupingCalc = parameters.find(
+      (p) => p.key === "group_calc" && p.type === "group_option",
+    );
+
     if (!xAxis || !yAxis) {
       return <div>パラメーターの値を正しく設定してください</div>;
     }
@@ -93,6 +103,7 @@ export const TileViewStyle = ({
               startValue: yearParameter?.value?.start,
               endValue: yearParameter?.value?.end,
             }}
+            groupingCalc={groupingCalc?.value as "avg" | "sum"}
             groupingConditions={groupingParameters.flatMap((p) => p.value)}
             resultId={resultId}
             type={type}
@@ -110,6 +121,7 @@ export const TileViewStyle = ({
             startValue: yearParameter?.value?.start,
             endValue: yearParameter?.value?.end,
           }}
+          groupingCalc={groupingCalc?.value as "avg" | "sum"}
           groupingConditions={groupingParameters.flatMap((p) => p.value)}
           resultId={resultId}
           type={type}
@@ -134,6 +146,10 @@ export const TileViewStyle = ({
       (p) => p.key === "year" && p.type === "filter",
     );
 
+    const groupingCalc = parameters.find(
+      (p) => p.key === "group_calc" && p.type === "group_option",
+    );
+
     if (!xAxis || !yAxis) {
       return <div>パラメーターの値を正しく設定してください</div>;
     }
@@ -146,6 +162,7 @@ export const TileViewStyle = ({
               startValue: yearParameter?.value?.start,
               endValue: yearParameter?.value?.end,
             }}
+            groupingCalc={groupingCalc?.value as "avg" | "sum"}
             groupingConditions={groupingParameters.flatMap((p) => p.value)}
             resultId={resultId}
             type={type}
@@ -163,6 +180,7 @@ export const TileViewStyle = ({
             startValue: yearParameter?.value?.start,
             endValue: yearParameter?.value?.end,
           }}
+          groupingCalc={groupingCalc?.value as "avg" | "sum"}
           groupingConditions={groupingParameters.flatMap((p) => p.value)}
           resultId={resultId}
           type={type}
