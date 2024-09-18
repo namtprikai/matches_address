@@ -67,6 +67,7 @@ export const EditResultViewFileds = (): JSX.Element => {
         <Field label="スタイル">
           <Select
             {...register("style")}
+            defaultValue={style ?? "map"}
             onChange={(e) => {
               const value = e.target.value as keyof SelectResultView["style"];
               // styleに合わせてparameterをリセット
@@ -164,6 +165,7 @@ export const EditResultViewFileds = (): JSX.Element => {
         <Field label="集計単位">
           <Select
             {...register("unit")}
+            defaultValue={unit ?? "building"}
             onChange={(e) => {
               // styleに合わせてparameterをリセット
               resetParametersByStyle(style);
