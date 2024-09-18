@@ -2,15 +2,15 @@ import { eq } from "drizzle-orm";
 import {
   data_set_results,
   result_views,
+  type SelectResultView,
   type SelectDataSetResult,
 } from "../schema";
 import { db } from "../utils/db";
-import { type SelectResultViewResponse } from "./select-result-view";
 import { type IpcMainListener } from ".";
 
 // Left Join のため、 data_set_results が null の場合がある
 type Result = {
-  result_views: SelectResultViewResponse;
+  result_views: SelectResultView;
   data_set_results: SelectDataSetResult | null;
 };
 
