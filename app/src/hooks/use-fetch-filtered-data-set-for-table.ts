@@ -21,12 +21,13 @@ export const useFetchFilterDataSetForTable = (
 
   const fetchFilteredDataSetDetailForTable =
     useCallback(async (): Promise<void> => {
-      const result = await window.ipcRenderer.invoke(
-        "filterDataSetForTable",
-        props,
-      );
+      const result = await window.ipcRenderer.invoke("filterDataSetForTable", {
+        ...props,
+        limit: pagenation.limitPerPage,
+        offset: pagenation.limitPerPage * (pagenation.page - 1),
+      });
       setTableProps(result);
-    }, [props]);
+    }, [pagenation.limitPerPage, pagenation.page, props]);
 
   useEffect(() => {
     fetchFilteredDataSetDetailForTable().catch(console.error);
