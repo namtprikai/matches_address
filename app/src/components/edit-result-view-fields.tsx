@@ -14,7 +14,7 @@ import { DynamicParameterInput } from "./dynamic-parameter-input";
 import { EditorGroupingForm } from "./editor-grouping-form";
 
 export const EditResultViewFileds = (): JSX.Element => {
-  const { register, watch, control, setValue, formState } =
+  const { register, watch, control, setValue } =
     useFormContext<EditResultViewFormType>();
 
   const style = watch("style");
@@ -48,9 +48,6 @@ export const EditResultViewFileds = (): JSX.Element => {
     return field.type === "column";
   });
 
-  console.log(fields);
-  console.log(formState.errors);
-
   return (
     <>
       <Field label="データセット">
@@ -67,7 +64,6 @@ export const EditResultViewFileds = (): JSX.Element => {
         <Field label="スタイル">
           <Select
             {...register("style")}
-            defaultValue={style ?? "map"}
             onChange={(e) => {
               const value = e.target.value as keyof SelectResultView["style"];
               // styleに合わせてparameterをリセット
@@ -165,7 +161,6 @@ export const EditResultViewFileds = (): JSX.Element => {
         <Field label="集計単位">
           <Select
             {...register("unit")}
-            defaultValue={unit ?? "building"}
             onChange={(e) => {
               // styleに合わせてparameterをリセット
               resetParametersByStyle(style);
