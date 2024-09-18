@@ -3,7 +3,7 @@ import { EditWorkbook as EditWorkbookComponent } from "../../../../components/ed
 
 export function EditWorkbook(): JSX.Element {
   return (
-    <Suspense fallback={<></>}>
+    <Suspense>
       <EditWorkbookComponent />
     </Suspense>
   );

@@ -7,9 +7,5 @@ export const deleteResultView = (async (
   _: unknown,
   { resultViewId }: { resultViewId: number },
 ): Promise<void> => {
-  await db
-    .delete(result_views)
-    .where(eq(result_views.id, resultViewId))
-    .execute();
-  return;
+  await db.delete(result_views).where(eq(result_views.id, resultViewId));
 }) satisfies IpcMainListener;

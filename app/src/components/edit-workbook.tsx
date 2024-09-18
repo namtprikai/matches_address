@@ -56,11 +56,11 @@ export const EditWorkbook = (): JSX.Element => {
 
         <TabListEditResultSheet />
         <div>
-          {resultSheets.map((item) => (
-            <div key={item.id} hidden={selectedResultSheetId !== item.id}>
-              <PreviewResultSheet />
-            </div>
-          ))}
+          {resultSheets.map((item) =>
+            selectedResultSheetId === item.id ? (
+              <PreviewResultSheet key={item.id} />
+            ) : null,
+          )}
         </div>
         <a href={`#analysis/workbook/${id}`}>
           <Button>詳細に戻る</Button>

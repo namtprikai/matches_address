@@ -1,4 +1,3 @@
-import { useEffect, useState } from "react";
 import {
   Table,
   TableBody,
@@ -12,6 +11,7 @@ import {
   mergeClasses,
 } from "@fluentui/react-components";
 import { Link } from "react-router-dom";
+import useSWR from "swr";
 import { formatDate } from "../utils/format-date";
 import { type SelectWorkbook } from "../schema";
 
@@ -41,17 +41,13 @@ const useStyles = makeStyles({
   },
 });
 
+const fetcher = (): Promise<SelectWorkbook[]> => {
+  const result = window.ipcRenderer.invoke("selectWorkbooks");
+  return result;
+};
+
 export const TableWorkbook = (): JSX.Element => {
-  const [data, setData] = useState<SelectWorkbook[]>([]);
-  const fetchData = async (): Promise<void> => {
-    const result = await window.ipcRenderer.invoke("selectWorkbooks");
-    setData(result);
-  };
-
-  useEffect(() => {
-    fetchData().catch(console.error);
-  }, []);
-
+  const { data } = useSWR("TableWorkbook-selectWorkbooks", fetcher);
   const styles = useStyles();
 
   return (
@@ -80,7 +76,7 @@ export const TableWorkbook = (): JSX.Element => {
         </TableRow>
       </TableHeader>
       <TableBody>
-        {data.map((item) => (
+        {data?.map((item) => (
           <TableRow key={item.id}>
             <TableCell>
               <Link to={`/analysis/workbook/${item.id}`}>
