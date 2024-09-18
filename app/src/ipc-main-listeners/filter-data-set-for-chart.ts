@@ -1,24 +1,38 @@
 import { and, eq, gte, lte, sql } from "drizzle-orm";
-import {
-  data_set_detail_areas,
-  data_set_detail_buildings,
-  type SelectDataSetDetailArea,
-  type SelectDataSetDetailBuilding,
-} from "../schema";
+import { data_set_detail_areas, data_set_detail_buildings } from "../schema";
 import { db } from "../utils/db";
-import { type ChartProps } from "../@types/charts";
-import {
-  DATA_SET_DETAIL_AREA_COLUMN_CONFIG,
-  DATA_SET_DETAIL_BUILDING_COLUMN_CONFIG,
-} from "../config/data-columns";
+import { type GroupingCondition, type ChartProps } from "../@types/charts";
 import { formatChartValue } from "../utils/format-chart-value";
+import { subQueryFromConditions } from "../utils/subquery-grouping";
 import {
-  subQueryFromConditions,
-  type GroupingCondition,
-} from "../utils/subquery-grouping";
+  type AREA_DATASET_COLUMN,
+  AREA_DATASET_COLUMN_METADATA,
+  type BUILDING_DATASET_COLUMN,
+  BUILDING_DATASET_COLUMN_METADATA,
+} from "../config/column-metadata";
 import { type IpcMainListener } from ".";
 
 export type FilterDataSetForChartResponse = ChartProps;
+export type FilterDataSetForChartArgs = {
+  resultId: number;
+  groupingConditions?: GroupingCondition[];
+  groupingCalc?: "avg" | "sum";
+  filterByYear: {
+    startValue: string | undefined;
+    endValue: string | undefined;
+  };
+} & (
+  | {
+      type: "building";
+      x: BUILDING_DATASET_COLUMN;
+      y: BUILDING_DATASET_COLUMN;
+    }
+  | {
+      type: "area";
+      x: AREA_DATASET_COLUMN;
+      y: AREA_DATASET_COLUMN;
+    }
+);
 
 // TODO: 非同期処理に変更する
 export const filterDataSetForChart = ((
@@ -30,25 +44,8 @@ export const filterDataSetForChart = ((
     y,
     groupingConditions,
     filterByYear,
-  }: {
-    resultId: number;
-    groupingConditions?: GroupingCondition[];
-    filterByYear: {
-      startValue: number | undefined;
-      endValue: number | undefined;
-    };
-  } & (
-    | {
-        type: "building";
-        x: keyof SelectDataSetDetailBuilding;
-        y: keyof SelectDataSetDetailBuilding;
-      }
-    | {
-        type: "area";
-        x: keyof SelectDataSetDetailArea;
-        y: keyof SelectDataSetDetailArea;
-      }
-  ),
+    groupingCalc: cal = "avg",
+  }: FilterDataSetForChartArgs,
 ): FilterDataSetForChartResponse => {
   if (type === "area") {
     // eslint-disable-next-line @typescript-eslint/explicit-function-return-type -- ignore
@@ -68,7 +65,7 @@ export const filterDataSetForChart = ((
             filterByYear.endValue
               ? lte(
                   data_set_detail_areas.reference_date,
-                  `${filterByYear.endValue}-01-01`,
+                  `${filterByYear.endValue}-12-31`,
                 )
               : undefined,
           ),
@@ -76,7 +73,7 @@ export const filterDataSetForChart = ((
         .as("filterSubQuery");
 
       if (groupingConditions && groupingConditions.length > 0) {
-        const groupLabel = x + "_group";
+        const groupLabel = `${x}_group` as const;
 
         const subQuery = subQueryFromConditions(
           db,
@@ -89,13 +86,17 @@ export const filterDataSetForChart = ((
         return db
           .select({
             [groupLabel]: sql.raw(`${groupLabel}`),
-            [y]: sql.raw(`avg(${y}) as ${y}`),
+            [y]: sql.raw(`${cal}(${y}) as ${y}`),
           })
           .from(subQuery.as("groups"))
           .groupBy(sql.raw(`${groupLabel}`))
           .having(sql.raw(`${groupLabel} <> ''`))
           .limit(100)
-          .all();
+          .all() as {
+          [key: `${string}_group`]: string;
+        } & {
+          [k in typeof y]: number;
+        }[];
       }
 
       return db
@@ -106,32 +107,34 @@ export const filterDataSetForChart = ((
         .all();
     };
     const all = getAll();
-    // @ts-expect-error TODO: この辺りの型定義は別途修正が必要
-    const percentage = DATA_SET_DETAIL_AREA_COLUMN_CONFIG[y].percentage;
+
+    const columnYMetadata = AREA_DATASET_COLUMN_METADATA[y];
+    const columnXMetadata = AREA_DATASET_COLUMN_METADATA[x];
 
     return {
       data: all.map((row) => {
+        if (`${x}_group` in row) {
+          return {
+            // @ts-expect-error drizzle側で型補完が効かないため、型を指定
+            x: row[`${x}_group`] as string,
+            y: formatChartValue(row[y] as number) as number,
+          };
+        }
+
         return {
-          x: groupingConditions
-            ? (row[x + "_group"] as string)
-            : (row[x] as string),
-          // TODO: この辺りの型定義は別途修正が必要
-          y: formatChartValue(row[y] ?? "", percentage) as number,
+          x: row[x] as string,
+          y: formatChartValue(row[y] as number) as number,
         };
       }),
       xAxisColumn: {
         type: "string",
-        // @ts-expect-error TODO: この辺りの型定義は別途修正が必要
-        unit: DATA_SET_DETAIL_AREA_COLUMN_CONFIG[x].unit,
-        // @ts-expect-error TODO: この辺りの型定義は別途修正が必要
-        label: DATA_SET_DETAIL_AREA_COLUMN_CONFIG[x].label,
+        unit: columnXMetadata.unit,
+        label: columnXMetadata.label,
       },
       yAxisColumn: {
         type: "number",
-        // @ts-expect-error TODO: この辺りの型定義は別途修正が必要
-        unit: DATA_SET_DETAIL_AREA_COLUMN_CONFIG[y].unit,
-        // @ts-expect-error TODO: この辺りの型定義は別途修正が必要
-        label: DATA_SET_DETAIL_AREA_COLUMN_CONFIG[y].label,
+        unit: columnYMetadata.unit,
+        label: columnYMetadata.label,
       },
     };
   }
@@ -153,7 +156,7 @@ export const filterDataSetForChart = ((
             filterByYear.endValue
               ? lte(
                   data_set_detail_buildings.reference_date,
-                  `${filterByYear.endValue}-01-01`,
+                  `${filterByYear.endValue}-12-31`,
                 )
               : undefined,
           ),
@@ -161,7 +164,7 @@ export const filterDataSetForChart = ((
         .as("filterSubQuery");
 
       if (groupingConditions && groupingConditions.length > 0) {
-        const groupLabel = x + "_group";
+        const groupLabel = `${x}_group` as const;
 
         const subQuery = subQueryFromConditions(
           db,
@@ -174,13 +177,17 @@ export const filterDataSetForChart = ((
         return db
           .select({
             [groupLabel]: sql.raw(`${groupLabel}`),
-            [y]: sql.raw(`avg(${y}) as ${y}`),
+            [y]: sql.raw(`${cal}(${y}) as ${y}`),
           })
           .from(subQuery.as("groups"))
           .groupBy(sql.raw(`${groupLabel}`))
           .having(sql.raw(`${groupLabel} <> ''`))
           .limit(100)
-          .all();
+          .all() as {
+          [key: `${string}_group`]: string;
+        } & {
+          [k in typeof y]: number;
+        }[]; // drizzle側で型補完が効かないため、型を指定
       }
 
       return db
@@ -192,33 +199,33 @@ export const filterDataSetForChart = ((
     };
     const all = getAll();
 
-    // @ts-expect-error TODO: この辺りの型定義は別途修正が必要
-    const percentage = DATA_SET_DETAIL_BUILDING_COLUMN_CONFIG[y].percentage;
+    const columnYMetadata = BUILDING_DATASET_COLUMN_METADATA[y];
+    const columnXMetadata = BUILDING_DATASET_COLUMN_METADATA[x];
 
     return {
       data: all.map((row) => {
+        if (`${x}_group` in row) {
+          return {
+            // @ts-expect-error drizzle側で型補完が効かないため、型を指定
+            x: row[`${x}_group`],
+            y: formatChartValue(row[y] ?? "") as number,
+          };
+        }
+
         return {
-          x:
-            groupingConditions && groupingConditions.length > 0
-              ? (row[x + "_group"] as string)
-              : (row[x] as string),
-          // TODO: この辺りの型定義は別途修正が必要
-          y: formatChartValue(row[y] ?? "", percentage) as number,
+          x: row[x] as string,
+          y: formatChartValue(row[y] ?? "") as number,
         };
       }),
       xAxisColumn: {
         type: "string",
-        // @ts-expect-error TODO: この辺りの型定義は別途修正が必要
-        unit: DATA_SET_DETAIL_BUILDING_COLUMN_CONFIG[x].unit,
-        // @ts-expect-error TODO: この辺りの型定義は別途修正が必要
-        label: DATA_SET_DETAIL_BUILDING_COLUMN_CONFIG[x].label,
+        unit: columnXMetadata.unit,
+        label: columnXMetadata.label,
       },
       yAxisColumn: {
         type: "number",
-        // @ts-expect-error TODO: この辺りの型定義は別途修正が必要
-        unit: DATA_SET_DETAIL_BUILDING_COLUMN_CONFIG[y].unit,
-        // @ts-expect-error TODO: この辺りの型定義は別途修正が必要
-        label: DATA_SET_DETAIL_BUILDING_COLUMN_CONFIG[y].label,
+        unit: columnYMetadata.unit,
+        label: columnYMetadata.label,
       },
     };
   }

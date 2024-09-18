@@ -76,7 +76,7 @@ export const createDummyDataSetResults = (async (
               await tx.insert(data_set_detail_areas).values({
                 data_set_result_id,
                 reference_date,
-                predicted_probability: Math.random(),
+                predicted_probability: Math.random() * 100,
                 area_group:
                   TOYOTA_AREAS[Math.floor(Math.random() * TOYOTA_AREAS.length)],
                 young_population_ratio: Math.floor(Math.random() * 100),
@@ -125,13 +125,17 @@ export const createDummyDataSetResults = (async (
                 number_of_people_aged_15_to_64 +
                 number_of_people_aged_65_and_over;
               const composition_ratio_of_people_aged_15_to_64 =
-                number_of_people_aged_15_to_64 / number_of_people_in_household;
+                (number_of_people_aged_15_to_64 /
+                  number_of_people_in_household) *
+                100;
               const composition_ratio_of_people_aged_65_and_over =
-                number_of_people_aged_65_and_over /
-                number_of_people_in_household;
+                (number_of_people_aged_65_and_over /
+                  number_of_people_in_household) *
+                100;
               const composition_ratio_of_people_under_15_years_old =
-                number_of_people_under_15_years_old /
-                number_of_people_in_household;
+                (number_of_people_under_15_years_old /
+                  number_of_people_in_household) *
+                100;
               const number_of_male = Math.floor(
                 Math.random() * number_of_people_in_household,
               );
@@ -187,7 +191,7 @@ export const createDummyDataSetResults = (async (
                 landslide_risk_desc: `地滑りリスク${i}`,
                 name: `建物名${i}`,
                 predicted_label: Math.round(pred),
-                predicted_probability: pred,
+                predicted_probability: pred * 100,
                 geometry:
                   feature.geometry.type === "Polygon"
                     ? JSON.stringify(feature.geometry.coordinates) // 多重配列はsqliteに入らないので文字列に変換する

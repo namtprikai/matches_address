@@ -8,11 +8,8 @@ import {
   TableRow,
   tokens,
 } from "@fluentui/react-components";
-import {
-  type SelectDataSetDetailArea,
-  type SelectDataSetDetailBuilding,
-} from "../schema";
 import { useFetchFilterDataSetForTable } from "../hooks/use-fetch-filtered-data-set-for-table";
+import { type FilterDataSetForTableArgs } from "../ipc-main-listeners/filter-data-set-for-table";
 import { Pagenation } from "./ui/pagenation";
 
 const useStyles = makeStyles({
@@ -33,37 +30,10 @@ const useStyles = makeStyles({
   },
 });
 
-type TableViewProps = {
-  resultId: number;
-  filterByYear: {
-    startValue: number | undefined;
-    endValue: number | undefined;
-  };
-} & (
-  | {
-      type: "building";
-      dataSetResult: SelectDataSetDetailBuilding;
-      columns: (keyof SelectDataSetDetailBuilding)[];
-    }
-  | {
-      type: "area";
-      dataSetResult: SelectDataSetDetailArea;
-      columns: (keyof SelectDataSetDetailArea)[];
-    }
-);
+type TableViewProps = FilterDataSetForTableArgs;
 
-export const TableView = ({
-  columns,
-  resultId,
-  type,
-  filterByYear,
-}: TableViewProps): JSX.Element => {
-  const { tableProps, pagenation } = useFetchFilterDataSetForTable({
-    resultId,
-    type,
-    columns,
-    filterByYear,
-  });
+export const TableView = (props: TableViewProps): JSX.Element => {
+  const { tableProps, pagenation } = useFetchFilterDataSetForTable(props);
 
   const styles = useStyles();
 

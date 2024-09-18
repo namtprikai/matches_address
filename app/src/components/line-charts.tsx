@@ -14,32 +14,10 @@ import {
   makeStyles,
 } from "@fluentui/react-components";
 import { CHART_COLORS } from "../config/chart-colors";
-import {
-  type data_set_detail_areas,
-  type data_set_detail_buildings,
-} from "../schema";
 import { useFetchFilterDataSetForChart } from "../hooks/use-fetch-filtered-data-set-for-chart";
-import { type GroupingCondition } from "../utils/subquery-grouping";
+import { type FilterDataSetForChartArgs } from "../ipc-main-listeners/filter-data-set-for-chart";
 
-export type LineChartProps = {
-  resultId: number;
-  groupingConditions?: GroupingCondition[];
-  filterByYear: {
-    startValue: number | undefined;
-    endValue: number | undefined;
-  };
-} & (
-  | {
-      type: "building";
-      x: keyof typeof data_set_detail_buildings.$inferSelect;
-      y: keyof typeof data_set_detail_buildings.$inferSelect;
-    }
-  | {
-      type: "area";
-      x: keyof typeof data_set_detail_areas.$inferSelect;
-      y: keyof typeof data_set_detail_areas.$inferSelect;
-    }
-);
+export type LineChartProps = FilterDataSetForChartArgs;
 
 const CustomizedDot = ({
   cx,
@@ -131,27 +109,12 @@ const CustomizedActiveDot = ({
   );
 };
 
-export const LineChart = ({
-  resultId,
-  type,
-  x,
-  y,
-  groupingConditions,
-  filterByYear,
-}: LineChartProps): JSX.Element => {
-  // @ts-expect-error TODO: Unionが正しく分配されない
-  const { chartProps } = useFetchFilterDataSetForChart({
-    resultId,
-    type,
-    x,
-    y,
-    groupingConditions,
-    filterByYear,
-  });
+export const LineChart = (props: LineChartProps): JSX.Element => {
+  const { chartProps } = useFetchFilterDataSetForChart(props);
 
   const data = chartProps.data;
 
-  if (x == null || y == null) {
+  if (props.x == null || props.y == null) {
     return <div>パラメーターの値を正しく設定してください</div>;
   }
 

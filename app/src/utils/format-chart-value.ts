@@ -1,11 +1,17 @@
-export const formatChartValue = (value: number | string, percentage?: boolean, digits = 2): number | string => {
+import { type ChartColumnType } from "../@types/charts";
 
-    if (typeof value !== "number") {
-        return value;
-    }
-
-    if (percentage) {
-        return Number((value * 100).toFixed(digits));
-    }
-    return Number(value.toFixed(digits));
-}
+// eslint-disable-next-line @typescript-eslint/explicit-function-return-type -- 型推論を利用するため
+export const formatChartValue = (
+  value: number | string,
+  metadata?: {
+    unit?: string;
+    percentage?: boolean;
+    type: ChartColumnType;
+  },
+  digits = 2,
+) => {
+  if (typeof value !== "number") {
+    return value;
+  }
+  return Number(value.toFixed(digits));
+};

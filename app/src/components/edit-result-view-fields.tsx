@@ -1,10 +1,17 @@
 import { useFieldArray, useFormContext } from "react-hook-form";
 import { Fragment } from "react/jsx-runtime";
+import { useEffect } from "react";
 import { result_views, type SelectResultView } from "../schema";
 import { LanguageMap } from "../lang";
-import { RESULT_VIEW_CONFIG } from "../config/result-view-config";
+import { TILE_VIEW_CONFIG } from "../config/tile-view-config";
 import { getResultViewFieldOption } from "../utils/get-view-field-option";
 import { type EditResultViewFormType } from "../@types/form-schema";
+import {
+  type AREA_DATASET_COLUMN,
+  AREA_DATASET_COLUMN_METADATA,
+  type BUILDING_DATASET_COLUMN,
+  BUILDING_DATASET_COLUMN_METADATA,
+} from "../config/column-metadata";
 import { Fieldset } from "./ui/fieldset";
 import { FieldLegend } from "./ui/field-legend";
 import { Field } from "./ui/field";
@@ -19,6 +26,7 @@ export const EditResultViewFileds = (): JSX.Element => {
 
   const style = watch("style");
   const unit = watch("unit");
+  const parameters = watch("parameters");
 
   const { fields, replace, update } = useFieldArray({
     control,
@@ -27,7 +35,7 @@ export const EditResultViewFileds = (): JSX.Element => {
 
   const resetParametersByStyle = (style: SelectResultView["style"]): void => {
     if (!style) return;
-    const option = RESULT_VIEW_CONFIG[style];
+    const option = TILE_VIEW_CONFIG[style];
     if (!option) return;
     replace(
       option.fields.map((field) => ({
@@ -39,14 +47,16 @@ export const EditResultViewFileds = (): JSX.Element => {
   };
 
   const groupingFields = fields.filter((field) => {
-    if (!field) return false;
     return field.type === "group";
   });
 
   const columnFields = fields.filter((field) => {
-    if (!field) return false;
     return field.type === "column";
   });
+
+  const groupCalc = fields.find(
+    (f) => f.key === "group_calc" && f.type === "group_option",
+  );
 
   return (
     <>
@@ -80,19 +90,40 @@ export const EditResultViewFileds = (): JSX.Element => {
           </Select>
         </Field>
         {columnFields.map((field, index) => {
+          if (style === null || unit === null) return null;
+
           const fieldOption = getResultViewFieldOption(style, field.key);
 
           if (!fieldOption) return null;
 
-          if (fieldOption.type === "select") {
+          if (fieldOption.type === "select" && field.type === "column") {
+            const column = parameters.find((parameter) => {
+              return parameter.key === field.key && parameter.type === "column";
+            });
+
+            const columnMetadata =
+              unit === "building"
+                ? BUILDING_DATASET_COLUMN_METADATA[
+                    column?.value as BUILDING_DATASET_COLUMN
+                  ]
+                : AREA_DATASET_COLUMN_METADATA[
+                    column?.value as AREA_DATASET_COLUMN
+                  ];
+
             return (
               <Fragment key={field.id}>
                 <DynamicParameterInput
                   type={fieldOption.type}
                   {...register(`parameters.${index}.value`)}
-                  // @ts-expect-error TODO: この辺りの型定義は別途修正が必要
                   fieldOption={fieldOption}
                   onChange={(e) => {
+                    if (field.key === "label" || field.key === "xAxis") {
+                      const parametersWithoutGroup = fields.filter((f) => {
+                        return f.type !== "group";
+                      });
+                      replace(parametersWithoutGroup);
+                    }
+
                     update(index, {
                       key: field.key,
                       value: e.target.value,
@@ -104,16 +135,45 @@ export const EditResultViewFileds = (): JSX.Element => {
                 />
                 {fieldOption?.grouping && (
                   <EditorGroupingForm
+                    columnLabel={columnMetadata?.label}
+                    columnType={columnMetadata?.type}
                     onSave={(parameters) => {
                       const prevOtherParameters = fields.filter((f) => {
-                        if (!f) return false;
-                        return !f.key.startsWith("group_");
+                        return f.type !== "group";
                       });
-                      replace([...prevOtherParameters, ...parameters]);
+                      const newParameters = [
+                        ...prevOtherParameters,
+                        ...parameters,
+                      ] as SelectResultView["parameters"];
+                      replace(newParameters);
                     }}
                     parameters={groupingFields}
+                    unit={columnMetadata?.unit}
                   />
                 )}
+                {fieldOption.grouping === false &&
+                  groupingFields.length > 0 && (
+                    <Select
+                      onChange={(e) => {
+                        const prevOtherParameters = fields.filter((f) => {
+                          return f.type !== "group_option";
+                        });
+                        const newParameters = [
+                          ...prevOtherParameters,
+                          {
+                            key: "group_calc",
+                            value: e.target.value as "avg" | "sum",
+                            type: "group_option",
+                          },
+                        ] as SelectResultView["parameters"];
+                        replace(newParameters);
+                      }}
+                      value={groupCalc?.value}
+                    >
+                      <option value="avg">平均</option>
+                      <option value="sum">合計</option>
+                    </Select>
+                  )}
               </Fragment>
             );
           }
@@ -124,7 +184,6 @@ export const EditResultViewFileds = (): JSX.Element => {
                 type={fieldOption.type}
                 {...register(`parameters.${index}.value`)}
                 key={field.id}
-                // @ts-expect-error TODO: この辺りの型定義は別途修正が必要
                 fieldOption={fieldOption}
                 multiple={fieldOption.multiple ?? false}
                 onChange={(_, data) => {

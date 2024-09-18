@@ -13,9 +13,8 @@ import {
 } from "@fluentui/react-components";
 import { useAtom } from "jotai";
 import { useNavigate } from "react-router-dom";
-import { type data_set_results, type SelectDataSetResult } from "../schema";
+import { type SelectResultView, type SelectDataSetResult } from "../schema";
 import { THEME_COLORS } from "../config/theme-colors";
-import { type SelectResultViewResponse } from "../ipc-main-listeners/select-result-view";
 import { resultViewsAtom } from "../state/result-views-atom";
 import { TileViewStyle } from "./tile-view-style";
 import { DialogSurface } from "./ui/dialog-surface";
@@ -25,7 +24,7 @@ import { DialogActions } from "./ui/dialog-actions";
 import { Button } from "./ui/button";
 
 type Props = CardProps & {
-  resultView: SelectResultViewResponse;
+  resultView: SelectResultView;
   dataSetResult: SelectDataSetResult | null;
 };
 
@@ -194,8 +193,8 @@ export const TileResultView = ({
         <div>データセットが選択されていません</div>
       ) : (
         <TileViewStyle
-          dataSetResults={dataSetResult}
           parameters={resultView.parameters}
+          resultId={dataSetResult.id}
           style={resultView.style}
           type={resultView.unit}
         />
