@@ -1,7 +1,22 @@
-import { EditFilled } from "@fluentui/react-icons";
+import {
+  EditFilled,
+  ArchiveRegular,
+  Dismiss24Regular,
+} from "@fluentui/react-icons";
 import { Suspense, useEffect } from "react";
-import { makeStyles, TabList, tokens } from "@fluentui/react-components";
-import { useParams } from "react-router-dom";
+import {
+  Dialog,
+  DialogActions,
+  DialogBody,
+  DialogContent,
+  DialogSurface,
+  DialogTitle,
+  DialogTrigger,
+  makeStyles,
+  TabList,
+  tokens,
+} from "@fluentui/react-components";
+import { useNavigate, useParams } from "react-router-dom";
 import { Button } from "../../../../components/ui/button";
 import { useFetchWorkbook } from "../../../../hooks/use-fetch-workbook";
 import { useFetchResultSheets } from "../../../../hooks/use-fetch-result-sheets";
@@ -18,6 +33,11 @@ const useStyles = makeStyles({
     fontSize: tokens.fontSizeBase500,
     lineHeight: tokens.lineHeightBase600,
   },
+  buttons: {
+    display: "flex",
+    alignItems: "center",
+    gap: tokens.spacingHorizontalM,
+  },
   resultSheets: {
     padding: 0,
   },
@@ -29,7 +49,7 @@ const useStyles = makeStyles({
   tabList: {
     gap: tokens.spacingHorizontalM,
   },
-  editButton: {
+  button: {
     border: `1px solid ${tokens.colorNeutralStroke2}`,
     borderRadius: tokens.borderRadiusMedium,
     "&:hover, &:active, &:focus, &:focus-within": {
@@ -55,14 +75,17 @@ export function DetailWorkbook(): JSX.Element {
     <div className={styles.root}>
       <div className={styles.headingWithAction}>
         <h2 className={styles.heading}>{workbook?.title}</h2>
-        <a href={`#analysis/workbook/${id}/edit`}>
-          <Button
-            appearance="outline"
-            className={styles.editButton}
-            icon={<EditFilled />}
-            shape="square"
-          />
-        </a>
+        <div className={styles.buttons}>
+          <a href={`#analysis/workbook/${id}/edit`}>
+            <Button
+              appearance="outline"
+              className={styles.button}
+              icon={<EditFilled />}
+              shape="square"
+            />
+          </a>
+          <DeleteWorkbookButton workbookId={workbook?.id} />
+        </div>
       </div>
 
       {selectedValue ? (
@@ -92,5 +115,71 @@ export function DetailWorkbook(): JSX.Element {
         ))}
       </div>
     </div>
+  );
+}
+
+function DeleteWorkbookButton({
+  workbookId,
+}: {
+  workbookId: number | undefined;
+}): JSX.Element {
+  const navigate = useNavigate();
+  const styles = useStyles();
+
+  const handleDelete = async (): Promise<void> => {
+    const deleteWorkbook = (): Promise<void> =>
+      window.ipcRenderer.invoke("deleteWorkbook", {
+        workbookId,
+      });
+
+    await deleteWorkbook()
+      .then(() => {
+        navigate("/analysis/workbook");
+      })
+      .catch(console.error);
+  };
+
+  return (
+    <Dialog>
+      <DialogTrigger disableButtonEnhancement>
+        <Button
+          appearance="outline"
+          className={styles.button}
+          icon={<ArchiveRegular />}
+          shape="square"
+        />
+      </DialogTrigger>
+      <DialogSurface>
+        <DialogBody>
+          <DialogTitle
+            action={
+              <DialogTrigger action="close">
+                <Button
+                  appearance="subtle"
+                  aria-label="close"
+                  icon={
+                    <Dismiss24Regular
+                      color={tokens.colorNeutralForeground1}
+                      strokeWidth={2}
+                    />
+                  }
+                />
+              </DialogTrigger>
+            }
+          >
+            ワークブックを削除しますか？
+          </DialogTitle>
+          <DialogContent>削除したワークブックはもとに戻せません</DialogContent>
+          <DialogActions position="start">
+            <Button>キャンセル</Button>
+          </DialogActions>
+          <DialogActions position="end">
+            <Button appearance="primary" onClick={handleDelete}>
+              削除
+            </Button>
+          </DialogActions>
+        </DialogBody>
+      </DialogSurface>
+    </Dialog>
   );
 }

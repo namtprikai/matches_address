@@ -1,9 +1,9 @@
 import useSWR, { type SWRResponse } from "swr";
 import { type SelectWorkbook } from "../schema";
 
-const fetcher = (
-  workbookId: [string | undefined, string],
-): Promise<SelectWorkbook | undefined> => {
+const fetcher = ([workbookId]: [string | undefined, string]): Promise<
+  SelectWorkbook | undefined
+> => {
   const result = window.ipcRenderer.invoke("selectWorkbook", {
     id: Number(workbookId),
   });
