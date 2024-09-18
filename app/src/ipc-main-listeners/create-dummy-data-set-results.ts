@@ -7,6 +7,7 @@ import {
 } from "../schema";
 import { db } from "../utils/db";
 import { getFilePathInAssets } from "../utils/get-file-path-in-assets";
+import { TOYOTA_AREAS } from "./dummy-area";
 import { type IpcMainListener } from ".";
 
 // 開発用
@@ -76,7 +77,8 @@ export const createDummyDataSetResults = (async (
                 data_set_result_id,
                 reference_date,
                 predicted_probability: Math.random(),
-                address: `東京都港区六本木${i}丁目`,
+                area_group:
+                  TOYOTA_AREAS[Math.floor(Math.random() * TOYOTA_AREAS.length)],
                 young_population_ratio: Math.floor(Math.random() * 100),
                 elderly_population_ratio: Math.floor(Math.random() * 100),
                 total_building_count: Math.floor(Math.random() * 100),
@@ -138,11 +140,14 @@ export const createDummyDataSetResults = (async (
               const male_to_female_ratio = number_of_male / number_of_female;
               const pred = Math.random();
 
+              const area_group =
+                TOYOTA_AREAS[Math.floor(Math.random() * TOYOTA_AREAS.length)];
               const insertion: typeof data_set_detail_buildings.$inferInsert = {
                 reference_date,
                 data_set_result_id: res[0].id,
                 household_code: `1000000${i}`,
-                normalized_address: `東京都港区六本木${i}丁目`,
+                area_group,
+                normalized_address: `愛知県豊田市${area_group}${i}丁目`,
                 household_size: number_of_people_in_household,
                 members_under_15: number_of_people_under_15_years_old,
                 percentage_under_15:
@@ -165,7 +170,7 @@ export const createDummyDataSetResults = (async (
                 registration_date: reference_date,
                 registration_source_info: `登記所${i}`,
                 vacant_house_id: `1000000${i}`,
-                vacant_house_address: `東京都港区六本木${i}丁目`,
+                vacant_house_address: `愛知県豊田市${area_group}${i}丁目`,
                 gml_id: `1000000${i}`,
                 measuredheight: Math.floor(Math.random() * 100),
                 rank: Math.floor(Math.random() * 100),

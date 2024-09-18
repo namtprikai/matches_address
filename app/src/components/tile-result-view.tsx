@@ -12,6 +12,7 @@ import {
   tokens,
 } from "@fluentui/react-components";
 import { useAtom } from "jotai";
+import { useNavigate } from "react-router-dom";
 import { type data_set_results, type SelectDataSetResult } from "../schema";
 import { THEME_COLORS } from "../config/theme-colors";
 import { type SelectResultViewResponse } from "../ipc-main-listeners/select-result-view";
@@ -55,6 +56,7 @@ export const TileResultView = ({
   ...cardProps
 }: Props): JSX.Element => {
   const styles = useStyles();
+  const navigate = useNavigate();
 
   const [, refreshResultViews] = useAtom(resultViewsAtom);
 
@@ -66,7 +68,7 @@ export const TileResultView = ({
 
   const handleDelete = async (): Promise<void> => {
     await deleteResultView();
-    refreshResultViews();
+    navigate(0);
   };
 
   if (
@@ -176,7 +178,9 @@ export const TileResultView = ({
                   <Button>キャンセル</Button>
                 </DialogActions>
                 <DialogActions position="end">
-                  <Button appearance="primary">削除</Button>
+                  <Button appearance="primary" onClick={handleDelete}>
+                    削除
+                  </Button>
                 </DialogActions>
               </DialogBody>
             </DialogSurface>

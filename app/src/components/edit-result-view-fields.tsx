@@ -14,7 +14,7 @@ import { DynamicParameterInput } from "./dynamic-parameter-input";
 import { EditorGroupingForm } from "./editor-grouping-form";
 
 export const EditResultViewFileds = (): JSX.Element => {
-  const { register, watch, control, setValue, formState } =
+  const { register, watch, control, setValue } =
     useFormContext<EditResultViewFormType>();
 
   const style = watch("style");
@@ -47,9 +47,6 @@ export const EditResultViewFileds = (): JSX.Element => {
     if (!field) return false;
     return field.type === "column";
   });
-
-  console.log(fields);
-  console.log(formState.errors);
 
   return (
     <>
