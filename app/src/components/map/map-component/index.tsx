@@ -147,7 +147,7 @@ export function MapComponent({
                     throw new Error("Network response was not ok");
                   }
 
-                  const layerId = lastId.toString();
+                  const layerId = `building-${lastId.toString()}`;
                   const filteredBatch: BuildingProperties[] = batch.map(
                     (building) => ({
                       geometry: building.geometry,
@@ -235,7 +235,7 @@ export function MapComponent({
                     throw new Error("Network response was not ok");
                   }
 
-                  const layerId = lastId.toString();
+                  const layerId = `area-${lastId.toString()}`;
                   addAreaLayer(mapInstance, layerId, batch);
                   setLayerIds((prevLayerIds) =>
                     prevLayerIds ? [...prevLayerIds, layerId] : [layerId],
