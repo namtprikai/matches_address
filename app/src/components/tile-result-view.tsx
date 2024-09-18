@@ -68,7 +68,6 @@ export const TileResultView = ({
 
   const handleDelete = async (): Promise<void> => {
     await deleteResultView();
-    refreshResultViews();
     navigate(0);
   };
 
