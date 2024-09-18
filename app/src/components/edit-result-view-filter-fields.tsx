@@ -1,14 +1,9 @@
-import { watch } from "original-fs";
 import { makeStyles, tokens } from "@fluentui/react-components";
 import { useFormContext } from "react-hook-form";
 import { useAtomValue } from "jotai";
 import { useEffect, useState } from "react";
 import { selectedResultViewAtom } from "../state/selected-result-view-atom";
 import { type EditResultViewFormType } from "../@types/form-schema";
-import {
-  YEAR_LOWER_LIMIT,
-  YEAR_UPPER_LIMIT,
-} from "../zod/edit-result-view-form-schema";
 import { Field } from "./ui/field";
 import { Select } from "./ui/select";
 import { Fieldset } from "./ui/fieldset";
@@ -60,14 +55,8 @@ export const EditResultViewFilterFields = (): JSX.Element => {
 
       <Field label="期間">
         <div className={styles.year}>
-          <Select
-            value={year.start ? year.start.toString() : YEAR_LOWER_LIMIT}
-            {...register("year.start", {
-              setValueAs: (v: EditResultViewFormType["year"]["start"]) =>
-                typeof v === "number" && !Number.isNaN(v) ? Number(v) : null,
-            })}
-          >
-            <option value={YEAR_LOWER_LIMIT}>{YEAR_LOWER_LIMIT}</option>
+          <Select value={year.start} {...register("year.start")}>
+            <option value="">下限なし</option>
             {yearItems.map((item) => (
               <option key={item} value={item}>
                 {item}
@@ -75,14 +64,8 @@ export const EditResultViewFilterFields = (): JSX.Element => {
             ))}
           </Select>
           <span>〜</span>
-          <Select
-            value={year.start ? year.start.toString() : YEAR_UPPER_LIMIT}
-            {...register("year.end", {
-              setValueAs: (v: EditResultViewFormType["year"]["end"]) =>
-                typeof v === "number" && !Number.isNaN(v) ? Number(v) : null,
-            })}
-          >
-            <option value={YEAR_UPPER_LIMIT}>{YEAR_UPPER_LIMIT}</option>
+          <Select value={year.end} {...register("year.end")}>
+            <option value="">上限なし</option>
             {yearItems.map((item) => (
               <option key={item} value={item}>
                 {item}

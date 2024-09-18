@@ -7,53 +7,16 @@ import {
 } from "recharts";
 import { CHART_COLORS } from "../config/chart-colors";
 import { useFetchFilterDataSetForChart } from "../hooks/use-fetch-filtered-data-set-for-chart";
-import {
-  type SelectDataSetDetailBuilding,
-  type SelectDataSetDetailArea,
-} from "../schema";
-import { type GroupingCondition } from "../utils/subquery-grouping";
+import { type FilterDataSetForChartArgs } from "../ipc-main-listeners/filter-data-set-for-chart";
 
-export type PieChartProps = {
-  resultId: number;
-  groupingConditions?: GroupingCondition[];
-  filterByYear: {
-    startValue: number | undefined;
-    endValue: number | undefined;
-  };
-} & (
-  | {
-      type: "building";
-      x: keyof SelectDataSetDetailBuilding;
-      y: keyof SelectDataSetDetailBuilding;
-    }
-  | {
-      type: "area";
-      x: keyof SelectDataSetDetailArea;
-      y: keyof SelectDataSetDetailArea;
-    }
-);
+export type PieChartProps = FilterDataSetForChartArgs;
 
-export const PieChart = ({
-  resultId,
-  type,
-  x,
-  y,
-  groupingConditions,
-  filterByYear,
-}: PieChartProps): JSX.Element => {
-  // @ts-expect-error TODO: Unionが正しく分配されない
-  const { chartProps } = useFetchFilterDataSetForChart({
-    resultId,
-    type,
-    x,
-    y,
-    groupingConditions,
-    filterByYear,
-  });
+export const PieChart = (props: PieChartProps): JSX.Element => {
+  const { chartProps } = useFetchFilterDataSetForChart(props);
 
   const data = chartProps.data;
 
-  if (x == null || y == null) {
+  if (props.x == null || props.y == null) {
     return <div>パラメーターの値を正しく設定してください</div>;
   }
 

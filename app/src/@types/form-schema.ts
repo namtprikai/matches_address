@@ -1,4 +1,13 @@
-import { type z } from "zod";
-import { type editResultViewFormSchema } from "../zod/edit-result-view-form-schema";
+import { type SelectResultView } from "../schema";
 
-export type EditResultViewFormType = z.infer<typeof editResultViewFormSchema>;
+export type EditResultViewFormType = {
+  title: string;
+  style: SelectResultView["style"];
+  unit: SelectResultView["unit"];
+  parameters: SelectResultView["parameters"];
+  year: {
+    start: string | undefined;
+    end: string | undefined;
+  };
+  areas: string[];
+};

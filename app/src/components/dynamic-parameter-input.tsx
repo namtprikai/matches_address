@@ -1,10 +1,10 @@
 import { type ForwardedRef, forwardRef } from "react";
 import { type DropdownProps } from "@fluentui/react-components";
-import { type ResultViewFieldOption } from "../@types/charts";
+import { type TileViewFieldOption } from "../@types/charts";
 import {
-  DATA_SET_DETAIL_AREA_COLUMN_CONFIG,
-  DATA_SET_DETAIL_BUILDING_COLUMN_CONFIG,
-} from "../config/data-columns";
+  AREA_DATASET_COLUMN_METADATA,
+  BUILDING_DATASET_COLUMN_METADATA,
+} from "../config/column-metadata";
 import { Select } from "./ui/select";
 import { DynamicColumnOptions } from "./dynamic-column-options";
 import { Field } from "./ui/field";
@@ -14,22 +14,16 @@ type Props = {
   unit: "building" | "area";
   value: string;
   name: string;
+  fieldOption: TileViewFieldOption;
 } & (
   | {
       type: "select";
       onChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
-      fieldOption: Omit<ResultViewFieldOption, "type"> & { type: "select" };
     }
   | {
       type: "dropdown";
       onChange: DropdownProps["onOptionSelect"];
       multiple: boolean;
-      fieldOption: Omit<ResultViewFieldOption, "type"> & { type: "dropdowwn" };
-    }
-  | {
-      type: "input";
-      onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-      fileldOption: Omit<ResultViewFieldOption, "type"> & { type: "input" };
     }
 );
 
@@ -63,19 +57,19 @@ export const DynamicParameterInput = forwardRef<
     );
   }
 
-  if (props.type === "dropdown") {
+  if (props.type === "dropdown" && props.fieldOption.type === "dropdown") {
     const displayValue =
       props.value !== ""
         ? props.unit === "building"
           ? props.value
               .split(",")
               // @ts-expect-error TODO: この辺りの型定義は別途修正が必要
-              .map((v) => DATA_SET_DETAIL_BUILDING_COLUMN_CONFIG[v].label)
+              .map((v) => BUILDING_DATASET_COLUMN_METADATA[v].label)
               .join(",")
           : props.value
               .split(",")
               // @ts-expect-error TODO: この辺りの型定義は別途修正が必要
-              .map((v) => DATA_SET_DETAIL_AREA_COLUMN_CONFIG[v].label)
+              .map((v) => AREA_DATASET_COLUMN_METADATA[v].label)
               .join(",")
         : "";
 
