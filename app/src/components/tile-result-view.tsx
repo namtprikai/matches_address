@@ -65,6 +65,7 @@ export const TileResultView = ({
   };
 
   const handleDelete = async (): Promise<void> => {
+    console.log("handleDelete");
     await deleteResultView();
     refreshResultViews();
   };
@@ -176,7 +177,9 @@ export const TileResultView = ({
                   <Button>キャンセル</Button>
                 </DialogActions>
                 <DialogActions position="end">
-                  <Button appearance="primary">削除</Button>
+                  <Button appearance="primary" onClick={handleDelete}>
+                    削除
+                  </Button>
                 </DialogActions>
               </DialogBody>
             </DialogSurface>
