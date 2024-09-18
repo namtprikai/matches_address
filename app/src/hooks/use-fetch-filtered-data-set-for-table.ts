@@ -1,47 +1,33 @@
 import { useCallback, useEffect, useState } from "react";
 import { type TableProps } from "../@types/charts";
-import { type SelectDataSetDetailBuilding } from "../schema";
+import { type FilterDataSetForTableArgs } from "../ipc-main-listeners/filter-data-set-for-table";
 
-export const useFetchFilterDataSetForTable = ({
-  resultId,
-  type,
-  columns,
-  filterByYear
-}: {
-  resultId: number, filterByYear: {
-    startValue: number | undefined;
-    endValue: number | undefined;
-  }
-} & (
-    | { type: "building"; columns: (keyof SelectDataSetDetailBuilding)[] }
-    | { type: "area"; columns: (keyof SelectDataSetDetailBuilding)[] }
-  )): {
-    tableProps: TableProps;
-    refetch: () => Promise<void>;
-  } => {
-  const [props, setProps] = useState<TableProps>({ columns: [], data: [] });
+export const useFetchFilterDataSetForTable = (
+  props: FilterDataSetForTableArgs,
+): {
+  tableProps: TableProps;
+  refetch: () => Promise<void>;
+} => {
+  const [tableProps, setTableProps] = useState<TableProps>({
+    columns: [],
+    data: [],
+  });
 
   const fetchFilteredDataSetDetailForTable =
     useCallback(async (): Promise<void> => {
-      const result = await window.ipcRenderer.invoke("filterDataSetForTable", {
-        resultId,
-        type,
-        columns,
-        filterByYear
-      });
-      setProps(result);
-    }, [resultId, type, columns, filterByYear]);
+      const result = await window.ipcRenderer.invoke(
+        "filterDataSetForTable",
+        props,
+      );
+      setTableProps(result);
+    }, [props]);
 
   useEffect(() => {
     fetchFilteredDataSetDetailForTable().catch(console.error);
   }, [fetchFilteredDataSetDetailForTable]);
 
-  if (type === "building") {
-    return { tableProps: props, refetch: fetchFilteredDataSetDetailForTable };
-  }
-
   return {
-    tableProps: props,
+    tableProps,
     refetch: async () => {
       return;
     },

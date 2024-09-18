@@ -14,22 +14,16 @@ type Props = {
   unit: "building" | "area";
   value: string;
   name: string;
+  fieldOption: TileViewFieldOption;
 } & (
   | {
       type: "select";
       onChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
-      fieldOption: Omit<TileViewFieldOption, "type"> & { type: "select" };
     }
   | {
       type: "dropdown";
       onChange: DropdownProps["onOptionSelect"];
       multiple: boolean;
-      fieldOption: Omit<TileViewFieldOption, "type"> & { type: "dropdown" };
-    }
-  | {
-      type: "input";
-      onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-      fieldOption: Omit<TileViewFieldOption, "type"> & { type: "input" };
     }
 );
 
@@ -63,7 +57,7 @@ export const DynamicParameterInput = forwardRef<
     );
   }
 
-  if (props.type === "dropdown") {
+  if (props.type === "dropdown" && props.fieldOption.type === "dropdown") {
     const displayValue =
       props.value !== ""
         ? props.unit === "building"

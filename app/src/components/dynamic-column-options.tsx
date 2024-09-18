@@ -24,12 +24,15 @@ export const DynamicColumnOptions = ({
       return option.unit === "building";
     });
 
-    return columns.map(({ value: column, unit }) => {
+    return columns.map(({ value: column }) => {
       const columnMetadata =
         column in BUILDING_DATASET_COLUMN_METADATA
-          ? // @ts-expect-error TODO: この辺りの型定義は別途修正が必要
-            BUILDING_DATASET_COLUMN_METADATA[column]
+          ? BUILDING_DATASET_COLUMN_METADATA[column]
           : null;
+
+      if (columnMetadata === null) {
+        return <></>;
+      }
 
       if (type === "select") {
         return (
@@ -55,9 +58,12 @@ export const DynamicColumnOptions = ({
     return columns.map(({ value: column }) => {
       const columnMetadata =
         column in AREA_DATASET_COLUMN_METADATA
-          ? // @ts-expect-error TODO: この辺りの型定義は別途修正が必要
-            AREA_DATASET_COLUMN_METADATA[column]
+          ? AREA_DATASET_COLUMN_METADATA[column]
           : null;
+
+      if (columnMetadata === null) {
+        return <></>;
+      }
 
       if (type === "select") {
         return (

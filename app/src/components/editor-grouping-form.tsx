@@ -8,9 +8,8 @@ import {
 } from "@fluentui/react-components";
 import { useFieldArray, useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { Delete20Regular } from "@fluentui/react-icons";
-import { type GroupingCondition } from "../utils/subquery-grouping";
+import { type ChartColumnType } from "../@types/charts";
 import { Field } from "./ui/field";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
@@ -19,21 +18,6 @@ import { DialogSurface } from "./ui/dialog-surface";
 import { DialogTitle } from "./ui/dialog-title";
 import { DialogActions } from "./ui/dialog-actions";
 import { Select } from "./ui/select";
-
-type Props = {
-  parameters: {
-    key: string;
-    value: GroupingCondition;
-    type: "group";
-  }[];
-  onSave: (
-    parameters: {
-      key: string;
-      value: GroupingCondition;
-      type: "group";
-    }[],
-  ) => void;
-};
 
 const useStyles = makeStyles({
   groupField: {
@@ -86,46 +70,125 @@ const useStyles = makeStyles({
   },
 });
 
+const BooleanSchema = z.object({
+  referenceColumnType: z.literal("boolean"),
+  operation: z.enum(["isTrue", "isFalse"]),
+  value: z.undefined(),
+});
+
+const NumberSchema = z.object({
+  referenceColumnType: z.union([z.literal("float"), z.literal("integer")]),
+  operation: z.enum(["eq", "noteq", "gt", "gte", "lt", "lte"]),
+  value: z.number(),
+});
+
+const NumberRangeSchema = z.object({
+  referenceColumnType: z.union([z.literal("float"), z.literal("integer")]),
+  operation: z.enum(["range"]),
+  startValue: z.number(),
+  lastValue: z.number(),
+  includesStart: z.boolean(),
+  includesLast: z.boolean(),
+});
+
+const TextSchema = z.object({
+  referenceColumnType: z.literal("text"),
+  operation: z.enum(["eq", "noteq", "contains", "notContains"]),
+  value: z.string(),
+});
+
+const DateSchema = z.object({
+  referenceColumnType: z.literal("date"),
+  operation: z.enum(["eq", "noteq", "gt", "gte", "lt", "lte"]),
+  value: z.string(),
+});
+
+const DateRangeSchema = z.object({
+  referenceColumnType: z.literal("date"),
+  operation: z.enum(["range"]),
+  startValue: z.string(),
+  lastValue: z.string(),
+  includesStart: z.boolean(),
+  includesLast: z.boolean(),
+});
+
 const schema = z.object({
   conditions: z
     .object({
-      key: z.string(),
-      value: z.discriminatedUnion("operation", [
-        z.object({
-          operation: z.enum(["eq", "noteq", "gt", "gte", "lt", "lte"]),
-          value: z.number().nullable(),
-          label: z.string(),
-        }),
-        z.object({
-          operation: z.enum(["range"]),
-          startValue: z.number().nullable(),
-          lastValue: z.number().nullable(),
-          includesStart: z.boolean(),
-          includesLast: z.boolean(),
-          label: z.string(),
-        }),
-      ]),
+      key: z.custom<`group_${string}`>((val) => {
+        return /^group_+$/.test(val as string);
+      }),
+      value: z
+        .union([
+          BooleanSchema,
+          z.discriminatedUnion("operation", [NumberSchema, NumberRangeSchema]),
+          z.discriminatedUnion("operation", [DateSchema, DateRangeSchema]),
+          TextSchema,
+        ])
+        .and(z.object({ label: z.string() })),
       type: z.literal("group"),
     })
     .array(),
 });
 
+type conditions = z.infer<typeof schema.shape.conditions>;
+
+type Props = {
+  parameters: conditions;
+  onSave: (parameters: conditions) => void;
+  columnType: ChartColumnType;
+};
+
 export const EditorGroupingForm = ({
   parameters,
   onSave,
+  columnType = "text",
 }: Props): JSX.Element => {
   const [open, setOpen] = useState(false);
 
   const styles = useStyles();
 
-  const defaultCondition: GroupingCondition = {
-    operation: "eq",
-    value: undefined,
-    label: "",
+  // eslint-disable-next-line @typescript-eslint/explicit-function-return-type -- 複雑な型情報をあえて削除
+  const defaultCondition = (columnType: ChartColumnType) => {
+    switch (columnType) {
+      case "boolean":
+        return {
+          label: "",
+          referenceColumnType: "boolean",
+          operation: "isTrue",
+        } as const;
+      case "text":
+        return {
+          label: "",
+          referenceColumnType: "text",
+          operation: "eq",
+          value: "",
+        } as const;
+      case "date":
+        return {
+          label: "",
+          referenceColumnType: "date",
+          operation: "eq",
+          value: "",
+        } as const;
+      case "float":
+        return {
+          label: "",
+          referenceColumnType: "float",
+          operation: "eq",
+          value: 0,
+        } as const;
+      default:
+        return {
+          label: "",
+          referenceColumnType: "integer",
+          operation: "eq",
+          value: 0,
+        } as const;
+    }
   };
 
   const { control, register } = useForm({
-    resolver: zodResolver(schema),
     defaultValues: {
       conditions: parameters,
     },
@@ -141,37 +204,14 @@ export const EditorGroupingForm = ({
   });
 
   const handleSave = (): void => {
-    onSave(
-      conditions.map((condition) => {
-        if (condition.value.operation === "range") {
-          return {
-            ...condition,
-            value: {
-              ...condition.value,
-              startValue: Number(condition.value.startValue),
-              lastValue: Number(condition.value.lastValue),
-            },
-          };
-        }
-
-        return {
-          ...condition,
-          value: {
-            ...condition.value,
-            value: Number(condition.value.value),
-          },
-        };
-      }),
-    );
+    onSave(conditions);
     setOpen(false);
   };
 
   const handleAppend = (): void => {
     append({
-      key:
-        "group_" +
-        (new Date().getTime() + Math.floor(10000 * Math.random())).toString(16),
-      value: defaultCondition,
+      key: `group_${(new Date().getTime() + Math.floor(10000 * Math.random())).toString(16)}`,
+      value: defaultCondition(columnType),
       type: "group",
     });
   };
@@ -200,6 +240,164 @@ export const EditorGroupingForm = ({
         <DialogBody className={styles.dialogBody}>
           <div className={styles.dialogInner}>
             {fields.map((field, index) => {
+              /**
+               * カラムの型がbooleanの場合
+               */
+              if (field.value.referenceColumnType === "boolean") {
+                return (
+                  <Field key={field.id} className={styles.groupField}>
+                    <Input
+                      className={styles.inputLabelValue}
+                      defaultValue={field.value.label}
+                      placeholder="グループ名"
+                      {...register(`conditions.${index}.value.label`)}
+                    />
+                    <Select
+                      defaultValue={field.value.operation}
+                      {...register(`conditions.${index}.value.operation`)}
+                    >
+                      <option value="isTrue">真である</option>
+                      <option value="isFalse">偽である</option>
+                    </Select>
+                    <Button
+                      appearance="subtle"
+                      icon={<Delete20Regular />}
+                      onClick={() => {
+                        handleRemove(index);
+                      }}
+                      type="button"
+                    ></Button>
+                  </Field>
+                );
+              }
+
+              if (field.value.referenceColumnType === "text") {
+                return (
+                  <Field key={field.id} className={styles.groupField}>
+                    <Input
+                      className={styles.inputLabelValue}
+                      defaultValue={field.value.label}
+                      placeholder="グループ名"
+                      {...register(`conditions.${index}.value.label`)}
+                    />
+                    <Select
+                      defaultValue={field.value.operation}
+                      {...register(`conditions.${index}.value.operation`)}
+                    >
+                      <option value="eq">次に等しい</option>
+                      <option value="noteq">次に等しくない</option>
+                      <option value="contains">次を含む</option>
+                      <option value="notContains">次を含まない</option>
+                    </Select>
+                    <Input
+                      defaultValue={field.value.value}
+                      {...register(`conditions.${index}.value.value`)}
+                      placeholder="値"
+                      type="text"
+                    />
+                    <Button
+                      appearance="subtle"
+                      icon={<Delete20Regular />}
+                      onClick={() => {
+                        handleRemove(index);
+                      }}
+                      type="button"
+                    ></Button>
+                  </Field>
+                );
+              }
+
+              if (field.value.referenceColumnType === "date") {
+                return (
+                  <Field key={field.id} className={styles.groupField}>
+                    <Input
+                      className={styles.inputLabelValue}
+                      defaultValue={field.value.label}
+                      placeholder="グループ名"
+                      {...register(`conditions.${index}.value.label`)}
+                    />
+                    <Select
+                      defaultValue={field.value.operation}
+                      {...register(`conditions.${index}.value.operation`)}
+                    >
+                      <option value="eq">次に等しい</option>
+                      <option value="noteq">次に等しくない</option>
+                      <option value="gt">次より後</option>
+                      <option value="lt">次より前</option>
+                      <option value="gte">次以降</option>
+                      <option value="lte">次以前</option>
+                      <option value="range">次の範囲</option>
+                    </Select>
+                    {field.value.operation === "range" && (
+                      <>
+                        <Input
+                          defaultValue={
+                            field.value.startValue
+                              ? field.value.startValue.toString()
+                              : ""
+                          }
+                          placeholder="開始値"
+                          type="date"
+                          {...register(`conditions.${index}.value.startValue`)}
+                          className={styles.inputRangeValue}
+                        />
+                        <div className={styles.includesField}>
+                          <span>含</span>
+                          <Checkbox
+                            className={styles.checkbox}
+                            defaultChecked={field.value.includesStart ?? false}
+                            {...register(
+                              `conditions.${index}.value.includesStart`,
+                            )}
+                          />
+                        </div>
+                        <span>〜</span>
+                        <Input
+                          defaultValue={
+                            field.value.startValue
+                              ? field.value.startValue.toString()
+                              : ""
+                          }
+                          placeholder="終了値"
+                          type="date"
+                          {...register(`conditions.${index}.value.lastValue`)}
+                          className={styles.inputRangeValue}
+                        />
+                        <div className={styles.includesField}>
+                          <span>含</span>
+                          <Checkbox
+                            className={styles.checkbox}
+                            defaultChecked={field.value.includesLast ?? false}
+                            {...register(
+                              `conditions.${index}.value.includesLast`,
+                            )}
+                          />
+                        </div>
+                      </>
+                    )}
+                    {field.value.operation !== "range" && (
+                      <Input
+                        defaultValue={
+                          field.value.value ? field.value.value.toString() : ""
+                        }
+                        {...register(`conditions.${index}.value.value`)}
+                        className={styles.inputValue}
+                        placeholder="値"
+                        type="date"
+                      />
+                    )}
+                    <Button
+                      appearance="subtle"
+                      icon={<Delete20Regular />}
+                      onClick={() => {
+                        handleRemove(index);
+                      }}
+                      type="button"
+                    ></Button>
+                  </Field>
+                );
+              }
+
               return (
                 <Field key={field.id} className={styles.groupField}>
                   <Input

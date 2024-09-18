@@ -1,13 +1,12 @@
 import { useAtom } from "jotai";
 import { FormProvider, useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { makeStyles } from "@fluentui/react-components";
 import { useEffect } from "react";
 import { type EditResultViewFormType } from "../@types/form-schema";
-import { editResultViewFormSchema } from "../zod/edit-result-view-form-schema";
 import { selectedResultViewAtom } from "../state/selected-result-view-atom";
 import { selectedResultViewIdAtom } from "../state/selected-result-view-id-atom";
 import { resultViewsAtom } from "../state/result-views-atom";
+import { type SelectResultView } from "../schema";
 import { EditResultViewFileds } from "./edit-result-view-fields";
 import { EditResultViewFilterFields } from "./edit-result-view-filter-fields";
 import { Button } from "./ui/button";
@@ -26,23 +25,19 @@ export const EditResultViewForm = (): JSX.Element => {
   const [selectedResultView, refresh] = useAtom(selectedResultViewAtom);
   const [, refreshResultViews] = useAtom(resultViewsAtom);
 
-  const yearStart = selectedResultView?.parameters?.find(
-    (parameter) => parameter.key === "year.start",
-  )?.value;
-  const yearEnd = selectedResultView?.parameters?.find(
-    (parameter) => parameter.key === "year.end",
+  const year = selectedResultView?.parameters.find(
+    (parameter) => parameter.key === "year" && parameter.type === "filter",
   )?.value;
 
   const methods = useForm<EditResultViewFormType>({
-    resolver: zodResolver(editResultViewFormSchema),
     defaultValues: {
       title: selectedResultView?.title ?? "",
       style: selectedResultView?.style ?? "map",
       unit: selectedResultView?.unit ?? "building",
       parameters: selectedResultView?.parameters ?? [],
       year: {
-        start: Number(yearStart) ?? null,
-        end: Number(yearEnd) ?? null,
+        start: year?.start,
+        end: year?.end,
       },
       areas: [],
     },
@@ -57,12 +52,12 @@ export const EditResultViewForm = (): JSX.Element => {
       unit: selectedResultView?.unit ?? "building",
       parameters: selectedResultView?.parameters ?? [],
       year: {
-        start: Number(yearStart) ?? null,
-        end: Number(yearEnd) ?? null,
+        start: year?.start,
+        end: year?.end,
       },
       areas: [],
     });
-  }, [selectedResultView, reset, yearStart, yearEnd]);
+  }, [selectedResultView, reset, year]);
 
   const onSubmit = handleSubmit(async (data) => {
     if (!selectedResultViewId) return;
@@ -71,19 +66,15 @@ export const EditResultViewForm = (): JSX.Element => {
 
     /** もっと良い書き方ありそう */
     const yearExcludedParameters = parameters.filter(
-      (parameter) =>
-        parameter.key !== "year.start" && parameter.key !== "year.end",
+      (parameter) => parameter.key !== "year",
     );
 
-    const startYear = {
-      key: "year.start",
-      value: data.year.start,
-      type: "filter",
-    };
-
-    const endYear = {
-      key: "year.end",
-      value: data.year.end,
+    const yearParameter = {
+      key: "year",
+      value: {
+        start: data.year.start,
+        end: data.year.end,
+      },
       type: "filter",
     };
 
@@ -93,7 +84,10 @@ export const EditResultViewForm = (): JSX.Element => {
         title: data.title?.length === 0 ? undefined : data.title,
         style: data.style,
         unit: data.unit,
-        parameters: [...yearExcludedParameters, startYear, endYear],
+        parameters: [
+          ...yearExcludedParameters,
+          yearParameter,
+        ] as SelectResultView["parameters"],
       },
     });
     refresh();

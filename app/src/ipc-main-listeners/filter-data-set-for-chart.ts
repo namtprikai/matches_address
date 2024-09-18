@@ -1,12 +1,9 @@
 import { and, eq, gte, lte, sql } from "drizzle-orm";
 import { data_set_detail_areas, data_set_detail_buildings } from "../schema";
 import { db } from "../utils/db";
-import { type ChartProps } from "../@types/charts";
+import { type GroupingCondition, type ChartProps } from "../@types/charts";
 import { formatChartValue } from "../utils/format-chart-value";
-import {
-  subQueryFromConditions,
-  type GroupingCondition,
-} from "../utils/subquery-grouping";
+import { subQueryFromConditions } from "../utils/subquery-grouping";
 import {
   type AREA_DATASET_COLUMN,
   AREA_DATASET_COLUMN_METADATA,
@@ -16,6 +13,25 @@ import {
 import { type IpcMainListener } from ".";
 
 export type FilterDataSetForChartResponse = ChartProps;
+export type FilterDataSetForChartArgs = {
+  resultId: number;
+  groupingConditions?: GroupingCondition[];
+  filterByYear: {
+    startValue: string | undefined;
+    endValue: string | undefined;
+  };
+} & (
+  | {
+      type: "building";
+      x: BUILDING_DATASET_COLUMN;
+      y: BUILDING_DATASET_COLUMN;
+    }
+  | {
+      type: "area";
+      x: AREA_DATASET_COLUMN;
+      y: AREA_DATASET_COLUMN;
+    }
+);
 
 // TODO: 非同期処理に変更する
 export const filterDataSetForChart = ((
@@ -27,25 +43,7 @@ export const filterDataSetForChart = ((
     y,
     groupingConditions,
     filterByYear,
-  }: {
-    resultId: number;
-    groupingConditions?: GroupingCondition[];
-    filterByYear: {
-      startValue: number | undefined;
-      endValue: number | undefined;
-    };
-  } & (
-    | {
-        type: "building";
-        x: BUILDING_DATASET_COLUMN;
-        y: BUILDING_DATASET_COLUMN;
-      }
-    | {
-        type: "area";
-        x: AREA_DATASET_COLUMN;
-        y: AREA_DATASET_COLUMN;
-      }
-  ),
+  }: FilterDataSetForChartArgs,
 ): FilterDataSetForChartResponse => {
   if (type === "area") {
     // eslint-disable-next-line @typescript-eslint/explicit-function-return-type -- ignore
@@ -65,7 +63,7 @@ export const filterDataSetForChart = ((
             filterByYear.endValue
               ? lte(
                   data_set_detail_areas.reference_date,
-                  `${filterByYear.endValue}-01-01`,
+                  `${filterByYear.endValue}-12-31`,
                 )
               : undefined,
           ),
@@ -73,7 +71,7 @@ export const filterDataSetForChart = ((
         .as("filterSubQuery");
 
       if (groupingConditions && groupingConditions.length > 0) {
-        const groupLabel = x + "_group";
+        const groupLabel = `${x}_group` as const;
 
         const subQuery = subQueryFromConditions(
           db,
@@ -92,7 +90,11 @@ export const filterDataSetForChart = ((
           .groupBy(sql.raw(`${groupLabel}`))
           .having(sql.raw(`${groupLabel} <> ''`))
           .limit(100)
-          .all();
+          .all() as {
+          [key: `${string}_group`]: string;
+        } & {
+          [k in typeof y]: number;
+        }[];
       }
 
       return db
@@ -107,14 +109,19 @@ export const filterDataSetForChart = ((
     const columnYMetadata = AREA_DATASET_COLUMN_METADATA[y];
     const columnXMetadata = AREA_DATASET_COLUMN_METADATA[x];
 
-    const percentage =
-      "percentage" in columnYMetadata ? columnYMetadata.percentage : false;
-
     return {
       data: all.map((row) => {
+        if (`${x}_group` in row) {
+          return {
+            // @ts-expect-error drizzle側で型補完が効かないため、型を指定
+            x: row[`${x}_group`] as string,
+            y: formatChartValue(row[y] as number) as number,
+          };
+        }
+
         return {
-          x: groupingConditions ? row[x + "_group"] : (row[x] as string),
-          y: formatChartValue(row[y] ?? "", percentage) as number,
+          x: row[x] as string,
+          y: formatChartValue(row[y] as number) as number,
         };
       }),
       xAxisColumn: {
@@ -147,7 +154,7 @@ export const filterDataSetForChart = ((
             filterByYear.endValue
               ? lte(
                   data_set_detail_buildings.reference_date,
-                  `${filterByYear.endValue}-01-01`,
+                  `${filterByYear.endValue}-12-31`,
                 )
               : undefined,
           ),
@@ -155,7 +162,7 @@ export const filterDataSetForChart = ((
         .as("filterSubQuery");
 
       if (groupingConditions && groupingConditions.length > 0) {
-        const groupLabel = x + "_group";
+        const groupLabel = `${x}_group` as const;
 
         const subQuery = subQueryFromConditions(
           db,
@@ -174,7 +181,11 @@ export const filterDataSetForChart = ((
           .groupBy(sql.raw(`${groupLabel}`))
           .having(sql.raw(`${groupLabel} <> ''`))
           .limit(100)
-          .all();
+          .all() as {
+          [key: `${string}_group`]: string;
+        } & {
+          [k in typeof y]: number;
+        }[]; // drizzle側で型補完が効かないため、型を指定
       }
 
       return db
@@ -189,18 +200,19 @@ export const filterDataSetForChart = ((
     const columnYMetadata = BUILDING_DATASET_COLUMN_METADATA[y];
     const columnXMetadata = BUILDING_DATASET_COLUMN_METADATA[x];
 
-    const percentage =
-      "percentage" in columnYMetadata ? columnYMetadata.percentage : false;
-
     return {
       data: all.map((row) => {
+        if (`${x}_group` in row) {
+          return {
+            // @ts-expect-error drizzle側で型補完が効かないため、型を指定
+            x: row[`${x}_group`],
+            y: formatChartValue(row[y] ?? "") as number,
+          };
+        }
+
         return {
-          x:
-            groupingConditions && groupingConditions.length > 0
-              ? (row[x + "_group"] as string)
-              : (row[x] as string),
-          // TODO: この辺りの型定義は別途修正が必要
-          y: formatChartValue(row[y] ?? "", percentage) as number,
+          x: row[x] as string,
+          y: formatChartValue(row[y] ?? "") as number,
         };
       }),
       xAxisColumn: {

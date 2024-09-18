@@ -5,6 +5,12 @@ import { LanguageMap } from "../lang";
 import { TILE_VIEW_CONFIG } from "../config/tile-view-config";
 import { getResultViewFieldOption } from "../utils/get-view-field-option";
 import { type EditResultViewFormType } from "../@types/form-schema";
+import {
+  type AREA_DATASET_COLUMN,
+  AREA_DATASET_COLUMN_METADATA,
+  type BUILDING_DATASET_COLUMN,
+  BUILDING_DATASET_COLUMN_METADATA,
+} from "../config/column-metadata";
 import { Fieldset } from "./ui/fieldset";
 import { FieldLegend } from "./ui/field-legend";
 import { Field } from "./ui/field";
@@ -14,11 +20,12 @@ import { DynamicParameterInput } from "./dynamic-parameter-input";
 import { EditorGroupingForm } from "./editor-grouping-form";
 
 export const EditResultViewFileds = (): JSX.Element => {
-  const { register, watch, control, setValue, formState } =
+  const { register, watch, control, setValue } =
     useFormContext<EditResultViewFormType>();
 
   const style = watch("style");
   const unit = watch("unit");
+  const parameters = watch("parameters");
 
   const { fields, replace, update } = useFieldArray({
     control,
@@ -39,17 +46,12 @@ export const EditResultViewFileds = (): JSX.Element => {
   };
 
   const groupingFields = fields.filter((field) => {
-    if (!field) return false;
     return field.type === "group";
   });
 
   const columnFields = fields.filter((field) => {
-    if (!field) return false;
     return field.type === "column";
   });
-
-  console.log(fields);
-  console.log(formState.errors);
 
   return (
     <>
@@ -83,11 +85,26 @@ export const EditResultViewFileds = (): JSX.Element => {
           </Select>
         </Field>
         {columnFields.map((field, index) => {
+          if (style === null || unit === null) return null;
+
           const fieldOption = getResultViewFieldOption(style, field.key);
 
           if (!fieldOption) return null;
 
-          if (fieldOption.type === "select") {
+          if (fieldOption.type === "select" && field.type === "column") {
+            const column = parameters.find((parameter) => {
+              return parameter.key === field.key && parameter.type === "column";
+            });
+
+            const columnMetadata =
+              unit === "building"
+                ? BUILDING_DATASET_COLUMN_METADATA[
+                    column?.value as BUILDING_DATASET_COLUMN
+                  ]
+                : AREA_DATASET_COLUMN_METADATA[
+                    column?.value as AREA_DATASET_COLUMN
+                  ];
+
             return (
               <Fragment key={field.id}>
                 <DynamicParameterInput
@@ -102,22 +119,20 @@ export const EditResultViewFileds = (): JSX.Element => {
                     });
                   }}
                   unit={unit}
-                  value={
-                    typeof field.value === "number"
-                      ? field.value.toString()
-                      : typeof field.value === "string"
-                        ? field.value
-                        : ""
-                  }
+                  value={field.value}
                 />
                 {fieldOption?.grouping && (
                   <EditorGroupingForm
+                    columnType={columnMetadata?.type}
                     onSave={(parameters) => {
                       const prevOtherParameters = fields.filter((f) => {
-                        if (!f) return false;
-                        return !f.key.startsWith("group_");
+                        return f.type !== "group";
                       });
-                      replace([...prevOtherParameters, ...parameters]);
+                      const newParameters = [
+                        ...prevOtherParameters,
+                        ...parameters,
+                      ] as SelectResultView["parameters"];
+                      replace(newParameters);
                     }}
                     parameters={groupingFields}
                   />
@@ -157,13 +172,7 @@ export const EditResultViewFileds = (): JSX.Element => {
                   });
                 }}
                 unit={unit}
-                value={
-                  typeof field.value === "number"
-                    ? field.value.toString()
-                    : typeof field.value === "string"
-                      ? field.value
-                      : ""
-                }
+                value={field.value}
               />
             );
           }

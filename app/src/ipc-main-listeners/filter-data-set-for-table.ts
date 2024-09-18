@@ -1,42 +1,38 @@
 import { and, eq, gte, lte } from "drizzle-orm";
-import {
-  data_set_detail_areas,
-  data_set_detail_buildings,
-  type SelectDataSetDetailArea,
-  type SelectDataSetDetailBuilding,
-} from "../schema";
+import { data_set_detail_areas, data_set_detail_buildings } from "../schema";
 import { db } from "../utils/db";
 import { columnsToSelectField } from "../utils/columns-to-select-field";
 import { type TableProps } from "../@types/charts";
 import { formatChartValue } from "../utils/format-chart-value";
+import {
+  AREA_DATASET_COLUMN_METADATA,
+  BUILDING_DATASET_COLUMN_METADATA,
+  type AREA_DATASET_COLUMN,
+  type BUILDING_DATASET_COLUMN,
+} from "../config/column-metadata";
 import { type IpcMainListener } from ".";
 
 type FilterDataSetForTableResponse = TableProps;
+export type FilterDataSetForTableArgs = {
+  resultId: number;
+  filterByYear: {
+    startValue: string | undefined;
+    endValue: string | undefined;
+  };
+} & (
+  | { type: "building"; columns: BUILDING_DATASET_COLUMN[] }
+  | {
+      type: "area";
+      columns: AREA_DATASET_COLUMN[];
+    }
+);
 
-// TODO: 非同期処理に変更する
-export const filterDataSetForTable = ((
+export const filterDataSetForTable = (async (
   _: unknown,
-  {
-    resultId,
-    type,
-    columns,
-    filterByYear,
-  }: {
-    resultId: number;
-    filterByYear: {
-      startValue: number | undefined;
-      endValue: number | undefined;
-    };
-  } & (
-    | { type: "building"; columns: (keyof SelectDataSetDetailBuilding)[] }
-    | {
-        type: "area";
-        columns: (keyof SelectDataSetDetailArea)[];
-      }
-  ),
-): FilterDataSetForTableResponse => {
+  { resultId, type, columns, filterByYear }: FilterDataSetForTableArgs,
+): Promise<FilterDataSetForTableResponse> => {
   if (type === "building") {
-    const all = db
+    const all = await db
       .select(columnsToSelectField({ type: "building", columns }))
       .from(data_set_detail_buildings)
       .where(
@@ -51,7 +47,7 @@ export const filterDataSetForTable = ((
           filterByYear.endValue
             ? lte(
                 data_set_detail_buildings.reference_date,
-                `${filterByYear.endValue}-01-01`,
+                `${filterByYear.endValue}-12-31`,
               )
             : undefined,
         ),
@@ -60,24 +56,20 @@ export const filterDataSetForTable = ((
       .all();
 
     return {
-      columns: columns.map((column) => ({
-        key: column,
-        // @ts-expect-error TODO: この辺りの型定義は別途修正が必要
-        label: DATA_SET_DETAIL_BUILDING_COLUMN_CONFIG[column].label,
-        // @ts-expect-error TODO: この辺りの型定義は別途修正が必要
-        unit: DATA_SET_DETAIL_BUILDING_COLUMN_CONFIG[column].unit,
-      })),
+      columns: columns.map((column) => {
+        const columnMetadata = BUILDING_DATASET_COLUMN_METADATA[column];
+        return {
+          key: column,
+          label: columnMetadata.label,
+          unit: columnMetadata.unit,
+        };
+      }),
       data: all.map((row) => {
         const rowArray = Object.entries(row);
         const formattedRow = rowArray.reduce((acc, [key, value]) => {
           return {
             ...acc,
-            [key]: formatChartValue(
-              value,
-              // @ts-expect-error TODO: この辺りの型定義は別途修正が必要
-              DATA_SET_DETAIL_BUILDING_COLUMN_CONFIG[key].percentage,
-              2,
-            ),
+            [key]: formatChartValue(value ?? 0),
           };
         }, {});
 
@@ -102,7 +94,7 @@ export const filterDataSetForTable = ((
           filterByYear.endValue
             ? lte(
                 data_set_detail_areas.reference_date,
-                `${filterByYear.endValue}-01-01`,
+                `${filterByYear.endValue}-12-31`,
               )
             : undefined,
         ),
@@ -111,24 +103,20 @@ export const filterDataSetForTable = ((
       .all();
 
     return {
-      columns: columns.map((column) => ({
-        key: column,
-        // @ts-expect-error TODO: この辺りの型定義は別途修正が必要
-        label: DATA_SET_DETAIL_AREA_COLUMN_CONFIG[column].label,
-        // @ts-expect-error TODO: この辺りの型定義は別途修正が必要
-        unit: DATA_SET_DETAIL_AREA_COLUMN_CONFIG[column].unit,
-      })),
+      columns: columns.map((column) => {
+        const columnMetadata = AREA_DATASET_COLUMN_METADATA[column];
+        return {
+          key: column,
+          label: columnMetadata.label,
+          unit: columnMetadata.unit,
+        };
+      }),
       data: all.map((row) => {
         const rowArray = Object.entries(row);
         const formattedRow = rowArray.reduce((acc, [key, value]) => {
           return {
             ...acc,
-            [key]: formatChartValue(
-              value,
-              // @ts-expect-error TODO: この辺りの型定義は別途修正が必要
-              DATA_SET_DETAIL_AREA_COLUMN_CONFIG[key].percentage,
-              2,
-            ),
+            [key]: formatChartValue(value ?? 0),
           };
         }, {});
 
