@@ -12,6 +12,7 @@ const useStyles = makeStyles({
     flex: "1",
     padding: `${tokens.spacingVerticalXXL} ${tokens.spacingHorizontalXXL}`,
     backgroundColor: tokens.colorNeutralBackground3,
+    minHeight: "100vh",
   },
 });
 
