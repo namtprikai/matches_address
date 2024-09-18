@@ -12,7 +12,7 @@ export const insertResultViews = (async (
 ): Promise<SelectResultView[]> => {
   const res = await db
     .insert(result_views)
-    .values({ sheet_id, data_set_result_id, title: "" })
+    .values({ sheet_id, data_set_result_id, title: "", style: "map", unit: "building" })
     .returning();
   return res;
 }) satisfies IpcMainListener;
