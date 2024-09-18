@@ -23,6 +23,7 @@ const useStyles = makeStyles({
   content: {
     flex: "1",
     padding: tokens.spacingHorizontalXXL,
+    paddingLeft: `calc(320px + ${tokens.spacingHorizontalXXL})`,
     backgroundColor: tokens.colorNeutralBackground3,
     minHeight: "100vh",
     display: "flex",
@@ -31,6 +32,7 @@ const useStyles = makeStyles({
   },
   sidebar: {
     minWidth: "320px", // 現状チャート部分は無限に拡大するため、最小値を設定
+    position: "fixed",
   },
 });
 
