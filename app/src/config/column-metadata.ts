@@ -95,6 +95,12 @@ export const BUILDING_DATASET_COLUMN_METADATA = {
     groupable: true,
     unit: "人",
   },
+  percentage_under_15: {
+    label: "15歳未満割合",
+    type: "float",
+    groupable: true,
+    unit: "%",
+  },
   percentage_15_to_64: {
     label: "15-64歳割合",
     type: "float",
@@ -115,7 +121,7 @@ export const BUILDING_DATASET_COLUMN_METADATA = {
   },
   predicted_probability: {
     label: "予測確率",
-    type: "percentage",
+    type: "float",
     groupable: true,
     unit: "%",
   },
