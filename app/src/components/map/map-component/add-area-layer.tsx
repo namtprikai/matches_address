@@ -9,6 +9,8 @@ export function addAreaLayer(
   layerId: string,
   buildings: AreaProperties[],
 ): void {
+  if (map.getLayer(layerId)) return;
+
   map.addSource(layerId, {
     type: "geojson",
     data: {
