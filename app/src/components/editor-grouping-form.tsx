@@ -137,12 +137,16 @@ type Props = {
   parameters: conditions;
   onSave: (parameters: conditions) => void;
   columnType: ChartColumnType;
+  columnLabel: string;
+  unit?: string;
 };
 
 export const EditorGroupingForm = ({
   parameters,
   onSave,
   columnType = "text",
+  unit = "",
+  columnLabel,
 }: Props): JSX.Element => {
   const [open, setOpen] = useState(false);
 
@@ -193,7 +197,7 @@ export const EditorGroupingForm = ({
       conditions: parameters,
     },
   });
-  const { fields, append, remove } = useFieldArray({
+  const { fields, append, remove, update } = useFieldArray({
     control,
     name: "conditions",
   });
@@ -236,7 +240,9 @@ export const EditorGroupingForm = ({
         </Button>
       </DialogTrigger>
       <DialogSurface className={styles.dialogSurface}>
-        <DialogTitle>グループを編集</DialogTitle>
+        <DialogTitle>
+          {columnLabel ? `グループを編集（${columnLabel}）` : "グループを編集"}
+        </DialogTitle>
         <DialogBody className={styles.dialogBody}>
           <div className={styles.dialogInner}>
             {fields.map((field, index) => {
@@ -407,8 +413,18 @@ export const EditorGroupingForm = ({
                     {...register(`conditions.${index}.value.label`)}
                   />
                   <Select
-                    defaultValue={field.value.operation ?? "eq"}
-                    {...register(`conditions.${index}.value.operation`)}
+                    onChange={(e) => {
+                      update(index, {
+                        key: field.key,
+                        value: {
+                          ...field.value,
+                          // @ts-expect-error - ここで型が変わるためエラーになる
+                          operation: e.target.value,
+                        },
+                        type: "group",
+                      });
+                    }}
+                    value={field.value.operation ?? "eq"}
                   >
                     <option value="eq">等しい</option>
                     <option value="noteq">等しくない</option>
@@ -431,6 +447,7 @@ export const EditorGroupingForm = ({
                         {...register(`conditions.${index}.value.startValue`)}
                         className={styles.inputRangeValue}
                       />
+                      {unit}
                       <div className={styles.includesField}>
                         <span>含</span>
                         <Checkbox
@@ -453,6 +470,7 @@ export const EditorGroupingForm = ({
                         {...register(`conditions.${index}.value.lastValue`)}
                         className={styles.inputRangeValue}
                       />
+                      {unit}
                       <div className={styles.includesField}>
                         <span>含</span>
                         <Checkbox
@@ -466,15 +484,18 @@ export const EditorGroupingForm = ({
                     </>
                   )}
                   {field.value.operation !== "range" && (
-                    <Input
-                      defaultValue={
-                        field.value.value ? field.value.value.toString() : ""
-                      }
-                      {...register(`conditions.${index}.value.value`)}
-                      className={styles.inputValue}
-                      placeholder="値"
-                      type="number"
-                    />
+                    <>
+                      <Input
+                        defaultValue={
+                          field.value.value ? field.value.value.toString() : ""
+                        }
+                        {...register(`conditions.${index}.value.value`)}
+                        className={styles.inputValue}
+                        placeholder="値"
+                        type="number"
+                      />
+                      {unit}
+                    </>
                   )}
                   <Button
                     appearance="subtle"

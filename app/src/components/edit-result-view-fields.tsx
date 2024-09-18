@@ -135,6 +135,7 @@ export const EditResultViewFileds = (): JSX.Element => {
                 />
                 {fieldOption?.grouping && (
                   <EditorGroupingForm
+                    columnLabel={columnMetadata?.label}
                     columnType={columnMetadata?.type}
                     onSave={(parameters) => {
                       const prevOtherParameters = fields.filter((f) => {
@@ -147,6 +148,7 @@ export const EditResultViewFileds = (): JSX.Element => {
                       replace(newParameters);
                     }}
                     parameters={groupingFields}
+                    unit={columnMetadata?.unit}
                   />
                 )}
                 {fieldOption.grouping === false &&
