@@ -61,10 +61,10 @@ export const EditResultViewFilterFields = (): JSX.Element => {
       <Field label="期間">
         <div className={styles.year}>
           <Select
-            value={year.start}
+            value={year.start ? year.start.toString() : YEAR_LOWER_LIMIT}
             {...register("year.start", {
               setValueAs: (v: EditResultViewFormType["year"]["start"]) =>
-                v === YEAR_LOWER_LIMIT ? null : Number(v),
+                typeof v === "number" && !Number.isNaN(v) ? Number(v) : null,
             })}
           >
             <option value={YEAR_LOWER_LIMIT}>{YEAR_LOWER_LIMIT}</option>
@@ -76,10 +76,10 @@ export const EditResultViewFilterFields = (): JSX.Element => {
           </Select>
           <span>〜</span>
           <Select
-            value={year.end}
+            value={year.start ? year.start.toString() : YEAR_UPPER_LIMIT}
             {...register("year.end", {
               setValueAs: (v: EditResultViewFormType["year"]["end"]) =>
-                v === YEAR_UPPER_LIMIT ? null : Number(v),
+                typeof v === "number" && !Number.isNaN(v) ? Number(v) : null,
             })}
           >
             <option value={YEAR_UPPER_LIMIT}>{YEAR_UPPER_LIMIT}</option>
