@@ -13,6 +13,7 @@ import {
   type SelectDataSetDetailBuilding,
 } from "../schema";
 import { useFetchFilterDataSetForTable } from "../hooks/use-fetch-filtered-data-set-for-table";
+import { Pagenation } from "./ui/pagenation";
 
 const useStyles = makeStyles({
   tableHeader: {
@@ -57,7 +58,7 @@ export const TableView = ({
   type,
   filterByYear,
 }: TableViewProps): JSX.Element => {
-  const { tableProps } = useFetchFilterDataSetForTable({
+  const { tableProps, pagenation } = useFetchFilterDataSetForTable({
     resultId,
     type,
     columns,
@@ -68,6 +69,7 @@ export const TableView = ({
 
   return (
     <div>
+      <Pagenation {...pagenation} />
       {/* FIXME: overflowが機能しない */}
       <Table className={styles.table}>
         <TableHeader className={styles.tableHeader}>
