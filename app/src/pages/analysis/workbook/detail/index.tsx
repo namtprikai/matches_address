@@ -1,5 +1,5 @@
 import { EditFilled } from "@fluentui/react-icons";
-import { useEffect } from "react";
+import { Suspense, useEffect } from "react";
 import { makeStyles, TabList, tokens } from "@fluentui/react-components";
 import { useParams } from "react-router-dom";
 import { Button } from "../../../../components/ui/button";
@@ -48,7 +48,7 @@ export function DetailWorkbook(): JSX.Element {
   const { onTabSelect, selectedValue, setSelectedValue } = useTabs();
 
   useEffect(() => {
-    setSelectedValue(resultSheets[0]?.id);
+    setSelectedValue(resultSheets?.[0]?.id);
   }, [resultSheets, setSelectedValue]);
 
   return (
@@ -71,7 +71,7 @@ export function DetailWorkbook(): JSX.Element {
           onTabSelect={onTabSelect}
           selectedValue={selectedValue}
         >
-          {resultSheets.map((item) => (
+          {resultSheets?.map((item) => (
             <Tab key={item.id} id={item.title || ""} value={item.id}>
               {item.title}
             </Tab>
@@ -79,13 +79,15 @@ export function DetailWorkbook(): JSX.Element {
         </TabList>
       ) : null}
       <div>
-        {resultSheets.map((item) => (
+        {resultSheets?.map((item) => (
           <div
             key={item.id}
             className={styles.resultSheets}
             hidden={selectedValue !== item.id}
           >
-            <ResultSheet sheetId={item.id} />
+            <Suspense>
+              <ResultSheet sheetId={item.id} />
+            </Suspense>
           </div>
         ))}
       </div>

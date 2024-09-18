@@ -26,7 +26,7 @@ export const ResultSheet = ({ sheetId }: Props): JSX.Element => {
 
   const { data } = useFetchResultViews({ sheetId });
 
-  if (data.length === 0)
+  if (!data || data.length === 0)
     return (
       <div>
         <p>ビューがありません</p>
@@ -39,7 +39,7 @@ export const ResultSheet = ({ sheetId }: Props): JSX.Element => {
         <div className={styles.resultViews}>
           {data.map((item) => (
             <TileResultView
-              key={item.result_views.id}
+              key={item.result_views?.id}
               {...{
                 resultView: item.result_views,
                 dataSetResult: item.data_set_results,
@@ -55,7 +55,7 @@ export const ResultSheet = ({ sheetId }: Props): JSX.Element => {
     <div className={styles.root}>
       <div>
         <TileResultView
-          key={data[0].result_views.id}
+          key={data[0].result_views?.id}
           {...{
             resultView: data[0].result_views,
             dataSetResult: data[0].data_set_results,
@@ -67,7 +67,7 @@ export const ResultSheet = ({ sheetId }: Props): JSX.Element => {
           ({ data_set_results, result_views }, index) =>
             index !== 0 && (
               <TileResultView
-                key={result_views.id}
+                key={result_views?.id}
                 {...{
                   resultView: result_views,
                   dataSetResult: data_set_results,

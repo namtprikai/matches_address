@@ -11,8 +11,10 @@ import {
 import { type FileSource, PMTiles, Protocol } from "pmtiles";
 import { makeStyles } from "@fluentui/react-components";
 import { type Polygon } from "geojson";
+import useSWR, { type Fetcher } from "swr";
 import { type VacancyLevels } from "../vacancy-level-checkbox";
 import protomapsBasemapsJson from "../../../../assets/protomaps-basemaps.json";
+import { type getChubuPmtiles } from "../../../ipc-main-listeners/get-chubu-pmtiles";
 import { addBuildingLayer } from "./add-building-layer";
 import { type BuildingProperties } from "./building-popup";
 import { addAreaLayer } from "./add-area-layer";
@@ -34,6 +36,11 @@ interface Props {
   vacancyLevels: VacancyLevels;
 }
 
+const pmtilesFetcher: Fetcher<
+  Awaited<ReturnType<typeof getChubuPmtiles>>,
+  string
+> = () => window.ipcRenderer.invoke("getChubuPmtiles");
+
 export function MapComponent({
   dataSetResultId,
   type,
@@ -44,14 +51,14 @@ export function MapComponent({
   const containerRef = useRef<HTMLDivElement | null>(null);
   const [mapInstance, setMapInstance] = useState<Map | null>(null);
   const [layerIds, setLayerIds] = useState<string[] | null>(null);
+  const { data: buffer } = useSWR("getChubuPmtiles", pmtilesFetcher);
 
-  useEffect(function initializeMapEffect() {
-    const containerEl = containerRef.current;
-    if (!containerEl) return;
+  useEffect(
+    function initializeMapEffect() {
+      const containerEl = containerRef.current;
+      if (!containerEl || !buffer) return;
 
-    const initializeMap = async (): Promise<void> => {
       const protocol = new Protocol();
-      const buffer = await window.ipcRenderer.invoke("getChubuPmtiles");
       const fileSource: FileSource = {
         file: buffer as unknown as File,
         getKey: () => "chubu.pmtiles",
@@ -77,14 +84,13 @@ export function MapComponent({
       initializedMap.on("load", () => {
         setMapInstance(initializedMap);
       });
-    };
 
-    void initializeMap();
-
-    return () => {
-      removeProtocol("pmtiles");
-    };
-  }, []);
+      return () => {
+        removeProtocol("pmtiles");
+      };
+    },
+    [buffer],
+  );
 
   useEffect(
     function updateMapEffect() {
@@ -141,7 +147,7 @@ export function MapComponent({
                     throw new Error("Network response was not ok");
                   }
 
-                  const layerId = lastId.toString();
+                  const layerId = `building-${lastId.toString()}`;
                   const filteredBatch: BuildingProperties[] = batch.map(
                     (building) => ({
                       geometry: building.geometry,
@@ -229,7 +235,7 @@ export function MapComponent({
                     throw new Error("Network response was not ok");
                   }
 
-                  const layerId = lastId.toString();
+                  const layerId = `area-${lastId.toString()}`;
                   addAreaLayer(mapInstance, layerId, batch);
                   setLayerIds((prevLayerIds) =>
                     prevLayerIds ? [...prevLayerIds, layerId] : [layerId],
@@ -285,12 +291,14 @@ export function MapComponent({
         !vacancyLevels.low && !vacancyLevels.medium && !vacancyLevels.high;
       if (allFalse) {
         for (const layerId of layerIds) {
+          if (!mapInstance.getLayer(layerId)) return;
           mapInstance.setLayoutProperty(layerId, "visibility", "none");
         }
         return;
       }
 
       for (const layerId of layerIds) {
+        if (!mapInstance.getLayer(layerId)) return;
         const filters = [];
         if (vacancyLevels.low) {
           filters.push(["<", ["get", "predicted_probability"], 0.3]);

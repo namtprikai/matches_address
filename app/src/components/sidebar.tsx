@@ -13,6 +13,7 @@ const useStyles = makeStyles({
     height: "100vh",
     padding: `${tokens.spacingVerticalXXL} ${tokens.spacingHorizontalNone}`,
     backgroundColor: tokens.colorBrandBackground,
+    position: "fixed",
   },
   navDrawerBody: {
     padding: `${tokens.spacingVerticalNone} ${tokens.spacingHorizontalMNudge}`,

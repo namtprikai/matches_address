@@ -10,8 +10,7 @@ export const selectResultSheets = (async (
   const all = await db
     .select()
     .from(result_sheets)
-    .where(eq(result_sheets.workbook_id, workbookId))
-    .all();
+    .where(eq(result_sheets.workbook_id, workbookId));
 
   return all;
 }) satisfies IpcMainListener;

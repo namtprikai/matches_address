@@ -23,6 +23,7 @@ const useStyles = makeStyles({
   content: {
     flex: "1",
     padding: tokens.spacingHorizontalXXL,
+    paddingLeft: `calc(320px + ${tokens.spacingHorizontalXXL})`,
     backgroundColor: tokens.colorNeutralBackground3,
     minHeight: "100vh",
     display: "flex",
@@ -31,6 +32,7 @@ const useStyles = makeStyles({
   },
   sidebar: {
     minWidth: "320px", // 現状チャート部分は無限に拡大するため、最小値を設定
+    position: "fixed",
   },
 });
 
@@ -56,11 +58,11 @@ export const EditWorkbook = (): JSX.Element => {
 
         <TabListEditResultSheet />
         <div>
-          {resultSheets.map((item) => (
-            <div key={item.id} hidden={selectedResultSheetId !== item.id}>
-              <PreviewResultSheet />
-            </div>
-          ))}
+          {resultSheets.map((item) =>
+            selectedResultSheetId === item.id ? (
+              <PreviewResultSheet key={item.id} />
+            ) : null,
+          )}
         </div>
         <a href={`#analysis/workbook/${id}`}>
           <Button>詳細に戻る</Button>

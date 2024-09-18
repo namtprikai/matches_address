@@ -6,11 +6,13 @@ const useStyles = makeStyles({
   root: {
     overflow: "hidden",
     display: "flex",
+    paddingLeft: "82px",
   },
   content: {
     flex: "1",
     padding: `${tokens.spacingVerticalXXL} ${tokens.spacingHorizontalXXL}`,
     backgroundColor: tokens.colorNeutralBackground3,
+    minHeight: "100vh",
   },
 });
 

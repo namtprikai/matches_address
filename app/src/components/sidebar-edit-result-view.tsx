@@ -58,6 +58,7 @@ export const SidebarEditResultView = (): JSX.Element => {
       sheet_id: selectedResultSheetId,
       parameters: [],
     });
+    // TODO: できればリロードせずに更新したい
     refresh();
   };
 
@@ -133,7 +134,7 @@ export const SidebarEditResultView = (): JSX.Element => {
                     await window.ipcRenderer
                       .invoke("createDummyDataSetResults", {
                         full: true,
-                        title: `分析結果(32万件)-${dataSetResults.length + 1}`,
+                        title: `分析結果(32万件)-${dataSetResults?.length || 0 + 1}`,
                       })
                       .then(() =>
                         console.info(
@@ -151,7 +152,7 @@ export const SidebarEditResultView = (): JSX.Element => {
                     await window.ipcRenderer
                       .invoke("createDummyDataSetResults", {
                         full: false,
-                        title: `分析結果(3.2万件)-${dataSetResults.length + 1}`,
+                        title: `分析結果(3.2万件)-${dataSetResults?.length || 0 + 1}`,
                       })
                       .then(() =>
                         console.info(
@@ -168,7 +169,7 @@ export const SidebarEditResultView = (): JSX.Element => {
                     console.info("Start creating dummy data set results!");
                     await window.ipcRenderer
                       .invoke("createDataSetResults", {
-                        title: `分析結果(軽量版)-${dataSetResults.length + 1}`,
+                        title: `分析結果(軽量版)-${dataSetResults?.length || 0 + 1}`,
                       })
                       .then(() =>
                         console.info(

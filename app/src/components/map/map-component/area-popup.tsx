@@ -7,9 +7,9 @@ export type AreaProperties = Pick<
   SelectDataSetDetailArea,
   | "geometry"
   | "predicted_probability"
-  | "address"
   | "young_population_ratio"
   | "elderly_population_ratio"
+  | "area_group"
   | "area"
   | "vacant_house_count"
 >;
@@ -43,7 +43,7 @@ export const AreaPopup = forwardRef<HTMLDivElement, Props>(
                 : "??"}
               %
             </span>
-            <div className={styles.address}>{properties.address}</div>
+            <div className={styles.address}>{properties.area_group}</div>
           </div>
         </div>
         <div className={styles.info}>
@@ -55,13 +55,13 @@ export const AreaPopup = forwardRef<HTMLDivElement, Props>(
             <div className={styles.item}>
               <span className={styles.itemLabel}>若年層率</span>
               <span className={styles.itemValue}>
-                {properties.young_population_ratio}人
+                {properties.young_population_ratio}%
               </span>
             </div>
             <div className={styles.item}>
               <span className={styles.itemLabel}>高年者率</span>
               <span className={styles.itemValue}>
-                {properties.elderly_population_ratio}
+                {properties.elderly_population_ratio}%
               </span>
             </div>
           </div>
@@ -77,7 +77,7 @@ export const AreaPopup = forwardRef<HTMLDivElement, Props>(
             <div className={styles.item}>
               <span className={styles.itemLabel}>空き家件数</span>
               <span className={styles.itemValue}>
-                {properties.vacant_house_count}
+                {properties.vacant_house_count}件
               </span>
             </div>
           </div>

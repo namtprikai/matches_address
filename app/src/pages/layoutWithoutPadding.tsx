@@ -6,6 +6,7 @@ const useStyles = makeStyles({
   root: {
     overflow: "hidden",
     display: "flex",
+    paddingLeft: "82px",
   },
   content: {
     flex: "1",
