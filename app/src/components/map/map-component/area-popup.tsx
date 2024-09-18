@@ -7,9 +7,9 @@ export type AreaProperties = Pick<
   SelectDataSetDetailArea,
   | "geometry"
   | "predicted_probability"
-  | "address"
   | "young_population_ratio"
   | "elderly_population_ratio"
+  | "area_group"
   | "area"
   | "vacant_house_count"
 >;
@@ -43,7 +43,7 @@ export const AreaPopup = forwardRef<HTMLDivElement, Props>(
                 : "??"}
               %
             </span>
-            <div className={styles.address}>{properties.address}</div>
+            <div className={styles.address}>{properties.area_group}</div>
           </div>
         </div>
         <div className={styles.info}>
