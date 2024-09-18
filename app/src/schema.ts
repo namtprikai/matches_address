@@ -6,6 +6,7 @@ import {
   text,
 } from "drizzle-orm/sqlite-core";
 import { sql } from "drizzle-orm";
+import { type GroupingCondition } from "./@types/charts";
 
 export const users = sqliteTable("users", {
   id: integer("id").primaryKey(),
@@ -66,7 +67,35 @@ export const result_views = sqliteTable("result_views", {
    */
   parameters: blob("parameters", {
     mode: "json",
-  }),
+  })
+    .$type<
+      (
+        | {
+            key: `group_${string}`;
+            type: "group";
+            value: GroupingCondition;
+          }
+        | {
+            key: string;
+            value: string;
+            type: "column";
+          }
+        | {
+            key: `filter_${string}`;
+            value: string;
+            type: "filter";
+          }
+        | {
+            key: "year";
+            value: {
+              start: string | undefined;
+              end: string | undefined;
+            };
+            type: "filter";
+          }
+      )[]
+    >()
+    .notNull(),
 
   created_at: text("created_at")
     .default(sql`(CURRENT_TIMESTAMP)`)
