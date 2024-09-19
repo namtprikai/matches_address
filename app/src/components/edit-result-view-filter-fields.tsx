@@ -1,13 +1,16 @@
 import { makeStyles, tokens } from "@fluentui/react-components";
-import { useFormContext } from "react-hook-form";
+import { useFieldArray, useFormContext } from "react-hook-form";
 import { useAtomValue } from "jotai";
 import { useEffect, useState } from "react";
 import { selectedResultViewAtom } from "../state/selected-result-view-atom";
 import { type EditResultViewFormType } from "../@types/form-schema";
+import { TILE_VIEW_CONFIG } from "../config/tile-view-config";
+import { type TileViewFieldOption } from "../@types/charts";
 import { Field } from "./ui/field";
 import { Select } from "./ui/select";
 import { Fieldset } from "./ui/fieldset";
 import { FieldLegend } from "./ui/field-legend";
+import { EditorFilterConditionsForm } from "./editor-filter-conditions-form";
 
 const useStyles = makeStyles({
   form: {
@@ -31,9 +34,36 @@ export const EditResultViewFilterFields = (): JSX.Element => {
 
   const [yearItems, setYearItems] = useState<string[]>([]);
 
-  const { register, watch } = useFormContext<EditResultViewFormType>();
+  const { register, watch, control } = useFormContext<EditResultViewFormType>();
 
   const resultView = useAtomValue(selectedResultViewAtom);
+
+  const { fields } = useFieldArray({
+    control,
+    name: "parameters",
+  });
+
+  const year = watch("year");
+  const unit = watch("unit");
+  const style = watch("style");
+
+  const fieldOptions = TILE_VIEW_CONFIG[style ?? "map"];
+  const options = Array.from(
+    new Set(
+      fieldOptions.fields.flatMap((field) => {
+        return field.option.flatMap((option) => {
+          if (option.unit === unit) {
+            return option.value;
+          }
+          return [];
+        });
+      }),
+    ),
+  );
+
+  const filterFields = fields.filter((field) => {
+    return field.type === "filter" && field.key !== "year";
+  });
 
   useEffect(() => {
     // 期間を取得する処理
@@ -46,8 +76,6 @@ export const EditResultViewFilterFields = (): JSX.Element => {
       setYearItems(res);
     })().catch(console.error);
   }, [resultView]);
-
-  const year = watch("year");
 
   return (
     <Fieldset>
@@ -74,6 +102,12 @@ export const EditResultViewFilterFields = (): JSX.Element => {
           </Select>
         </div>
       </Field>
+
+      <EditorFilterConditionsForm
+        conditions={filterFields}
+        options={options}
+        unit={unit ?? "building"}
+      />
     </Fieldset>
   );
 };

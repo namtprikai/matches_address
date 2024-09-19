@@ -6,7 +6,7 @@ import {
   text,
 } from "drizzle-orm/sqlite-core";
 import { sql } from "drizzle-orm";
-import { type GroupingCondition } from "./@types/charts";
+import { type FilterCondition, type GroupingCondition } from "./@types/charts";
 
 export const users = sqliteTable("users", {
   id: integer("id").primaryKey(),
@@ -87,7 +87,7 @@ export const result_views = sqliteTable("result_views", {
           }
         | {
             key: `filter_${string}`;
-            value: string;
+            value: FilterCondition;
             type: "filter";
           }
         | {

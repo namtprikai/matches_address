@@ -62,6 +62,67 @@ export type GroupingCondition = (
       value: undefined;
     }
 ) & { label: string };
+
+export type FilterCondition = (
+  | {
+      referenceColumnType: "text";
+      value: string;
+      operation: "eq" | "noteq" | "contains" | "notContains";
+    }
+  | ({
+      referenceColumnType: "integer";
+    } & (
+      | {
+          operation: "eq" | "noteq" | "gt" | "lt" | "gte" | "lte";
+          value: number;
+        }
+      | {
+          operation: "range";
+          startValue: number;
+          lastValue: number;
+          includesStart: boolean;
+          includesLast: boolean;
+        }
+    ))
+  | ({
+      referenceColumnType: "float";
+      operation: "eq" | "noteq" | "gt" | "lt" | "gte" | "lte";
+    } & (
+      | {
+          operation: "eq" | "noteq" | "gt" | "lt" | "gte" | "lte";
+          value: number;
+        }
+      | {
+          operation: "range";
+          startValue: number;
+          lastValue: number;
+          includesStart: boolean;
+          includesLast: boolean;
+        }
+    ))
+  | ({
+      referenceColumnType: "date";
+      value: string;
+    } & (
+      | {
+          operation: "eq" | "noteq" | "gt" | "lt" | "gte" | "lte";
+          value: string;
+        }
+      | {
+          operation: "range";
+          startValue: string;
+          lastValue: string;
+          includesStart: boolean;
+          includesLast: boolean;
+        }
+    ))
+  | {
+      referenceColumnType: "boolean";
+      operation: "isTrue" | "isFalse";
+      value: undefined;
+    }
+) & { referenceColumn: string };
+
 /**
  * チャートのカラムが受け付けられる型
  * JavaScriptではdateとstring, floatとintegerを区別できないため、明示する必要がある
@@ -103,32 +164,22 @@ export type TileViewFieldOption = {
   label: string;
   multiple?: boolean;
   grouping: boolean;
+  option: (
+    | {
+        unit: "building";
+        value: BUILDING_DATASET_COLUMN;
+      }
+    | {
+        unit: "area";
+        value: AREA_DATASET_COLUMN;
+      }
+  )[];
 } & (
   | {
       type: "select";
-      option: (
-        | {
-            unit: "building";
-            value: BUILDING_DATASET_COLUMN;
-          }
-        | {
-            unit: "area";
-            value: AREA_DATASET_COLUMN;
-          }
-      )[];
     }
   | {
       type: "dropdown";
       multiple: boolean;
-      option: (
-        | {
-            unit: "building";
-            value: BUILDING_DATASET_COLUMN;
-          }
-        | {
-            unit: "area";
-            value: AREA_DATASET_COLUMN;
-          }
-      )[];
     }
 );
