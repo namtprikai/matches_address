@@ -1,9 +1,9 @@
 import { makeStyles, tokens } from "@fluentui/react-components";
 import { useFormContext } from "react-hook-form";
 import { useAtomValue } from "jotai";
-import { useEffect, useState } from "react";
 import { selectedResultViewAtom } from "../state/selected-result-view-atom";
 import { type EditResultViewFormType } from "../@types/form-schema";
+import { useFetchReferenceDates } from "../hooks/use-fetch-reference-dates";
 import { Field } from "./ui/field";
 import { Select } from "./ui/select";
 import { Fieldset } from "./ui/fieldset";
@@ -28,25 +28,14 @@ const useStyles = makeStyles({
 
 export const EditResultViewFilterFields = (): JSX.Element => {
   const styles = useStyles();
-
-  const [yearItems, setYearItems] = useState<string[]>([]);
-
   const { register, watch } = useFormContext<EditResultViewFormType>();
-
   const resultView = useAtomValue(selectedResultViewAtom);
-
-  useEffect(() => {
-    // 期間を取得する処理
-    (async () => {
-      if (!resultView?.data_set_result_id) return;
-      const res = await window.ipcRenderer.invoke("fetchReferenceDates", {
-        dataSetResultId: resultView.data_set_result_id,
-      });
-
-      setYearItems(res.map((r) => new Date(r).getFullYear().toString()));
-    })().catch(console.error);
-  }, [resultView]);
-
+  const { data: referenceDates } = useFetchReferenceDates({
+    dataSetResultId: resultView?.data_set_result_id,
+  });
+  const yearItems = referenceDates?.map((r) =>
+    new Date(r).getFullYear().toString(),
+  );
   const year = watch("year");
 
   return (
@@ -57,7 +46,7 @@ export const EditResultViewFilterFields = (): JSX.Element => {
         <div className={styles.year}>
           <Select value={year.start} {...register("year.start")}>
             <option value="">下限なし</option>
-            {yearItems.map((item) => (
+            {yearItems?.map((item) => (
               <option key={item} value={item}>
                 {item}
               </option>
@@ -66,7 +55,7 @@ export const EditResultViewFilterFields = (): JSX.Element => {
           <span>〜</span>
           <Select value={year.end} {...register("year.end")}>
             <option value="">上限なし</option>
-            {yearItems.map((item) => (
+            {yearItems?.map((item) => (
               <option key={item} value={item}>
                 {item}
               </option>
