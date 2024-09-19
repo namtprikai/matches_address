@@ -76,7 +76,11 @@ export const EditResultViewFilterFields = (): JSX.Element => {
 
       <Field label="期間">
         <div className={styles.year}>
-          <Select value={year.start} {...register("year.start")}>
+          <Select
+            value={style === "map" ? "" : year.end}
+            {...register("year.start")}
+            disabled={style === "map"}
+          >
             <option value="">下限なし</option>
             {yearItems?.map((item) => (
               <option key={item} value={item}>
@@ -85,7 +89,11 @@ export const EditResultViewFilterFields = (): JSX.Element => {
             ))}
           </Select>
           <span>〜</span>
-          <Select value={year.end} {...register("year.end")}>
+          <Select
+            value={style === "map" ? "" : year.end}
+            {...register("year.end")}
+            disabled={style === "map"}
+          >
             <option value="">上限なし</option>
             {yearItems?.map((item) => (
               <option key={item} value={item}>
