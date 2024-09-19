@@ -32,6 +32,7 @@ const useStyles = makeStyles({
     tableLayout: "auto",
   },
   tableContainerEdit: {
+    /** @fixme 強引な表現をしているので直したい */
     width: "calc(100vw - 82px - 320px - 48px - 44px)",
     overflowX: "scroll",
     whiteSpace: "nowrap",
@@ -50,6 +51,7 @@ export const TableView = (
 ): JSX.Element => {
   const { tableProps, pagenation } = useFetchFilterDataSetForTable(props);
 
+  /** @fixme テーブルコンテナの幅を切り替えるために記述・かなり最悪な書き方な気がするので直したい */
   const pathname = useLocation().pathname;
   const isEdit = pathname.includes("edit");
 
