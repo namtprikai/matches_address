@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { makeStyles, tokens } from "@fluentui/react-components";
+import { useFetchReferenceDates } from "../../hooks/use-fetch-reference-dates";
 import {
   VacancyLevelCheckbox,
   type VacancyLevels,
@@ -34,26 +35,19 @@ export function Map({ type, dataSetResultId }: Props): JSX.Element {
     medium: true,
     high: true,
   });
-  const [referenceDates, setReferenceDates] = useState<string[] | undefined>(
-    undefined,
-  );
+  const { data: referenceDates } = useFetchReferenceDates({ dataSetResultId });
   const [selectedDate, setSelectedDate] = useState<string | undefined>(
-    undefined,
+    referenceDates?.[0],
   );
 
   useEffect(
     function fetchReferenceDatesEffect() {
-      const fetchReferenceDates = async (): Promise<void> => {
-        const result = await window.ipcRenderer.invoke("fetchReferenceDates", {
-          dataSetResultId,
-        });
-        setReferenceDates(result);
-        setSelectedDate(result[0]);
-      };
-
-      void fetchReferenceDates();
+      if (!referenceDates) return;
+      setSelectedDate(
+        (prevSelectedDate) => prevSelectedDate || referenceDates[0],
+      );
     },
-    [dataSetResultId],
+    [referenceDates],
   );
 
   return (
