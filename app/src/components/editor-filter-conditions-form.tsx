@@ -181,7 +181,9 @@ export const EditorFilterConditionsForm = ({
   ): void => {
     const newFields = options.map((option) => {
       if (option.active) {
-        const targetField = fields.find((field) => field.key === option.key);
+        const targetField = fields.find(
+          (field) => field.value.referenceColumn === option.key,
+        );
         if (targetField) {
           return targetField;
         }
