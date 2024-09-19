@@ -192,7 +192,7 @@ export const EditorGroupingForm = ({
     }
   };
 
-  const { control, register } = useForm({
+  const { control, register, handleSubmit } = useForm({
     defaultValues: {
       conditions: parameters,
     },
@@ -207,10 +207,10 @@ export const EditorGroupingForm = ({
     name: "conditions",
   });
 
-  const handleSave = (): void => {
-    onSave(conditions);
+  const handleSave = handleSubmit((data) => {
+    onSave(data.conditions);
     setOpen(false);
-  };
+  });
 
   const handleAppend = (): void => {
     append({

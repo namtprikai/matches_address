@@ -30,7 +30,11 @@ export const PreviewResultSheet = (): JSX.Element => {
 
   useEffect(() => {
     if (data.length === 0) return;
-    setSelectedResultViewId(data[0].result_views.id);
+    setSelectedResultViewId((prev) => {
+      if (!prev) return data[0].result_views.id;
+      if (!data.find((item) => item.result_views.id === prev)) return prev;
+      return prev;
+    });
   }, [data, setSelectedResultViewId]);
 
   /** 仮 */

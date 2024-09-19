@@ -1,13 +1,16 @@
 import { makeStyles, tokens } from "@fluentui/react-components";
-import { useFormContext } from "react-hook-form";
+import { useFieldArray, useFormContext } from "react-hook-form";
 import { useAtomValue } from "jotai";
 import { selectedResultViewAtom } from "../state/selected-result-view-atom";
 import { type EditResultViewFormType } from "../@types/form-schema";
+import { TILE_VIEW_CONFIG } from "../config/tile-view-config";
+import { type SelectResultView } from "../schema";
 import { useFetchReferenceDates } from "../hooks/use-fetch-reference-dates";
 import { Field } from "./ui/field";
 import { Select } from "./ui/select";
 import { Fieldset } from "./ui/fieldset";
 import { FieldLegend } from "./ui/field-legend";
+import { EditorFilterConditionsForm } from "./editor-filter-conditions-form";
 
 const useStyles = makeStyles({
   form: {
@@ -28,15 +31,44 @@ const useStyles = makeStyles({
 
 export const EditResultViewFilterFields = (): JSX.Element => {
   const styles = useStyles();
-  const { register, watch } = useFormContext<EditResultViewFormType>();
+
+  const { register, watch, control } = useFormContext<EditResultViewFormType>();
+
   const resultView = useAtomValue(selectedResultViewAtom);
+
+  const { fields, replace } = useFieldArray({
+    control,
+    name: "parameters",
+  });
+
+  const year = watch("year");
+  const unit = watch("unit");
+  const style = watch("style");
+
+  const fieldOptions = TILE_VIEW_CONFIG[style ?? "map"];
+  const options = Array.from(
+    new Set(
+      fieldOptions.fields.flatMap((field) => {
+        return field.option.flatMap((option) => {
+          if (option.unit === unit) {
+            return option.value;
+          }
+          return [];
+        });
+      }),
+    ),
+  );
+
+  const filterFields = fields.filter((field) => {
+    return field.type === "filter" && field.key !== "year";
+  });
+
   const { data: referenceDates } = useFetchReferenceDates({
     dataSetResultId: resultView?.data_set_result_id,
   });
-  const yearItems = referenceDates?.map((r) =>
-    new Date(r).getFullYear().toString(),
+  const yearItems = Array.from(
+    new Set(referenceDates?.map((r) => new Date(r).getFullYear().toString())),
   );
-  const year = watch("year");
 
   return (
     <Fieldset>
@@ -44,7 +76,11 @@ export const EditResultViewFilterFields = (): JSX.Element => {
 
       <Field label="期間">
         <div className={styles.year}>
-          <Select value={year.start} {...register("year.start")}>
+          <Select
+            value={style === "map" ? "" : year.end}
+            {...register("year.start")}
+            disabled={style === "map"}
+          >
             <option value="">下限なし</option>
             {yearItems?.map((item) => (
               <option key={item} value={item}>
@@ -53,7 +89,11 @@ export const EditResultViewFilterFields = (): JSX.Element => {
             ))}
           </Select>
           <span>〜</span>
-          <Select value={year.end} {...register("year.end")}>
+          <Select
+            value={style === "map" ? "" : year.end}
+            {...register("year.end")}
+            disabled={style === "map"}
+          >
             <option value="">上限なし</option>
             {yearItems?.map((item) => (
               <option key={item} value={item}>
@@ -63,6 +103,23 @@ export const EditResultViewFilterFields = (): JSX.Element => {
           </Select>
         </div>
       </Field>
+
+      <EditorFilterConditionsForm
+        conditions={filterFields}
+        onSave={(parameters) => {
+          const prevOtherParameters = fields.filter((f) => {
+            return f.type !== "filter" || f.key === "year";
+          });
+          const newParameters = [
+            ...prevOtherParameters,
+            ...parameters,
+          ] as SelectResultView["parameters"];
+
+          replace(newParameters);
+        }}
+        options={options}
+        unit={unit ?? "building"}
+      />
     </Fieldset>
   );
 };

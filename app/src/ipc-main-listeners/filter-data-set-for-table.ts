@@ -2,7 +2,7 @@ import { and, eq, gte, lte } from "drizzle-orm";
 import { data_set_detail_areas, data_set_detail_buildings } from "../schema";
 import { db } from "../utils/db";
 import { columnsToSelectField } from "../utils/columns-to-select-field";
-import { type TableProps } from "../@types/charts";
+import { type FilterCondition, type TableProps } from "../@types/charts";
 import { formatChartValue } from "../utils/format-chart-value";
 import {
   AREA_DATASET_COLUMN_METADATA,
@@ -10,6 +10,7 @@ import {
   type AREA_DATASET_COLUMN,
   type BUILDING_DATASET_COLUMN,
 } from "../config/column-metadata";
+import { FilterQuery } from "../utils/filter-query";
 import { type IpcMainListener } from ".";
 
 type FilterDataSetForTableResponse = TableProps;
@@ -19,6 +20,7 @@ export type FilterDataSetForTableArgs = {
     startValue: string | undefined;
     endValue: string | undefined;
   };
+  filterConditions: FilterCondition[];
   limit: number;
   offset: number;
 } & (
@@ -38,6 +40,7 @@ export const filterDataSetForTable = (async (
     filterByYear,
     limit,
     offset,
+    filterConditions,
   }: FilterDataSetForTableArgs,
 ): Promise<FilterDataSetForTableResponse> => {
   if (type === "building") {
@@ -59,6 +62,7 @@ export const filterDataSetForTable = (async (
                 `${filterByYear.endValue}-12-31`,
               )
             : undefined,
+          ...FilterQuery({ conditions: filterConditions ?? [] }),
         ),
       )
       .limit(limit)
@@ -107,6 +111,7 @@ export const filterDataSetForTable = (async (
                 `${filterByYear.endValue}-12-31`,
               )
             : undefined,
+          ...FilterQuery({ conditions: filterConditions ?? [] }),
         ),
       )
       .limit(limit)

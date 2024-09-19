@@ -1,7 +1,11 @@
 import { and, eq, gte, lte, sql } from "drizzle-orm";
 import { data_set_detail_areas, data_set_detail_buildings } from "../schema";
 import { db } from "../utils/db";
-import { type GroupingCondition, type ChartProps } from "../@types/charts";
+import {
+  type GroupingCondition,
+  type ChartProps,
+  type FilterCondition,
+} from "../@types/charts";
 import { formatChartValue } from "../utils/format-chart-value";
 import { subQueryFromConditions } from "../utils/subquery-grouping";
 import {
@@ -10,12 +14,14 @@ import {
   type BUILDING_DATASET_COLUMN,
   BUILDING_DATASET_COLUMN_METADATA,
 } from "../config/column-metadata";
+import { FilterQuery } from "../utils/filter-query";
 import { type IpcMainListener } from ".";
 
 export type FilterDataSetForChartResponse = ChartProps;
 export type FilterDataSetForChartArgs = {
   resultId: number;
   groupingConditions?: GroupingCondition[];
+  filterConditions?: FilterCondition[];
   groupingCalc?: "avg" | "sum";
   filterByYear: {
     startValue: string | undefined;
@@ -43,6 +49,7 @@ export const filterDataSetForChart = ((
     x,
     y,
     groupingConditions,
+    filterConditions,
     filterByYear,
     groupingCalc: cal = "avg",
   }: FilterDataSetForChartArgs,
@@ -68,6 +75,9 @@ export const filterDataSetForChart = ((
                   `${filterByYear.endValue}-12-31`,
                 )
               : undefined,
+            ...FilterQuery({
+              conditions: filterConditions ?? [],
+            }),
           ),
         )
         .as("filterSubQuery");
@@ -159,6 +169,9 @@ export const filterDataSetForChart = ((
                   `${filterByYear.endValue}-12-31`,
                 )
               : undefined,
+            ...FilterQuery({
+              conditions: filterConditions ?? [],
+            }),
           ),
         )
         .as("filterSubQuery");
