@@ -8,7 +8,6 @@ import {
   TableRow,
   tokens,
 } from "@fluentui/react-components";
-import { useLocation } from "react-router-dom";
 import { useFetchFilterDataSetForTable } from "../hooks/use-fetch-filtered-data-set-for-table";
 import { type FilterDataSetForTableArgs } from "../ipc-main-listeners/filter-data-set-for-table";
 import { Pagenation } from "./ui/pagenation";
@@ -31,14 +30,7 @@ const useStyles = makeStyles({
   table: {
     tableLayout: "auto",
   },
-  tableContainerEdit: {
-    /** @fixme 強引な表現をしているので直したい */
-    width: "calc(100vw - 82px - 320px - 48px - 44px)",
-    overflowX: "scroll",
-    whiteSpace: "nowrap",
-  },
   tableContainer: {
-    width: "calc(100vw - 82px - 48px - 44px)",
     overflowX: "scroll",
     whiteSpace: "nowrap",
   },
@@ -51,18 +43,12 @@ export const TableView = (
 ): JSX.Element => {
   const { tableProps, pagenation } = useFetchFilterDataSetForTable(props);
 
-  /** @fixme テーブルコンテナの幅を切り替えるために記述・かなり最悪な書き方な気がするので直したい */
-  const pathname = useLocation().pathname;
-  const isEdit = pathname.includes("edit");
-
   const styles = useStyles();
 
   return (
     <div className={styles.root}>
       <Pagenation {...pagenation} />
-      <div
-        className={isEdit ? styles.tableContainerEdit : styles.tableContainer}
-      >
+      <div className={styles.tableContainer}>
         <Table className={styles.table}>
           <TableHeader className={styles.tableHeader}>
             <TableRow className={styles.tableHeaderRow}>
