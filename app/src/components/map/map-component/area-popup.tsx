@@ -39,7 +39,7 @@ export const AreaPopup = forwardRef<HTMLDivElement, Props>(
           <div>
             <span className={styles.vacancyRate}>
               {properties.predicted_probability
-                ? (properties.predicted_probability * 100).toFixed(0)
+                ? properties.predicted_probability.toFixed(0)
                 : "??"}
               %
             </span>
