@@ -25,8 +25,9 @@ const useStyles = makeStyles({
   },
   table: {
     tableLayout: "auto",
-    width: "auto",
-    whiteSpace: "nowrap",
+    // width: "auto",
+    // whiteSpace: "nowrap",
+    // overflowX: "scroll",
   },
 });
 
@@ -42,38 +43,48 @@ export const TableView = (
   return (
     <div>
       <Pagenation {...pagenation} />
-      {/* FIXME: overflowが機能しない */}
-      <Table className={styles.table}>
-        <TableHeader className={styles.tableHeader}>
-          <TableRow className={styles.tableHeaderRow}>
-            {tableProps.columns.map((column, index) => {
-              return (
-                <TableHeaderCell key={index} className={styles.tableHeaderCell}>
-                  {column.label}
-                </TableHeaderCell>
-              );
-            })}
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {tableProps.data
-            .map((row, index) => {
-              return (
-                <TableRow key={index}>
-                  {tableProps.columns.map((column, index) => {
-                    return (
-                      <TableCell key={index}>
-                        {row[column.key]}
-                        {column.unit ?? ""}
-                      </TableCell>
-                    );
-                  })}
-                </TableRow>
-              );
-            })
-            .flat(-1)}
-        </TableBody>
-      </Table>
+      <div
+        style={{
+          width: "calc(100vw - 82px - 320px - 48px - 44px)",
+          overflowX: "scroll",
+          whiteSpace: "nowrap",
+        }}
+      >
+        <Table className={styles.table}>
+          <TableHeader className={styles.tableHeader}>
+            <TableRow className={styles.tableHeaderRow}>
+              {tableProps.columns.map((column, index) => {
+                return (
+                  <TableHeaderCell
+                    key={index}
+                    className={styles.tableHeaderCell}
+                  >
+                    {column.label}
+                  </TableHeaderCell>
+                );
+              })}
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {tableProps.data
+              .map((row, index) => {
+                return (
+                  <TableRow key={index}>
+                    {tableProps.columns.map((column, index) => {
+                      return (
+                        <TableCell key={index}>
+                          {row[column.key]}
+                          {column.unit ?? ""}
+                        </TableCell>
+                      );
+                    })}
+                  </TableRow>
+                );
+              })
+              .flat(-1)}
+          </TableBody>
+        </Table>
+      </div>
     </div>
   );
 };
