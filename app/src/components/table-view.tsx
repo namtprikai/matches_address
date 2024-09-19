@@ -8,11 +8,16 @@ import {
   TableRow,
   tokens,
 } from "@fluentui/react-components";
+import { useLocation } from "react-router-dom";
 import { useFetchFilterDataSetForTable } from "../hooks/use-fetch-filtered-data-set-for-table";
 import { type FilterDataSetForTableArgs } from "../ipc-main-listeners/filter-data-set-for-table";
 import { Pagenation } from "./ui/pagenation";
 
 const useStyles = makeStyles({
+  root: {
+    display: "grid",
+    gap: `${tokens.spacingVerticalS}`,
+  },
   tableHeader: {
     backgroundColor: tokens.colorNeutralBackground3,
   },
@@ -25,9 +30,16 @@ const useStyles = makeStyles({
   },
   table: {
     tableLayout: "auto",
-    // width: "auto",
-    // whiteSpace: "nowrap",
-    // overflowX: "scroll",
+  },
+  tableContainerEdit: {
+    width: "calc(100vw - 82px - 320px - 48px - 44px)",
+    overflowX: "scroll",
+    whiteSpace: "nowrap",
+  },
+  tableContainer: {
+    width: "calc(100vw - 82px - 48px - 44px)",
+    overflowX: "scroll",
+    whiteSpace: "nowrap",
   },
 });
 
@@ -38,17 +50,16 @@ export const TableView = (
 ): JSX.Element => {
   const { tableProps, pagenation } = useFetchFilterDataSetForTable(props);
 
+  const pathname = useLocation().pathname;
+  const isEdit = pathname.includes("edit");
+
   const styles = useStyles();
 
   return (
-    <div>
+    <div className={styles.root}>
       <Pagenation {...pagenation} />
       <div
-        style={{
-          width: "calc(100vw - 82px - 320px - 48px - 44px)",
-          overflowX: "scroll",
-          whiteSpace: "nowrap",
-        }}
+        className={isEdit ? styles.tableContainerEdit : styles.tableContainer}
       >
         <Table className={styles.table}>
           <TableHeader className={styles.tableHeader}>
