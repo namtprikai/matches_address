@@ -27,6 +27,7 @@ import { deleteResultSheet } from "./delete-result-sheet";
 import { createDummyDataSetResults } from "./create-dummy-data-set-results";
 import { getChubuPmtiles } from "./get-chubu-pmtiles";
 import { deleteWorkbook } from "./delete-workbook";
+import { fetchAreaGroups } from "./fetch-area-groups";
 
 export const ipcMainListeners = {
   helloFromPython,
@@ -50,6 +51,7 @@ export const ipcMainListeners = {
   filterDataSetForTable,
   fetchBuildingsInBatches,
   fetchReferenceDates,
+  fetchAreaGroups,
   createDummyDataSetResults,
   fetchAreasInBatches,
   getChubuPmtiles,
