@@ -10,7 +10,7 @@ type ReturnType = {
 };
 
 export const useFetchFilterDataSetForTable = (
-  props: FilterDataSetForTableArgs,
+  props: Omit<FilterDataSetForTableArgs, "limit" | "offset">,
 ): ReturnType => {
   const [tableProps, setTableProps] = useState<TableProps>({
     columns: [],

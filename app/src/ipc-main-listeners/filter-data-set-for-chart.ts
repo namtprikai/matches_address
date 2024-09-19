@@ -54,8 +54,6 @@ export const filterDataSetForChart = ((
     groupingCalc: cal = "avg",
   }: FilterDataSetForChartArgs,
 ): FilterDataSetForChartResponse => {
-  console.log(filterConditions);
-
   if (type === "area") {
     // eslint-disable-next-line @typescript-eslint/explicit-function-return-type -- ignore
     const getAll = () => {
@@ -153,13 +151,6 @@ export const filterDataSetForChart = ((
   if (type === "building") {
     // eslint-disable-next-line @typescript-eslint/explicit-function-return-type -- ignore
     const getAll = () => {
-      console.log(
-        "filterConditions",
-        FilterQuery({
-          conditions: filterConditions ?? [],
-        }),
-      );
-
       const filterSubQuery = db
         .select()
         .from(data_set_detail_buildings)

@@ -215,6 +215,10 @@ export const TileViewStyle = ({
       (p) => p.key === "year" && p.type === "filter",
     );
 
+    const filterParameters = parameters.filter(
+      (p) => p.type === "filter" && p.key !== "year",
+    );
+
     if (!columns) {
       return <div>パラメーターの値を正しく設定してください</div>;
     }
@@ -228,6 +232,7 @@ export const TileViewStyle = ({
               startValue: yearParameter?.value?.start,
               endValue: yearParameter?.value?.end,
             }}
+            filterConditions={filterParameters.flatMap((p) => p.value)}
             resultId={resultId}
             type={type}
           />
@@ -243,6 +248,7 @@ export const TileViewStyle = ({
             startValue: yearParameter?.value?.start,
             endValue: yearParameter?.value?.end,
           }}
+          filterConditions={filterParameters.flatMap((p) => p.value)}
           resultId={resultId}
           type={type}
         />

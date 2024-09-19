@@ -32,7 +32,9 @@ const useStyles = makeStyles({
 
 type TableViewProps = FilterDataSetForTableArgs;
 
-export const TableView = (props: TableViewProps): JSX.Element => {
+export const TableView = (
+  props: Omit<TableViewProps, "limit" | "offset">,
+): JSX.Element => {
   const { tableProps, pagenation } = useFetchFilterDataSetForTable(props);
 
   const styles = useStyles();
