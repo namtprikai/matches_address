@@ -225,7 +225,12 @@ export const EditorFilterConditionsForm = ({
       open={open}
     >
       <DialogTrigger>
-        <Button size="medium">詳細条件を追加</Button>
+        <Button
+          appearance={props.conditions.length === 0 ? "outline" : "primary"}
+          size="medium"
+        >
+          {props.conditions.length === 0 ? "詳細条件を追加" : "詳細条件を編集"}
+        </Button>
       </DialogTrigger>
       <DialogSurface>
         <DialogTitle>
