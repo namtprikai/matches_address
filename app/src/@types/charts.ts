@@ -26,7 +26,6 @@ export type GroupingCondition = (
     ))
   | ({
       referenceColumnType: "float";
-      operation: "eq" | "noteq" | "gt" | "lt" | "gte" | "lte";
     } & (
       | {
           operation: "eq" | "noteq" | "gt" | "lt" | "gte" | "lte";
@@ -86,7 +85,6 @@ export type FilterCondition = (
     ))
   | ({
       referenceColumnType: "float";
-      operation: "eq" | "noteq" | "gt" | "lt" | "gte" | "lte";
     } & (
       | {
           operation: "eq" | "noteq" | "gt" | "lt" | "gte" | "lte";

@@ -9,6 +9,7 @@ import {
 import { useFieldArray, useForm } from "react-hook-form";
 import { z } from "zod";
 import { Delete20Regular } from "@fluentui/react-icons";
+import { useState } from "react";
 import {
   type AREA_DATASET_COLUMN,
   type BUILDING_DATASET_COLUMN,
@@ -136,12 +137,16 @@ type EditorFilterConditionsFormProps = {
   conditions: conditions;
   options: (BUILDING_DATASET_COLUMN | AREA_DATASET_COLUMN)[];
   unit: "building" | "area";
+  onSave: (parameters: conditions) => void;
 };
 
-export const EditorFilterConditionsForm = (
-  props: EditorFilterConditionsFormProps,
-): JSX.Element => {
-  const { control, register } = useForm({
+export const EditorFilterConditionsForm = ({
+  onSave,
+  ...props
+}: EditorFilterConditionsFormProps): JSX.Element => {
+  const [open, setOpen] = useState(false);
+
+  const { control, register, handleSubmit } = useForm({
     defaultValues: {
       conditions: props.conditions,
     },
@@ -207,8 +212,18 @@ export const EditorFilterConditionsForm = (
     replace(cleanedFields as conditions);
   };
 
+  const handleSave = handleSubmit((data) => {
+    onSave(data.conditions);
+    setOpen(false);
+  });
+
   return (
-    <Dialog>
+    <Dialog
+      onOpenChange={() => {
+        setOpen((prev) => !prev);
+      }}
+      open={open}
+    >
       <DialogTrigger>
         <Button size="medium">詳細条件を追加</Button>
       </DialogTrigger>
@@ -492,7 +507,9 @@ export const EditorFilterConditionsForm = (
           </div>
         </DialogBody>
         <DialogActions position="end">
-          <Button type="button">保存</Button>
+          <Button onClick={handleSave} type="button">
+            保存
+          </Button>
         </DialogActions>
       </DialogSurface>
     </Dialog>

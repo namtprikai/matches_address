@@ -27,6 +27,9 @@ export const TileViewStyle = ({
     const yAxis = parameters.find((p) => p.key === "value");
 
     const groupingParameters = parameters.filter((p) => p.type === "group");
+    const filterParameters = parameters.filter(
+      (p) => p.type === "filter" && p.key !== "year",
+    );
 
     const yearParameter = parameters.find(
       (p) => p.key === "year" && p.type === "filter",
@@ -48,6 +51,7 @@ export const TileViewStyle = ({
               startValue: yearParameter?.value?.start,
               endValue: yearParameter?.value?.end,
             }}
+            filterConditions={filterParameters.flatMap((p) => p.value)}
             groupingCalc={groupingCalc?.value as "avg" | "sum"}
             groupingConditions={groupingParameters.map((p) => p.value)}
             resultId={resultId}
@@ -66,6 +70,7 @@ export const TileViewStyle = ({
             startValue: yearParameter?.value?.start,
             endValue: yearParameter?.value?.end,
           }}
+          filterConditions={filterParameters.flatMap((p) => p.value)}
           groupingCalc={groupingCalc?.value as "avg" | "sum"}
           groupingConditions={groupingParameters.map((p) => p.value)}
           resultId={resultId}
@@ -82,6 +87,10 @@ export const TileViewStyle = ({
     const yAxis = parameters.find((p) => p.key === "yAxis");
 
     const groupingParameters = parameters.filter((p) => p.type === "group");
+
+    const filterParameters = parameters.filter(
+      (p) => p.type === "filter" && p.key !== "year",
+    );
 
     const yearParameter = parameters.find(
       (p) => p.key === "year" && p.type === "filter",
@@ -103,6 +112,7 @@ export const TileViewStyle = ({
               startValue: yearParameter?.value?.start,
               endValue: yearParameter?.value?.end,
             }}
+            filterConditions={filterParameters.flatMap((p) => p.value)}
             groupingCalc={groupingCalc?.value as "avg" | "sum"}
             groupingConditions={groupingParameters.flatMap((p) => p.value)}
             resultId={resultId}
@@ -121,6 +131,7 @@ export const TileViewStyle = ({
             startValue: yearParameter?.value?.start,
             endValue: yearParameter?.value?.end,
           }}
+          filterConditions={filterParameters.flatMap((p) => p.value)}
           groupingCalc={groupingCalc?.value as "avg" | "sum"}
           groupingConditions={groupingParameters.flatMap((p) => p.value)}
           resultId={resultId}
@@ -142,6 +153,10 @@ export const TileViewStyle = ({
 
     const groupingParameters = parameters.filter((p) => p.type === "group");
 
+    const filterParameters = parameters.filter(
+      (p) => p.type === "filter" && p.key !== "year",
+    );
+
     const yearParameter = parameters.find(
       (p) => p.key === "year" && p.type === "filter",
     );
@@ -162,6 +177,7 @@ export const TileViewStyle = ({
               startValue: yearParameter?.value?.start,
               endValue: yearParameter?.value?.end,
             }}
+            filterConditions={filterParameters.flatMap((p) => p.value)}
             groupingCalc={groupingCalc?.value as "avg" | "sum"}
             groupingConditions={groupingParameters.flatMap((p) => p.value)}
             resultId={resultId}
@@ -180,6 +196,7 @@ export const TileViewStyle = ({
             startValue: yearParameter?.value?.start,
             endValue: yearParameter?.value?.end,
           }}
+          filterConditions={filterParameters.flatMap((p) => p.value)}
           groupingCalc={groupingCalc?.value as "avg" | "sum"}
           groupingConditions={groupingParameters.flatMap((p) => p.value)}
           resultId={resultId}

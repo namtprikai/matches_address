@@ -6,6 +6,7 @@ import { selectedResultViewAtom } from "../state/selected-result-view-atom";
 import { type EditResultViewFormType } from "../@types/form-schema";
 import { TILE_VIEW_CONFIG } from "../config/tile-view-config";
 import { type TileViewFieldOption } from "../@types/charts";
+import { type SelectResultView } from "../schema";
 import { Field } from "./ui/field";
 import { Select } from "./ui/select";
 import { Fieldset } from "./ui/fieldset";
@@ -38,7 +39,7 @@ export const EditResultViewFilterFields = (): JSX.Element => {
 
   const resultView = useAtomValue(selectedResultViewAtom);
 
-  const { fields } = useFieldArray({
+  const { fields, replace } = useFieldArray({
     control,
     name: "parameters",
   });
@@ -105,6 +106,17 @@ export const EditResultViewFilterFields = (): JSX.Element => {
 
       <EditorFilterConditionsForm
         conditions={filterFields}
+        onSave={(parameters) => {
+          const prevOtherParameters = fields.filter((f) => {
+            return f.type !== "filter" || f.key === "year";
+          });
+          const newParameters = [
+            ...prevOtherParameters,
+            ...parameters,
+          ] as SelectResultView["parameters"];
+
+          replace(newParameters);
+        }}
         options={options}
         unit={unit ?? "building"}
       />
