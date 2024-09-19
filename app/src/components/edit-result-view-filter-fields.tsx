@@ -1,12 +1,11 @@
 import { makeStyles, tokens } from "@fluentui/react-components";
 import { useFieldArray, useFormContext } from "react-hook-form";
 import { useAtomValue } from "jotai";
-import { useEffect, useState } from "react";
 import { selectedResultViewAtom } from "../state/selected-result-view-atom";
 import { type EditResultViewFormType } from "../@types/form-schema";
 import { TILE_VIEW_CONFIG } from "../config/tile-view-config";
-import { type TileViewFieldOption } from "../@types/charts";
 import { type SelectResultView } from "../schema";
+import { useFetchReferenceDates } from "../hooks/use-fetch-reference-dates";
 import { Field } from "./ui/field";
 import { Select } from "./ui/select";
 import { Fieldset } from "./ui/fieldset";
@@ -32,8 +31,6 @@ const useStyles = makeStyles({
 
 export const EditResultViewFilterFields = (): JSX.Element => {
   const styles = useStyles();
-
-  const [yearItems, setYearItems] = useState<string[]>([]);
 
   const { register, watch, control } = useFormContext<EditResultViewFormType>();
 
@@ -66,17 +63,12 @@ export const EditResultViewFilterFields = (): JSX.Element => {
     return field.type === "filter" && field.key !== "year";
   });
 
-  useEffect(() => {
-    // 期間を取得する処理
-    (async () => {
-      if (!resultView?.data_set_result_id) return;
-      const res = await window.ipcRenderer.invoke("fetchReferenceDates", {
-        dataSetResultId: resultView.data_set_result_id,
-      });
-
-      setYearItems(res);
-    })().catch(console.error);
-  }, [resultView]);
+  const { data: referenceDates } = useFetchReferenceDates({
+    dataSetResultId: resultView?.data_set_result_id,
+  });
+  const yearItems = Array.from(
+    new Set(referenceDates?.map((r) => new Date(r).getFullYear().toString())),
+  );
 
   return (
     <Fieldset>
@@ -86,7 +78,7 @@ export const EditResultViewFilterFields = (): JSX.Element => {
         <div className={styles.year}>
           <Select value={year.start} {...register("year.start")}>
             <option value="">下限なし</option>
-            {yearItems.map((item) => (
+            {yearItems?.map((item) => (
               <option key={item} value={item}>
                 {item}
               </option>
@@ -95,7 +87,7 @@ export const EditResultViewFilterFields = (): JSX.Element => {
           <span>〜</span>
           <Select value={year.end} {...register("year.end")}>
             <option value="">上限なし</option>
-            {yearItems.map((item) => (
+            {yearItems?.map((item) => (
               <option key={item} value={item}>
                 {item}
               </option>

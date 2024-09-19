@@ -10,6 +10,7 @@ import {
 } from "@fluentui/react-components";
 import { useFetchFilterDataSetForTable } from "../hooks/use-fetch-filtered-data-set-for-table";
 import { type FilterDataSetForTableArgs } from "../ipc-main-listeners/filter-data-set-for-table";
+import { Pagenation } from "./ui/pagenation";
 
 const useStyles = makeStyles({
   tableHeader: {
@@ -32,12 +33,13 @@ const useStyles = makeStyles({
 type TableViewProps = FilterDataSetForTableArgs;
 
 export const TableView = (props: TableViewProps): JSX.Element => {
-  const { tableProps } = useFetchFilterDataSetForTable(props);
+  const { tableProps, pagenation } = useFetchFilterDataSetForTable(props);
 
   const styles = useStyles();
 
   return (
     <div>
+      <Pagenation {...pagenation} />
       {/* FIXME: overflowが機能しない */}
       <Table className={styles.table}>
         <TableHeader className={styles.tableHeader}>
