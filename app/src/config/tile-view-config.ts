@@ -33,7 +33,7 @@ export const TILE_VIEW_CONFIG = {
           { unit: "building", value: "river_flooding_risk_rank" },
           { unit: "building", value: "river_flooding_risk_depth" },
           { unit: "building", value: "predicted_probability" },
-          { unit: "area", value: "area" },
+          { unit: "area", value: "area_group" },
         ],
         grouping: true,
       },
@@ -59,6 +59,7 @@ export const TILE_VIEW_CONFIG = {
           { unit: "building", value: "river_flooding_risk_rank" },
           { unit: "building", value: "river_flooding_risk_depth" },
           { unit: "building", value: "predicted_probability" },
+          { unit: "area", value: "area" },
         ],
         grouping: false,
       },
@@ -134,6 +135,74 @@ export const TILE_VIEW_CONFIG = {
           {
             unit: "building",
             value: "household_size",
+          },
+          {
+            unit: "building",
+            value: "members_under_15",
+          },
+          {
+            unit: "building",
+            value: "members_15_to_64",
+          },
+          {
+            unit: "building",
+            value: "members_over_65",
+          },
+          {
+            unit: "building",
+            value: "percentage_under_15",
+          },
+          {
+            unit: "building",
+            value: "percentage_15_to_64",
+          },
+          {
+            unit: "building",
+            value: "percentage_over_65",
+          },
+          {
+            unit: "building",
+            value: "predicted_probability",
+          },
+          {
+            unit: "building",
+            value: "duration",
+          },
+          {
+            unit: "building",
+            value: "measuredheight",
+          },
+          {
+            unit: "building",
+            value: "rank",
+          },
+          {
+            unit: "building",
+            value: "depth",
+          },
+          {
+            unit: "building",
+            value: "floors_above_ground",
+          },
+          {
+            unit: "building",
+            value: "inland_flooding_risk_rank",
+          },
+          {
+            unit: "building",
+            value: "inland_flooding_risk_depth",
+          },
+          {
+            unit: "building",
+            value: "river_flooding_risk_rank",
+          },
+          {
+            unit: "building",
+            value: "river_flooding_risk_depth",
+          },
+          {
+            unit: "area",
+            value: "area",
           },
         ],
         multiple: true,
