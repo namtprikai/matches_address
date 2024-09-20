@@ -81,7 +81,7 @@ export const PreviewResultSheet = (): JSX.Element => {
 
   return (
     <div className={styles.root}>
-      <div className={resultViewsGridTemplate} title="resultViewssss">
+      <div className={resultViewsGridTemplate}>
         {data.map((item, index) => (
           <TileResultView
             key={item.result_views.id}
