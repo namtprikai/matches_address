@@ -77,6 +77,7 @@ export const TileResultView = ({
         className={mergeClasses(
           styles.cardSurface,
           selected && styles.selected,
+          cardProps.className,
         )}
       >
         <CardHeader
@@ -136,7 +137,11 @@ export const TileResultView = ({
   return (
     <Card
       {...cardProps}
-      className={mergeClasses(styles.cardSurface, selected && styles.selected)}
+      className={mergeClasses(
+        styles.cardSurface,
+        selected && styles.selected,
+        cardProps.className,
+      )}
     >
       <CardHeader
         action={
