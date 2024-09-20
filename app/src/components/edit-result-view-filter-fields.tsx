@@ -11,9 +11,9 @@ import { Field } from "./ui/field";
 import { Select } from "./ui/select";
 import { Fieldset } from "./ui/fieldset";
 import { FieldLegend } from "./ui/field-legend";
-import { EditorFilterConditionsForm } from "./editor-filter-conditions-form";
+import { EditorFilterParametersForm } from "./editor-filter-parameters-form";
 
-//　コンポーネントを遅延評価で読み込むことでパフォーマンスに配慮
+// コンポーネントを遅延評価で読み込むことでパフォーマンスに配慮
 const AreaFilterForm = lazy(() =>
   import("./area-filter-form").then((module) => ({
     default: module.AreaFilterForm,
@@ -119,8 +119,7 @@ export const EditResultViewFilterFields = (): JSX.Element => {
         />
       </Suspense>
 
-      <EditorFilterConditionsForm
-        conditions={filterFields}
+      <EditorFilterParametersForm
         onSave={(parameters) => {
           const prevOtherParameters = fields.filter((f) => {
             return f.type !== "filter" || f.key === "year";
@@ -133,6 +132,7 @@ export const EditResultViewFilterFields = (): JSX.Element => {
           replace(newParameters);
         }}
         options={options}
+        parameters={filterFields}
         unit={unit ?? "building"}
       />
     </Fieldset>
