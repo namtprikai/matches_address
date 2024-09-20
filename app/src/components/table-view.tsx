@@ -13,6 +13,10 @@ import { type FilterDataSetForTableArgs } from "../ipc-main-listeners/filter-dat
 import { Pagenation } from "./ui/pagenation";
 
 const useStyles = makeStyles({
+  root: {
+    display: "grid",
+    gap: `${tokens.spacingVerticalS}`,
+  },
   tableHeader: {
     backgroundColor: tokens.colorNeutralBackground3,
   },
@@ -25,7 +29,9 @@ const useStyles = makeStyles({
   },
   table: {
     tableLayout: "auto",
-    width: "auto",
+  },
+  tableContainer: {
+    overflowX: "scroll",
     whiteSpace: "nowrap",
   },
 });
@@ -40,40 +46,44 @@ export const TableView = (
   const styles = useStyles();
 
   return (
-    <div>
+    <div className={styles.root}>
       <Pagenation {...pagenation} />
-      {/* FIXME: overflowが機能しない */}
-      <Table className={styles.table}>
-        <TableHeader className={styles.tableHeader}>
-          <TableRow className={styles.tableHeaderRow}>
-            {tableProps.columns.map((column, index) => {
-              return (
-                <TableHeaderCell key={index} className={styles.tableHeaderCell}>
-                  {column.label}
-                </TableHeaderCell>
-              );
-            })}
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {tableProps.data
-            .map((row, index) => {
-              return (
-                <TableRow key={index}>
-                  {tableProps.columns.map((column, index) => {
-                    return (
-                      <TableCell key={index}>
-                        {row[column.key]}
-                        {column.unit ?? ""}
-                      </TableCell>
-                    );
-                  })}
-                </TableRow>
-              );
-            })
-            .flat(-1)}
-        </TableBody>
-      </Table>
+      <div className={styles.tableContainer}>
+        <Table className={styles.table}>
+          <TableHeader className={styles.tableHeader}>
+            <TableRow className={styles.tableHeaderRow}>
+              {tableProps.columns.map((column, index) => {
+                return (
+                  <TableHeaderCell
+                    key={index}
+                    className={styles.tableHeaderCell}
+                  >
+                    {column.label}
+                  </TableHeaderCell>
+                );
+              })}
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {tableProps.data
+              .map((row, index) => {
+                return (
+                  <TableRow key={index}>
+                    {tableProps.columns.map((column, index) => {
+                      return (
+                        <TableCell key={index}>
+                          {row[column.key]}
+                          {column.unit ?? ""}
+                        </TableCell>
+                      );
+                    })}
+                  </TableRow>
+                );
+              })
+              .flat(-1)}
+          </TableBody>
+        </Table>
+      </div>
     </div>
   );
 };

@@ -11,11 +11,9 @@ import {
   Subtitle2,
   tokens,
 } from "@fluentui/react-components";
-import { useAtom } from "jotai";
 import { useNavigate } from "react-router-dom";
 import { type SelectResultView, type SelectDataSetResult } from "../schema";
 import { THEME_COLORS } from "../config/theme-colors";
-import { resultViewsAtom } from "../state/result-views-atom";
 import { TileViewStyle } from "./tile-view-style";
 import { DialogSurface } from "./ui/dialog-surface";
 import { DialogBody } from "./ui/dialog-body";
@@ -56,8 +54,6 @@ export const TileResultView = ({
 }: Props): JSX.Element => {
   const styles = useStyles();
   const navigate = useNavigate();
-
-  const [, refreshResultViews] = useAtom(resultViewsAtom);
 
   const deleteResultView = async (): Promise<void> => {
     await window.ipcRenderer.invoke("deleteResultView", {
