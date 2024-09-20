@@ -68,7 +68,9 @@ export const EditResultViewFilterFields = (): JSX.Element => {
   );
 
   const filterFields = fields.filter((field) => {
-    return field.type === "filter" && field.key !== "year";
+    return (
+      field.type === "filter" && field.key !== "year" && field.key !== "area"
+    );
   });
 
   const { data: referenceDates } = useFetchReferenceDates({
@@ -122,7 +124,7 @@ export const EditResultViewFilterFields = (): JSX.Element => {
       <EditorFilterParametersForm
         onSave={(parameters) => {
           const prevOtherParameters = fields.filter((f) => {
-            return f.type !== "filter" || f.key === "year";
+            return f.type !== "filter" || f.key === "year" || f.key === "area";
           });
           const newParameters = [
             ...prevOtherParameters,

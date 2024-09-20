@@ -28,7 +28,7 @@ export const TileViewStyle = ({
 
     const groupingParameters = parameters.filter((p) => p.type === "group");
     const filterParameters = parameters.filter(
-      (p) => p.type === "filter" && p.key !== "year",
+      (p) => p.type === "filter" && p.key !== "year" && p.key !== "area",
     );
 
     const yearParameter = parameters.find(
@@ -89,7 +89,7 @@ export const TileViewStyle = ({
     const groupingParameters = parameters.filter((p) => p.type === "group");
 
     const filterParameters = parameters.filter(
-      (p) => p.type === "filter" && p.key !== "year",
+      (p) => p.type === "filter" && p.key !== "year" && p.key !== "area",
     );
 
     const yearParameter = parameters.find(
@@ -154,7 +154,7 @@ export const TileViewStyle = ({
     const groupingParameters = parameters.filter((p) => p.type === "group");
 
     const filterParameters = parameters.filter(
-      (p) => p.type === "filter" && p.key !== "year",
+      (p) => p.type === "filter" && p.key !== "year" && p.key !== "area",
     );
 
     const yearParameter = parameters.find(
@@ -216,7 +216,7 @@ export const TileViewStyle = ({
     );
 
     const filterParameters = parameters.filter(
-      (p) => p.type === "filter" && p.key !== "year",
+      (p) => p.type === "filter" && p.key !== "year" && p.key !== "area",
     );
 
     if (!columns) {

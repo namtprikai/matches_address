@@ -91,6 +91,16 @@ export const result_views = sqliteTable("result_views", {
             type: "filter";
           }
         | {
+            key: "area";
+            value: string[];
+            type: "filter";
+          }
+        | {
+            key: "label";
+            value: string;
+            type: "column";
+          }
+        | {
             key: "year";
             value: {
               start: string | undefined;
