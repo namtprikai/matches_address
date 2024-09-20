@@ -1,6 +1,5 @@
 import { useFieldArray, useFormContext } from "react-hook-form";
 import { Fragment } from "react/jsx-runtime";
-import { useEffect } from "react";
 import { result_views, type SelectResultView } from "../schema";
 import { LanguageMap } from "../lang";
 import { TILE_VIEW_CONFIG } from "../config/tile-view-config";
