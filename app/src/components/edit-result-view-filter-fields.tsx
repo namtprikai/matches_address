@@ -1,6 +1,7 @@
 import { makeStyles, tokens } from "@fluentui/react-components";
 import { useFieldArray, useFormContext } from "react-hook-form";
 import { useAtomValue } from "jotai";
+import { lazy, Suspense } from "react";
 import { selectedResultViewAtom } from "../state/selected-result-view-atom";
 import { type EditResultViewFormType } from "../@types/form-schema";
 import { TILE_VIEW_CONFIG } from "../config/tile-view-config";
@@ -11,6 +12,13 @@ import { Select } from "./ui/select";
 import { Fieldset } from "./ui/fieldset";
 import { FieldLegend } from "./ui/field-legend";
 import { EditorFilterConditionsForm } from "./editor-filter-conditions-form";
+
+//　コンポーネントを遅延評価で読み込むことでパフォーマンスに配慮
+const AreaFilterForm = lazy(() =>
+  import("./area-filter-form").then((module) => ({
+    default: module.AreaFilterForm,
+  })),
+);
 
 const useStyles = makeStyles({
   form: {
@@ -77,7 +85,7 @@ export const EditResultViewFilterFields = (): JSX.Element => {
       <Field label="期間">
         <div className={styles.year}>
           <Select
-            value={style === "map" ? "" : year.end}
+            value={style === "map" ? "" : year.start}
             {...register("year.start")}
             disabled={style === "map"}
           >
@@ -103,6 +111,13 @@ export const EditResultViewFilterFields = (): JSX.Element => {
           </Select>
         </div>
       </Field>
+
+      <Suspense fallback={null}>
+        <AreaFilterForm
+          dataSetResultId={resultView?.id}
+          unit={unit ?? "building"}
+        />
+      </Suspense>
 
       <EditorFilterConditionsForm
         conditions={filterFields}
