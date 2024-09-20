@@ -8,7 +8,7 @@ import { db } from "../utils/db";
 import { type IpcMainListener } from ".";
 
 export type FetchAreaGroupsArg = {
-  dataSetResultId: SelectDataSetResult["id"];
+  dataSetResultId: SelectDataSetResult["id"] | undefined;
   unit: "building" | "area";
 };
 
@@ -16,6 +16,8 @@ export const fetchAreaGroups = (async (
   _: unknown,
   props: FetchAreaGroupsArg,
 ): Promise<string[]> => {
+  if (props.dataSetResultId === undefined) return [];
+
   const result =
     props.unit === "building"
       ? await db
