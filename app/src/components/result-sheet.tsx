@@ -1,6 +1,7 @@
 import { makeStyles, tokens } from "@fluentui/react-components";
 import { useFetchResultViews } from "../hooks/use-fetch-result-views";
 import { TileResultView } from "./tile-result-view";
+import { EmptyResultViews } from "./empty-result-views";
 
 const useStyles = makeStyles({
   root: {
@@ -26,12 +27,7 @@ export const ResultSheet = ({ sheetId }: Props): JSX.Element => {
 
   const { data } = useFetchResultViews({ sheetId });
 
-  if (!data || data.length === 0)
-    return (
-      <div>
-        <p>ビューがありません</p>
-      </div>
-    );
+  if (!data || data.length === 0) return <EmptyResultViews />;
 
   if (data.length === 4) {
     return (
