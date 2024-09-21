@@ -6,9 +6,12 @@
     "dev": "turbo dev",
     "lint": "turbo lint",
     "make": "turbo make",
-    "format": "prettier --write \"**/*.{ts,tsx,md}\""
+    "format": "prettier --write \"**/*.{ts,tsx,md}\"",
+    "prepare": "husky"
   },
   "devDependencies": {
+    "eslint": "^8.57.1",
+    "husky": "^9.1.6",
     "prettier": "^3.2.5",
     "turbo": "^2.0.7",
     "typescript": "^5.4.5"
