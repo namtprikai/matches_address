@@ -12,8 +12,7 @@
     "lint": "npm run lint:eslint || npm run lint:type",
     "lint:eslint": "eslint --ext .ts,.tsx .",
     "lint:type": "tsc --noEmit --project tsconfig.base.json",
-    "generate:migration": "npx drizzle-kit generate",
-    "drizzle": "npx drizzle-kit",
+    "gen:migration": "drizzle-kit generate",
     "test:unit": "vitest",
     "test:e2e": "playwright test"
   },
