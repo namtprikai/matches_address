@@ -87,7 +87,7 @@ export function addBuildingLayer(
       }
 
       // 新しくクリックされたポリゴンの状態を設定
-      clickedId = feature.id as string | number;
+      clickedId = feature.id;
       map.setFeatureState(
         { source: layerId, id: clickedId },
         { clicked: true },
