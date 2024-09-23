@@ -4,6 +4,7 @@ import {
   makeStyles,
   tokens,
 } from "@fluentui/react-components";
+import GraphImage from "../../assets/Graph.png";
 
 const useStyles = makeStyles({
   empty: {
@@ -37,7 +38,7 @@ export const EmptyResultViews = (): JSX.Element => {
   return (
     <div className={styles.empty}>
       <div className={styles.emptyContainer}>
-        <img alt="empty" className={styles.emptyImage} src="/Graph.png" />
+        <img alt="empty" className={styles.emptyImage} src={GraphImage} />
         <div className={styles.emptyText}>
           <Body1Stronger>表示するビューがありません。</Body1Stronger>
           <Body1>左のメニューからビューを追加しましょう</Body1>
