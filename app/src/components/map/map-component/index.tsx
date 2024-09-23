@@ -60,7 +60,7 @@ export function MapComponent({
 
       const protocol = new Protocol();
       const fileSource: FileSource = {
-        file: buffer as unknown as File,
+        file: new File([buffer], "chubu.pmtiles"),
         getKey: () => "chubu.pmtiles",
         getBytes: async (offset, length) => {
           return {
