@@ -98,7 +98,7 @@ export function addBuildingLayer(
   // マップのクリックイベントで、ポリゴン外をクリックした場合の処理
   map.on("click", (e) => {
     const features = map.queryRenderedFeatures(e.point, { layers: [layerId] });
-    if (features.length === 0 && clickedId !== null) {
+    if (features.length === 0 && !clickedId) {
       map.setFeatureState(
         { source: layerId, id: clickedId },
         { clicked: false },
