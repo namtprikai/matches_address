@@ -25,6 +25,7 @@ export const readResultViews = (async (
       data_set_results,
       eq(data_set_results.id, result_views.data_set_result_id),
     )
+    .orderBy(result_views.layoutIndex)
     .all();
 
   return all as ReadResultViewsResponse;
