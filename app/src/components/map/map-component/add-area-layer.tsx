@@ -79,7 +79,7 @@ export function addAreaLayer(
         popup.remove();
       });
 
-      if (clickedId !== null) {
+      if (clickedId) {
         map.setFeatureState(
           { source: layerId, id: clickedId },
           { clicked: false },
