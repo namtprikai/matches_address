@@ -79,7 +79,8 @@ export function addAreaLayer(
         popup.remove();
       });
 
-      if (clickedId) {
+      // 以前にクリックされたポリゴンの状態をリセット
+      if (clickedId !== undefined) {
         map.setFeatureState(
           { source: layerId, id: clickedId },
           { clicked: false },
@@ -98,7 +99,7 @@ export function addAreaLayer(
   // マップのクリックイベントで、ポリゴン外をクリックした場合の処理
   map.on("click", (e) => {
     const features = map.queryRenderedFeatures(e.point, { layers: [layerId] });
-    if (features.length === 0 && !clickedId) {
+    if (features.length === 0 && clickedId !== undefined) {
       map.setFeatureState(
         { source: layerId, id: clickedId },
         { clicked: false },
