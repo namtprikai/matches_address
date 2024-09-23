@@ -27,6 +27,7 @@ import { deleteResultSheet } from "./delete-result-sheet";
 import { createDummyDataSetResults } from "./create-dummy-data-set-results";
 import { getChubuPmtiles } from "./get-chubu-pmtiles";
 import { deleteWorkbook } from "./delete-workbook";
+import { updateResultViewsLayoutIndex } from "./updateResultViewsLayoutIndex";
 
 export const ipcMainListeners = {
   helloFromPython,
@@ -54,6 +55,7 @@ export const ipcMainListeners = {
   fetchAreasInBatches,
   getChubuPmtiles,
   deleteWorkbook,
+  updateResultViewsLayoutIndex,
 };
 
 export const execFileAsync = promisify(execFile);
