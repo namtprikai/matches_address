@@ -27,7 +27,7 @@ const useStyles = makeStyles({
     display: "grid",
     gap: "16px",
     gridTemplateColumns: "repeat(2, 1fr)",
-    gridTemplateRows: "repeat(2, 1fr)",
+    gridTemplateRows: "min-content min-content",
     gridTemplateAreas: "'view1 view2' 'view3 view4'",
   },
   view1: {
