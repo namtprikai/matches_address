@@ -87,7 +87,7 @@ export const EditResultViewForm = (): JSX.Element => {
         parameters: [
           ...yearExcludedParameters,
           yearParameter,
-        ] as SelectResultView["parameters"],
+        ] as SelectResultView["parameters"], // union の型推論が効きづらいため、明示的に型を指定
       },
     });
     refresh();

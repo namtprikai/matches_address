@@ -113,7 +113,7 @@ const DateRangeSchema = z.object({
 });
 
 const schema = z.object({
-  conditions: z
+  parameters: z
     .object({
       key: z.custom<`group_${string}`>((val) => {
         return /^group_+$/.test(val as string);
@@ -131,11 +131,11 @@ const schema = z.object({
     .array(),
 });
 
-type conditions = z.infer<typeof schema.shape.conditions>;
+type parameters = z.infer<typeof schema.shape.parameters>;
 
 type Props = {
-  parameters: conditions;
-  onSave: (parameters: conditions) => void;
+  parameters: parameters;
+  onSave: (parameters: parameters) => void;
   columnType: ChartColumnType;
   columnLabel: string;
   unit?: string;
@@ -194,21 +194,21 @@ export const EditorGroupingForm = ({
 
   const { control, register, handleSubmit } = useForm({
     defaultValues: {
-      conditions: parameters,
+      parameters,
     },
   });
   const { fields, append, remove, update } = useFieldArray({
     control,
-    name: "conditions",
+    name: "parameters",
   });
 
-  const conditions = useWatch({
+  const parameterFilters = useWatch({
     control,
-    name: "conditions",
+    name: "parameters",
   });
 
   const handleSave = handleSubmit((data) => {
-    onSave(data.conditions);
+    onSave(data.parameters);
     setOpen(false);
   });
 
@@ -233,10 +233,10 @@ export const EditorGroupingForm = ({
     >
       <DialogTrigger>
         <Button
-          appearance={conditions.length === 0 ? "outline" : "primary"}
+          appearance={parameterFilters.length === 0 ? "outline" : "primary"}
           size="medium"
         >
-          {conditions.length === 0 ? "グループを追加" : "グループを編集"}
+          {parameterFilters.length === 0 ? "グループを追加" : "グループを編集"}
         </Button>
       </DialogTrigger>
       <DialogSurface className={styles.dialogSurface}>
@@ -256,11 +256,11 @@ export const EditorGroupingForm = ({
                       className={styles.inputLabelValue}
                       defaultValue={field.value.label}
                       placeholder="グループ名"
-                      {...register(`conditions.${index}.value.label`)}
+                      {...register(`parameters.${index}.value.label`)}
                     />
                     <Select
                       defaultValue={field.value.operation}
-                      {...register(`conditions.${index}.value.operation`)}
+                      {...register(`parameters.${index}.value.operation`)}
                     >
                       <option value="isTrue">真である</option>
                       <option value="isFalse">偽である</option>
@@ -284,11 +284,11 @@ export const EditorGroupingForm = ({
                       className={styles.inputLabelValue}
                       defaultValue={field.value.label}
                       placeholder="グループ名"
-                      {...register(`conditions.${index}.value.label`)}
+                      {...register(`parameters.${index}.value.label`)}
                     />
                     <Select
                       defaultValue={field.value.operation}
-                      {...register(`conditions.${index}.value.operation`)}
+                      {...register(`parameters.${index}.value.operation`)}
                     >
                       <option value="eq">次に等しい</option>
                       <option value="noteq">次に等しくない</option>
@@ -297,7 +297,7 @@ export const EditorGroupingForm = ({
                     </Select>
                     <Input
                       defaultValue={field.value.value}
-                      {...register(`conditions.${index}.value.value`)}
+                      {...register(`parameters.${index}.value.value`)}
                       placeholder="値"
                       type="text"
                     />
@@ -320,11 +320,11 @@ export const EditorGroupingForm = ({
                       className={styles.inputLabelValue}
                       defaultValue={field.value.label}
                       placeholder="グループ名"
-                      {...register(`conditions.${index}.value.label`)}
+                      {...register(`parameters.${index}.value.label`)}
                     />
                     <Select
                       defaultValue={field.value.operation}
-                      {...register(`conditions.${index}.value.operation`)}
+                      {...register(`parameters.${index}.value.operation`)}
                     >
                       <option value="eq">次に等しい</option>
                       <option value="noteq">次に等しくない</option>
@@ -344,7 +344,7 @@ export const EditorGroupingForm = ({
                           }
                           placeholder="開始値"
                           type="date"
-                          {...register(`conditions.${index}.value.startValue`)}
+                          {...register(`parameters.${index}.value.startValue`)}
                           className={styles.inputRangeValue}
                         />
                         <div className={styles.includesField}>
@@ -353,7 +353,7 @@ export const EditorGroupingForm = ({
                             className={styles.checkbox}
                             defaultChecked={field.value.includesStart ?? false}
                             {...register(
-                              `conditions.${index}.value.includesStart`,
+                              `parameters.${index}.value.includesStart`,
                             )}
                           />
                         </div>
@@ -366,7 +366,7 @@ export const EditorGroupingForm = ({
                           }
                           placeholder="終了値"
                           type="date"
-                          {...register(`conditions.${index}.value.lastValue`)}
+                          {...register(`parameters.${index}.value.lastValue`)}
                           className={styles.inputRangeValue}
                         />
                         <div className={styles.includesField}>
@@ -375,7 +375,7 @@ export const EditorGroupingForm = ({
                             className={styles.checkbox}
                             defaultChecked={field.value.includesLast ?? false}
                             {...register(
-                              `conditions.${index}.value.includesLast`,
+                              `parameters.${index}.value.includesLast`,
                             )}
                           />
                         </div>
@@ -386,7 +386,7 @@ export const EditorGroupingForm = ({
                         defaultValue={
                           field.value.value ? field.value.value.toString() : ""
                         }
-                        {...register(`conditions.${index}.value.value`)}
+                        {...register(`parameters.${index}.value.value`)}
                         className={styles.inputValue}
                         placeholder="値"
                         type="date"
@@ -410,7 +410,7 @@ export const EditorGroupingForm = ({
                     className={styles.inputLabelValue}
                     defaultValue={field.value.label}
                     placeholder="グループ名"
-                    {...register(`conditions.${index}.value.label`)}
+                    {...register(`parameters.${index}.value.label`)}
                   />
                   <Select
                     onChange={(e) => {
@@ -444,7 +444,7 @@ export const EditorGroupingForm = ({
                         }
                         placeholder="開始値"
                         type="number"
-                        {...register(`conditions.${index}.value.startValue`)}
+                        {...register(`parameters.${index}.value.startValue`)}
                         className={styles.inputRangeValue}
                       />
                       {unit}
@@ -454,7 +454,7 @@ export const EditorGroupingForm = ({
                           className={styles.checkbox}
                           defaultChecked={field.value.includesStart ?? false}
                           {...register(
-                            `conditions.${index}.value.includesStart`,
+                            `parameters.${index}.value.includesStart`,
                           )}
                         />
                       </div>
@@ -467,7 +467,7 @@ export const EditorGroupingForm = ({
                         }
                         placeholder="終了値"
                         type="number"
-                        {...register(`conditions.${index}.value.lastValue`)}
+                        {...register(`parameters.${index}.value.lastValue`)}
                         className={styles.inputRangeValue}
                       />
                       {unit}
@@ -477,7 +477,7 @@ export const EditorGroupingForm = ({
                           className={styles.checkbox}
                           defaultChecked={field.value.includesLast ?? false}
                           {...register(
-                            `conditions.${index}.value.includesLast`,
+                            `parameters.${index}.value.includesLast`,
                           )}
                         />
                       </div>
@@ -489,7 +489,7 @@ export const EditorGroupingForm = ({
                         defaultValue={
                           field.value.value ? field.value.value.toString() : ""
                         }
-                        {...register(`conditions.${index}.value.value`)}
+                        {...register(`parameters.${index}.value.value`)}
                         className={styles.inputValue}
                         placeholder="値"
                         type="number"
