@@ -81,10 +81,7 @@ export const EditResultViewFileds = ({ dataSetTitle }: Props): JSX.Element => {
         />
       </Field>
       <Field label="ビューのタイトル">
-        <Input
-          placeholder="選択中のビューのタイトルを入力する"
-          {...register("title")}
-        />
+        <Input placeholder="選択中のビューのタイトル" {...register("title")} />
       </Field>
       <Fieldset>
         <FieldLegend>パラメーター</FieldLegend>
