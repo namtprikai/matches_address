@@ -82,10 +82,10 @@ export const AreaFilterForm = (props: AreaFilterFormProps): JSX.Element => {
           ) : (
             <div className={styles.selectedOptions}>
               {props.areas.map((area, index) => (
-                <>
+                <Fragment key={area}>
                   {index !== 0 && <span>/</span>}
                   <span key={area}>{area}</span>
-                </>
+                </Fragment>
               ))}
             </div>
           )}
