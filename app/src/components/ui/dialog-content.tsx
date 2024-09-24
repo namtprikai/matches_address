@@ -29,9 +29,9 @@ export const DialogContent = forwardRef<HTMLDivElement, DialogContentProps>(
         {...props}
         ref={ref}
         className={mergeClasses(
-          className,
           styles.dialogContent,
           props.border && styles.dialogContentBordered,
+          className,
         )}
       />
     );

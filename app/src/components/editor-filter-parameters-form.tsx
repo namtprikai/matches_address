@@ -4,6 +4,7 @@ import {
   DialogTrigger,
   Label,
   makeStyles,
+  mergeClasses,
   tokens,
 } from "@fluentui/react-components";
 import { useFieldArray, useForm } from "react-hook-form";
@@ -31,6 +32,9 @@ const useStyles = makeStyles({
     display: "flex",
     gap: "8px",
     alignItems: "center",
+    padding: `${tokens.spacingVerticalM} ${tokens.spacingHorizontalXXL}`,
+    borderBottom: `1px solid ${tokens.colorNeutralStroke1}`,
+    fontSize: "14px",
   },
   includesField: {
     display: "flex",
@@ -60,17 +64,22 @@ const useStyles = makeStyles({
   inputLabelValue: {
     width: "128px",
   },
+  dialogContent: {
+    padding: 0,
+  },
+  dialogContentNoBottomBorder: {
+    borderBottom: "none",
+  },
   dialogInner: {
     display: "flex",
     flexDirection: "column",
     justifyContent: "center",
-    gap: `${tokens.spacingVerticalM}`,
-    padding: `${tokens.spacingVerticalL} 0`,
     width: "100%",
   },
   selectorContainer: {
     display: "grid",
     placeItems: "center",
+    padding: `${tokens.spacingVerticalL} 0`,
   },
 });
 
@@ -249,7 +258,13 @@ export const EditorFilterParametersForm = ({
           >
             次の条件でフィルター
           </DialogTitle>
-          <DialogContent>
+          <DialogContent
+            border
+            className={mergeClasses(
+              styles.dialogContent,
+              fields.length !== 0 && styles.dialogContentNoBottomBorder,
+            )}
+          >
             <div className={styles.dialogInner}>
               {fields.length === 0 ? (
                 <div className={styles.selectorContainer}>
