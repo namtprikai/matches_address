@@ -115,7 +115,7 @@ const DateRangeSchema = z.object({
 });
 
 const schema = z.object({
-  conditions: z
+  parameters: z
     .object({
       key: z.string(),
       value: z
@@ -131,30 +131,30 @@ const schema = z.object({
     .array(),
 });
 
-type conditions = z.infer<typeof schema.shape.conditions>;
+type parameters = z.infer<typeof schema.shape.parameters>;
 
-type EditorFilterConditionsFormProps = {
-  conditions: conditions;
+type EditorFilterParametersFormProps = {
+  parameters: parameters;
   options: (BUILDING_DATASET_COLUMN | AREA_DATASET_COLUMN)[];
   unit: "building" | "area";
-  onSave: (parameters: conditions) => void;
+  onSave: (parameters: parameters) => void;
 };
 
-export const EditorFilterConditionsForm = ({
+export const EditorFilterParametersForm = ({
   onSave,
   ...props
-}: EditorFilterConditionsFormProps): JSX.Element => {
+}: EditorFilterParametersFormProps): JSX.Element => {
   const [open, setOpen] = useState(false);
 
   const { control, register, handleSubmit } = useForm({
     defaultValues: {
-      conditions: props.conditions,
+      parameters: props.parameters,
     },
   });
 
   const { fields, replace, remove, update } = useFieldArray({
     control,
-    name: "conditions",
+    name: "parameters",
   });
 
   const optionsWithActive = props.options.map((option) => {
@@ -211,11 +211,11 @@ export const EditorFilterConditionsForm = ({
       return;
     });
     const cleanedFields = newFields.filter((field) => field !== undefined);
-    replace(cleanedFields as conditions);
+    replace(cleanedFields as parameters); // union の型推論が効きづらいため、明示的に型を指定
   };
 
   const handleSave = handleSubmit((data) => {
-    onSave(data.conditions);
+    onSave(data.parameters);
     setOpen(false);
   });
 
@@ -228,10 +228,10 @@ export const EditorFilterConditionsForm = ({
     >
       <DialogTrigger>
         <Button
-          appearance={props.conditions.length === 0 ? "outline" : "primary"}
+          appearance={props.parameters.length === 0 ? "outline" : "primary"}
           size="medium"
         >
-          {props.conditions.length === 0 ? "詳細条件を追加" : "詳細条件を編集"}
+          {props.parameters.length === 0 ? "詳細条件を追加" : "詳細条件を編集"}
         </Button>
       </DialogTrigger>
       <DialogSurface>
@@ -269,7 +269,7 @@ export const EditorFilterConditionsForm = ({
                       <Label>{metadata?.label ?? "カラム"}</Label>
                       <Select
                         defaultValue={field.value.operation}
-                        {...register(`conditions.${index}.value.operation`)}
+                        {...register(`parameters.${index}.value.operation`)}
                       >
                         <option value="isTrue">真である</option>
                         <option value="isFalse">偽である</option>
@@ -292,7 +292,7 @@ export const EditorFilterConditionsForm = ({
                       <Label>{metadata?.label ?? "カラム"}</Label>
                       <Select
                         defaultValue={field.value.operation}
-                        {...register(`conditions.${index}.value.operation`)}
+                        {...register(`parameters.${index}.value.operation`)}
                       >
                         <option value="eq">次に等しい</option>
                         <option value="noteq">次に等しくない</option>
@@ -301,7 +301,7 @@ export const EditorFilterConditionsForm = ({
                       </Select>
                       <Input
                         defaultValue={field.value.value}
-                        {...register(`conditions.${index}.value.value`)}
+                        {...register(`parameters.${index}.value.value`)}
                         placeholder="値"
                         type="text"
                       />
@@ -323,7 +323,7 @@ export const EditorFilterConditionsForm = ({
                       <Label>{metadata?.label ?? "カラム"}</Label>
                       <Select
                         defaultValue={field.value.operation}
-                        {...register(`conditions.${index}.value.operation`)}
+                        {...register(`parameters.${index}.value.operation`)}
                       >
                         <option value="eq">次に等しい</option>
                         <option value="noteq">次に等しくない</option>
@@ -344,7 +344,7 @@ export const EditorFilterConditionsForm = ({
                             placeholder="開始値"
                             type="date"
                             {...register(
-                              `conditions.${index}.value.startValue`,
+                              `parameters.${index}.value.startValue`,
                             )}
                             className={styles.inputRangeValue}
                           />
@@ -356,7 +356,7 @@ export const EditorFilterConditionsForm = ({
                                 field.value.includesStart ?? false
                               }
                               {...register(
-                                `conditions.${index}.value.includesStart`,
+                                `parameters.${index}.value.includesStart`,
                               )}
                             />
                           </div>
@@ -369,7 +369,7 @@ export const EditorFilterConditionsForm = ({
                             }
                             placeholder="終了値"
                             type="date"
-                            {...register(`conditions.${index}.value.lastValue`)}
+                            {...register(`parameters.${index}.value.lastValue`)}
                             className={styles.inputRangeValue}
                           />
                           <div className={styles.includesField}>
@@ -378,7 +378,7 @@ export const EditorFilterConditionsForm = ({
                               className={styles.checkbox}
                               defaultChecked={field.value.includesLast ?? false}
                               {...register(
-                                `conditions.${index}.value.includesLast`,
+                                `parameters.${index}.value.includesLast`,
                               )}
                             />
                           </div>
@@ -391,7 +391,7 @@ export const EditorFilterConditionsForm = ({
                               ? field.value.value.toString()
                               : ""
                           }
-                          {...register(`conditions.${index}.value.value`)}
+                          {...register(`parameters.${index}.value.value`)}
                           className={styles.inputValue}
                           placeholder="値"
                           type="date"
@@ -444,7 +444,7 @@ export const EditorFilterConditionsForm = ({
                           }
                           placeholder="開始値"
                           type="number"
-                          {...register(`conditions.${index}.value.startValue`)}
+                          {...register(`parameters.${index}.value.startValue`)}
                           className={styles.inputRangeValue}
                         />
                         {metadata?.unit ?? ""}
@@ -454,7 +454,7 @@ export const EditorFilterConditionsForm = ({
                             className={styles.checkbox}
                             defaultChecked={field.value.includesStart ?? false}
                             {...register(
-                              `conditions.${index}.value.includesStart`,
+                              `parameters.${index}.value.includesStart`,
                             )}
                           />
                         </div>
@@ -467,7 +467,7 @@ export const EditorFilterConditionsForm = ({
                           }
                           placeholder="終了値"
                           type="number"
-                          {...register(`conditions.${index}.value.lastValue`)}
+                          {...register(`parameters.${index}.value.lastValue`)}
                           className={styles.inputRangeValue}
                         />
                         {metadata?.unit ?? ""}
@@ -477,7 +477,7 @@ export const EditorFilterConditionsForm = ({
                             className={styles.checkbox}
                             defaultChecked={field.value.includesLast ?? false}
                             {...register(
-                              `conditions.${index}.value.includesLast`,
+                              `parameters.${index}.value.includesLast`,
                             )}
                           />
                         </div>
@@ -491,7 +491,7 @@ export const EditorFilterConditionsForm = ({
                               ? field.value.value.toString()
                               : ""
                           }
-                          {...register(`conditions.${index}.value.value`)}
+                          {...register(`parameters.${index}.value.value`)}
                           className={styles.inputValue}
                           placeholder="値"
                           type="number"
