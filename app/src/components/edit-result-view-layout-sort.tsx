@@ -22,30 +22,30 @@ export const EditResultViewLayoutSort = (): JSX.Element => {
   const [selectedResultView, refresh] = useAtom(selectedResultViewAtom);
   const [resultViews, refreshResultViews] = useAtom(resultViewsAtom);
 
+  /** validationはbuttonのdisabledで管理 */
   const handleNext = async (): Promise<void> => {
-    if (selectedResultView?.layoutIndex === resultViews.length - 1) return;
     if (!selectedResultViewId) return;
     if (!selectedResultView?.sheet_id) return;
     await window.ipcRenderer.invoke("updateResultViewsLayoutIndex", {
       sheetId: selectedResultView.sheet_id,
       resultViewId: selectedResultViewId,
       value: {
-        layoutIndex: (selectedResultView?.layoutIndex || 0) + 1,
+        layoutIndex: selectedResultView?.layoutIndex || 0,
       },
     });
     refresh();
     refreshResultViews();
   };
 
+  /** validationはbuttonのdisabledで管理 */
   const handlePrev = async (): Promise<void> => {
-    if (selectedResultView?.layoutIndex === 0) return;
     if (!selectedResultViewId) return;
     if (!selectedResultView?.sheet_id) return;
     await window.ipcRenderer.invoke("updateResultViewsLayoutIndex", {
       sheetId: selectedResultView.sheet_id,
       resultViewId: selectedResultViewId,
       value: {
-        layoutIndex: (selectedResultView?.layoutIndex || 0) - 1,
+        layoutIndex: (selectedResultView?.layoutIndex || 0) - 2,
       },
     });
     refresh();
@@ -58,7 +58,7 @@ export const EditResultViewLayoutSort = (): JSX.Element => {
       <div className={styles.inner}>
         <Button
           disabled={
-            !selectedResultViewId || selectedResultView?.layoutIndex === 0
+            !selectedResultViewId || selectedResultView?.layoutIndex === 1
           }
           icon={<ChevronLeftRegular />}
           onClick={handlePrev}
@@ -66,7 +66,7 @@ export const EditResultViewLayoutSort = (): JSX.Element => {
           前へ
         </Button>
         <Button
-          disabled={selectedResultView?.layoutIndex === resultViews.length - 1}
+          disabled={selectedResultView?.layoutIndex === resultViews.length}
           icon={<ChevronRightRegular />}
           onClick={handleNext}
         >
