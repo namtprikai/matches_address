@@ -6,15 +6,11 @@ import {
   type FilterSpecification,
   Map,
   removeProtocol,
-  type StyleSpecification,
 } from "maplibre-gl";
-import { type FileSource, PMTiles, Protocol } from "pmtiles";
+import { Protocol } from "pmtiles";
 import { makeStyles } from "@fluentui/react-components";
 import { type Polygon } from "geojson";
-import useSWR, { type Fetcher } from "swr";
 import { type VacancyLevels } from "../vacancy-level-checkbox";
-import protomapsBasemapsJson from "../../../../assets/protomaps-basemaps.json";
-import { type getChubuPmtiles } from "../../../ipc-main-listeners/get-chubu-pmtiles";
 import { addBuildingLayer } from "./add-building-layer";
 import { type BuildingProperties } from "./building-popup";
 import { addAreaLayer } from "./add-area-layer";
@@ -36,11 +32,6 @@ interface Props {
   vacancyLevels: VacancyLevels;
 }
 
-const pmtilesFetcher: Fetcher<
-  Awaited<ReturnType<typeof getChubuPmtiles>>,
-  string
-> = () => window.ipcRenderer.invoke("getChubuPmtiles");
-
 export function MapComponent({
   dataSetResultId,
   type,
@@ -51,46 +42,31 @@ export function MapComponent({
   const containerRef = useRef<HTMLDivElement | null>(null);
   const [mapInstance, setMapInstance] = useState<Map | null>(null);
   const [layerIds, setLayerIds] = useState<string[] | null>(null);
-  const { data: buffer } = useSWR("getChubuPmtiles", pmtilesFetcher);
 
-  useEffect(
-    function initializeMapEffect() {
-      const containerEl = containerRef.current;
-      if (!containerEl || !buffer) return;
+  useEffect(function initializeMapEffect() {
+    const containerEl = containerRef.current;
+    if (!containerEl) return;
 
-      const protocol = new Protocol();
-      const fileSource: FileSource = {
-        file: new File([buffer], "chubu.pmtiles"),
-        getKey: () => "chubu.pmtiles",
-        getBytes: async (offset, length) => {
-          return {
-            data: buffer.buffer.slice(offset, offset + length),
-          };
-        },
-      };
-      const p = new PMTiles(fileSource);
-      protocol.add(p);
-      addProtocol("pmtiles", protocol.tile);
+    const protocol = new Protocol();
+    addProtocol("pmtiles", protocol.tile);
 
-      const initializedMap = new Map({
-        container: containerEl,
-        style: protomapsBasemapsJson as StyleSpecification,
-        center: [137.120435, 34.990565],
-        zoom: 14,
-        maxZoom: 22,
-        minZoom: 6,
-      });
+    const initializedMap = new Map({
+      container: containerEl,
+      style: "protomaps-basemaps.json",
+      center: [137.120435, 34.990565],
+      zoom: 14,
+      maxZoom: 22,
+      minZoom: 6,
+    });
 
-      initializedMap.on("load", () => {
-        setMapInstance(initializedMap);
-      });
+    initializedMap.on("load", () => {
+      setMapInstance(initializedMap);
+    });
 
-      return () => {
-        removeProtocol("pmtiles");
-      };
-    },
-    [buffer],
-  );
+    return () => {
+      removeProtocol("pmtiles");
+    };
+  }, []);
 
   useEffect(
     function updateMapEffect() {
