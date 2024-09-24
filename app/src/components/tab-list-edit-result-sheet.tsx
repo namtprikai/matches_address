@@ -15,20 +15,6 @@ import { Button } from "./ui/button";
 import { ButtonEditableSheetTitle } from "./button-editable-sheet-title";
 import { Tab } from "./ui/tab";
 
-const addResultSheet = async ({
-  workbookId,
-  fieldsLength,
-}: {
-  workbookId: string | undefined;
-  fieldsLength: number;
-}): Promise<void> => {
-  if (!workbookId) return;
-  await window.ipcRenderer.invoke("insertResultSheets", {
-    title: `シート${fieldsLength + 1}`,
-    workbook_id: Number(workbookId),
-  });
-};
-
 const useStyles = makeStyles({
   root: {
     display: "grid",
@@ -57,7 +43,7 @@ export const TabListEditResultSheet = (): JSX.Element => {
 
   useEffect(() => {
     if (resultSheets.length === 0) return;
-    setSelectedResultSheetId(resultSheets[0].id);
+    setSelectedResultSheetId((prev) => prev || resultSheets[0].id);
   }, [resultSheets, setSelectedResultSheetId]);
 
   return (
@@ -66,12 +52,16 @@ export const TabListEditResultSheet = (): JSX.Element => {
         appearance="subtle"
         icon={<AddFilled />}
         onClick={async (): Promise<void> => {
-          await addResultSheet({
-            workbookId: String(workbookId),
-            fieldsLength: resultSheets.length,
-          });
           if (!workbookId) return;
+          const { insertedId } = await window.ipcRenderer.invoke(
+            "insertResultSheets",
+            {
+              title: `シート${resultSheets.length + 1}`,
+              workbook_id: workbookId,
+            },
+          );
           refresh();
+          setSelectedResultSheetId(insertedId);
         }}
         shape="square"
       >
