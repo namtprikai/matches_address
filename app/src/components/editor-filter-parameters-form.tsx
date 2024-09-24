@@ -68,10 +68,6 @@ const useStyles = makeStyles({
     padding: `${tokens.spacingVerticalL} 0`,
     width: "100%",
   },
-  dialogBody: {
-    display: "flex",
-    flexDirection: "column",
-  },
   selectorContainer: {
     display: "grid",
     placeItems: "center",
@@ -240,19 +236,19 @@ export const EditorFilterParametersForm = ({
         </Button>
       </DialogTrigger>
       <DialogSurface>
-        <DialogTitle
-          action={
-            <FilterColumnSelector
-              appearance="normal"
-              onSave={handleSelector}
-              options={optionsWithActive}
-              unit={props.unit}
-            />
-          }
-        >
-          次の条件でフィルター
-        </DialogTitle>
-        <DialogBody className={styles.dialogBody}>
+        <DialogBody>
+          <DialogTitle
+            action={
+              <FilterColumnSelector
+                appearance="normal"
+                onSave={handleSelector}
+                options={optionsWithActive}
+                unit={props.unit}
+              />
+            }
+          >
+            次の条件でフィルター
+          </DialogTitle>
           <DialogContent>
             <div className={styles.dialogInner}>
               {fields.length === 0 ? (
@@ -532,12 +528,12 @@ export const EditorFilterParametersForm = ({
               )}
             </div>
           </DialogContent>
+          <DialogActions position="end">
+            <Button onClick={handleSave} type="button">
+              保存
+            </Button>
+          </DialogActions>
         </DialogBody>
-        <DialogActions position="end">
-          <Button onClick={handleSave} type="button">
-            保存
-          </Button>
-        </DialogActions>
       </DialogSurface>
     </Dialog>
   );
