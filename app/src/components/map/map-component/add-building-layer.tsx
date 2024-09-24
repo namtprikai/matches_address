@@ -1,4 +1,4 @@
-import { Popup, type Map } from "maplibre-gl";
+import { type FeatureIdentifier, Popup, type Map } from "maplibre-gl";
 import { renderToString } from "react-dom/server";
 import { type SelectDataSetDetailBuilding } from "../../../schema";
 import { BuildingPopup, type BuildingProperties } from "./building-popup";
@@ -13,6 +13,7 @@ export function addBuildingLayer(
 
   map.addSource(layerId, {
     type: "geojson",
+    generateId: true, // featureのIDを個別に自動生成する、クリックしたポリゴンを判別して色を変えるために必要
     data: {
       type: "FeatureCollection",
       features: buildings.map(({ geometry, ...properties }) => ({
@@ -36,10 +37,16 @@ export function addBuildingLayer(
       "fill-color": [
         "case",
         [">=", ["get", "predicted_probability"], VACANCY_RATE_HIGH],
-        "#C4314B66", // 赤 (80以上)
+        "#C4314B", // 赤 (80以上)
         [">=", ["get", "predicted_probability"], VACANCY_RATE_MEDIUM],
-        "#FFA92966", // 黄 (30以上80未満)
-        "#1B8C6366", // 青 (30未満)
+        "#FFA929", // 黄 (30以上80未満)
+        "#1B8C63", // 青 (30未満)
+      ],
+      "fill-opacity": [
+        "case",
+        ["boolean", ["feature-state", "clicked"], false],
+        0.8, // クリックされたポリゴンの不透明度
+        0.4, // 通常の不透明度
       ],
       "fill-outline-color": [
         "case",
@@ -51,6 +58,8 @@ export function addBuildingLayer(
       ],
     },
   });
+
+  let clickedId: FeatureIdentifier["id"] = undefined;
 
   map.on("click", layerId, (e) => {
     if (e.features && e.features.length > 0) {
@@ -69,9 +78,35 @@ export function addBuildingLayer(
       map.on("closeAllPopups", () => {
         popup.remove();
       });
+
+      // 以前にクリックされたポリゴンの状態をリセット
+      if (clickedId !== undefined) {
+        map.setFeatureState(
+          { source: layerId, id: clickedId },
+          { clicked: false },
+        );
+      }
+
+      // 新しくクリックされたポリゴンの状態を設定
+      clickedId = feature.id;
+      map.setFeatureState(
+        { source: layerId, id: clickedId },
+        { clicked: true },
+      );
     }
   });
 
+  // マップのクリックイベントで、ポリゴン外をクリックした場合の処理
+  map.on("click", (e) => {
+    const features = map.queryRenderedFeatures(e.point, { layers: [layerId] });
+    if (features.length === 0 && clickedId !== undefined) {
+      map.setFeatureState(
+        { source: layerId, id: clickedId },
+        { clicked: false },
+      );
+      clickedId = undefined;
+    }
+  });
   // ポリゴンレイヤーにマウスが乗ったときにカーソルを変更
   map.on("mouseenter", layerId, () => {
     map.getCanvas().style.cursor = "pointer";
