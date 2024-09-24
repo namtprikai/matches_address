@@ -1,5 +1,6 @@
 import { useFieldArray, useFormContext } from "react-hook-form";
 import { Fragment } from "react/jsx-runtime";
+import { makeStyles } from "@fluentui/react-components";
 import { result_views, type SelectResultView } from "../schema";
 import { LanguageMap } from "../lang";
 import { TILE_VIEW_CONFIG } from "../config/tile-view-config";
@@ -19,7 +20,20 @@ import { Select } from "./ui/select";
 import { DynamicParameterInput } from "./dynamic-parameter-input";
 import { EditorGroupingForm } from "./editor-grouping-form";
 
-export const EditResultViewFileds = (): JSX.Element => {
+const useStyles = makeStyles({
+  fontBlackInput: {
+    "& input": {
+      color: "black",
+    },
+  },
+});
+
+type Props = {
+  dataSetTitle?: string | null | undefined;
+};
+
+export const EditResultViewFileds = ({ dataSetTitle }: Props): JSX.Element => {
+  const styles = useStyles();
   const { register, watch, control, setValue } =
     useFormContext<EditResultViewFormType>();
 
@@ -60,7 +74,11 @@ export const EditResultViewFileds = (): JSX.Element => {
   return (
     <>
       <Field label="データセット">
-        <Input disabled placeholder="選択中のデータセット名が入る" />
+        <Input
+          className={styles.fontBlackInput}
+          disabled
+          value={dataSetTitle || ""}
+        />
       </Field>
       <Field label="ビューのタイトル">
         <Input
