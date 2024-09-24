@@ -3,14 +3,11 @@ import {
   DialogBody as FUIDialogBody,
   makeStyles,
   mergeClasses,
-  tokens,
 } from "@fluentui/react-components";
 import { forwardRef } from "react";
 
 const useStyles = makeStyles({
-  dialogBody: {
-    gap: `${tokens.spacingVerticalL} ${tokens.spacingHorizontalL}`,
-  },
+  dialogBody: {},
 });
 
 export const DialogBody = forwardRef<HTMLDivElement, DialogBodyProps>(

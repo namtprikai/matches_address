@@ -2,7 +2,6 @@ import { AddFilled, Dismiss24Regular } from "@fluentui/react-icons";
 import {
   Dialog,
   DialogTrigger,
-  DialogContent,
   makeStyles,
   tokens,
 } from "@fluentui/react-components";
@@ -14,6 +13,7 @@ import { DialogTitle } from "./ui/dialog-title";
 import { Input } from "./ui/input";
 import { DialogActions } from "./ui/dialog-actions";
 import { DialogBody } from "./ui/dialog-body";
+import { DialogContent } from "./ui/dialog-content";
 
 const useStyles = makeStyles({
   input: {
