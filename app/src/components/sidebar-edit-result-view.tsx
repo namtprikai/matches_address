@@ -16,15 +16,16 @@ import { selectedResultSheetIdAtom } from "../state/selected-result-sheet-id-ato
 import { Button } from "./ui/button";
 import { EditResultViewForm } from "./edit-result-view-form";
 import { ListDataSetResults } from "./list-data-set-results";
+import { EditResultViewLayoutSort } from "./edit-result-view-layout-sort";
 
 const useStyles = makeStyles({
+  drawer: {
+    minHeight: "100vh",
+  },
   heading: {
     fontSize: tokens.fontSizeBase400,
     lineHeight: tokens.lineHeightBase600,
     fontWeight: tokens.fontWeightSemibold,
-  },
-  drawerBody: {
-    minHeight: "100vh",
   },
   drawerBodyInner: {
     display: "grid",
@@ -56,6 +57,7 @@ export const SidebarEditResultView = (): JSX.Element => {
     await window.ipcRenderer.invoke("insertResultViews", {
       data_set_result_id: dataSetResultId,
       sheet_id: selectedResultSheetId,
+      layoutIndex: resultViews.length + 1,
       parameters: [],
     });
     // TODO: できればリロードせずに更新したい
@@ -71,7 +73,7 @@ export const SidebarEditResultView = (): JSX.Element => {
   }, [resultViews.length]);
 
   return (
-    <InlineDrawer open>
+    <InlineDrawer className={styles.drawer} open>
       <DrawerHeader>
         <DrawerHeaderTitle
           action={
@@ -92,7 +94,7 @@ export const SidebarEditResultView = (): JSX.Element => {
         </DrawerHeaderTitle>
       </DrawerHeader>
 
-      <DrawerBody className={styles.drawerBody}>
+      <DrawerBody>
         <div className={styles.drawerBodyInner}>
           {isAddView && (
             <>
@@ -184,7 +186,12 @@ export const SidebarEditResultView = (): JSX.Element => {
               </div>
             </>
           )}
-          {!isAddView && <EditResultViewForm />}
+          {!isAddView && (
+            <>
+              <EditResultViewForm />
+              <EditResultViewLayoutSort />
+            </>
+          )}
         </div>
       </DrawerBody>
     </InlineDrawer>

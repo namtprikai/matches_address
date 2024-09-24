@@ -100,7 +100,9 @@ export const EditResultViewForm = (): JSX.Element => {
       <form className={styles.form} onSubmit={onSubmit}>
         <EditResultViewFileds />
         <EditResultViewFilterFields />
-        <Button type="submit">フィルター・パラメータを保存する</Button>
+        <Button appearance="primary" type="submit">
+          入力内容を保存する
+        </Button>
       </form>
     </FormProvider>
   );
