@@ -27,7 +27,7 @@ import { deleteResultSheet } from "./delete-result-sheet";
 import { createDummyDataSetResults } from "./create-dummy-data-set-results";
 import { getChubuPmtiles } from "./get-chubu-pmtiles";
 import { deleteWorkbook } from "./delete-workbook";
-import { updateResultViewsLayoutIndex } from "./updateResultViewsLayoutIndex";
+import { updateResultViewsLayoutIndex } from "./update-result-views-layout-index";
 
 export const ipcMainListeners = {
   helloFromPython,
