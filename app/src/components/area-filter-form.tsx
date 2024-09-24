@@ -119,20 +119,18 @@ export const AreaFilterForm = (props: AreaFilterFormProps): JSX.Element => {
                     label={area}
                     name={area}
                     onChange={(e) => {
-                      if (e.target.checked) {
-                        setSelectedAreas((prev) => {
+                      setSelectedAreas((prev) => {
+                        if (e.target.checked) {
                           if (prev.includes(area)) {
                             return prev;
                           }
                           return [...prev, area].sort();
-                        });
-                      } else {
-                        setSelectedAreas((prev) =>
-                          prev
+                        } else {
+                          return prev
                             .filter((selectedArea) => selectedArea !== area)
-                            .sort(),
-                        );
-                      }
+                            .sort();
+                        }
+                      });
                     }}
                   />
                 </div>
