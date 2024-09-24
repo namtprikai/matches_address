@@ -143,7 +143,7 @@ export const EditResultViewFileds = (): JSX.Element => {
                       const newParameters = [
                         ...prevOtherParameters,
                         ...parameters,
-                      ] as SelectResultView["parameters"];
+                      ] as SelectResultView["parameters"]; // union の型推論が効きづらいため、明示的に型を指定;
                       replace(newParameters);
                     }}
                     parameters={groupingFields}
@@ -164,7 +164,7 @@ export const EditResultViewFileds = (): JSX.Element => {
                             value: e.target.value as "avg" | "sum",
                             type: "group_option",
                           },
-                        ] as SelectResultView["parameters"];
+                        ] as SelectResultView["parameters"]; // union の型推論が効きづらいため、明示的に型を指定;
                         replace(newParameters);
                       }}
                       value={groupCalc?.value}

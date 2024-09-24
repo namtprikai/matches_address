@@ -211,7 +211,7 @@ export const EditorFilterParametersForm = ({
       return;
     });
     const cleanedFields = newFields.filter((field) => field !== undefined);
-    replace(cleanedFields as parameters);
+    replace(cleanedFields as parameters); // union の型推論が効きづらいため、明示的に型を指定
   };
 
   const handleSave = handleSubmit((data) => {

@@ -154,7 +154,7 @@ export const EditResultViewFilterFields = (): JSX.Element => {
           const newParameters = [
             ...prevOtherParameters,
             ...parameters,
-          ] as SelectResultView["parameters"];
+          ] as SelectResultView["parameters"]; // union の型推論が効きづらいため、明示的に型を指定;
 
           replace(newParameters);
         }}
