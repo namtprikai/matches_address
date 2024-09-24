@@ -5,8 +5,7 @@ export function Debug(): JSX.Element {
     <div>
       <h1>(開発用)</h1>
       <a href="#">Go to home page</a>
-      {/* <Map dataSetResultId={1} type="building" /> */}
-      <img src="vite.svg" />
+      <Map dataSetResultId={1} type="building" />
     </div>
   );
 }
