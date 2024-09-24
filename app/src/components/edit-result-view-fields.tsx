@@ -226,11 +226,17 @@ export const EditResultViewFileds = (): JSX.Element => {
               setValue("unit", e.target.value as "building" | "area");
             }}
           >
-            {result_views.unit.enumValues.map((item) => (
-              <option key={item} value={item}>
-                {LanguageMap["RESULT_VIEWS_UNIT"][item]}
-              </option>
-            ))}
+            {result_views.unit.enumValues.map((item) => {
+              if (item === "area" && style !== "map" && style !== "table") {
+                return <></>;
+              }
+
+              return (
+                <option key={item} value={item}>
+                  {LanguageMap["RESULT_VIEWS_UNIT"][item]}
+                </option>
+              );
+            })}
           </Select>
         </Field>
       </Fieldset>
