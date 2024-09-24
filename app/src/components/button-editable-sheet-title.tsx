@@ -1,7 +1,6 @@
 import { ArchiveRegular, Dismiss24Regular } from "@fluentui/react-icons";
 import {
   Dialog,
-  DialogContent,
   DialogTrigger,
   makeStyles,
   tokens,
@@ -19,6 +18,7 @@ import { DialogBody } from "./ui/dialog-body";
 import { DialogTitle } from "./ui/dialog-title";
 import { DialogActions } from "./ui/dialog-actions";
 import { Button } from "./ui/button";
+import { DialogContent } from "./ui/dialog-content";
 
 type Props = {
   resultSheet: Pick<SelectResultSheet, "id" | "title">;

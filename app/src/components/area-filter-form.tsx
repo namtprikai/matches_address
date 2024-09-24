@@ -2,7 +2,6 @@ import { Fragment, useState } from "react";
 import {
   Checkbox,
   Dialog,
-  DialogActions,
   DialogTrigger,
   makeStyles,
 } from "@fluentui/react-components";
@@ -13,6 +12,8 @@ import { Button } from "./ui/button";
 import { DialogSurface } from "./ui/dialog-surface";
 import { DialogBody } from "./ui/dialog-body";
 import { DialogTitle } from "./ui/dialog-title";
+import { DialogContent } from "./ui/dialog-content";
+import { DialogActions } from "./ui/dialog-actions";
 
 const useStyles = makeStyles({
   options: {
@@ -22,13 +23,6 @@ const useStyles = makeStyles({
     gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))",
     gridAutoRows: "1fr",
     width: "100%",
-  },
-  dialogSurface: {},
-  dialogBody: {
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "flex-start",
-    gap: "16px",
   },
   selectedOptions: {
     display: "flex",
@@ -107,35 +101,37 @@ export const AreaFilterForm = (props: AreaFilterFormProps): JSX.Element => {
         }}
         open={open}
       >
-        <DialogSurface className={styles.dialogSurface}>
-          <DialogTitle>地域を選択</DialogTitle>
-          <DialogBody className={styles.dialogBody}>
-            <div className={styles.options}>
-              {data?.map((area, index) => (
-                <div key={index}>
-                  <Checkbox
-                    checked={selectedAreas.includes(area)}
-                    id={area}
-                    label={area}
-                    name={area}
-                    onChange={(e) => {
-                      setSelectedAreas((prev) => {
-                        if (e.target.checked) {
-                          if (prev.includes(area)) {
-                            return prev;
+        <DialogSurface>
+          <DialogBody>
+            <DialogTitle>地域を選択</DialogTitle>
+            <DialogContent border>
+              <div className={styles.options}>
+                {data?.map((area, index) => (
+                  <div key={index}>
+                    <Checkbox
+                      checked={selectedAreas.includes(area)}
+                      id={area}
+                      label={area}
+                      name={area}
+                      onChange={(e) => {
+                        setSelectedAreas((prev) => {
+                          if (e.target.checked) {
+                            if (prev.includes(area)) {
+                              return prev;
+                            }
+                            return [...prev, area].sort();
+                          } else {
+                            return prev
+                              .filter((selectedArea) => selectedArea !== area)
+                              .sort();
                           }
-                          return [...prev, area].sort();
-                        } else {
-                          return prev
-                            .filter((selectedArea) => selectedArea !== area)
-                            .sort();
-                        }
-                      });
-                    }}
-                  />
-                </div>
-              ))}
-            </div>
+                        });
+                      }}
+                    />
+                  </div>
+                ))}
+              </div>
+            </DialogContent>
             <DialogActions>
               <DialogTrigger disableButtonEnhancement>
                 <Button appearance="primary" onClick={handleClick}>

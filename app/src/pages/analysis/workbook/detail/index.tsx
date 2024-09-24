@@ -8,7 +8,6 @@ import {
   Dialog,
   DialogActions,
   DialogBody,
-  DialogContent,
   DialogSurface,
   DialogTitle,
   DialogTrigger,
@@ -23,6 +22,7 @@ import { useFetchResultSheets } from "../../../../hooks/use-fetch-result-sheets"
 import { useTabs } from "../../../../hooks/use-tabs";
 import { ResultSheet } from "../../../../components/result-sheet";
 import { Tab } from "../../../../components/ui/tab";
+import { DialogContent } from "../../../../components/ui/dialog-content";
 
 const useStyles = makeStyles({
   root: {

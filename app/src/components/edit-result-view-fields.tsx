@@ -243,7 +243,7 @@ export const EditResultViewFileds = ({ dataSetTitle }: Props): JSX.Element => {
           >
             {result_views.unit.enumValues.map((item) => {
               if (item === "area" && style !== "map" && style !== "table") {
-                return <></>;
+                return <Fragment key={item}></Fragment>;
               }
 
               return (

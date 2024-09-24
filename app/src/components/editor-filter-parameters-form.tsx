@@ -4,6 +4,7 @@ import {
   DialogTrigger,
   Label,
   makeStyles,
+  mergeClasses,
   tokens,
 } from "@fluentui/react-components";
 import { useFieldArray, useForm } from "react-hook-form";
@@ -24,12 +25,16 @@ import { FilterColumnSelector } from "./filter-column-selector";
 import { Field } from "./ui/field";
 import { Select } from "./ui/select";
 import { Input } from "./ui/input";
+import { DialogContent } from "./ui/dialog-content";
 
 const useStyles = makeStyles({
   groupField: {
     display: "flex",
     gap: "8px",
     alignItems: "center",
+    padding: `${tokens.spacingVerticalM} ${tokens.spacingHorizontalXXL}`,
+    borderBottom: `1px solid ${tokens.colorNeutralStroke1}`,
+    fontSize: "14px",
   },
   includesField: {
     display: "flex",
@@ -59,17 +64,22 @@ const useStyles = makeStyles({
   inputLabelValue: {
     width: "128px",
   },
+  dialogContent: {
+    padding: 0,
+  },
+  dialogContentNoBottomBorder: {
+    borderBottom: "none",
+  },
   dialogInner: {
     display: "flex",
     flexDirection: "column",
     justifyContent: "center",
-    gap: `${tokens.spacingVerticalM}`,
-    padding: `${tokens.spacingVerticalL} 0`,
     width: "100%",
   },
-  dialogBody: {
-    display: "flex",
-    flexDirection: "column",
+  selectorContainer: {
+    display: "grid",
+    placeItems: "center",
+    padding: `${tokens.spacingVerticalL} 0`,
   },
 });
 
@@ -235,102 +245,219 @@ export const EditorFilterParametersForm = ({
         </Button>
       </DialogTrigger>
       <DialogSurface>
-        <DialogTitle>
-          次の条件でフィルター
-          <FilterColumnSelector
-            appearance="normal"
-            onSave={handleSelector}
-            options={optionsWithActive}
-            unit={props.unit}
-          />
-        </DialogTitle>
-        <DialogBody className={styles.dialogBody}>
-          <div className={styles.dialogInner}>
-            {fields.length === 0 ? (
+        <DialogBody>
+          <DialogTitle
+            action={
               <FilterColumnSelector
-                appearance="primary"
+                appearance="normal"
                 onSave={handleSelector}
                 options={optionsWithActive}
                 unit={props.unit}
               />
-            ) : (
-              fields.map((field, index) => {
-                const metadata = getColumnMetadata({
-                  unit: props.unit,
-                  key: field.value.referenceColumn,
-                });
+            }
+          >
+            次の条件でフィルター
+          </DialogTitle>
+          <DialogContent
+            border
+            className={mergeClasses(
+              styles.dialogContent,
+              fields.length !== 0 && styles.dialogContentNoBottomBorder,
+            )}
+          >
+            <div className={styles.dialogInner}>
+              {fields.length === 0 ? (
+                <div className={styles.selectorContainer}>
+                  <FilterColumnSelector
+                    appearance="primary"
+                    onSave={handleSelector}
+                    options={optionsWithActive}
+                    unit={props.unit}
+                  />
+                </div>
+              ) : (
+                fields.map((field, index) => {
+                  const metadata = getColumnMetadata({
+                    unit: props.unit,
+                    key: field.value.referenceColumn,
+                  });
 
-                /**
-                 * カラムの型がbooleanの場合
-                 */
-                if (field.value.referenceColumnType === "boolean") {
+                  /**
+                   * カラムの型がbooleanの場合
+                   */
+                  if (field.value.referenceColumnType === "boolean") {
+                    return (
+                      <Field key={field.id} className={styles.groupField}>
+                        <Label>{metadata?.label ?? "カラム"}</Label>
+                        <Select
+                          defaultValue={field.value.operation}
+                          {...register(`parameters.${index}.value.operation`)}
+                        >
+                          <option value="isTrue">真である</option>
+                          <option value="isFalse">偽である</option>
+                        </Select>
+                        <Button
+                          appearance="subtle"
+                          icon={<Delete20Regular />}
+                          onClick={() => {
+                            handleRemove(index);
+                          }}
+                          type="button"
+                        ></Button>
+                      </Field>
+                    );
+                  }
+
+                  if (field.value.referenceColumnType === "text") {
+                    return (
+                      <Field key={field.id} className={styles.groupField}>
+                        <Label>{metadata?.label ?? "カラム"}</Label>
+                        <Select
+                          defaultValue={field.value.operation}
+                          {...register(`parameters.${index}.value.operation`)}
+                        >
+                          <option value="eq">次に等しい</option>
+                          <option value="noteq">次に等しくない</option>
+                          <option value="contains">次を含む</option>
+                          <option value="notContains">次を含まない</option>
+                        </Select>
+                        <Input
+                          defaultValue={field.value.value}
+                          {...register(`parameters.${index}.value.value`)}
+                          placeholder="値"
+                          type="text"
+                        />
+                        <Button
+                          appearance="subtle"
+                          icon={<Delete20Regular />}
+                          onClick={() => {
+                            handleRemove(index);
+                          }}
+                          type="button"
+                        ></Button>
+                      </Field>
+                    );
+                  }
+
+                  if (field.value.referenceColumnType === "date") {
+                    return (
+                      <Field key={field.id} className={styles.groupField}>
+                        <Label>{metadata?.label ?? "カラム"}</Label>
+                        <Select
+                          defaultValue={field.value.operation}
+                          {...register(`parameters.${index}.value.operation`)}
+                        >
+                          <option value="eq">次に等しい</option>
+                          <option value="noteq">次に等しくない</option>
+                          <option value="gt">次より後</option>
+                          <option value="lt">次より前</option>
+                          <option value="gte">次以降</option>
+                          <option value="lte">次以前</option>
+                          <option value="range">次の範囲</option>
+                        </Select>
+                        {field.value.operation === "range" && (
+                          <>
+                            <Input
+                              defaultValue={
+                                field.value.startValue
+                                  ? field.value.startValue.toString()
+                                  : ""
+                              }
+                              placeholder="開始値"
+                              type="date"
+                              {...register(
+                                `parameters.${index}.value.startValue`,
+                              )}
+                              className={styles.inputRangeValue}
+                            />
+                            <div className={styles.includesField}>
+                              <span>含</span>
+                              <Checkbox
+                                className={styles.checkbox}
+                                defaultChecked={
+                                  field.value.includesStart ?? false
+                                }
+                                {...register(
+                                  `parameters.${index}.value.includesStart`,
+                                )}
+                              />
+                            </div>
+                            <span>〜</span>
+                            <Input
+                              defaultValue={
+                                field.value.startValue
+                                  ? field.value.startValue.toString()
+                                  : ""
+                              }
+                              placeholder="終了値"
+                              type="date"
+                              {...register(
+                                `parameters.${index}.value.lastValue`,
+                              )}
+                              className={styles.inputRangeValue}
+                            />
+                            <div className={styles.includesField}>
+                              <span>含</span>
+                              <Checkbox
+                                className={styles.checkbox}
+                                defaultChecked={
+                                  field.value.includesLast ?? false
+                                }
+                                {...register(
+                                  `parameters.${index}.value.includesLast`,
+                                )}
+                              />
+                            </div>
+                          </>
+                        )}
+                        {field.value.operation !== "range" && (
+                          <Input
+                            defaultValue={
+                              field.value.value
+                                ? field.value.value.toString()
+                                : ""
+                            }
+                            {...register(`parameters.${index}.value.value`)}
+                            className={styles.inputValue}
+                            placeholder="値"
+                            type="date"
+                          />
+                        )}
+                        <Button
+                          appearance="subtle"
+                          icon={<Delete20Regular />}
+                          onClick={() => {
+                            handleRemove(index);
+                          }}
+                          type="button"
+                        ></Button>
+                      </Field>
+                    );
+                  }
+
                   return (
                     <Field key={field.id} className={styles.groupField}>
                       <Label>{metadata?.label ?? "カラム"}</Label>
                       <Select
-                        defaultValue={field.value.operation}
-                        {...register(`parameters.${index}.value.operation`)}
-                      >
-                        <option value="isTrue">真である</option>
-                        <option value="isFalse">偽である</option>
-                      </Select>
-                      <Button
-                        appearance="subtle"
-                        icon={<Delete20Regular />}
-                        onClick={() => {
-                          handleRemove(index);
+                        onChange={(e) => {
+                          update(index, {
+                            key: field.key,
+                            value: {
+                              ...field.value,
+                              // @ts-expect-error - ここで型が変わるためエラーになる
+                              operation: e.target.value,
+                            },
+                            type: "filter",
+                          });
                         }}
-                        type="button"
-                      ></Button>
-                    </Field>
-                  );
-                }
-
-                if (field.value.referenceColumnType === "text") {
-                  return (
-                    <Field key={field.id} className={styles.groupField}>
-                      <Label>{metadata?.label ?? "カラム"}</Label>
-                      <Select
-                        defaultValue={field.value.operation}
-                        {...register(`parameters.${index}.value.operation`)}
+                        value={field.value.operation ?? "eq"}
                       >
-                        <option value="eq">次に等しい</option>
-                        <option value="noteq">次に等しくない</option>
-                        <option value="contains">次を含む</option>
-                        <option value="notContains">次を含まない</option>
-                      </Select>
-                      <Input
-                        defaultValue={field.value.value}
-                        {...register(`parameters.${index}.value.value`)}
-                        placeholder="値"
-                        type="text"
-                      />
-                      <Button
-                        appearance="subtle"
-                        icon={<Delete20Regular />}
-                        onClick={() => {
-                          handleRemove(index);
-                        }}
-                        type="button"
-                      ></Button>
-                    </Field>
-                  );
-                }
-
-                if (field.value.referenceColumnType === "date") {
-                  return (
-                    <Field key={field.id} className={styles.groupField}>
-                      <Label>{metadata?.label ?? "カラム"}</Label>
-                      <Select
-                        defaultValue={field.value.operation}
-                        {...register(`parameters.${index}.value.operation`)}
-                      >
-                        <option value="eq">次に等しい</option>
-                        <option value="noteq">次に等しくない</option>
-                        <option value="gt">次より後</option>
-                        <option value="lt">次より前</option>
-                        <option value="gte">次以降</option>
-                        <option value="lte">次以前</option>
+                        <option value="eq">等しい</option>
+                        <option value="noteq">等しくない</option>
+                        <option value="gt">より大きい</option>
+                        <option value="lt">より小さい</option>
+                        <option value="gte">以上</option>
+                        <option value="lte">以下</option>
                         <option value="range">次の範囲</option>
                       </Select>
                       {field.value.operation === "range" && (
@@ -342,12 +469,13 @@ export const EditorFilterParametersForm = ({
                                 : ""
                             }
                             placeholder="開始値"
-                            type="date"
+                            type="number"
                             {...register(
                               `parameters.${index}.value.startValue`,
                             )}
                             className={styles.inputRangeValue}
                           />
+                          {metadata?.unit ?? ""}
                           <div className={styles.includesField}>
                             <span>含</span>
                             <Checkbox
@@ -368,10 +496,11 @@ export const EditorFilterParametersForm = ({
                                 : ""
                             }
                             placeholder="終了値"
-                            type="date"
+                            type="number"
                             {...register(`parameters.${index}.value.lastValue`)}
                             className={styles.inputRangeValue}
                           />
+                          {metadata?.unit ?? ""}
                           <div className={styles.includesField}>
                             <span>含</span>
                             <Checkbox
@@ -385,17 +514,20 @@ export const EditorFilterParametersForm = ({
                         </>
                       )}
                       {field.value.operation !== "range" && (
-                        <Input
-                          defaultValue={
-                            field.value.value
-                              ? field.value.value.toString()
-                              : ""
-                          }
-                          {...register(`parameters.${index}.value.value`)}
-                          className={styles.inputValue}
-                          placeholder="値"
-                          type="date"
-                        />
+                        <>
+                          <Input
+                            defaultValue={
+                              field.value.value
+                                ? field.value.value.toString()
+                                : ""
+                            }
+                            {...register(`parameters.${index}.value.value`)}
+                            className={styles.inputValue}
+                            placeholder="値"
+                            type="number"
+                          />
+                          {metadata?.unit ?? ""}
+                        </>
                       )}
                       <Button
                         appearance="subtle"
@@ -407,117 +539,16 @@ export const EditorFilterParametersForm = ({
                       ></Button>
                     </Field>
                   );
-                }
-
-                return (
-                  <Field key={field.id} className={styles.groupField}>
-                    <Label>{metadata?.label ?? "カラム"}</Label>
-                    <Select
-                      onChange={(e) => {
-                        update(index, {
-                          key: field.key,
-                          value: {
-                            ...field.value,
-                            // @ts-expect-error - ここで型が変わるためエラーになる
-                            operation: e.target.value,
-                          },
-                          type: "filter",
-                        });
-                      }}
-                      value={field.value.operation ?? "eq"}
-                    >
-                      <option value="eq">等しい</option>
-                      <option value="noteq">等しくない</option>
-                      <option value="gt">より大きい</option>
-                      <option value="lt">より小さい</option>
-                      <option value="gte">以上</option>
-                      <option value="lte">以下</option>
-                      <option value="range">次の範囲</option>
-                    </Select>
-                    {field.value.operation === "range" && (
-                      <>
-                        <Input
-                          defaultValue={
-                            field.value.startValue
-                              ? field.value.startValue.toString()
-                              : ""
-                          }
-                          placeholder="開始値"
-                          type="number"
-                          {...register(`parameters.${index}.value.startValue`)}
-                          className={styles.inputRangeValue}
-                        />
-                        {metadata?.unit ?? ""}
-                        <div className={styles.includesField}>
-                          <span>含</span>
-                          <Checkbox
-                            className={styles.checkbox}
-                            defaultChecked={field.value.includesStart ?? false}
-                            {...register(
-                              `parameters.${index}.value.includesStart`,
-                            )}
-                          />
-                        </div>
-                        <span>〜</span>
-                        <Input
-                          defaultValue={
-                            field.value.startValue
-                              ? field.value.startValue.toString()
-                              : ""
-                          }
-                          placeholder="終了値"
-                          type="number"
-                          {...register(`parameters.${index}.value.lastValue`)}
-                          className={styles.inputRangeValue}
-                        />
-                        {metadata?.unit ?? ""}
-                        <div className={styles.includesField}>
-                          <span>含</span>
-                          <Checkbox
-                            className={styles.checkbox}
-                            defaultChecked={field.value.includesLast ?? false}
-                            {...register(
-                              `parameters.${index}.value.includesLast`,
-                            )}
-                          />
-                        </div>
-                      </>
-                    )}
-                    {field.value.operation !== "range" && (
-                      <>
-                        <Input
-                          defaultValue={
-                            field.value.value
-                              ? field.value.value.toString()
-                              : ""
-                          }
-                          {...register(`parameters.${index}.value.value`)}
-                          className={styles.inputValue}
-                          placeholder="値"
-                          type="number"
-                        />
-                        {metadata?.unit ?? ""}
-                      </>
-                    )}
-                    <Button
-                      appearance="subtle"
-                      icon={<Delete20Regular />}
-                      onClick={() => {
-                        handleRemove(index);
-                      }}
-                      type="button"
-                    ></Button>
-                  </Field>
-                );
-              })
-            )}
-          </div>
+                })
+              )}
+            </div>
+          </DialogContent>
+          <DialogActions position="end">
+            <Button onClick={handleSave} type="button">
+              保存
+            </Button>
+          </DialogActions>
         </DialogBody>
-        <DialogActions position="end">
-          <Button onClick={handleSave} type="button">
-            保存
-          </Button>
-        </DialogActions>
       </DialogSurface>
     </Dialog>
   );
