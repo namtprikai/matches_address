@@ -25,7 +25,9 @@ export const EditResultViewLayoutSort = (): JSX.Element => {
   const handleNext = async (): Promise<void> => {
     if (selectedResultView?.layoutIndex === resultViews.length - 1) return;
     if (!selectedResultViewId) return;
+    if (!selectedResultView?.sheet_id) return;
     await window.ipcRenderer.invoke("updateResultViewsLayoutIndex", {
+      sheetId: selectedResultView.sheet_id,
       resultViewId: selectedResultViewId,
       value: {
         layoutIndex: (selectedResultView?.layoutIndex || 0) + 1,
@@ -38,7 +40,9 @@ export const EditResultViewLayoutSort = (): JSX.Element => {
   const handlePrev = async (): Promise<void> => {
     if (selectedResultView?.layoutIndex === 0) return;
     if (!selectedResultViewId) return;
+    if (!selectedResultView?.sheet_id) return;
     await window.ipcRenderer.invoke("updateResultViewsLayoutIndex", {
+      sheetId: selectedResultView.sheet_id,
       resultViewId: selectedResultViewId,
       value: {
         layoutIndex: (selectedResultView?.layoutIndex || 0) - 1,

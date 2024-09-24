@@ -57,7 +57,7 @@ export const SidebarEditResultView = (): JSX.Element => {
     await window.ipcRenderer.invoke("insertResultViews", {
       data_set_result_id: dataSetResultId,
       sheet_id: selectedResultSheetId,
-      layoutIndex: resultViews.length,
+      layoutIndex: resultViews.length + 1,
       parameters: [],
     });
     // TODO: できればリロードせずに更新したい
