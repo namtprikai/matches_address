@@ -2,7 +2,8 @@
 {
   "compilerOptions": {
     "module": "NodeNext",
-    "moduleResolution": "NodeNext"
+    "moduleResolution": "NodeNext",
+    "composite": true
   },
   "include": ["forge.config.ts"]
 }

@@ -1,6 +1,5 @@
 import { useFieldArray, useFormContext } from "react-hook-form";
 import { Fragment } from "react/jsx-runtime";
-import { useEffect } from "react";
 import { result_views, type SelectResultView } from "../schema";
 import { LanguageMap } from "../lang";
 import { TILE_VIEW_CONFIG } from "../config/tile-view-config";
@@ -144,7 +143,7 @@ export const EditResultViewFileds = (): JSX.Element => {
                       const newParameters = [
                         ...prevOtherParameters,
                         ...parameters,
-                      ] as SelectResultView["parameters"];
+                      ] as SelectResultView["parameters"]; // union の型推論が効きづらいため、明示的に型を指定;
                       replace(newParameters);
                     }}
                     parameters={groupingFields}
@@ -165,7 +164,7 @@ export const EditResultViewFileds = (): JSX.Element => {
                             value: e.target.value as "avg" | "sum",
                             type: "group_option",
                           },
-                        ] as SelectResultView["parameters"];
+                        ] as SelectResultView["parameters"]; // union の型推論が効きづらいため、明示的に型を指定;
                         replace(newParameters);
                       }}
                       value={groupCalc?.value}
@@ -227,11 +226,17 @@ export const EditResultViewFileds = (): JSX.Element => {
               setValue("unit", e.target.value as "building" | "area");
             }}
           >
-            {result_views.unit.enumValues.map((item) => (
-              <option key={item} value={item}>
-                {LanguageMap["RESULT_VIEWS_UNIT"][item]}
-              </option>
-            ))}
+            {result_views.unit.enumValues.map((item) => {
+              if (item === "area" && style !== "map" && style !== "table") {
+                return <></>;
+              }
+
+              return (
+                <option key={item} value={item}>
+                  {LanguageMap["RESULT_VIEWS_UNIT"][item]}
+                </option>
+              );
+            })}
           </Select>
         </Field>
       </Fieldset>

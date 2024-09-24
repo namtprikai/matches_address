@@ -1,18 +1,15 @@
-import {
-  type InsertResultSheet,
-  result_sheets,
-  type SelectResultSheet,
-} from "../schema";
+import { type InsertResultSheet, result_sheets } from "../schema";
 import { db } from "../utils/db";
 import { type IpcMainListener } from ".";
 
 export const insertResultSheets = (async (
   _: unknown,
   { workbook_id, title }: InsertResultSheet,
-): Promise<SelectResultSheet[]> => {
+): Promise<{ insertedId: number }> => {
   const res = await db
     .insert(result_sheets)
     .values({ workbook_id, title })
-    .returning();
+    .returning({ insertedId: result_sheets.id })
+    .get();
   return res;
 }) satisfies IpcMainListener;

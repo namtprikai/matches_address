@@ -16,6 +16,50 @@ type Props = {
   type: "building" | "area";
 };
 
+/**
+ * このコンポーネント内で同様の処理をまとめているだけなため、後で削除することも検討する
+ */
+// eslint-disable-next-line @typescript-eslint/explicit-function-return-type -- 型推論を利用したいため
+const pickArgsFromParameters = (
+  parameters: SelectResultView["parameters"],
+  style: Exclude<SelectResultView["style"], "table" | "map" | null>,
+) => {
+  const xAxis = parameters.find((p) =>
+    style === "pie" ? p.key === "label" : p.key === "xAxis",
+  );
+  const yAxis = parameters.find((p) =>
+    style === "pie" ? p.key === "value" : p.key === "xAxis",
+  );
+
+  const groupingParameters = parameters.filter((p) => p.type === "group");
+
+  const filterParameters = parameters.filter(
+    (p) => p.type === "filter" && p.key !== "year" && p.key !== "area",
+  );
+
+  const yearParameter = parameters.find(
+    (p) => p.key === "year" && p.type === "filter",
+  );
+
+  const groupingCalc = parameters.find(
+    (p) => p.key === "group_calc" && p.type === "group_option",
+  );
+
+  const areaParameter = parameters.find(
+    (p) => p.key === "area" && p.type === "filter",
+  );
+
+  return {
+    xAxis,
+    yAxis,
+    groupingParameters,
+    filterParameters,
+    yearParameter,
+    areaParameter,
+    groupingCalc,
+  };
+};
+
 export const TileViewStyle = ({
   style,
   parameters,
@@ -23,21 +67,15 @@ export const TileViewStyle = ({
   type,
 }: Props): JSX.Element => {
   if (style === "pie") {
-    const xAxis = parameters.find((p) => p.key === "label");
-    const yAxis = parameters.find((p) => p.key === "value");
-
-    const groupingParameters = parameters.filter((p) => p.type === "group");
-    const filterParameters = parameters.filter(
-      (p) => p.type === "filter" && p.key !== "year",
-    );
-
-    const yearParameter = parameters.find(
-      (p) => p.key === "year" && p.type === "filter",
-    );
-
-    const groupingCalc = parameters.find(
-      (p) => p.key === "group_calc" && p.type === "group_option",
-    );
+    const {
+      xAxis,
+      yAxis,
+      groupingParameters,
+      filterParameters,
+      yearParameter,
+      areaParameter: areaParameter,
+      groupingCalc,
+    } = pickArgsFromParameters(parameters, style);
 
     if (!xAxis || !yAxis) {
       return <div>パラメーターの値を正しく設定してください</div>;
@@ -47,6 +85,7 @@ export const TileViewStyle = ({
       return (
         <div>
           <PieChart
+            filterByAreas={areaParameter?.value}
             filterByYear={{
               startValue: yearParameter?.value?.start,
               endValue: yearParameter?.value?.end,
@@ -66,6 +105,7 @@ export const TileViewStyle = ({
     return (
       <div>
         <PieChart
+          filterByAreas={areaParameter?.value}
           filterByYear={{
             startValue: yearParameter?.value?.start,
             endValue: yearParameter?.value?.end,
@@ -83,22 +123,15 @@ export const TileViewStyle = ({
   }
 
   if (style === "bar") {
-    const xAxis = parameters.find((p) => p.key === "xAxis");
-    const yAxis = parameters.find((p) => p.key === "yAxis");
-
-    const groupingParameters = parameters.filter((p) => p.type === "group");
-
-    const filterParameters = parameters.filter(
-      (p) => p.type === "filter" && p.key !== "year",
-    );
-
-    const yearParameter = parameters.find(
-      (p) => p.key === "year" && p.type === "filter",
-    );
-
-    const groupingCalc = parameters.find(
-      (p) => p.key === "group_calc" && p.type === "group_option",
-    );
+    const {
+      xAxis,
+      yAxis,
+      groupingParameters,
+      filterParameters,
+      yearParameter,
+      areaParameter: areaParameter,
+      groupingCalc,
+    } = pickArgsFromParameters(parameters, style);
 
     if (!xAxis || !yAxis) {
       return <div>パラメーターの値を正しく設定してください</div>;
@@ -108,6 +141,7 @@ export const TileViewStyle = ({
       return (
         <div>
           <BarChart
+            filterByAreas={areaParameter?.value}
             filterByYear={{
               startValue: yearParameter?.value?.start,
               endValue: yearParameter?.value?.end,
@@ -127,6 +161,7 @@ export const TileViewStyle = ({
     return (
       <div>
         <BarChart
+          filterByAreas={areaParameter?.value}
           filterByYear={{
             startValue: yearParameter?.value?.start,
             endValue: yearParameter?.value?.end,
@@ -144,26 +179,15 @@ export const TileViewStyle = ({
   }
 
   if (style === "line") {
-    const xAxis = parameters.find(
-      (p) => p.key === "xAxis" && p.type === "column",
-    );
-    const yAxis = parameters.find(
-      (p) => p.key === "yAxis" && p.type === "column",
-    );
-
-    const groupingParameters = parameters.filter((p) => p.type === "group");
-
-    const filterParameters = parameters.filter(
-      (p) => p.type === "filter" && p.key !== "year",
-    );
-
-    const yearParameter = parameters.find(
-      (p) => p.key === "year" && p.type === "filter",
-    );
-
-    const groupingCalc = parameters.find(
-      (p) => p.key === "group_calc" && p.type === "group_option",
-    );
+    const {
+      xAxis,
+      yAxis,
+      groupingParameters,
+      filterParameters,
+      yearParameter,
+      areaParameter: areaParameter,
+      groupingCalc,
+    } = pickArgsFromParameters(parameters, style);
 
     if (!xAxis || !yAxis) {
       return <div>パラメーターの値を正しく設定してください</div>;
@@ -173,6 +197,7 @@ export const TileViewStyle = ({
       return (
         <div>
           <LineChart
+            filterByAreas={areaParameter?.value}
             filterByYear={{
               startValue: yearParameter?.value?.start,
               endValue: yearParameter?.value?.end,
@@ -192,6 +217,7 @@ export const TileViewStyle = ({
     return (
       <div>
         <LineChart
+          filterByAreas={areaParameter?.value}
           filterByYear={{
             startValue: yearParameter?.value?.start,
             endValue: yearParameter?.value?.end,
@@ -216,7 +242,7 @@ export const TileViewStyle = ({
     );
 
     const filterParameters = parameters.filter(
-      (p) => p.type === "filter" && p.key !== "year",
+      (p) => p.type === "filter" && p.key !== "year" && p.key !== "area",
     );
 
     if (!columns) {
