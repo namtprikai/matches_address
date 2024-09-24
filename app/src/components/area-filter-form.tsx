@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { Fragment, useState } from "react";
 import {
   Checkbox,
   Dialog,
@@ -12,13 +12,16 @@ import { Field } from "./ui/field";
 import { Button } from "./ui/button";
 import { DialogSurface } from "./ui/dialog-surface";
 import { DialogBody } from "./ui/dialog-body";
+import { DialogTitle } from "./ui/dialog-title";
 
 const useStyles = makeStyles({
-  checkBoxOption: {
+  options: {
     height: "300px",
     overflowX: "scroll",
-    display: "flex",
-    flexWrap: "wrap",
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))",
+    gridAutoRows: "1fr",
+    width: "100%",
   },
   dialogSurface: {},
   dialogBody: {
@@ -26,6 +29,27 @@ const useStyles = makeStyles({
     flexDirection: "column",
     alignItems: "flex-start",
     gap: "16px",
+  },
+  selectedOptions: {
+    display: "flex",
+    flexWrap: "wrap",
+    gap: "4px 8px",
+    fontSize: "12px",
+  },
+  layout: {
+    display: "flex",
+    gap: "4px",
+    flexDirection: "row",
+    alignItems: "flex-start",
+    justifyContent: "space-between",
+  },
+  editButton: {
+    minWidth: "50px",
+    fontSize: "12px",
+  },
+  noSelectedLabel: {
+    lineHeight: "32px",
+    fontSize: "12px",
   },
 });
 
@@ -51,14 +75,24 @@ export const AreaFilterForm = (props: AreaFilterFormProps): JSX.Element => {
 
   return (
     <Field label="地域">
-      <div>
+      <div className={styles.layout}>
         <div>
-          {props.areas.length === 0
-            ? "地域を選択してください"
-            : props.areas.map((area) => <p key={area}>{area}</p>)}
+          {props.areas.length === 0 ? (
+            <p className={styles.noSelectedLabel}>地域を選択してください</p>
+          ) : (
+            <div className={styles.selectedOptions}>
+              {props.areas.map((area, index) => (
+                <>
+                  {index !== 0 && <span>/</span>}
+                  <span key={area}>{area}</span>
+                </>
+              ))}
+            </div>
+          )}
         </div>
         <div>
           <Button
+            className={styles.editButton}
             onClick={() => {
               setOpen(true);
             }}
@@ -74,19 +108,42 @@ export const AreaFilterForm = (props: AreaFilterFormProps): JSX.Element => {
         open={open}
       >
         <DialogSurface className={styles.dialogSurface}>
+          <DialogTitle>地域を選択</DialogTitle>
           <DialogBody className={styles.dialogBody}>
-            <div className={styles.checkBoxOption}>
+            <div className={styles.options}>
               {data?.map((area, index) => (
                 <div key={index}>
                   <Checkbox
                     checked={selectedAreas.includes(area)}
+                    id={area}
                     label={area}
+                    name={area}
+                    onChange={(e) => {
+                      if (e.target.checked) {
+                        setSelectedAreas((prev) => {
+                          if (prev.includes(area)) {
+                            return prev;
+                          }
+                          return [...prev, area].sort();
+                        });
+                      } else {
+                        setSelectedAreas((prev) =>
+                          prev
+                            .filter((selectedArea) => selectedArea !== area)
+                            .sort(),
+                        );
+                      }
+                    }}
                   />
                 </div>
               ))}
             </div>
             <DialogActions>
-              <Button onClick={handleClick}>保存</Button>
+              <DialogTrigger disableButtonEnhancement>
+                <Button appearance="primary" onClick={handleClick}>
+                  保存
+                </Button>
+              </DialogTrigger>
             </DialogActions>
           </DialogBody>
         </DialogSurface>

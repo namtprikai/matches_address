@@ -42,5 +42,5 @@ export const fetchAreaGroups = (async (
 
   const areas = result.map((r) => r.area_group);
 
-  return areas.filter((g) => g !== null);
+  return areas.filter((g) => g !== null).sort();
 }) satisfies IpcMainListener;

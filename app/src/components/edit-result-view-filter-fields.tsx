@@ -53,7 +53,11 @@ export const EditResultViewFilterFields = (): JSX.Element => {
   const unit = watch("unit");
   const style = watch("style");
 
-  const areas: string[] = [];
+  const areaFilter = fields.find(
+    (f) => f.key === "area" && f.type === "filter",
+  );
+
+  const areas: string[] = areaFilter?.value ?? [];
 
   const fieldOptions = TILE_VIEW_CONFIG[style ?? "map"];
   const options = Array.from(
@@ -120,7 +124,24 @@ export const EditResultViewFilterFields = (): JSX.Element => {
         <AreaFilterForm
           areas={areas}
           dataSetResultId={resultView?.id}
-          onSave={(value) => {}}
+          onSave={(values) => {
+            const excludedYearParameters = fields.filter((f) => {
+              if (f.type === "filter" && f.key === "area") {
+                return false;
+              }
+
+              return true;
+            });
+
+            replace([
+              ...excludedYearParameters,
+              {
+                type: "filter",
+                key: "area",
+                value: values,
+              },
+            ] as SelectResultView["parameters"]);
+          }}
           unit={unit ?? "building"}
         />
       </Suspense>
