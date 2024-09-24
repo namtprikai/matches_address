@@ -371,7 +371,7 @@ export const EditorGroupingForm = ({
                               <Checkbox
                                 className={styles.checkbox}
                                 defaultChecked={
-                                  field.value.includesStart ?? false
+                                  field.value.includesStart ?? true
                                 }
                                 {...register(
                                   `parameters.${index}.value.includesStart`,
@@ -397,7 +397,7 @@ export const EditorGroupingForm = ({
                               <Checkbox
                                 className={styles.checkbox}
                                 defaultChecked={
-                                  field.value.includesLast ?? false
+                                  field.value.includesLast ?? true
                                 }
                                 {...register(
                                   `parameters.${index}.value.includesLast`,
@@ -481,9 +481,7 @@ export const EditorGroupingForm = ({
                             <span>含</span>
                             <Checkbox
                               className={styles.checkbox}
-                              defaultChecked={
-                                field.value.includesStart ?? false
-                              }
+                              defaultChecked={field.value.includesStart ?? true}
                               {...register(
                                 `parameters.${index}.value.includesStart`,
                               )}
@@ -506,7 +504,7 @@ export const EditorGroupingForm = ({
                             <span>含</span>
                             <Checkbox
                               className={styles.checkbox}
-                              defaultChecked={field.value.includesLast ?? false}
+                              defaultChecked={field.value.includesLast ?? true}
                               {...register(
                                 `parameters.${index}.value.includesLast`,
                               )}
