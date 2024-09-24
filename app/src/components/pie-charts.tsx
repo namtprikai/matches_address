@@ -42,11 +42,14 @@ export const PieChart = (props: PieChartProps): JSX.Element => {
     return <div>データがありません</div>;
   }
 
-  const CustomTooltip = <TValue extends ValueType, TName extends NameType>(
-    props: TooltipProps<TValue, TName> & {
-      unit?: string;
-    },
-  ): JSX.Element | null => {
+  /**
+   * TooltipPropsに渡す２つの型は、ベースのTooltipPropsが必要とする型で最低限のものを渡している
+   */
+  type CustomTooltipProps = TooltipProps<ValueType, NameType> & {
+    unit?: string;
+  };
+
+  const CustomTooltip = (props: CustomTooltipProps): JSX.Element | null => {
     const active = props.active;
     const payload = props.payload;
 
