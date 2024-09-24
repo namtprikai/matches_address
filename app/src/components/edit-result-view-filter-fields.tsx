@@ -53,6 +53,8 @@ export const EditResultViewFilterFields = (): JSX.Element => {
   const unit = watch("unit");
   const style = watch("style");
 
+  const areas: string[] = [];
+
   const fieldOptions = TILE_VIEW_CONFIG[style ?? "map"];
   const options = Array.from(
     new Set(
@@ -116,7 +118,9 @@ export const EditResultViewFilterFields = (): JSX.Element => {
 
       <Suspense fallback={null}>
         <AreaFilterForm
+          areas={areas}
           dataSetResultId={resultView?.id}
+          onSave={(value) => {}}
           unit={unit ?? "building"}
         />
       </Suspense>
