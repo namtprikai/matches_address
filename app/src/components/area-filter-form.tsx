@@ -53,7 +53,7 @@ const useStyles = makeStyles({
   },
 });
 
-export type AreaFilterFormProps = {
+type AreaFilterFormProps = {
   areas: string[];
   onSave: (value: string[]) => void;
 } & FetchAreaGroupsArg;
