@@ -77,7 +77,7 @@ export const EditResultViewFilterFields = (): JSX.Element => {
       <Field label="期間">
         <div className={styles.year}>
           <Select
-            value={style === "map" ? "" : year.end}
+            value={style === "map" ? "" : year.start}
             {...register("year.start")}
             disabled={style === "map"}
           >
