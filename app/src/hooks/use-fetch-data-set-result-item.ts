@@ -11,9 +11,10 @@ const fetcher = ([dataSetResultId]: [
   string,
 ]): Promise<Response> => {
   if (!dataSetResultId) return Promise.resolve(undefined);
-  const result = window.ipcRenderer.invoke("selectDataSetResults", {
+  const result = window.ipcRenderer.invoke(
+    "selectDataSetResults",
     dataSetResultId,
-  });
+  );
   return result;
 };
 

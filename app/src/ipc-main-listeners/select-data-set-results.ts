@@ -3,13 +3,9 @@ import { data_set_results, type SelectDataSetResult } from "../schema";
 import { db } from "../utils/db";
 import { type IpcMainListener } from ".";
 
-type Params = {
-  dataSetResultId?: number;
-};
-
 export const selectDataSetResults = (async (
   _: unknown,
-  { dataSetResultId }: Params,
+  dataSetResultId?: number,
 ): Promise<SelectDataSetResult[]> => {
   if (dataSetResultId) {
     return await db
