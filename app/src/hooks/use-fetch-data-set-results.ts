@@ -2,7 +2,7 @@ import useSWR, { type SWRResponse } from "swr";
 import { type SelectDataSetResult } from "../schema";
 
 const fetcher = (): Promise<SelectDataSetResult[]> => {
-  const result = window.ipcRenderer.invoke("selectDataSetResults");
+  const result = window.ipcRenderer.invoke("selectDataSetResults", {});
   return result;
 };
 
