@@ -1,4 +1,4 @@
-import { and, eq, gte, lte } from "drizzle-orm";
+import { and, eq, gte, lte, or } from "drizzle-orm";
 import { data_set_detail_areas, data_set_detail_buildings } from "../schema";
 import { db } from "../utils/db";
 import { columnsToSelectField } from "../utils/columns-to-select-field";
@@ -20,6 +20,7 @@ export type FilterDataSetForTableArgs = {
     startValue: string | undefined;
     endValue: string | undefined;
   };
+  filterByAreas?: string[];
   filterConditions: FilterCondition[];
   limit: number;
   offset: number;
@@ -38,6 +39,7 @@ export const filterDataSetForTable = (async (
     type,
     columns,
     filterByYear,
+    filterByAreas,
     limit,
     offset,
     filterConditions,
@@ -63,6 +65,12 @@ export const filterDataSetForTable = (async (
               )
             : undefined,
           ...FilterQuery({ conditions: filterConditions ?? [] }),
+          or(
+            // 地域区分文字列のリストからeq条件を作成
+            ...(filterByAreas ?? []).map((area) =>
+              eq(data_set_detail_buildings.area_group, area),
+            ),
+          ),
         ),
       )
       .limit(limit)
@@ -112,6 +120,12 @@ export const filterDataSetForTable = (async (
               )
             : undefined,
           ...FilterQuery({ conditions: filterConditions ?? [] }),
+          or(
+            // 地域区分文字列のリストからeq条件を作成
+            ...(filterByAreas ?? []).map((area) =>
+              eq(data_set_detail_areas.area_group, area),
+            ),
+          ),
         ),
       )
       .limit(limit)

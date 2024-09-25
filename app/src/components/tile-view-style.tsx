@@ -28,7 +28,7 @@ const pickArgsFromParameters = (
     style === "pie" ? p.key === "label" : p.key === "xAxis",
   );
   const yAxis = parameters.find((p) =>
-    style === "pie" ? p.key === "value" : p.key === "xAxis",
+    style === "pie" ? p.key === "value" : p.key === "yAxis",
   );
 
   const groupingParameters = parameters.filter((p) => p.type === "group");
@@ -245,6 +245,10 @@ export const TileViewStyle = ({
       (p) => p.type === "filter" && p.key !== "year" && p.key !== "area",
     );
 
+    const areaParameter = parameters.find(
+      (p) => p.key === "area" && p.type === "filter",
+    );
+
     if (!columns) {
       return <div>パラメーターの値を正しく設定してください</div>;
     }
@@ -254,6 +258,7 @@ export const TileViewStyle = ({
         <div>
           <TableView
             columns={columns.value.split(",") as BUILDING_DATASET_COLUMN[]}
+            filterByAreas={areaParameter?.value}
             filterByYear={{
               startValue: yearParameter?.value?.start,
               endValue: yearParameter?.value?.end,
