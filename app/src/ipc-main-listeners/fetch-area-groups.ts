@@ -33,7 +33,7 @@ export const fetchAreaGroups = (async (
           )
       : await db
           .selectDistinct({
-            area_group: data_set_detail_buildings.area_group,
+            area_group: data_set_detail_areas.area_group,
           })
           .from(data_set_detail_areas)
           .where(
