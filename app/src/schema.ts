@@ -150,8 +150,25 @@ export const data_set_detail_buildings = sqliteTable(
     id: integer("id").primaryKey(),
     data_set_result_id: integer("data_set_result_id"),
 
+    /**
+     * 世帯番号
+     *
+     * 文字列：任意の文字列
+     */
     household_code: text("household_code"),
+
+    /**
+     * 正規化住所
+     *
+     * 文字列：任意の文字列
+     */
     normalized_address: text("normalized_address"),
+
+    /**
+     * 建物所属地域区分
+     *
+     * 文字列：町丁目レベルやの地域区分
+     */
     area_group: text("area_group"),
 
     /**
@@ -491,11 +508,11 @@ export const data_set_detail_areas = sqliteTable("data_set_detail_areas", {
   reference_date: text("reference_date").notNull(),
 
   /**
-   * 住所
+   * 地域区分
    *
-   * 文字列：任意の文字列
+   * 文字列：町丁目レベルやの地域区分
    */
-  area_group: text("area_group"),
+  area_group: text("地域区分"),
 
   /**
    * 若年層率
