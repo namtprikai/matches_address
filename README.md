@@ -5,7 +5,7 @@
 ### 地図データをプロジェクトに配置する
 
 1. [chubu.pmtiles.zip](https://drive.google.com/file/d/1OKhf6Xsbd2nhwOT_A_LNGowJ3Tv4zpOj/view?usp=drive_link)をダウンロードする
-2. 上記の zip ファイルを解凍して`chubu.pmtiles`を`app/assets`配下に配置する
+2. 上記の zip ファイルを解凍して`chubu.pmtiles`を`app/public`配下に配置する
 
 ## development
 
