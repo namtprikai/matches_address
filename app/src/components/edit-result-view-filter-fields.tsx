@@ -123,7 +123,7 @@ export const EditResultViewFilterFields = (): JSX.Element => {
       <Suspense fallback={null}>
         <AreaFilterForm
           areas={areas}
-          dataSetResultId={resultView?.id}
+          dataSetResultId={resultView?.data_set_result_id ?? undefined}
           onSave={(values) => {
             const excludedYearParameters = fields.filter((f) => {
               if (f.type === "filter" && f.key === "area") {
