@@ -3,7 +3,6 @@ import { data_set_detail_areas, data_set_detail_buildings } from "../schema";
 import { db } from "../utils/db";
 import { columnsToSelectField } from "../utils/columns-to-select-field";
 import { type FilterCondition, type TableProps } from "../@types/charts";
-import { formatChartValue } from "../utils/format-chart-value";
 import {
   AREA_DATASET_COLUMN_METADATA,
   BUILDING_DATASET_COLUMN_METADATA,
@@ -11,6 +10,8 @@ import {
   type BUILDING_DATASET_COLUMN,
 } from "../config/column-metadata";
 import { FilterQuery } from "../utils/filter-query";
+import { formatTableValue } from "../utils/format-table-value";
+import { getColumnMetadata } from "../utils/get-column-metadata";
 import { type IpcMainListener } from ".";
 
 type FilterDataSetForTableResponse = TableProps;
@@ -89,9 +90,13 @@ export const filterDataSetForTable = (async (
       data: all.map((row) => {
         const rowArray = Object.entries(row);
         const formattedRow = rowArray.reduce((acc, [key, value]) => {
+          const metadata = getColumnMetadata({
+            key,
+            unit: type,
+          });
           return {
             ...acc,
-            [key]: formatChartValue(value ?? 0),
+            [key]: formatTableValue(value, metadata),
           };
         }, {});
 
@@ -144,9 +149,14 @@ export const filterDataSetForTable = (async (
       data: all.map((row) => {
         const rowArray = Object.entries(row);
         const formattedRow = rowArray.reduce((acc, [key, value]) => {
+          const metadata = getColumnMetadata({
+            key,
+            unit: type,
+          });
+
           return {
             ...acc,
-            [key]: formatChartValue(value ?? 0),
+            [key]: formatTableValue(value, metadata),
           };
         }, {});
 
