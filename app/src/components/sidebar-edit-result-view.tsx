@@ -44,6 +44,8 @@ export const SidebarEditResultView = (): JSX.Element => {
   const styles = useStyles();
   const { data: dataSetResults } = useFetchDataSetResults();
 
+  console.log({ dataSetResults });
+
   const [resultViews, refresh] = useAtom(resultViewsAtom);
   const [selectedResultSheetId] = useAtom(selectedResultSheetIdAtom);
   const [, setSelectedResultViewId] = useAtom(selectedResultViewIdAtom);
