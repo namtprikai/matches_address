@@ -275,6 +275,7 @@ export const TileViewStyle = ({
       <div>
         <TableView
           columns={columns.value.split(",") as AREA_DATASET_COLUMN[]}
+          filterByAreas={areaParameter?.value}
           filterByYear={{
             startValue: yearParameter?.value?.start,
             endValue: yearParameter?.value?.end,
