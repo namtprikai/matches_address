@@ -58,9 +58,15 @@ const conditionsToCaseQuery = (
       const includesLast = condition.includesLast;
 
       // 開始値の条件クエリを作成
-      const startQuery = `${key} ${includesStart === true ? ">=" : ">"} ${startValue}`;
+      const startQuery =
+        condition.referenceColumnType === "date" // 日付の場合は文字列としての比較が必要なため
+          ? `${key} ${includesStart === true ? ">=" : ">"} '${startValue}'`
+          : `${key} ${includesStart === true ? ">=" : ">"} ${startValue}`;
       // 終了値の条件クエリを作成
-      const lastQuery = `${key} ${includesLast === true ? "<=" : "<"} ${lastValue}`;
+      const lastQuery =
+        condition.referenceColumnType === "date" // 日付の場合は文字列としての比較が必要なため
+          ? `${key} ${includesLast === true ? ">=" : ">"} '${lastValue}'`
+          : `${key} ${includesLast === true ? "<=" : "<"} ${lastValue}`;
 
       return sql.raw(
         `when ${startQuery} and ${lastQuery} then '${condition.label}'`,
