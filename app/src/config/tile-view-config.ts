@@ -33,12 +33,6 @@ export const TILE_VIEW_CONFIG = {
           { unit: "building", value: "river_flooding_risk_rank" },
           { unit: "building", value: "river_flooding_risk_depth" },
           { unit: "building", value: "predicted_probability" },
-          { unit: "area", value: "area" },
-          { unit: "area", value: "young_population_ratio" },
-          { unit: "area", value: "elderly_population_ratio" },
-          { unit: "area", value: "total_building_count" },
-          { unit: "area", value: "vacant_house_count" },
-          { unit: "area", value: "predicted_probability" },
         ],
         grouping: true,
       },
@@ -64,12 +58,6 @@ export const TILE_VIEW_CONFIG = {
           { unit: "building", value: "river_flooding_risk_rank" },
           { unit: "building", value: "river_flooding_risk_depth" },
           { unit: "building", value: "predicted_probability" },
-          { unit: "area", value: "area" },
-          { unit: "area", value: "young_population_ratio" },
-          { unit: "area", value: "elderly_population_ratio" },
-          { unit: "area", value: "total_building_count" },
-          { unit: "area", value: "vacant_house_count" },
-          { unit: "area", value: "predicted_probability" },
         ],
         grouping: false,
       },
@@ -84,7 +72,6 @@ export const TILE_VIEW_CONFIG = {
         option: [
           { unit: "building", value: "area_group" },
           { unit: "building", value: "normalized_address" },
-          { unit: "area", value: "area_group" },
         ],
         grouping: true,
       },
@@ -100,12 +87,6 @@ export const TILE_VIEW_CONFIG = {
           { unit: "building", value: "percentage_15_to_64" },
           { unit: "building", value: "percentage_over_65" },
           { unit: "building", value: "predicted_probability" },
-          { unit: "area", value: "area" },
-          { unit: "area", value: "young_population_ratio" },
-          { unit: "area", value: "elderly_population_ratio" },
-          { unit: "area", value: "total_building_count" },
-          { unit: "area", value: "vacant_house_count" },
-          { unit: "area", value: "predicted_probability" },
         ],
         grouping: false,
       },
@@ -137,12 +118,6 @@ export const TILE_VIEW_CONFIG = {
           { unit: "building", value: "percentage_15_to_64" },
           { unit: "building", value: "percentage_over_65" },
           { unit: "building", value: "predicted_probability" },
-          { unit: "area", value: "area" },
-          { unit: "area", value: "young_population_ratio" },
-          { unit: "area", value: "elderly_population_ratio" },
-          { unit: "area", value: "total_building_count" },
-          { unit: "area", value: "vacant_house_count" },
-          { unit: "area", value: "predicted_probability" },
         ],
         grouping: false,
       },
@@ -336,14 +311,9 @@ if (import.meta.vitest) {
           .filter((option) => option.unit === "building")
           .map((option) => option.value);
 
-        const areaOptionValues = field.option
-          .filter((option) => option.unit === "area")
-          .map((option) => option.value);
-
         expect(buildingOptionValues).toEqual(
           Array.from(new Set(buildingOptionValues)),
         );
-        expect(areaOptionValues).toEqual(Array.from(new Set(areaOptionValues)));
       }
     });
 
@@ -355,14 +325,9 @@ if (import.meta.vitest) {
           .filter((option) => option.unit === "building")
           .map((option) => option.value);
 
-        const areaOptionValues = field.option
-          .filter((option) => option.unit === "area")
-          .map((option) => option.value);
-
         expect(buildingOptionValues).toEqual(
           Array.from(new Set(buildingOptionValues)),
         );
-        expect(areaOptionValues).toEqual(Array.from(new Set(areaOptionValues)));
       }
     });
 
@@ -374,14 +339,9 @@ if (import.meta.vitest) {
           .filter((option) => option.unit === "building")
           .map((option) => option.value);
 
-        const areaOptionValues = field.option
-          .filter((option) => option.unit === "area")
-          .map((option) => option.value);
-
         expect(buildingOptionValues).toEqual(
           Array.from(new Set(buildingOptionValues)),
         );
-        expect(areaOptionValues).toEqual(Array.from(new Set(areaOptionValues)));
       }
     });
 
