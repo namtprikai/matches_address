@@ -30,12 +30,12 @@ type Props = {
 export const DialogFieldOption = ({
   option,
   onSave,
-  ...props
+  value: initialValue,
 }: Props): JSX.Element => {
   const styles = useStyles();
 
   const [value, setValue] = useState<string[]>(
-    props.value.length > 0 ? props.value.split(",") : [],
+    initialValue.length > 0 ? initialValue.split(",") : [],
   );
 
   const handleClick = (): void => {
