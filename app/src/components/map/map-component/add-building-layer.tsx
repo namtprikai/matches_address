@@ -9,7 +9,12 @@ export function addBuildingLayer(
   layerId: string,
   buildings: BuildingProperties[],
 ): void {
-  if (map.getLayer(layerId)) return;
+  if (map.getLayer(layerId)) {
+    map.removeLayer(layerId);
+  }
+  if (map.getSource(layerId)) {
+    map.removeSource(layerId);
+  }
 
   map.addSource(layerId, {
     type: "geojson",

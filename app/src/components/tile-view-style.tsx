@@ -289,9 +289,13 @@ export const TileViewStyle = ({
   }
 
   if (style === "map") {
+    const areas = parameters.find(
+      (p) => p.key === "area" && p.type === "filter",
+    )?.value;
+
     return (
       <div>
-        <Map dataSetResultId={resultId} type={type} />
+        <Map areas={areas} dataSetResultId={resultId} type={type} />
       </div>
     );
   }
