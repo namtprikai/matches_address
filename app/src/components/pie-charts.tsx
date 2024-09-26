@@ -91,9 +91,10 @@ export const PieChart = (props: PieChartProps): JSX.Element => {
           cy="50%"
           data={data}
           dataKey="y"
+          endAngle={-270}
           labelLine={false}
           nameKey={"x"}
-          startAngle={0}
+          startAngle={90}
         >
           {data.map((_, index) => {
             return (
