@@ -9,7 +9,7 @@
   "scripts": {
     "dev": "electron-forge start",
     "make": "electron-forge make",
-    "lint": "npm run lint:eslint || npm run lint:type",
+    "lint": "npm run lint:eslint && npm run lint:type",
     "lint:eslint": "eslint --ext .ts,.tsx .",
     "lint:type": "tsc --noEmit --project tsconfig.base.json",
     "gen:migration": "drizzle-kit generate",
