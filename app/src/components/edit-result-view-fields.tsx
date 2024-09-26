@@ -176,7 +176,7 @@ export const EditResultViewFileds = ({ dataSetTitle }: Props): JSX.Element => {
                           ...prevOtherParameters,
                           {
                             key: "group_calc",
-                            value: e.target.value as "avg" | "sum",
+                            value: e.target.value as "avg" | "sum" | "count",
                             type: "group_option",
                           },
                         ] as SelectResultView["parameters"]; // union の型推論が効きづらいため、明示的に型を指定;
@@ -186,6 +186,7 @@ export const EditResultViewFileds = ({ dataSetTitle }: Props): JSX.Element => {
                     >
                       <option value="avg">平均</option>
                       <option value="sum">合計</option>
+                      <option value="count">総件数</option>
                     </Select>
                   )}
               </Fragment>

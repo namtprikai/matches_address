@@ -83,7 +83,7 @@ export const result_views = sqliteTable("result_views", {
         | {
             key: "group_calc";
             type: "group_option";
-            value: "avg" | "sum";
+            value: "avg" | "sum" | "count";
           }
         | {
             key: string;

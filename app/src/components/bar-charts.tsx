@@ -67,7 +67,12 @@ export const BarChart = (props: BarChartProps): JSX.Element => {
         }}
       >
         <ReXAxis dataKey={"x"} unit={chartProps.xAxisColumn.unit} />
-        <ReYAxis dataKey={"y"} unit={chartProps.yAxisColumn.unit} />
+        <ReYAxis
+          dataKey={"y"}
+          unit={
+            props.groupingCalc === "count" ? "件" : chartProps.yAxisColumn.unit
+          }
+        />
         <ReTooltip
           active={activeToolTip}
           // @ts-expect-error 内部処理で適切なPropsが渡されるが型定義が不足しているためエラーが出る
