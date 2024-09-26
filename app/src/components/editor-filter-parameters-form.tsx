@@ -1,23 +1,30 @@
-import { useState } from "react";
 import {
   Checkbox,
   Dialog,
   DialogTrigger,
+  Label,
   makeStyles,
+  mergeClasses,
   tokens,
 } from "@fluentui/react-components";
-import { useFieldArray, useForm, useWatch } from "react-hook-form";
+import { useFieldArray, useForm } from "react-hook-form";
 import { z } from "zod";
 import { Delete20Regular } from "@fluentui/react-icons";
-import { type ChartColumnType } from "../@types/charts";
-import { Field } from "./ui/field";
-import { Button } from "./ui/button";
-import { Input } from "./ui/input";
+import { useState } from "react";
+import {
+  type AREA_DATASET_COLUMN,
+  type BUILDING_DATASET_COLUMN,
+} from "../config/column-metadata";
+import { getColumnMetadata } from "../utils/get-column-metadata";
 import { DialogBody } from "./ui/dialog-body";
 import { DialogSurface } from "./ui/dialog-surface";
 import { DialogTitle } from "./ui/dialog-title";
+import { Button } from "./ui/button";
 import { DialogActions } from "./ui/dialog-actions";
+import { FilterColumnSelector } from "./filter-column-selector";
+import { Field } from "./ui/field";
 import { Select } from "./ui/select";
+import { Input } from "./ui/input";
 import { DialogContent } from "./ui/dialog-content";
 
 const useStyles = makeStyles({
@@ -28,12 +35,6 @@ const useStyles = makeStyles({
     padding: `${tokens.spacingVerticalM} ${tokens.spacingHorizontalXXL}`,
     borderBottom: `1px solid ${tokens.colorNeutralStroke1}`,
     fontSize: "14px",
-  },
-  appendButtonField: {
-    display: "flex",
-    gap: "8px",
-    alignItems: "center",
-    padding: `${tokens.spacingVerticalM} ${tokens.spacingHorizontalXXL}`,
   },
   includesField: {
     display: "flex",
@@ -66,23 +67,25 @@ const useStyles = makeStyles({
   dialogContent: {
     padding: 0,
   },
+  dialogContentNoBottomBorder: {
+    borderBottom: "none",
+  },
   dialogInner: {
     display: "flex",
     flexDirection: "column",
     justifyContent: "center",
     width: "100%",
   },
-  appendContainer: {
+  selectorContainer: {
     display: "grid",
     placeItems: "center",
-    padding: `${tokens.spacingVerticalL} ${tokens.spacingHorizontalXXL}`,
+    padding: `${tokens.spacingVerticalL} 0`,
   },
 });
 
 const BooleanSchema = z.object({
   referenceColumnType: z.literal("boolean"),
   operation: z.enum(["isTrue", "isFalse"]),
-  value: z.undefined(),
 });
 
 const NumberSchema = z.object({
@@ -124,9 +127,7 @@ const DateRangeSchema = z.object({
 const schema = z.object({
   parameters: z
     .object({
-      key: z.custom<`group_${string}`>((val) => {
-        return /^group_+$/.test(val as string);
-      }),
+      key: z.string(),
       value: z
         .union([
           BooleanSchema,
@@ -134,104 +135,99 @@ const schema = z.object({
           z.discriminatedUnion("operation", [DateSchema, DateRangeSchema]),
           TextSchema,
         ])
-        .and(z.object({ label: z.string() })),
-      type: z.literal("group"),
+        .and(z.object({ referenceColumn: z.string() })),
+      type: z.literal("filter"),
     })
     .array(),
 });
 
 type parameters = z.infer<typeof schema.shape.parameters>;
 
-type Props = {
+type EditorFilterParametersFormProps = {
   parameters: parameters;
+  options: (BUILDING_DATASET_COLUMN | AREA_DATASET_COLUMN)[];
+  unit: "building" | "area";
   onSave: (parameters: parameters) => void;
-  columnType: ChartColumnType;
-  columnLabel: string;
-  unit?: string;
 };
 
-export const EditorGroupingForm = ({
-  parameters,
+export const EditorFilterParametersForm = ({
   onSave,
-  columnType = "text",
-  unit = "",
-  columnLabel,
-}: Props): JSX.Element => {
+  ...props
+}: EditorFilterParametersFormProps): JSX.Element => {
   const [open, setOpen] = useState(false);
-
-  const styles = useStyles();
-
-  // eslint-disable-next-line @typescript-eslint/explicit-function-return-type -- 複雑な型情報をあえて削除
-  const defaultCondition = (columnType: ChartColumnType) => {
-    switch (columnType) {
-      case "boolean":
-        return {
-          label: "",
-          referenceColumnType: "boolean",
-          operation: "isTrue",
-        } as const;
-      case "text":
-        return {
-          label: "",
-          referenceColumnType: "text",
-          operation: "eq",
-          value: "",
-        } as const;
-      case "date":
-        return {
-          label: "",
-          referenceColumnType: "date",
-          operation: "eq",
-          value: "",
-        } as const;
-      case "float":
-        return {
-          label: "",
-          referenceColumnType: "float",
-          operation: "eq",
-          value: 0,
-        } as const;
-      default:
-        return {
-          label: "",
-          referenceColumnType: "integer",
-          operation: "eq",
-          value: 0,
-        } as const;
-    }
-  };
 
   const { control, register, handleSubmit } = useForm({
     defaultValues: {
-      parameters,
+      parameters: props.parameters,
     },
   });
-  const { fields, append, remove, update } = useFieldArray({
+
+  const { fields, replace, remove, update } = useFieldArray({
     control,
     name: "parameters",
   });
 
-  const parameterFilters = useWatch({
-    control,
-    name: "parameters",
+  const optionsWithActive = props.options.map((option) => {
+    return {
+      key: option,
+      active:
+        fields.find((f) => f.value.referenceColumn === option) != null
+          ? true
+          : false,
+    };
   });
+
+  const styles = useStyles();
+
+  const handleRemove = (index: number): void => {
+    remove(index);
+  };
+
+  const handleSelector = (
+    options: {
+      key: string;
+      active: boolean;
+    }[],
+  ): void => {
+    const newFields = options.map((option) => {
+      if (option.active) {
+        const targetField = fields.find(
+          (field) => field.value.referenceColumn === option.key,
+        );
+        if (targetField) {
+          return targetField;
+        }
+
+        const metadata = getColumnMetadata({
+          unit: props.unit,
+          key: option.key,
+        });
+
+        if (metadata === null) {
+          return;
+        }
+
+        return {
+          key: `filter_${(new Date().getTime() + Math.floor(10000 * Math.random())).toString(16)}`,
+          value: {
+            operation: "eq",
+            referenceColumn: option.key,
+            referenceColumnType: metadata.type,
+            value: "",
+          },
+          type: "filter",
+        };
+      }
+      return;
+    });
+    const cleanedFields = newFields.filter((field) => field !== undefined);
+    replace(cleanedFields as parameters); // union の型推論が効きづらいため、明示的に型を指定
+  };
 
   const handleSave = handleSubmit((data) => {
     onSave(data.parameters);
     setOpen(false);
   });
-
-  const handleAppend = (): void => {
-    append({
-      key: `group_${(new Date().getTime() + Math.floor(10000 * Math.random())).toString(16)}`,
-      value: defaultCondition(columnType),
-      type: "group",
-    });
-  };
-
-  const handleRemove = (index: number): void => {
-    remove(index);
-  };
 
   return (
     <Dialog
@@ -242,39 +238,57 @@ export const EditorGroupingForm = ({
     >
       <DialogTrigger>
         <Button
-          appearance={parameterFilters.length === 0 ? "outline" : "primary"}
+          appearance={props.parameters.length === 0 ? "outline" : "primary"}
           size="medium"
         >
-          {parameterFilters.length === 0 ? "グループを追加" : "グループを編集"}
+          {props.parameters.length === 0 ? "詳細条件を追加" : "詳細条件を編集"}
         </Button>
       </DialogTrigger>
       <DialogSurface>
         <DialogBody>
-          <DialogTitle>
-            {columnLabel
-              ? `グループを編集（${columnLabel}）`
-              : "グループを編集"}
+          <DialogTitle
+            action={
+              <FilterColumnSelector
+                appearance="normal"
+                onSave={handleSelector}
+                options={optionsWithActive}
+                unit={props.unit}
+              />
+            }
+          >
+            次の条件でフィルター
           </DialogTitle>
-          <DialogContent border className={styles.dialogContent}>
+          <DialogContent
+            border
+            className={mergeClasses(
+              styles.dialogContent,
+              fields.length !== 0 && styles.dialogContentNoBottomBorder,
+            )}
+          >
             <div className={styles.dialogInner}>
               {fields.length === 0 ? (
-                <div className={styles.appendContainer}>
-                  <Button onClick={handleAppend}>追加</Button>
+                <div className={styles.selectorContainer}>
+                  <FilterColumnSelector
+                    appearance="primary"
+                    onSave={handleSelector}
+                    options={optionsWithActive}
+                    unit={props.unit}
+                  />
                 </div>
               ) : (
                 fields.map((field, index) => {
+                  const metadata = getColumnMetadata({
+                    unit: props.unit,
+                    key: field.value.referenceColumn,
+                  });
+
                   /**
                    * カラムの型がbooleanの場合
                    */
                   if (field.value.referenceColumnType === "boolean") {
                     return (
                       <Field key={field.id} className={styles.groupField}>
-                        <Input
-                          className={styles.inputLabelValue}
-                          defaultValue={field.value.label}
-                          placeholder="グループ名"
-                          {...register(`parameters.${index}.value.label`)}
-                        />
+                        <Label>{metadata?.label ?? "カラム"}</Label>
                         <Select
                           defaultValue={field.value.operation}
                           {...register(`parameters.${index}.value.operation`)}
@@ -297,12 +311,7 @@ export const EditorGroupingForm = ({
                   if (field.value.referenceColumnType === "text") {
                     return (
                       <Field key={field.id} className={styles.groupField}>
-                        <Input
-                          className={styles.inputLabelValue}
-                          defaultValue={field.value.label}
-                          placeholder="グループ名"
-                          {...register(`parameters.${index}.value.label`)}
-                        />
+                        <Label>{metadata?.label ?? "カラム"}</Label>
                         <Select
                           defaultValue={field.value.operation}
                           {...register(`parameters.${index}.value.operation`)}
@@ -333,12 +342,7 @@ export const EditorGroupingForm = ({
                   if (field.value.referenceColumnType === "date") {
                     return (
                       <Field key={field.id} className={styles.groupField}>
-                        <Input
-                          className={styles.inputLabelValue}
-                          defaultValue={field.value.label}
-                          placeholder="グループ名"
-                          {...register(`parameters.${index}.value.label`)}
-                        />
+                        <Label>{metadata?.label ?? "カラム"}</Label>
                         <Select
                           defaultValue={field.value.operation}
                           {...register(`parameters.${index}.value.operation`)}
@@ -433,12 +437,7 @@ export const EditorGroupingForm = ({
 
                   return (
                     <Field key={field.id} className={styles.groupField}>
-                      <Input
-                        className={styles.inputLabelValue}
-                        defaultValue={field.value.label}
-                        placeholder="グループ名"
-                        {...register(`parameters.${index}.value.label`)}
-                      />
+                      <Label>{metadata?.label ?? "カラム"}</Label>
                       <Select
                         onChange={(e) => {
                           update(index, {
@@ -448,7 +447,7 @@ export const EditorGroupingForm = ({
                               // @ts-expect-error - ここで型が変わるためエラーになる
                               operation: e.target.value,
                             },
-                            type: "group",
+                            type: "filter",
                           });
                         }}
                         value={field.value.operation ?? "eq"}
@@ -476,7 +475,7 @@ export const EditorGroupingForm = ({
                             )}
                             className={styles.inputRangeValue}
                           />
-                          {unit}
+                          {metadata?.unit ?? ""}
                           <div className={styles.includesField}>
                             <span>含</span>
                             <Checkbox
@@ -499,7 +498,7 @@ export const EditorGroupingForm = ({
                             {...register(`parameters.${index}.value.lastValue`)}
                             className={styles.inputRangeValue}
                           />
-                          {unit}
+                          {metadata?.unit ?? ""}
                           <div className={styles.includesField}>
                             <span>含</span>
                             <Checkbox
@@ -513,17 +512,20 @@ export const EditorGroupingForm = ({
                         </>
                       )}
                       {field.value.operation !== "range" && (
-                        <Input
-                          defaultValue={
-                            field.value.value
-                              ? field.value.value.toString()
-                              : ""
-                          }
-                          {...register(`parameters.${index}.value.value`)}
-                          className={styles.inputValue}
-                          placeholder="値"
-                          type="number"
-                        />
+                        <>
+                          <Input
+                            defaultValue={
+                              field.value.value
+                                ? field.value.value.toString()
+                                : ""
+                            }
+                            {...register(`parameters.${index}.value.value`)}
+                            className={styles.inputValue}
+                            placeholder="値"
+                            type="number"
+                          />
+                          {metadata?.unit ?? ""}
+                        </>
                       )}
                       <Button
                         appearance="subtle"
@@ -537,19 +539,10 @@ export const EditorGroupingForm = ({
                   );
                 })
               )}
-              {fields.length !== 0 && (
-                <div className={styles.appendButtonField}>
-                  <Button onClick={handleAppend}>追加</Button>
-                </div>
-              )}
             </div>
           </DialogContent>
           <DialogActions position="end">
-            <Button
-              appearance={parameters.length === 0 ? "outline" : "primary"}
-              onClick={handleSave}
-              type="button"
-            >
+            <Button onClick={handleSave} type="button">
               保存
             </Button>
           </DialogActions>

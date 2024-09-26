@@ -13,6 +13,10 @@ const useStyles = makeStyles({
     borderRadius: tokens.borderRadiusXLarge,
     minWidth: "450px",
     maxWidth: "800px",
+    "@media (max-width: 840px)": {
+      margin: "auto 20px",
+    },
+    padding: 0,
   },
 });
 

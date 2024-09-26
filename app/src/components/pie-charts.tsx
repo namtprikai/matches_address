@@ -4,10 +4,28 @@ import {
   Pie as RePie,
   Cell as ReCell,
   ResponsiveContainer,
+  Tooltip as ReTooltip,
+  type TooltipProps,
 } from "recharts";
+import {
+  type NameType,
+  type ValueType,
+} from "recharts/types/component/DefaultTooltipContent";
+import { makeStyles, tokens } from "@fluentui/react-components";
 import { CHART_COLORS } from "../config/chart-colors";
 import { useFetchFilterDataSetForChart } from "../hooks/use-fetch-filtered-data-set-for-chart";
 import { type FilterDataSetForChartArgs } from "../ipc-main-listeners/filter-data-set-for-chart";
+
+const useStyle = makeStyles({
+  tooltip: {
+    backgroundColor: tokens.colorNeutralForeground2,
+    color: tokens.colorNeutralForegroundInverted,
+    fontSize: tokens.fontSizeBase200,
+    padding: `5px ${tokens.spacingHorizontalM}`, //tokensに存在しない値
+    boxShadow: tokens.shadow8,
+    borderRadius: "3px", // tokensに存在しない値
+  },
+});
 
 export type PieChartProps = FilterDataSetForChartArgs;
 
@@ -24,17 +42,59 @@ export const PieChart = (props: PieChartProps): JSX.Element => {
     return <div>データがありません</div>;
   }
 
+  /**
+   * TooltipPropsに渡す２つの型は、ベースのTooltipPropsが必要とする型で最低限のものを渡している
+   */
+  type CustomTooltipProps = TooltipProps<ValueType, NameType> & {
+    unit?: string;
+  };
+
+  const CustomTooltip = (props: CustomTooltipProps): JSX.Element | null => {
+    const active = props.active;
+    const payload = props.payload;
+
+    const styles = useStyle();
+
+    if (active && payload && payload.length) {
+      const label = payload[0].payload["x"];
+      const value = payload[0].value;
+
+      return (
+        <div className={styles.tooltip}>
+          <p className="desc">
+            {label}: {value}
+            {props.unit ?? ""}
+          </p>
+        </div>
+      );
+    }
+
+    return null;
+  };
+
   return (
     <ResponsiveContainer height={400} width="100%">
       <RePieChart height={400} width={400}>
+        <ReTooltip
+          content={
+            <CustomTooltip
+              unit={
+                props.groupingCalc === "count"
+                  ? "件"
+                  : chartProps.yAxisColumn.unit
+              }
+            />
+          }
+        />
         <RePie
           cx="50%"
           cy="50%"
           data={data}
           dataKey="y"
+          endAngle={-270}
           labelLine={false}
           nameKey={"x"}
-          startAngle={0}
+          startAngle={90}
         >
           {data.map((_, index) => {
             return (

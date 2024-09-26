@@ -13,18 +13,20 @@ import { useEffect, useState } from "react";
 import { useFetchDataSetResults } from "../hooks/use-fetch-data-set-results";
 import { resultViewsAtom } from "../state/result-views-atom";
 import { selectedResultSheetIdAtom } from "../state/selected-result-sheet-id-atom";
+import { selectedResultViewIdAtom } from "../state/selected-result-view-id-atom";
 import { Button } from "./ui/button";
 import { EditResultViewForm } from "./edit-result-view-form";
 import { ListDataSetResults } from "./list-data-set-results";
+import { EditResultViewLayoutSort } from "./edit-result-view-layout-sort";
 
 const useStyles = makeStyles({
+  drawer: {
+    minHeight: "100vh",
+  },
   heading: {
     fontSize: tokens.fontSizeBase400,
     lineHeight: tokens.lineHeightBase600,
     fontWeight: tokens.fontWeightSemibold,
-  },
-  drawerBody: {
-    minHeight: "100vh",
   },
   drawerBodyInner: {
     display: "grid",
@@ -44,6 +46,7 @@ export const SidebarEditResultView = (): JSX.Element => {
 
   const [resultViews, refresh] = useAtom(resultViewsAtom);
   const [selectedResultSheetId] = useAtom(selectedResultSheetIdAtom);
+  const [, setSelectedResultViewId] = useAtom(selectedResultViewIdAtom);
   const [isAddView, setIsAddView] = useState(resultViews.length === 0);
 
   /** ビューをデータセット情報と一緒に追加 */
@@ -53,13 +56,17 @@ export const SidebarEditResultView = (): JSX.Element => {
     dataSetResultId: number;
   }): Promise<void> => {
     if (resultViews.length === 4) return; /** 最大4つ */
-    await window.ipcRenderer.invoke("insertResultViews", {
-      data_set_result_id: dataSetResultId,
-      sheet_id: selectedResultSheetId,
-      parameters: [],
-    });
-    // TODO: できればリロードせずに更新したい
+    const { insertedId } = await window.ipcRenderer.invoke(
+      "insertResultViews",
+      {
+        data_set_result_id: dataSetResultId,
+        sheet_id: selectedResultSheetId,
+        layoutIndex: resultViews.length + 1,
+        parameters: [],
+      },
+    );
     refresh();
+    setSelectedResultViewId(insertedId);
   };
 
   useEffect(() => {
@@ -71,7 +78,7 @@ export const SidebarEditResultView = (): JSX.Element => {
   }, [resultViews.length]);
 
   return (
-    <InlineDrawer open>
+    <InlineDrawer className={styles.drawer} open>
       <DrawerHeader>
         <DrawerHeaderTitle
           action={
@@ -92,9 +99,9 @@ export const SidebarEditResultView = (): JSX.Element => {
         </DrawerHeaderTitle>
       </DrawerHeader>
 
-      <DrawerBody className={styles.drawerBody}>
+      <DrawerBody>
         <div className={styles.drawerBodyInner}>
-          {isAddView && (
+          {isAddView ? (
             <>
               <div className={styles.isAddView}>
                 <SearchBox />
@@ -183,8 +190,12 @@ export const SidebarEditResultView = (): JSX.Element => {
                 </Button>
               </div>
             </>
+          ) : (
+            <>
+              <EditResultViewForm />
+              <EditResultViewLayoutSort />
+            </>
           )}
-          {!isAddView && <EditResultViewForm />}
         </div>
       </DrawerBody>
     </InlineDrawer>

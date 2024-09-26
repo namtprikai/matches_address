@@ -5,7 +5,12 @@ import {
   TableHeaderCell,
   TableRow,
 } from "@fluentui/react-components";
-import { type TableViewProps } from "../@types/charts";
+import { type TableProps } from "../@types/charts";
+
+type TableViewProps = {
+  columns: string[];
+  data: TableProps["data"];
+};
 
 export const DataSetTableView = ({
   columns,

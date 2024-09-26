@@ -4,7 +4,6 @@ import {
   CardHeader,
   type CardProps,
   Dialog,
-  DialogContent,
   DialogTrigger,
   makeStyles,
   mergeClasses,
@@ -20,6 +19,7 @@ import { DialogBody } from "./ui/dialog-body";
 import { DialogTitle } from "./ui/dialog-title";
 import { DialogActions } from "./ui/dialog-actions";
 import { Button } from "./ui/button";
+import { DialogContent } from "./ui/dialog-content";
 
 type Props = CardProps & {
   resultView: SelectResultView;
@@ -77,6 +77,7 @@ export const TileResultView = ({
         className={mergeClasses(
           styles.cardSurface,
           selected && styles.selected,
+          cardProps.className,
         )}
       >
         <CardHeader
@@ -136,7 +137,11 @@ export const TileResultView = ({
   return (
     <Card
       {...cardProps}
-      className={mergeClasses(styles.cardSurface, selected && styles.selected)}
+      className={mergeClasses(
+        styles.cardSurface,
+        selected && styles.selected,
+        cardProps.className,
+      )}
     >
       <CardHeader
         action={

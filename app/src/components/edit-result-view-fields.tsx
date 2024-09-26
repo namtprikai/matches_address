@@ -1,6 +1,6 @@
 import { useFieldArray, useFormContext } from "react-hook-form";
 import { Fragment } from "react/jsx-runtime";
-import { useEffect } from "react";
+import { makeStyles } from "@fluentui/react-components";
 import { result_views, type SelectResultView } from "../schema";
 import { LanguageMap } from "../lang";
 import { TILE_VIEW_CONFIG } from "../config/tile-view-config";
@@ -20,7 +20,20 @@ import { Select } from "./ui/select";
 import { DynamicParameterInput } from "./dynamic-parameter-input";
 import { EditorGroupingForm } from "./editor-grouping-form";
 
-export const EditResultViewFileds = (): JSX.Element => {
+const useStyles = makeStyles({
+  fontBlackInput: {
+    "& input": {
+      color: "black",
+    },
+  },
+});
+
+type Props = {
+  dataSetTitle?: string | null | undefined;
+};
+
+export const EditResultViewFileds = ({ dataSetTitle }: Props): JSX.Element => {
+  const styles = useStyles();
   const { register, watch, control, setValue } =
     useFormContext<EditResultViewFormType>();
 
@@ -61,13 +74,14 @@ export const EditResultViewFileds = (): JSX.Element => {
   return (
     <>
       <Field label="データセット">
-        <Input disabled placeholder="選択中のデータセット名が入る" />
+        <Input
+          className={styles.fontBlackInput}
+          disabled
+          value={dataSetTitle || ""}
+        />
       </Field>
       <Field label="ビューのタイトル">
-        <Input
-          placeholder="選択中のビューのタイトルを入力する"
-          {...register("title")}
-        />
+        <Input placeholder="選択中のビューのタイトル" {...register("title")} />
       </Field>
       <Fieldset>
         <FieldLegend>パラメーター</FieldLegend>
@@ -144,7 +158,7 @@ export const EditResultViewFileds = (): JSX.Element => {
                       const newParameters = [
                         ...prevOtherParameters,
                         ...parameters,
-                      ] as SelectResultView["parameters"];
+                      ] as SelectResultView["parameters"]; // union の型推論が効きづらいため、明示的に型を指定;
                       replace(newParameters);
                     }}
                     parameters={groupingFields}
@@ -162,16 +176,17 @@ export const EditResultViewFileds = (): JSX.Element => {
                           ...prevOtherParameters,
                           {
                             key: "group_calc",
-                            value: e.target.value as "avg" | "sum",
+                            value: e.target.value as "avg" | "sum" | "count",
                             type: "group_option",
                           },
-                        ] as SelectResultView["parameters"];
+                        ] as SelectResultView["parameters"]; // union の型推論が効きづらいため、明示的に型を指定;
                         replace(newParameters);
                       }}
                       value={groupCalc?.value}
                     >
                       <option value="avg">平均</option>
                       <option value="sum">合計</option>
+                      <option value="count">総件数</option>
                     </Select>
                   )}
               </Fragment>
@@ -227,11 +242,17 @@ export const EditResultViewFileds = (): JSX.Element => {
               setValue("unit", e.target.value as "building" | "area");
             }}
           >
-            {result_views.unit.enumValues.map((item) => (
-              <option key={item} value={item}>
-                {LanguageMap["RESULT_VIEWS_UNIT"][item]}
-              </option>
-            ))}
+            {result_views.unit.enumValues.map((item) => {
+              if (item === "area" && style !== "map" && style !== "table") {
+                return <Fragment key={item}></Fragment>;
+              }
+
+              return (
+                <option key={item} value={item}>
+                  {LanguageMap["RESULT_VIEWS_UNIT"][item]}
+                </option>
+              );
+            })}
           </Select>
         </Field>
       </Fieldset>

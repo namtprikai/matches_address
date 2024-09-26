@@ -1,4 +1,4 @@
-import { and, eq, gte, lte, sql } from "drizzle-orm";
+import { and, eq, gte, lte, or, sql } from "drizzle-orm";
 import { data_set_detail_areas, data_set_detail_buildings } from "../schema";
 import { db } from "../utils/db";
 import {
@@ -22,7 +22,8 @@ export type FilterDataSetForChartArgs = {
   resultId: number;
   groupingConditions?: GroupingCondition[];
   filterConditions?: FilterCondition[];
-  groupingCalc?: "avg" | "sum";
+  filterByAreas?: string[];
+  groupingCalc?: "avg" | "sum" | "count";
   filterByYear: {
     startValue: string | undefined;
     endValue: string | undefined;
@@ -51,6 +52,7 @@ export const filterDataSetForChart = ((
     groupingConditions,
     filterConditions,
     filterByYear,
+    filterByAreas,
     groupingCalc: cal = "avg",
   }: FilterDataSetForChartArgs,
 ): FilterDataSetForChartResponse => {
@@ -78,6 +80,12 @@ export const filterDataSetForChart = ((
             ...FilterQuery({
               conditions: filterConditions ?? [],
             }),
+            or(
+              // 地域区分文字列のリストからeq条件を作成
+              ...(filterByAreas ?? []).map((area) =>
+                eq(data_set_detail_areas.area_group, area),
+              ),
+            ),
           ),
         )
         .as("filterSubQuery");
@@ -172,6 +180,12 @@ export const filterDataSetForChart = ((
             ...FilterQuery({
               conditions: filterConditions ?? [],
             }),
+            or(
+              // 地域区分文字列のリストからeq条件を作成
+              ...(filterByAreas ?? []).map((area) =>
+                eq(data_set_detail_buildings.area_group, area),
+              ),
+            ),
           ),
         )
         .as("filterSubQuery");

@@ -9,7 +9,7 @@ import { forwardRef } from "react";
 
 const useStyles = makeStyles({
   dialogActions: {
-    paddingTop: tokens.spacingVerticalS,
+    padding: ` ${tokens.spacingVerticalM}  ${tokens.spacingHorizontalXXL} ${tokens.spacingVerticalXXL}  ${tokens.spacingHorizontalXXL}`,
   },
 });
 

@@ -27,6 +27,7 @@ export const selectResultViews = (async (
       data_set_results,
       eq(result_views.data_set_result_id, data_set_results.id),
     )
+    .orderBy(result_views.layoutIndex)
     .all();
 
   return all as CustomSelectResultViews[];

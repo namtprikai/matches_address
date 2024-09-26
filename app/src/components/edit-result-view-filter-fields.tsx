@@ -1,6 +1,7 @@
 import { makeStyles, tokens } from "@fluentui/react-components";
 import { useFieldArray, useFormContext } from "react-hook-form";
 import { useAtomValue } from "jotai";
+import { lazy, Suspense } from "react";
 import { selectedResultViewAtom } from "../state/selected-result-view-atom";
 import { type EditResultViewFormType } from "../@types/form-schema";
 import { TILE_VIEW_CONFIG } from "../config/tile-view-config";
@@ -10,7 +11,14 @@ import { Field } from "./ui/field";
 import { Select } from "./ui/select";
 import { Fieldset } from "./ui/fieldset";
 import { FieldLegend } from "./ui/field-legend";
-import { EditorFilterConditionsForm } from "./editor-filter-conditions-form";
+import { EditorFilterParametersForm } from "./editor-filter-parameters-form";
+
+// コンポーネントを遅延評価で読み込むことでパフォーマンスに配慮
+const AreaFilterForm = lazy(() =>
+  import("./area-filter-form").then((module) => ({
+    default: module.AreaFilterForm,
+  })),
+);
 
 const useStyles = makeStyles({
   form: {
@@ -45,6 +53,12 @@ export const EditResultViewFilterFields = (): JSX.Element => {
   const unit = watch("unit");
   const style = watch("style");
 
+  const areaFilter = fields.find(
+    (f) => f.key === "area" && f.type === "filter",
+  );
+
+  const areas: string[] = areaFilter?.value ?? [];
+
   const fieldOptions = TILE_VIEW_CONFIG[style ?? "map"];
   const options = Array.from(
     new Set(
@@ -60,7 +74,9 @@ export const EditResultViewFilterFields = (): JSX.Element => {
   );
 
   const filterFields = fields.filter((field) => {
-    return field.type === "filter" && field.key !== "year";
+    return (
+      field.type === "filter" && field.key !== "year" && field.key !== "area"
+    );
   });
 
   const { data: referenceDates } = useFetchReferenceDates({
@@ -77,7 +93,7 @@ export const EditResultViewFilterFields = (): JSX.Element => {
       <Field label="期間">
         <div className={styles.year}>
           <Select
-            value={style === "map" ? "" : year.end}
+            value={style === "map" ? "" : year.start}
             {...register("year.start")}
             disabled={style === "map"}
           >
@@ -104,20 +120,46 @@ export const EditResultViewFilterFields = (): JSX.Element => {
         </div>
       </Field>
 
-      <EditorFilterConditionsForm
-        conditions={filterFields}
+      <Suspense fallback={null}>
+        <AreaFilterForm
+          areas={areas}
+          dataSetResultId={resultView?.data_set_result_id ?? undefined}
+          onSave={(values) => {
+            const excludedYearParameters = fields.filter((f) => {
+              if (f.type === "filter" && f.key === "area") {
+                return false;
+              }
+
+              return true;
+            });
+
+            replace([
+              ...excludedYearParameters,
+              {
+                type: "filter",
+                key: "area",
+                value: values,
+              },
+            ] as SelectResultView["parameters"]);
+          }}
+          unit={unit ?? "building"}
+        />
+      </Suspense>
+
+      <EditorFilterParametersForm
         onSave={(parameters) => {
           const prevOtherParameters = fields.filter((f) => {
-            return f.type !== "filter" || f.key === "year";
+            return f.type !== "filter" || f.key === "year" || f.key === "area";
           });
           const newParameters = [
             ...prevOtherParameters,
             ...parameters,
-          ] as SelectResultView["parameters"];
+          ] as SelectResultView["parameters"]; // union の型推論が効きづらいため、明示的に型を指定;
 
           replace(newParameters);
         }}
         options={options}
+        parameters={filterFields}
         unit={unit ?? "building"}
       />
     </Fieldset>

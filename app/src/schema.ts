@@ -56,6 +56,11 @@ export const result_views = sqliteTable("result_views", {
   unit: text("unit", { enum: ["building", "area"] }),
   style: text("style", { enum: ["map", "bar", "line", "pie", "table"] }),
 
+  layoutIndex:
+    integer(
+      "layoutIndex",
+    ) /** レイアウトの順序を制御するための配列インデックスを保持(1~4) */,
+
   /**
    * チャートの動的カラム対応のためのフィールドをkey-valueのオブジェクト配列で保持するためのカラム
    * SQLiteにはBlobかText型しかなく、DrizzleのレイヤーでObectとして扱わせるために mode;json を指定
@@ -78,7 +83,7 @@ export const result_views = sqliteTable("result_views", {
         | {
             key: "group_calc";
             type: "group_option";
-            value: "avg" | "sum";
+            value: "avg" | "sum" | "count";
           }
         | {
             key: string;
@@ -89,6 +94,16 @@ export const result_views = sqliteTable("result_views", {
             key: `filter_${string}`;
             value: FilterCondition;
             type: "filter";
+          }
+        | {
+            key: "area";
+            value: string[];
+            type: "filter";
+          }
+        | {
+            key: "label";
+            value: string;
+            type: "column";
           }
         | {
             key: "year";
@@ -135,8 +150,25 @@ export const data_set_detail_buildings = sqliteTable(
     id: integer("id").primaryKey(),
     data_set_result_id: integer("data_set_result_id"),
 
+    /**
+     * 世帯番号
+     *
+     * 文字列：任意の文字列
+     */
     household_code: text("household_code"),
+
+    /**
+     * 正規化住所
+     *
+     * 文字列：任意の文字列
+     */
     normalized_address: text("normalized_address"),
+
+    /**
+     * 建物所属地域区分
+     *
+     * 文字列：町丁目レベルやの地域区分
+     */
     area_group: text("area_group"),
 
     /**
@@ -476,9 +508,9 @@ export const data_set_detail_areas = sqliteTable("data_set_detail_areas", {
   reference_date: text("reference_date").notNull(),
 
   /**
-   * 住所
+   * 地域区分
    *
-   * 文字列：任意の文字列
+   * 文字列：町丁目レベルやの地域区分
    */
   area_group: text("area_group"),
 

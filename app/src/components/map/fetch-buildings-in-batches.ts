@@ -1,4 +1,4 @@
-import { and, eq, gt } from "drizzle-orm";
+import { and, eq, gt, or } from "drizzle-orm";
 import { type IpcMainListener } from "../../ipc-main-listeners";
 import {
   data_set_detail_buildings,
@@ -13,11 +13,13 @@ export const fetchBuildingsInBatches = ((
     referenceDate,
     batchSize,
     lastId,
+    areas,
   }: {
     dataSetResultId: number;
     referenceDate: string | undefined;
     batchSize: number;
     lastId?: number;
+    areas: string[] | undefined;
   },
 ): SelectDataSetDetailBuilding[] | null => {
   try {
@@ -31,6 +33,13 @@ export const fetchBuildingsInBatches = ((
             ? eq(data_set_detail_buildings.reference_date, referenceDate)
             : undefined,
           lastId ? gt(data_set_detail_buildings.id, lastId) : undefined,
+          areas && areas.length > 0
+            ? or(
+                ...areas.map((area) =>
+                  eq(data_set_detail_buildings.area_group, area),
+                ),
+              )
+            : undefined,
         ),
       )
       .limit(batchSize)

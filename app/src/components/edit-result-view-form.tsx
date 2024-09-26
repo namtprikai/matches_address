@@ -7,6 +7,7 @@ import { selectedResultViewAtom } from "../state/selected-result-view-atom";
 import { selectedResultViewIdAtom } from "../state/selected-result-view-id-atom";
 import { resultViewsAtom } from "../state/result-views-atom";
 import { type SelectResultView } from "../schema";
+import { useFetchDataSetResultItem } from "../hooks/use-fetch-data-set-result-item";
 import { EditResultViewFileds } from "./edit-result-view-fields";
 import { EditResultViewFilterFields } from "./edit-result-view-filter-fields";
 import { Button } from "./ui/button";
@@ -24,6 +25,10 @@ export const EditResultViewForm = (): JSX.Element => {
   const [selectedResultViewId] = useAtom(selectedResultViewIdAtom);
   const [selectedResultView, refresh] = useAtom(selectedResultViewAtom);
   const [, refreshResultViews] = useAtom(resultViewsAtom);
+
+  const { data } = useFetchDataSetResultItem({
+    dataSetResultId: selectedResultView?.data_set_result_id,
+  });
 
   const year = selectedResultView?.parameters.find(
     (parameter) => parameter.key === "year" && parameter.type === "filter",
@@ -87,7 +92,7 @@ export const EditResultViewForm = (): JSX.Element => {
         parameters: [
           ...yearExcludedParameters,
           yearParameter,
-        ] as SelectResultView["parameters"],
+        ] as SelectResultView["parameters"], // union の型推論が効きづらいため、明示的に型を指定
       },
     });
     refresh();
@@ -98,9 +103,11 @@ export const EditResultViewForm = (): JSX.Element => {
   return (
     <FormProvider {...methods}>
       <form className={styles.form} onSubmit={onSubmit}>
-        <EditResultViewFileds />
+        <EditResultViewFileds dataSetTitle={data && data[0].title} />
         <EditResultViewFilterFields />
-        <Button type="submit">フィルター・パラメータを保存する</Button>
+        <Button appearance="primary" type="submit">
+          入力内容を保存する
+        </Button>
       </form>
     </FormProvider>
   );
