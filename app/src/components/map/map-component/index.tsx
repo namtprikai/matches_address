@@ -30,6 +30,7 @@ interface Props {
   type: "building" | "area";
   selectedDate: string | undefined;
   vacancyLevels: VacancyLevels;
+  areas: string[] | undefined;
 }
 
 export function MapComponent({
@@ -37,6 +38,7 @@ export function MapComponent({
   type,
   selectedDate,
   vacancyLevels,
+  areas,
 }: Props): JSX.Element {
   const styles = useMapComponentStyles();
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -84,6 +86,7 @@ export function MapComponent({
                   dataSetResultId,
                   referenceDate: selectedDate,
                   batchSize: 1,
+                  areas,
                 },
               );
 
@@ -116,6 +119,7 @@ export function MapComponent({
                       referenceDate: selectedDate,
                       batchSize,
                       lastId,
+                      areas,
                     },
                   );
 
@@ -172,6 +176,7 @@ export function MapComponent({
                   dataSetResultId,
                   referenceDate: selectedDate,
                   batchSize: 1,
+                  areas,
                 },
               );
 
@@ -204,6 +209,7 @@ export function MapComponent({
                       referenceDate: selectedDate,
                       batchSize,
                       lastId,
+                      areas,
                     },
                   );
 
@@ -256,7 +262,7 @@ export function MapComponent({
         });
       };
     },
-    [dataSetResultId, mapInstance, selectedDate, type],
+    [areas, dataSetResultId, mapInstance, selectedDate, type],
   );
 
   useEffect(
