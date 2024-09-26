@@ -5,11 +5,7 @@ import {
   type BetterSQLite3Database,
 } from "drizzle-orm/better-sqlite3";
 import { migrate } from "drizzle-orm/better-sqlite3/migrator";
-import {
-  SQLiteSyncDialect,
-  type SQLiteTable,
-  type SQLiteTableWithColumns,
-} from "drizzle-orm/sqlite-core";
+import { SQLiteSyncDialect, type SQLiteTable } from "drizzle-orm/sqlite-core";
 import { type SQLiteViewBase } from "drizzle-orm/sqlite-core/view-base";
 import { data_set_detail_buildings } from "../schema";
 import { type GroupingCondition } from "../@types/charts";
@@ -65,7 +61,7 @@ const conditionsToCaseQuery = (
       // 終了値の条件クエリを作成
       const lastQuery =
         condition.referenceColumnType === "date" // 日付の場合は文字列としての比較が必要なため
-          ? `${key} ${includesLast === true ? ">=" : ">"} '${lastValue}'`
+          ? `${key} ${includesLast === true ? "<=" : "<"} '${lastValue}'`
           : `${key} ${includesLast === true ? "<=" : "<"} ${lastValue}`;
 
       return sql.raw(
