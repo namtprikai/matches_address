@@ -15,25 +15,8 @@ import { DialogActions } from "./ui/dialog-actions";
 import { Button } from "./ui/button";
 
 const useStyles = makeStyles({
-  selectedOptions: {
-    display: "flex",
-    flexWrap: "wrap",
-    gap: "4px 8px",
-    fontSize: "12px",
-  },
-  layout: {
-    display: "flex",
-    gap: "4px",
-    flexDirection: "row",
-    alignItems: "flex-start",
-    justifyContent: "space-between",
-  },
   editButton: {
     minWidth: "50px",
-    fontSize: "12px",
-  },
-  noSelectedLabel: {
-    lineHeight: "32px",
     fontSize: "12px",
   },
 });

@@ -25,10 +25,6 @@ const useStyles = makeStyles({
     alignItems: "flex-start",
     justifyContent: "space-between",
   },
-  editButton: {
-    minWidth: "50px",
-    fontSize: "12px",
-  },
   noSelectedLabel: {
     lineHeight: "32px",
     fontSize: "12px",
