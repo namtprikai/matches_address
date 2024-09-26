@@ -23,7 +23,7 @@ export type FilterDataSetForChartArgs = {
   groupingConditions?: GroupingCondition[];
   filterConditions?: FilterCondition[];
   filterByAreas?: string[];
-  groupingCalc?: "avg" | "sum";
+  groupingCalc?: "avg" | "sum" | "count";
   filterByYear: {
     startValue: string | undefined;
     endValue: string | undefined;

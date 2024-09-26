@@ -186,6 +186,7 @@ export const EditResultViewFileds = ({ dataSetTitle }: Props): JSX.Element => {
                     >
                       <option value="avg">平均</option>
                       <option value="sum">合計</option>
+                      <option value="count">総件数</option>
                     </Select>
                   )}
               </Fragment>
