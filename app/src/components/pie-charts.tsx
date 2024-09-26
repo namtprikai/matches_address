@@ -76,7 +76,15 @@ export const PieChart = (props: PieChartProps): JSX.Element => {
     <ResponsiveContainer height={400} width="100%">
       <RePieChart height={400} width={400}>
         <ReTooltip
-          content={<CustomTooltip unit={chartProps.yAxisColumn.unit} />}
+          content={
+            <CustomTooltip
+              unit={
+                props.groupingCalc === "count"
+                  ? "件"
+                  : chartProps.yAxisColumn.unit
+              }
+            />
+          }
         />
         <RePie
           cx="50%"
