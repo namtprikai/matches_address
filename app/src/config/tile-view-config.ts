@@ -33,7 +33,6 @@ export const TILE_VIEW_CONFIG = {
           { unit: "building", value: "river_flooding_risk_rank" },
           { unit: "building", value: "river_flooding_risk_depth" },
           { unit: "building", value: "predicted_probability" },
-          { unit: "area", value: "area_group" },
         ],
         grouping: true,
       },
@@ -59,7 +58,6 @@ export const TILE_VIEW_CONFIG = {
           { unit: "building", value: "river_flooding_risk_rank" },
           { unit: "building", value: "river_flooding_risk_depth" },
           { unit: "building", value: "predicted_probability" },
-          { unit: "area", value: "area" },
         ],
         grouping: false,
       },
@@ -71,7 +69,10 @@ export const TILE_VIEW_CONFIG = {
         key: "xAxis",
         label: "X軸",
         type: "select",
-        option: [{ unit: "building", value: "area_group" }],
+        option: [
+          { unit: "building", value: "area_group" },
+          { unit: "building", value: "normalized_address" },
+        ],
         grouping: true,
       },
       {
@@ -138,6 +139,22 @@ export const TILE_VIEW_CONFIG = {
           },
           {
             unit: "building",
+            value: "household_code",
+          },
+          {
+            unit: "building",
+            value: "normalized_address",
+          },
+          {
+            unit: "building",
+            value: "area_group",
+          },
+          {
+            unit: "building",
+            value: "reference_date",
+          },
+          {
+            unit: "building",
             value: "members_under_15",
           },
           {
@@ -159,6 +176,58 @@ export const TILE_VIEW_CONFIG = {
           {
             unit: "building",
             value: "percentage_over_65",
+          },
+          {
+            unit: "building",
+            value: "gender_ratio",
+          },
+          {
+            unit: "building",
+            value: "water_supply_number",
+          },
+          {
+            unit: "building",
+            value: "water_disconnection_flag",
+          },
+          {
+            unit: "building",
+            value: "max_water_usage",
+          },
+          {
+            unit: "building",
+            value: "avg_water_usage",
+          },
+          {
+            unit: "building",
+            value: "total_water_usage",
+          },
+          {
+            unit: "building",
+            value: "min_water_usage",
+          },
+          {
+            unit: "building",
+            value: "water_supply_source_info",
+          },
+          {
+            unit: "building",
+            value: "structure_name",
+          },
+          {
+            unit: "building",
+            value: "registration_date",
+          },
+          {
+            unit: "building",
+            value: "registration_source_info",
+          },
+          {
+            unit: "building",
+            value: "vacant_house_id",
+          },
+          {
+            unit: "building",
+            value: "vacant_house_address",
           },
           {
             unit: "building",
@@ -194,6 +263,10 @@ export const TILE_VIEW_CONFIG = {
           },
           {
             unit: "building",
+            value: "landslide_risk_desc",
+          },
+          {
+            unit: "building",
             value: "river_flooding_risk_rank",
           },
           {
@@ -201,9 +274,19 @@ export const TILE_VIEW_CONFIG = {
             value: "river_flooding_risk_depth",
           },
           {
+            unit: "building",
+            value: "river_flooding_risk_desc",
+          },
+          {
             unit: "area",
             value: "area",
           },
+          { unit: "area", value: "area_group" },
+          { unit: "area", value: "young_population_ratio" },
+          { unit: "area", value: "elderly_population_ratio" },
+          { unit: "area", value: "total_building_count" },
+          { unit: "area", value: "vacant_house_count" },
+          { unit: "area", value: "predicted_probability" },
         ],
         multiple: true,
         grouping: false,
@@ -215,3 +298,70 @@ export const TILE_VIEW_CONFIG = {
     fields: TileViewFieldOption[];
   };
 };
+
+if (import.meta.vitest) {
+  const { describe, it, expect } = import.meta.vitest;
+
+  describe("TILE_VIEW_CONFIGのカラムに重複がないかの型チェック", () => {
+    it("円グラフのケース", () => {
+      const fields = TILE_VIEW_CONFIG.pie.fields;
+
+      for (const field of fields) {
+        const buildingOptionValues = field.option
+          .filter((option) => option.unit === "building")
+          .map((option) => option.value);
+
+        expect(buildingOptionValues).toEqual(
+          Array.from(new Set(buildingOptionValues)),
+        );
+      }
+    });
+
+    it("棒グラフのケース", () => {
+      const fields = TILE_VIEW_CONFIG.bar.fields;
+
+      for (const field of fields) {
+        const buildingOptionValues = field.option
+          .filter((option) => option.unit === "building")
+          .map((option) => option.value);
+
+        expect(buildingOptionValues).toEqual(
+          Array.from(new Set(buildingOptionValues)),
+        );
+      }
+    });
+
+    it("折れ線グラフのケース", () => {
+      const fields = TILE_VIEW_CONFIG.line.fields;
+
+      for (const field of fields) {
+        const buildingOptionValues = field.option
+          .filter((option) => option.unit === "building")
+          .map((option) => option.value);
+
+        expect(buildingOptionValues).toEqual(
+          Array.from(new Set(buildingOptionValues)),
+        );
+      }
+    });
+
+    it("表形式のケース", () => {
+      const fields = TILE_VIEW_CONFIG.table.fields;
+
+      for (const field of fields) {
+        const buildingOptionValues = field.option
+          .filter((option) => option.unit === "building")
+          .map((option) => option.value);
+
+        const areaOptionValues = field.option
+          .filter((option) => option.unit === "area")
+          .map((option) => option.value);
+
+        expect(buildingOptionValues).toEqual(
+          Array.from(new Set(buildingOptionValues)),
+        );
+        expect(areaOptionValues).toEqual(Array.from(new Set(areaOptionValues)));
+      }
+    });
+  });
+}
