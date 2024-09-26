@@ -49,8 +49,6 @@ export const DynamicColumnOptions = ({
         );
       }
 
-      /** dialog追加する必要がありそう */
-
       return <></>;
     });
   } else {
