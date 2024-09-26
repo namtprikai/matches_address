@@ -130,7 +130,7 @@ export const TILE_VIEW_CONFIG = {
       {
         key: "columns",
         label: "カラム",
-        type: "dropdown",
+        type: "dialog",
         option: [
           {
             unit: "building",

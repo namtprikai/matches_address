@@ -180,4 +180,8 @@ export type TileViewFieldOption = {
       type: "dropdown";
       multiple: boolean;
     }
+  | {
+      type: "dialog";
+      multiple: boolean;
+    }
 );

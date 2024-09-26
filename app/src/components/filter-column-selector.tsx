@@ -129,7 +129,7 @@ export const FilterColumnSelector = ({
                   <Field
                     key={index}
                     defaultChecked={option.active}
-                    onChange={(e) => {
+                    onChange={() => {
                       setOptionsState((prev) => {
                         return prev.map((prevOption) => {
                           if (prevOption.key === option.key) {
