@@ -1,12 +1,6 @@
-import { Fragment, useState } from "react";
-import {
-  Checkbox,
-  Dialog,
-  DialogTrigger,
-  makeStyles,
-} from "@fluentui/react-components";
+import { Fragment, lazy, Suspense, useDeferredValue, useState } from "react";
+import { Dialog, DialogTrigger, makeStyles } from "@fluentui/react-components";
 import { type FetchAreaGroupsArg } from "../ipc-main-listeners/fetch-area-groups";
-import { useFetchAreaGroups } from "../hooks/use-fetch-area-groups";
 import { Field } from "./ui/field";
 import { Button } from "./ui/button";
 import { DialogSurface } from "./ui/dialog-surface";
@@ -17,14 +11,6 @@ import { DialogActions } from "./ui/dialog-actions";
 import { Input } from "./ui/input";
 
 const useStyles = makeStyles({
-  options: {
-    height: "300px",
-    overflowX: "scroll",
-    display: "grid",
-    gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))",
-    gridAutoRows: "32px",
-    width: "100%",
-  },
   selectedOptions: {
     display: "flex",
     flexWrap: "wrap",
@@ -48,28 +34,31 @@ const useStyles = makeStyles({
   },
 });
 
+// コンポーネントを遅延評価で読み込むことでパフォーマンスに配慮
+// 元は１つ上の親コンポーネントで読み込んでいたが、Dialogを開いた際に読み込まれるように変更
+const AreaFilterFormOptions = lazy(() =>
+  import("./area-filter-form-options").then((module) => ({
+    default: module.AreaFilterFormOptions,
+  })),
+);
+
 type AreaFilterFormProps = {
   areas: string[];
   onSave: (value: string[]) => void;
 } & FetchAreaGroupsArg;
 
 export const AreaFilterForm = (props: AreaFilterFormProps): JSX.Element => {
-  const { data } = useFetchAreaGroups({
-    dataSetResultId: props.dataSetResultId,
-    unit: props.unit,
-  });
-
   const [open, setOpen] = useState(false);
   const [selectedAreas, setSelectedAreas] = useState<string[]>(props.areas);
   const [searchText, setSearchText] = useState("");
 
+  // 検索テキストの逐次変更でなく、再計算が終わるまで遅延させることで画面のチラつき・カクツキを減らす
+  // reference: https://ja.react.dev/reference/react/useDeferredValue#deferring-re-rendering-for-a-part-of-the-ui
+  const deferredSearchText = useDeferredValue(searchText);
+
   const handleClick = (): void => {
     props.onSave(selectedAreas);
   };
-
-  const searchFilteredData = data?.filter(
-    (area) => area.includes(searchText.trim().replace("　", "")), // 余計な空白や文字列の削除
-  );
 
   const styles = useStyles();
 
@@ -123,34 +112,16 @@ export const AreaFilterForm = (props: AreaFilterFormProps): JSX.Element => {
               地域を選択
             </DialogTitle>
             <DialogContent border>
-              <div className={styles.options}>
-                {searchFilteredData?.map((area, index) => (
-                  <div key={index}>
-                    <Checkbox
-                      checked={selectedAreas.includes(area)}
-                      id={area}
-                      label={area}
-                      name={area}
-                      onChange={(e) => {
-                        setSelectedAreas((prev) => {
-                          if (e.target.checked) {
-                            if (prev.includes(area)) {
-                              return prev;
-                            }
-                            return [...prev, area].sort();
-                          } else {
-                            return prev
-                              .filter((selectedArea) => selectedArea !== area)
-                              .sort();
-                          }
-                        });
-                      }}
-                    />
-                  </div>
-                ))}
-              </div>
+              <Suspense fallback={<></>}>
+                <AreaFilterFormOptions
+                  searchText={deferredSearchText} // 遅延評価された値を渡す
+                  {...props}
+                  onChange={setSelectedAreas}
+                />
+              </Suspense>
             </DialogContent>
             <DialogActions>
+              <Button appearance="outline">すべてクリア</Button>
               <DialogTrigger disableButtonEnhancement>
                 <Button appearance="primary" onClick={handleClick}>
                   保存

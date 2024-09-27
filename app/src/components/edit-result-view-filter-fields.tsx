@@ -12,13 +12,7 @@ import { Select } from "./ui/select";
 import { Fieldset } from "./ui/fieldset";
 import { FieldLegend } from "./ui/field-legend";
 import { EditorFilterParametersForm } from "./editor-filter-parameters-form";
-
-// コンポーネントを遅延評価で読み込むことでパフォーマンスに配慮
-const AreaFilterForm = lazy(() =>
-  import("./area-filter-form").then((module) => ({
-    default: module.AreaFilterForm,
-  })),
-);
+import { AreaFilterForm } from "./area-filter-form";
 
 const useStyles = makeStyles({
   form: {
