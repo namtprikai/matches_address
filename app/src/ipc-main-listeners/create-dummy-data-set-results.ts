@@ -64,6 +64,7 @@ export const createDummyDataSetResults = (async (
           `Area: Starting data insertion for year ${year}. Total areas: ${totalAreas}`,
         );
 
+        // eslint-disable-next-line @typescript-eslint/prefer-for-of -- indexを利用したいため
         for (
           let chunkIndex = 0;
           chunkIndex < chunkedAreaFeatures.length;

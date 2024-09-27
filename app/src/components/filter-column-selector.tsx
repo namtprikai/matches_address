@@ -91,7 +91,6 @@ export const FilterColumnSelector = ({
                   return <></>;
                 }
 
-                // eslint-disable-next-line @typescript-eslint/explicit-function-return-type -- 型推論を利用するため
                 const getMetadata = ({
                   key,
                   unit,
@@ -103,6 +102,7 @@ export const FilterColumnSelector = ({
                   | {
                       key: AREA_DATASET_COLUMN;
                       unit: "area";
+                      // eslint-disable-next-line @typescript-eslint/explicit-function-return-type -- 型推論を利用するため
                     }) => {
                   if (unit === "building") {
                     return BUILDING_DATASET_COLUMN_METADATA[key];
@@ -129,7 +129,7 @@ export const FilterColumnSelector = ({
                   <Field
                     key={index}
                     defaultChecked={option.active}
-                    onChange={(e) => {
+                    onChange={() => {
                       setOptionsState((prev) => {
                         return prev.map((prevOption) => {
                           if (prevOption.key === option.key) {

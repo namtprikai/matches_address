@@ -167,13 +167,13 @@ if (import.meta.vitest) {
   });
 }
 
-// eslint-disable-next-line @typescript-eslint/explicit-function-return-type -- ignore
 export const subQueryFromConditions = (
   drizzle: BetterSQLite3Database,
   db: SQLiteTable | Subquery | SQLiteViewBase | SQL,
   groupLabel: string,
   key: string,
   conditions: GroupingCondition[],
+  // eslint-disable-next-line @typescript-eslint/explicit-function-return-type -- ignore
 ) => {
   const caseQuery = conditionsToCaseQuery(key, conditions);
 

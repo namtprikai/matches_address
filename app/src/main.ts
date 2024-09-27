@@ -8,6 +8,7 @@ import { db } from "./utils/db";
 import { ipcMainListeners } from "./ipc-main-listeners";
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
+// eslint-disable-next-line @typescript-eslint/no-require-imports -- CJS環境で動くため
 if (require("electron-squirrel-startup")) {
   app.quit();
 }

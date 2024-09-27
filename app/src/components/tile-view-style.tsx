@@ -19,10 +19,10 @@ type Props = {
 /**
  * このコンポーネント内で同様の処理をまとめているだけなため、後で削除することも検討する
  */
-// eslint-disable-next-line @typescript-eslint/explicit-function-return-type -- 型推論を利用したいため
 const pickArgsFromParameters = (
   parameters: SelectResultView["parameters"],
   style: Exclude<SelectResultView["style"], "table" | "map" | null>,
+  // eslint-disable-next-line @typescript-eslint/explicit-function-return-type -- 型推論を利用したいため
 ) => {
   const xAxis = parameters.find((p) =>
     style === "pie" ? p.key === "label" : p.key === "xAxis",

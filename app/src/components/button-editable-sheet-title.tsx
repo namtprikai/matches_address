@@ -148,7 +148,7 @@ export const ButtonEditableSheetTitle = ({
     <Button
       appearance="subtle"
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment -- block要素にするのが目的。期待通りの動作をしているため無視。本来はaかbuttonのみ許容するよう。
-      /* @ts-ignore */
+      /* @ts-expect-error */
       as="div"
       className={styles.root}
       onDoubleClick={(): void => setIsEditing(true)}
