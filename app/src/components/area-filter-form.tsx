@@ -67,7 +67,9 @@ export const AreaFilterForm = (props: AreaFilterFormProps): JSX.Element => {
     props.onSave(selectedAreas);
   };
 
-  const searchFilteredData = data?.filter((area) => area.includes(searchText));
+  const searchFilteredData = data?.filter(
+    (area) => area.includes(searchText.trim().replace("　", "")), // 余計な空白や文字列の削除
+  );
 
   const styles = useStyles();
 
