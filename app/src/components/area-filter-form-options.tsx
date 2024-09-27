@@ -1,4 +1,4 @@
-import { memo, useDeferredValue, useEffect, useState } from "react";
+import { memo, useEffect, useState } from "react";
 import { type FetchAreaGroupsArg } from "../ipc-main-listeners/fetch-area-groups";
 import { useFetchAreaGroups } from "../hooks/use-fetch-area-groups";
 import { Checkbox, makeStyles } from "@fluentui/react-components";
@@ -16,7 +16,7 @@ const useStyles = makeStyles({
 
 type Props = FetchAreaGroupsArg & {
   searchText: string;
-  areas: string[];
+  selectedAreas: string[];
   onChange: (value: string[]) => void;
 };
 
@@ -26,7 +26,11 @@ export const AreaFilterFormOptions = memo((props: Props) => {
     unit: props.unit,
   });
 
-  const [selectedAreas, setSelectedAreas] = useState<string[]>(props.areas);
+  console.log(props.selectedAreas);
+
+  const [selectedAreas, setSelectedAreas] = useState<string[]>(
+    props.selectedAreas,
+  );
 
   const searchFilteredData = data?.filter(
     (area) => area.includes(props.searchText.trim().replace("　", "")), // 余計な空白や文字列の削除
@@ -34,36 +38,49 @@ export const AreaFilterFormOptions = memo((props: Props) => {
 
   const styles = useStyles();
 
+  /**
+   * selectedAreasが変更された際にprops.onChangeを呼び出す（保存作業）
+   */
   useEffect(() => {
     props.onChange(selectedAreas);
   }, [selectedAreas]);
 
+  /**
+   * props.selectedAreasが変更された際に再描画する（読み込み作業）
+   * useEffectの初期値はすでに描画済で値が入っているため強制的に再描画する
+   */
+  useEffect(() => {
+    setSelectedAreas(props.selectedAreas);
+  }, [props.selectedAreas]);
+
   return (
     <div className={styles.options}>
-      {searchFilteredData?.map((area, index) => (
-        <div key={index}>
-          <Checkbox
-            checked={selectedAreas.includes(area)}
-            id={area}
-            label={area}
-            name={area}
-            onChange={(e) => {
-              setSelectedAreas((prev) => {
-                if (e.target.checked) {
-                  if (prev.includes(area)) {
-                    return prev;
+      {searchFilteredData?.map((area, index) => {
+        return (
+          <div key={index}>
+            <Checkbox
+              checked={selectedAreas.includes(area)}
+              id={area}
+              label={area}
+              name={area}
+              onChange={(e) => {
+                setSelectedAreas((prev) => {
+                  if (e.target.checked) {
+                    if (prev.includes(area)) {
+                      return prev;
+                    }
+                    return [...prev, area].sort();
+                  } else {
+                    return prev
+                      .filter((selectedArea) => selectedArea !== area)
+                      .sort();
                   }
-                  return [...prev, area].sort();
-                } else {
-                  return prev
-                    .filter((selectedArea) => selectedArea !== area)
-                    .sort();
-                }
-              });
-            }}
-          />
-        </div>
-      ))}
+                });
+              }}
+            />
+          </div>
+        );
+      })}
     </div>
   );
 });

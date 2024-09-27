@@ -60,6 +60,10 @@ export const AreaFilterForm = (props: AreaFilterFormProps): JSX.Element => {
     props.onSave(selectedAreas);
   };
 
+  const handleAllClear = (): void => {
+    setSelectedAreas([]);
+  };
+
   const styles = useStyles();
 
   return (
@@ -115,13 +119,17 @@ export const AreaFilterForm = (props: AreaFilterFormProps): JSX.Element => {
               <Suspense fallback={<></>}>
                 <AreaFilterFormOptions
                   searchText={deferredSearchText} // 遅延評価された値を渡す
-                  {...props}
                   onChange={setSelectedAreas}
+                  selectedAreas={selectedAreas}
+                  dataSetResultId={props.dataSetResultId}
+                  unit={props.unit}
                 />
               </Suspense>
             </DialogContent>
             <DialogActions>
-              <Button appearance="outline">すべてクリア</Button>
+              <Button appearance="outline" onClick={handleAllClear}>
+                すべてクリア
+              </Button>
               <DialogTrigger disableButtonEnhancement>
                 <Button appearance="primary" onClick={handleClick}>
                   保存
