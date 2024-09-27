@@ -14,6 +14,7 @@ import { DialogBody } from "./ui/dialog-body";
 import { DialogTitle } from "./ui/dialog-title";
 import { DialogContent } from "./ui/dialog-content";
 import { DialogActions } from "./ui/dialog-actions";
+import { Input } from "./ui/input";
 
 const useStyles = makeStyles({
   options: {
@@ -21,7 +22,7 @@ const useStyles = makeStyles({
     overflowX: "scroll",
     display: "grid",
     gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))",
-    gridAutoRows: "1fr",
+    gridAutoRows: "32px",
     width: "100%",
   },
   selectedOptions: {
@@ -60,10 +61,13 @@ export const AreaFilterForm = (props: AreaFilterFormProps): JSX.Element => {
 
   const [open, setOpen] = useState(false);
   const [selectedAreas, setSelectedAreas] = useState<string[]>(props.areas);
+  const [searchText, setSearchText] = useState("");
 
   const handleClick = (): void => {
     props.onSave(selectedAreas);
   };
+
+  const searchFilteredData = data?.filter((area) => area.includes(searchText));
 
   const styles = useStyles();
 
@@ -103,10 +107,22 @@ export const AreaFilterForm = (props: AreaFilterFormProps): JSX.Element => {
       >
         <DialogSurface>
           <DialogBody>
-            <DialogTitle>地域を選択</DialogTitle>
+            <DialogTitle
+              action={
+                <Input
+                  onChange={(e) => {
+                    setSearchText(e.target.value);
+                  }}
+                  placeholder="地域を検索"
+                  value={searchText}
+                />
+              }
+            >
+              地域を選択
+            </DialogTitle>
             <DialogContent border>
               <div className={styles.options}>
-                {data?.map((area, index) => (
+                {searchFilteredData?.map((area, index) => (
                   <div key={index}>
                     <Checkbox
                       checked={selectedAreas.includes(area)}
