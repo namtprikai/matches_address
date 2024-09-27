@@ -7,7 +7,8 @@ module.exports = {
   },
   extends: [
     "eslint:recommended",
-    "plugin:@typescript-eslint/recommended",
+    "plugin:@typescript-eslint/strict",
+    "plugin:@typescript-eslint/stylistic",
     "plugin:react/recommended",
     "plugin:react-hooks/recommended",
     "plugin:react/jsx-runtime",
@@ -30,9 +31,10 @@ module.exports = {
     project: ["./tsconfig.base.json", "./tsconfig.forge.json"],
     tsconfigRootDir: __dirname,
   },
-  plugins: ["eslint-comments"],
+  plugins: ["eslint-comments", "@typescript-eslint"],
   rules: {
     "@typescript-eslint/array-type": "off",
+    "@typescript-eslint/ban-ts-comment": "off",
     "@typescript-eslint/consistent-type-definitions": "off",
     "@typescript-eslint/consistent-type-imports": [
       "warn",
@@ -69,6 +71,7 @@ module.exports = {
         reservedFirst: ["key", "dangerouslySetInnerHTML", "ref"],
       },
     ],
+    "react/prop-types": "off",
     "import-x/no-unresolved": "error",
     "import-x/no-default-export": "error",
     "import-x/order": "error",
