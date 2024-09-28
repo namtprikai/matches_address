@@ -1,11 +1,12 @@
 import useSWR, { type SWRResponse } from "swr";
 import { type SelectResultSheet } from "../schema";
 
-const fetcher = ([workbookId]: [string | undefined, string]): Promise<
+const fetcher = ([workbookId]: [number | undefined, string]): Promise<
   SelectResultSheet[]
 > => {
+  if (!workbookId) return Promise.resolve([]);
   const result = window.ipcRenderer.invoke("selectResultSheets", {
-    workbookId: Number(workbookId),
+    workbookId,
   });
   return result;
 };
@@ -13,7 +14,7 @@ const fetcher = ([workbookId]: [string | undefined, string]): Promise<
 export const useFetchResultSheets = ({
   id,
 }: {
-  id: string | undefined;
+  id: number | undefined;
 }): SWRResponse<SelectResultSheet[]> => {
   const swr = useSWR([id, "useFetchResultSheets"], fetcher);
   return swr;

@@ -60,11 +60,9 @@ const useStyles = makeStyles({
 
 export function DetailWorkbook(): JSX.Element {
   const styles = useStyles();
-
   const { id } = useParams();
-
-  const { data: workbook } = useFetchWorkbook({ id });
-  const { data: resultSheets } = useFetchResultSheets({ id });
+  const { data: workbook } = useFetchWorkbook({ id: Number(id) });
+  const { data: resultSheets } = useFetchResultSheets({ id: Number(id) });
   const { onTabSelect, selectedValue, setSelectedValue } = useTabs();
 
   useEffect(() => {
