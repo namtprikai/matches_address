@@ -24,8 +24,6 @@ export const EditResultViewForm = ({
 }: {
   selectedResultSheetId: number | undefined;
 }): JSX.Element => {
-  console.log("EditResultViewForm");
-
   const styles = useStyles();
   const [selectedResultViewId] = useAtom(selectedResultViewIdAtom);
   const { mutate: mutateResultViews } = useFetchResultViews2({
