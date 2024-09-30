@@ -229,6 +229,27 @@ export const EditResultViewFileds = ({ dataSetTitle }: Props): JSX.Element => {
             );
           }
 
+          if (fieldOption.type === "dialog") {
+            return (
+              <DynamicParameterInput
+                type="dialog"
+                {...register(`parameters.${index}.value`)}
+                key={field.id}
+                fieldOption={fieldOption}
+                multiple={fieldOption.multiple ?? false}
+                onSave={(newValue) => {
+                  update(index, {
+                    key: field.key,
+                    value: newValue.join(","),
+                    type: "column",
+                  });
+                }}
+                unit={unit}
+                value={field.value}
+              />
+            );
+          }
+
           return <></>;
         })}
 
