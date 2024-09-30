@@ -36,7 +36,7 @@ export function getBuildConfig(env: ConfigEnv<"build">): UserConfig {
 export function getDefineKeys(
   names: string[],
 ): Record<string, VitePluginRuntimeKeys> {
-  const define: { [name: string]: VitePluginRuntimeKeys } = {};
+  const define: Record<string, VitePluginRuntimeKeys> = {};
 
   return names.reduce((acc, name) => {
     const NAME = name.toUpperCase();
@@ -67,8 +67,8 @@ export function getBuildDefine(env: ConfigEnv<"build">): Record<string, any> {
         [VITE_NAME]: JSON.stringify(name),
       };
       return { ...acc, ...def };
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Define runtime keys.
     },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Define runtime keys.
     {} as Record<string, any>,
   );
 

@@ -110,11 +110,10 @@ export const filterDataSetForChart = ((
           .groupBy(sql.raw(`${groupLabel}`))
           .having(sql.raw(`${groupLabel} <> ''`))
           .limit(100)
-          .all() as {
-          [key: `${string}_group`]: string;
-        } & {
-          [k in typeof y]: number;
-        }[];
+          .all() as Record<`${string}_group`, string> &
+          {
+            [k in typeof y]: number;
+          }[];
       }
 
       return db
@@ -210,11 +209,10 @@ export const filterDataSetForChart = ((
           .groupBy(sql.raw(`${groupLabel}`))
           .having(sql.raw(`${groupLabel} <> ''`))
           .limit(100)
-          .all() as {
-          [key: `${string}_group`]: string;
-        } & {
-          [k in typeof y]: number;
-        }[]; // drizzle側で型補完が効かないため、型を指定
+          .all() as Record<`${string}_group`, string> &
+          {
+            [k in typeof y]: number;
+          }[]; // drizzle側で型補完が効かないため、型を指定
       }
 
       return db
