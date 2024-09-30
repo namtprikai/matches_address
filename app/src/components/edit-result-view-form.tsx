@@ -3,11 +3,11 @@ import { FormProvider, useForm } from "react-hook-form";
 import { makeStyles } from "@fluentui/react-components";
 import { useEffect } from "react";
 import { type EditResultViewFormType } from "../@types/form-schema";
-import { selectedResultViewAtom } from "../state/selected-result-view-atom";
 import { selectedResultViewIdAtom } from "../state/selected-result-view-id-atom";
-import { resultViewsAtom } from "../state/result-views-atom";
 import { type SelectResultView } from "../schema";
 import { useFetchDataSetResultItem } from "../hooks/use-fetch-data-set-result-item";
+import { useFetchResultView } from "../hooks/use-fetch-result-view";
+import { useFetchResultViews2 } from "../hooks/use-fetch-result-views2";
 import { EditResultViewFileds } from "./edit-result-view-fields";
 import { EditResultViewFilterFields } from "./edit-result-view-filter-fields";
 import { Button } from "./ui/button";
@@ -19,13 +19,21 @@ const useStyles = makeStyles({
   },
 });
 
-export const EditResultViewForm = (): JSX.Element => {
+export const EditResultViewForm = ({
+  selectedResultSheetId,
+}: {
+  selectedResultSheetId: number | undefined;
+}): JSX.Element => {
+  console.log("EditResultViewForm");
+
   const styles = useStyles();
-
   const [selectedResultViewId] = useAtom(selectedResultViewIdAtom);
-  const [selectedResultView, refresh] = useAtom(selectedResultViewAtom);
-  const [, refreshResultViews] = useAtom(resultViewsAtom);
-
+  const { mutate: mutateResultViews } = useFetchResultViews2({
+    sheetId: selectedResultSheetId,
+  });
+  const { data: selectedResultView } = useFetchResultView({
+    resultViewId: selectedResultViewId,
+  });
   const { data } = useFetchDataSetResultItem({
     dataSetResultId: selectedResultView?.data_set_result_id,
   });
@@ -95,10 +103,11 @@ export const EditResultViewForm = (): JSX.Element => {
         ] as SelectResultView["parameters"], // union の型推論が効きづらいため、明示的に型を指定
       },
     });
-    refresh();
-    // resultViewsの再取得を行い、更新されたデータを反映する
-    refreshResultViews();
+
+    void mutateResultViews();
   });
+
+  if (!data) return <></>;
 
   return (
     <FormProvider {...methods}>

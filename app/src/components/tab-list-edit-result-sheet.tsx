@@ -1,13 +1,7 @@
 import { AddFilled } from "@fluentui/react-icons";
-import {
-  makeStyles,
-  type SelectTabData,
-  type SelectTabEvent,
-  TabList,
-  tokens,
-} from "@fluentui/react-components";
+import { makeStyles, TabList, tokens } from "@fluentui/react-components";
 import { useAtom } from "jotai";
-import { startTransition, useEffect } from "react";
+import { useEffect } from "react";
 import { selectedResultSheetIdAtom } from "../state/selected-result-sheet-id-atom";
 import { useFetchResultSheets } from "../hooks/use-fetch-result-sheets";
 import { Button } from "./ui/button";

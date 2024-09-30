@@ -2,7 +2,6 @@ import { ArchiveRegular, Dismiss24Regular } from "@fluentui/react-icons";
 import {
   Card,
   CardHeader,
-  type CardProps,
   Dialog,
   DialogTrigger,
   makeStyles,
@@ -10,9 +9,11 @@ import {
   Subtitle2,
   tokens,
 } from "@fluentui/react-components";
-import { useNavigate } from "react-router-dom";
-import { type SelectResultView, type SelectDataSetResult } from "../schema";
+import { useAtom } from "jotai";
+import { type SelectResultView } from "../schema";
 import { THEME_COLORS } from "../config/theme-colors";
+import { selectedResultViewIdAtom } from "../state/selected-result-view-id-atom";
+import { useFetchResultViews2 } from "../hooks/use-fetch-result-views2";
 import { TileViewStyle } from "./tile-view-style";
 import { DialogSurface } from "./ui/dialog-surface";
 import { DialogBody } from "./ui/dialog-body";
@@ -21,10 +22,10 @@ import { DialogActions } from "./ui/dialog-actions";
 import { Button } from "./ui/button";
 import { DialogContent } from "./ui/dialog-content";
 
-type Props = CardProps & {
+interface Props {
   resultView: SelectResultView;
-  dataSetResult: SelectDataSetResult | null;
-};
+  className?: string;
+}
 
 const useStyles = makeStyles({
   selected: {
@@ -48,24 +49,28 @@ const useStyles = makeStyles({
 
 export const TileResultView = ({
   resultView,
-  dataSetResult,
-  selected,
-  ...cardProps
+  className,
 }: Props): JSX.Element => {
   const styles = useStyles();
-  const navigate = useNavigate();
+  const [selectedResultViewId, setSelectedResultViewId] = useAtom(
+    selectedResultViewIdAtom,
+  );
+  const { mutate } = useFetchResultViews2({
+    sheetId: resultView.sheet_id,
+  });
 
-  const deleteResultView = async (): Promise<void> => {
-    await window.ipcRenderer.invoke("deleteResultView", {
-      resultViewId: resultView.id,
-    });
+  const handleClick = (): void => {
+    setSelectedResultViewId(resultView.id);
   };
 
   const handleDelete = async (): Promise<void> => {
-    await deleteResultView();
-    navigate(0);
+    await window.ipcRenderer.invoke("deleteResultView", {
+      resultViewId: resultView.id,
+    });
+    void mutate();
   };
 
+  const selected = selectedResultViewId === resultView.id;
   if (
     !resultView.style ||
     !resultView.unit ||
@@ -73,12 +78,12 @@ export const TileResultView = ({
   ) {
     return (
       <Card
-        {...cardProps}
         className={mergeClasses(
           styles.cardSurface,
           selected && styles.selected,
-          cardProps.className,
+          className,
         )}
+        onClick={handleClick}
       >
         <CardHeader
           action={
@@ -136,12 +141,12 @@ export const TileResultView = ({
 
   return (
     <Card
-      {...cardProps}
       className={mergeClasses(
         styles.cardSurface,
         selected && styles.selected,
-        cardProps.className,
+        className,
       )}
+      onClick={handleClick}
     >
       <CardHeader
         action={
@@ -190,15 +195,15 @@ export const TileResultView = ({
           <Subtitle2>{`${resultView.title || "タイトル未入力"}`}</Subtitle2>
         }
       />
-      {dataSetResult === null ? (
-        <div>データセットが選択されていません</div>
-      ) : (
+      {resultView.data_set_result_id ? (
         <TileViewStyle
           parameters={resultView.parameters}
-          resultId={dataSetResult.id}
+          resultId={resultView.data_set_result_id}
           style={resultView.style}
           type={resultView.unit}
         />
+      ) : (
+        <div>データセットが選択されていません</div>
       )}
     </Card>
   );

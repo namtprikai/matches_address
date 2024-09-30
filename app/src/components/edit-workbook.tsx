@@ -34,24 +34,32 @@ const useStyles = makeStyles({
 
 export const EditWorkbook = (): JSX.Element => {
   const styles = useStyles();
-  const { id } = useParams();
-  const { data: workbook } = useFetchWorkbook({ id: Number(id) });
 
   return (
     <div className={styles.root}>
       <div className={styles.sidebar}>
         <SidebarEditResultView />
       </div>
-      <div className={styles.content}>
-        <h2 className={styles.heading}>{workbook?.title}</h2>
-        <TabListEditResultSheet workbookId={workbook?.id} />
-        <div>
-          <PreviewResultSheet />
-        </div>
-        <a href={`#analysis/workbook/${id}`}>
-          <Button>詳細に戻る</Button>
-        </a>
-      </div>
+      <Content />
     </div>
   );
 };
+
+function Content(): JSX.Element {
+  const styles = useStyles();
+  const { id } = useParams();
+  const { data: workbook } = useFetchWorkbook({ id: Number(id) });
+
+  return (
+    <div className={styles.content}>
+      <h2 className={styles.heading}>{workbook?.title}</h2>
+      <TabListEditResultSheet workbookId={workbook?.id} />
+      <div>
+        <PreviewResultSheet />
+      </div>
+      <a href={`#analysis/workbook/${id}`}>
+        <Button>詳細に戻る</Button>
+      </a>
+    </div>
+  );
+}
