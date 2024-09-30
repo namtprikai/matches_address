@@ -5,13 +5,13 @@ import {
   BUILDING_DATASET_COLUMN_METADATA,
 } from "../config/column-metadata";
 
-// eslint-disable-next-line @typescript-eslint/explicit-function-return-type -- 型推論を利用したいため
 export const getColumnMetadata = ({
   unit,
   key,
 }: {
   unit: "building" | "area";
   key: string;
+  // eslint-disable-next-line @typescript-eslint/explicit-function-return-type -- 型推論を利用したいため
 }) => {
   if (unit === "building") {
     return key in BUILDING_DATASET_COLUMN_METADATA

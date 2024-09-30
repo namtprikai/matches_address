@@ -17,8 +17,8 @@
     "strictNullChecks": true,
     "noImplicitThis": true,
     "alwaysStrict": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
+    "noUnusedLocals": false, // ESLint側で検証するためこちら側ではfalseに設定
+    "noUnusedParameters": false, // ESLint側で検証するためこちら側ではfalseに設定
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
     "useDefineForClassFields": true,

@@ -8,7 +8,6 @@ import {
 /**
  * 表形式スタイル表示用のカラム配列から, DrizzleのSelectField用の連想配列に変換する
  */
-// eslint-disable-next-line @typescript-eslint/explicit-function-return-type --  返り値が複雑なため型定義を省略
 export const columnsToSelectField = ({
   type,
   columns,
@@ -17,6 +16,7 @@ export const columnsToSelectField = ({
   | {
       type: "area";
       columns: (keyof SelectDataSetDetailArea)[];
+      // eslint-disable-next-line @typescript-eslint/explicit-function-return-type --  返り値が複雑なため型定義を省略
     }) => {
   if (type === "building") {
     return Object.fromEntries(

@@ -1,5 +1,5 @@
-import { type ForwardedRef, forwardRef } from "react";
-import { type DropdownProps } from "@fluentui/react-components";
+import { type ForwardedRef, forwardRef, Fragment } from "react";
+import { makeStyles, type DropdownProps } from "@fluentui/react-components";
 import { type TileViewFieldOption } from "../@types/charts";
 import {
   AREA_DATASET_COLUMN_METADATA,
@@ -9,6 +9,27 @@ import { Select } from "./ui/select";
 import { DynamicColumnOptions } from "./dynamic-column-options";
 import { Field } from "./ui/field";
 import { Dropdown } from "./ui/dropdown";
+import { DialogFieldOption } from "./dialog-field-option";
+
+const useStyles = makeStyles({
+  selectedOptions: {
+    display: "flex",
+    flexWrap: "wrap",
+    gap: "4px 8px",
+    fontSize: "12px",
+  },
+  layout: {
+    display: "flex",
+    gap: "4px",
+    flexDirection: "row",
+    alignItems: "flex-start",
+    justifyContent: "space-between",
+  },
+  noSelectedLabel: {
+    lineHeight: "32px",
+    fontSize: "12px",
+  },
+});
 
 type Props = {
   unit: "building" | "area";
@@ -25,6 +46,11 @@ type Props = {
       onChange: DropdownProps["onOptionSelect"];
       multiple: boolean;
     }
+  | {
+      type: "dialog";
+      onSave: (value: string[]) => void;
+      multiple: boolean;
+    }
 );
 
 /**
@@ -35,6 +61,7 @@ export const DynamicParameterInput = forwardRef<
   HTMLSelectElement | HTMLButtonElement,
   Props
 >((props, ref): JSX.Element => {
+  const styles = useStyles();
   if (props.type === "select") {
     return (
       <Field label={props.fieldOption.label}>
@@ -89,6 +116,45 @@ export const DynamicParameterInput = forwardRef<
             unit={props.unit}
           />
         </Dropdown>
+      </Field>
+    );
+  }
+  if (props.type === "dialog") {
+    return (
+      <Field label={props.fieldOption.label}>
+        <div className={styles.layout}>
+          <div>
+            {props.value.split(",").length === 1 ? (
+              <p className={styles.noSelectedLabel}>カラムを選択してください</p>
+            ) : (
+              <div className={styles.selectedOptions}>
+                {props.value.split(",").map((item, index) => {
+                  const columnMetadata =
+                    item in BUILDING_DATASET_COLUMN_METADATA
+                      ? BUILDING_DATASET_COLUMN_METADATA[
+                          /** @fixme asしない方法あれば。 */
+                          item as keyof typeof BUILDING_DATASET_COLUMN_METADATA
+                        ]
+                      : null;
+                  if (columnMetadata === null) return null;
+                  return (
+                    <Fragment key={item}>
+                      {index !== 0 && <span>/</span>}
+                      <span key={item}>{columnMetadata?.label}</span>
+                    </Fragment>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+          <div>
+            <DialogFieldOption
+              onSave={props.onSave}
+              option={props.fieldOption.option}
+              value={props.value}
+            />
+          </div>
+        </div>
       </Field>
     );
   }

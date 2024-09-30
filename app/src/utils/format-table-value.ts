@@ -1,6 +1,5 @@
 import { type ChartColumnType } from "../@types/charts";
 
-// eslint-disable-next-line @typescript-eslint/explicit-function-return-type -- 型推論を利用するため
 export const formatTableValue = (
   value: number | string | null,
   metadata?: {
@@ -9,6 +8,7 @@ export const formatTableValue = (
     type: ChartColumnType;
   } | null,
   digits = 2,
+  // eslint-disable-next-line @typescript-eslint/explicit-function-return-type -- 型推論を利用するため
 ) => {
   if (value === null) {
     return "";

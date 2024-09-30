@@ -48,6 +48,7 @@ export const DynamicColumnOptions = ({
           </Option>
         );
       }
+
       return <></>;
     });
   } else {
