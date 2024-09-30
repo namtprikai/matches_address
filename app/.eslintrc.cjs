@@ -34,7 +34,10 @@ module.exports = {
   plugins: ["eslint-comments", "@typescript-eslint"],
   rules: {
     "@typescript-eslint/array-type": "off",
-    "@typescript-eslint/ban-ts-comment": "off",
+    "@typescript-eslint/ban-ts-comment": [
+      "error",
+      { "ts-expect-error": "allow-with-description" },
+    ],
     "@typescript-eslint/consistent-type-definitions": "off",
     "@typescript-eslint/consistent-type-imports": [
       "warn",
