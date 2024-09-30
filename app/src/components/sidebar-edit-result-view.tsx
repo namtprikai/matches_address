@@ -1,5 +1,13 @@
 import { AddFilled } from "@fluentui/react-icons";
-import { makeStyles, tokens, SearchBox } from "@fluentui/react-components";
+import {
+  makeStyles,
+  tokens,
+  SearchBox,
+  InlineDrawer,
+  DrawerHeaderTitle,
+  DrawerHeader,
+  DrawerBody,
+} from "@fluentui/react-components";
 import { useAtom } from "jotai";
 import { useEffect, useState } from "react";
 import { useFetchDataSetResults } from "../hooks/use-fetch-data-set-results";
@@ -44,21 +52,28 @@ export const SidebarEditResultView = (): JSX.Element => {
   }, [resultViews?.length]);
 
   return (
-    <div className={styles.drawer}>
-      <div>
-        <div className={styles.heading}>
+    // TODO: 再レンダリング時にアニメーションが発生するためDrawerを使うのは避けたい
+    <InlineDrawer className={styles.drawer} open>
+      <DrawerHeader>
+        <DrawerHeaderTitle
+          action={
+            isAddView ? undefined : (
+              <Button
+                disabled={resultViews?.length === 4}
+                icon={<AddFilled />}
+                onClick={() => {
+                  setIsAddView(true);
+                }}
+                shape="square"
+              />
+            )
+          }
+          className={styles.heading}
+        >
           ビューを追加
-          <Button
-            disabled={resultViews?.length === 4}
-            icon={<AddFilled />}
-            onClick={() => {
-              setIsAddView(true);
-            }}
-            shape="square"
-          />
-        </div>
-      </div>
-      <div>
+        </DrawerHeaderTitle>
+      </DrawerHeader>
+      <DrawerBody>
         <div className={styles.drawerBodyInner}>
           {isAddView ? (
             <AddView />
@@ -71,8 +86,8 @@ export const SidebarEditResultView = (): JSX.Element => {
             </>
           )}
         </div>
-      </div>
-    </div>
+      </DrawerBody>
+    </InlineDrawer>
   );
 };
 
