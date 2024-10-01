@@ -9,7 +9,7 @@ import {
   DrawerBody,
 } from "@fluentui/react-components";
 import { useAtom } from "jotai";
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useFetchDataSetResults } from "../hooks/use-fetch-data-set-results";
 import { useFetchResultViews2 } from "../hooks/use-fetch-result-views2";
 import { selectedResultSheetIdAtom } from "../state/selected-result-sheet-id-atom";
@@ -75,16 +75,18 @@ export const SidebarEditResultView = (): JSX.Element => {
       </DrawerHeader>
       <DrawerBody>
         <div className={styles.drawerBodyInner}>
-          {isAddView ? (
-            <AddView />
-          ) : (
-            <>
-              <EditResultViewForm
-                selectedResultSheetId={selectedResultSheetId}
-              />
-              <EditResultViewLayoutSort />
-            </>
-          )}
+          <Suspense>
+            {isAddView ? (
+              <AddView />
+            ) : (
+              <>
+                <EditResultViewForm
+                  selectedResultSheetId={selectedResultSheetId}
+                />
+                <EditResultViewLayoutSort />
+              </>
+            )}
+          </Suspense>
         </div>
       </DrawerBody>
     </InlineDrawer>
