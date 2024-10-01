@@ -8,7 +8,7 @@ import { type SelectResultView } from "../schema";
 import { useFetchDataSetResultItem } from "../hooks/use-fetch-data-set-result-item";
 import { useFetchResultView } from "../hooks/use-fetch-result-view";
 import { useFetchResultViews2 } from "../hooks/use-fetch-result-views2";
-import { EditResultViewFileds } from "./edit-result-view-fields";
+import { EditResultViewFields } from "./edit-result-view-fields";
 import { EditResultViewFilterFields } from "./edit-result-view-filter-fields";
 import { Button } from "./ui/button";
 
@@ -110,7 +110,7 @@ export const EditResultViewForm = ({
   return (
     <FormProvider {...methods}>
       <form className={styles.form} onSubmit={onSubmit}>
-        <EditResultViewFileds dataSetTitle={data && data[0].title} />
+        <EditResultViewFields dataSetTitle={data && data[0].title} />
         <EditResultViewFilterFields />
         <Button appearance="primary" type="submit">
           入力内容を保存する
