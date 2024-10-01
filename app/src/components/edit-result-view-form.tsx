@@ -105,8 +105,6 @@ export const EditResultViewForm = ({
     void mutateResultViews();
   });
 
-  if (!data) return <></>;
-
   return (
     <FormProvider {...methods}>
       <form className={styles.form} onSubmit={onSubmit}>
