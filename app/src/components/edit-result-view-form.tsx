@@ -32,45 +32,37 @@ export const EditResultViewForm = ({
   const { data: selectedResultView } = useFetchResultView({
     resultViewId: selectedResultViewId,
   });
-  const { data } = useFetchDataSetResultItem({
+  const { data: dataSetResult } = useFetchDataSetResultItem({
     dataSetResultId: selectedResultView?.data_set_result_id,
   });
-
-  const year = selectedResultView?.parameters.find(
-    (parameter) => parameter.key === "year" && parameter.type === "filter",
-  )?.value;
-
-  const methods = useForm<EditResultViewFormType>({
-    defaultValues: {
-      title: selectedResultView?.title ?? "",
-      style: selectedResultView?.style ?? "map",
-      unit: selectedResultView?.unit ?? "building",
-      parameters: selectedResultView?.parameters ?? [],
-      year: {
-        start: year?.start,
-        end: year?.end,
-      },
-      areas: [],
-    },
-  });
-
-  const { handleSubmit, reset } = methods;
+  const methods = useForm<EditResultViewFormType>();
 
   useEffect(() => {
-    reset({
+    const selectedYear = selectedResultView?.parameters.find(
+      (parameter) => parameter.key === "year" && parameter.type === "filter",
+    )?.value;
+
+    methods.reset({
       title: selectedResultView?.title ?? "",
       style: selectedResultView?.style ?? "map",
       unit: selectedResultView?.unit ?? "building",
       parameters: selectedResultView?.parameters ?? [],
       year: {
-        start: year?.start,
-        end: year?.end,
+        start: selectedYear?.start,
+        end: selectedYear?.end,
       },
       areas: [],
     });
-  }, [selectedResultView, reset, year]);
+    methods.setValue("title", selectedResultView?.title ?? "");
+  }, [
+    methods,
+    selectedResultView?.parameters,
+    selectedResultView?.style,
+    selectedResultView?.title,
+    selectedResultView?.unit,
+  ]);
 
-  const onSubmit = handleSubmit(async (data) => {
+  const onSubmit = methods.handleSubmit(async (data) => {
     if (!selectedResultViewId) return;
 
     const parameters = data.parameters;
@@ -83,8 +75,8 @@ export const EditResultViewForm = ({
     const yearParameter = {
       key: "year",
       value: {
-        start: data.year.start,
-        end: data.year.end,
+        start: data.year?.start,
+        end: data.year?.end,
       },
       type: "filter",
     };
@@ -108,7 +100,7 @@ export const EditResultViewForm = ({
   return (
     <FormProvider {...methods}>
       <form className={styles.form} onSubmit={onSubmit}>
-        <EditResultViewFields dataSetTitle={data && data[0].title} />
+        <EditResultViewFields dataSetTitle={dataSetResult?.[0].title} />
         <EditResultViewFilterFields />
         <Button appearance="primary" type="submit">
           入力内容を保存する
