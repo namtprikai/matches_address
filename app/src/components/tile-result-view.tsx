@@ -10,9 +10,9 @@ import {
   Subtitle2,
   tokens,
 } from "@fluentui/react-components";
-import { useNavigate } from "react-router-dom";
-import { type SelectResultView, type SelectDataSetResult } from "../schema";
+import { type SelectResultView } from "../schema";
 import { THEME_COLORS } from "../config/theme-colors";
+import { useFetchResultViews2 } from "../hooks/use-fetch-result-views2";
 import { TileViewStyle } from "./tile-view-style";
 import { DialogSurface } from "./ui/dialog-surface";
 import { DialogBody } from "./ui/dialog-body";
@@ -23,7 +23,6 @@ import { DialogContent } from "./ui/dialog-content";
 
 type Props = CardProps & {
   resultView: SelectResultView;
-  dataSetResult: SelectDataSetResult | null;
 };
 
 const useStyles = makeStyles({
@@ -48,12 +47,13 @@ const useStyles = makeStyles({
 
 export const TileResultView = ({
   resultView,
-  dataSetResult,
   selected,
   ...cardProps
 }: Props): JSX.Element => {
   const styles = useStyles();
-  const navigate = useNavigate();
+  const { mutate } = useFetchResultViews2({
+    sheetId: resultView.sheet_id,
+  });
 
   const deleteResultView = async (): Promise<void> => {
     await window.ipcRenderer.invoke("deleteResultView", {
@@ -63,7 +63,7 @@ export const TileResultView = ({
 
   const handleDelete = async (): Promise<void> => {
     await deleteResultView();
-    navigate(0);
+    void mutate();
   };
 
   if (
@@ -190,15 +190,15 @@ export const TileResultView = ({
           <Subtitle2>{`${resultView.title || "タイトル未入力"}`}</Subtitle2>
         }
       />
-      {dataSetResult === null ? (
-        <div>データセットが選択されていません</div>
-      ) : (
+      {resultView.data_set_result_id ? (
         <TileViewStyle
           parameters={resultView.parameters}
-          resultId={dataSetResult.id}
+          resultId={resultView.data_set_result_id}
           style={resultView.style}
           type={resultView.unit}
         />
+      ) : (
+        <div>データセットが選択されていません</div>
       )}
     </Card>
   );
