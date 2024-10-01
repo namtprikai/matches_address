@@ -1,7 +1,8 @@
 import { makeStyles } from "@fluentui/react-components";
 import { useAtom } from "jotai";
-import { useFetchResultViews2 } from "../hooks/use-fetch-result-views2";
-import { selectedResultSheetIdAtom } from "../state/selected-result-sheet-id-atom";
+import { useEffect, useMemo } from "react";
+import { resultViewsAtom } from "../state/result-views-atom";
+import { selectedResultViewIdAtom } from "../state/selected-result-view-id-atom";
 import { TileResultView } from "./tile-result-view";
 import { EmptyResultViews } from "./empty-result-views";
 
@@ -48,13 +49,23 @@ const useStyles = makeStyles({
  */
 export const PreviewResultSheet = (): JSX.Element => {
   const styles = useStyles();
-  const [selectedResultSheetId] = useAtom(selectedResultSheetIdAtom);
-  const { data } = useFetchResultViews2({
-    sheetId: selectedResultSheetId,
-  });
+  const [selectedResultViewId, setSelectedResultViewId] = useAtom(
+    selectedResultViewIdAtom,
+  );
 
-  const resultViewsGridTemplate = (() => {
-    switch (data?.length) {
+  const [data] = useAtom(resultViewsAtom);
+
+  useEffect(() => {
+    if (data.length === 0) return;
+    setSelectedResultViewId((prev) => {
+      if (!prev) return data[0].result_views.id;
+      if (!data.find((item) => item.result_views.id === prev)) return prev;
+      return prev;
+    });
+  }, [data, setSelectedResultViewId]);
+
+  const resultViewsGridTemplate = useMemo(() => {
+    switch (data.length) {
       case 2:
         return styles.template2th;
       case 3:
@@ -62,20 +73,27 @@ export const PreviewResultSheet = (): JSX.Element => {
       case 4:
         return styles.template4th;
       default:
-        return undefined;
+        return "";
     }
-  })();
+  }, [data.length, styles.template2th, styles.template3th, styles.template4th]);
 
-  if (data?.length === 0) return <EmptyResultViews />;
+  if (data.length === 0) return <EmptyResultViews />;
 
   return (
     <div className={styles.root}>
       <div className={resultViewsGridTemplate}>
-        {data?.map((item, index) => (
+        {data.map((item, index) => (
           <TileResultView
-            key={item.id}
-            className={styles[`view${index + 1}` as keyof typeof styles]}
-            resultView={item}
+            key={item.result_views.id}
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment -- indexは1~4までしか入ってこない前提で期待通りには動作しているので無視。良い書き方があれば修正したい
+            // @ts-ignore
+            className={styles[`view${index + 1}`]}
+            onClick={(): void => setSelectedResultViewId(item.result_views.id)}
+            selected={selectedResultViewId === item.result_views.id}
+            {...{
+              dataSetResult: item.data_set_results,
+              resultView: item.result_views,
+            }}
           />
         ))}
       </div>
