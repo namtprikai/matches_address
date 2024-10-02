@@ -38,7 +38,9 @@ export const EditResultViewForm = ({
   const methods = useForm<EditResultViewFormType>();
 
   useEffect(() => {
-    const selectedYear = selectedResultView?.parameters.find(
+    // parametersがスキーマではNotNull()になっているけど最初のデータがない時はnullなので、nullチェックを入れる
+    // FIXME: スキーマをnullableに修正すべきかも
+    const selectedYear = selectedResultView?.parameters?.find(
       (parameter) => parameter.key === "year" && parameter.type === "filter",
     )?.value;
 
