@@ -101,7 +101,7 @@ export const EditResultViewForm = ({
     <FormProvider {...methods}>
       <form className={styles.form} onSubmit={onSubmit}>
         <EditResultViewFields dataSetTitle={dataSetResult?.[0].title} />
-        <EditResultViewFilterFields />
+        <EditResultViewFilterFields resultView={selectedResultView} />
         <Button appearance="primary" type="submit">
           入力内容を保存する
         </Button>

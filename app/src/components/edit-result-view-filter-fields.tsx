@@ -1,8 +1,6 @@
 import { makeStyles, tokens } from "@fluentui/react-components";
 import { useFieldArray, useFormContext } from "react-hook-form";
-import { useAtomValue } from "jotai";
 import { lazy, Suspense } from "react";
-import { selectedResultViewAtom } from "../state/selected-result-view-atom";
 import { type EditResultViewFormType } from "../@types/form-schema";
 import { TILE_VIEW_CONFIG } from "../config/tile-view-config";
 import { type SelectResultView } from "../schema";
@@ -37,12 +35,14 @@ const useStyles = makeStyles({
   },
 });
 
-export const EditResultViewFilterFields = (): JSX.Element => {
+export const EditResultViewFilterFields = ({
+  resultView,
+}: {
+  resultView: SelectResultView | undefined;
+}): JSX.Element => {
   const styles = useStyles();
 
   const { register, watch, control } = useFormContext<EditResultViewFormType>();
-
-  const resultView = useAtomValue(selectedResultViewAtom);
 
   const { fields, replace } = useFieldArray({
     control,
@@ -82,8 +82,8 @@ export const EditResultViewFilterFields = (): JSX.Element => {
   const { data: referenceDates } = useFetchReferenceDates({
     dataSetResultId: resultView?.data_set_result_id,
   });
-  const yearItems = Array.from(
-    new Set(referenceDates?.map((r) => new Date(r).getFullYear().toString())),
+  const yearItems = referenceDates?.map((r) =>
+    new Date(r).getFullYear().toString(),
   );
 
   return (
@@ -120,7 +120,7 @@ export const EditResultViewFilterFields = (): JSX.Element => {
         </div>
       </Field>
 
-      <Suspense fallback={null}>
+      <Suspense>
         <AreaFilterForm
           areas={areas}
           dataSetResultId={resultView?.data_set_result_id ?? undefined}
