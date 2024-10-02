@@ -16,6 +16,6 @@ export const useFetchResultView = ({
 }: {
   resultViewId: number | undefined;
 }): SWRResponse<SelectResultView | undefined> => {
-  const swr = useSWR([resultViewId, "useFetchResultViews"], fetcher);
+  const swr = useSWR([resultViewId, useFetchResultView.name], fetcher);
   return swr;
 };
