@@ -28,7 +28,6 @@ import { createDummyDataSetResults } from "./create-dummy-data-set-results";
 import { deleteWorkbook } from "./delete-workbook";
 import { fetchAreaGroups } from "./fetch-area-groups";
 import { updateResultViewsLayoutIndex } from "./update-result-views-layout-index";
-import { selectResultViews2 } from "./select-result-views2";
 
 export const ipcMainListeners = {
   helloFromPython,
@@ -57,7 +56,6 @@ export const ipcMainListeners = {
   fetchAreasInBatches,
   deleteWorkbook,
   updateResultViewsLayoutIndex,
-  selectResultViews2,
 };
 
 export const execFileAsync = promisify(execFile);

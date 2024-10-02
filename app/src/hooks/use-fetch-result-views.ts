@@ -5,7 +5,7 @@ const fetcher = ([sheetId]: [number | undefined | null, string]): Promise<
   SelectResultView[]
 > => {
   if (!sheetId) return Promise.resolve([]);
-  const result = window.ipcRenderer.invoke("selectResultViews2", {
+  const result = window.ipcRenderer.invoke("selectResultViews", {
     sheetId,
   });
   return result;
@@ -16,6 +16,6 @@ export const useFetchResultViews = ({
 }: {
   sheetId: number | undefined | null;
 }): SWRResponse<SelectResultView[]> => {
-  const swr = useSWR([sheetId, "useFetchResultViews2"], fetcher);
+  const swr = useSWR([sheetId, "useFetchResultViews"], fetcher);
   return swr;
 };

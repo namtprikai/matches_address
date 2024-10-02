@@ -72,7 +72,7 @@ export const TabListEditResultSheet = ({
           if (!data.value || typeof data.value !== "number") return;
           setSelectedResultSheetId(data.value);
           const resultViews = await window.ipcRenderer.invoke(
-            "selectResultViews2",
+            "selectResultViews",
             {
               sheetId: data.value,
             },
