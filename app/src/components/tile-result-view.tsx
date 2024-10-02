@@ -56,7 +56,7 @@ export const TileResultView = ({
     selectedResultViewIdAtom,
   );
 
-  const { mutate } = useFetchResultViews2({
+  const { data: resultViews, mutate } = useFetchResultViews2({
     sheetId: resultView.sheet_id,
   });
 
@@ -71,6 +71,10 @@ export const TileResultView = ({
       sheetId: resultView.sheet_id,
     });
     void mutate();
+    const firstView = resultViews?.find((view) => view.layoutIndex === 1);
+    if (firstView) {
+      setSelectedResultViewId(firstView.id);
+    }
   };
 
   const selected = resultView.id === selectedResultViewId;

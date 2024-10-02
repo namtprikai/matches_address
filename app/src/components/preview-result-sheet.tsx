@@ -53,8 +53,9 @@ export const PreviewResultSheet = (): JSX.Element => {
     sheetId: selectedResultSheetId,
   });
 
+  if (!data || data.length === 0) return <EmptyResultViews />;
+
   const resultViewsGridTemplate = (() => {
-    if (!data) return "";
     switch (data.length) {
       case 2:
         return styles.template2th;
@@ -66,8 +67,6 @@ export const PreviewResultSheet = (): JSX.Element => {
         return "";
     }
   })();
-
-  if (!data || data.length === 0) return <EmptyResultViews />;
 
   return (
     <div className={styles.root}>
