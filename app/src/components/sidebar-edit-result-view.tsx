@@ -52,7 +52,6 @@ export const SidebarEditResultView = (): JSX.Element => {
   }, [resultViews?.length]);
 
   return (
-    // TODO: 再レンダリング時にアニメーションが発生するためDrawerを使うのは避けたい
     <InlineDrawer className={styles.drawer} open>
       <DrawerHeader>
         <DrawerHeaderTitle
