@@ -11,7 +11,7 @@ import {
 import { useAtom } from "jotai";
 import { Suspense, useEffect, useState } from "react";
 import { useFetchDataSetResults } from "../hooks/use-fetch-data-set-results";
-import { useFetchResultViews2 } from "../hooks/use-fetch-result-views2";
+import { useFetchResultViews } from "../hooks/use-fetch-result-views";
 import { selectedResultSheetIdAtom } from "../state/selected-result-sheet-id-atom";
 import { Button } from "./ui/button";
 import { EditResultViewForm } from "./edit-result-view-form";
@@ -42,7 +42,7 @@ const useStyles = makeStyles({
 export const SidebarEditResultView = (): JSX.Element => {
   const styles = useStyles();
   const [selectedResultSheetId] = useAtom(selectedResultSheetIdAtom);
-  const { data: resultViews } = useFetchResultViews2({
+  const { data: resultViews } = useFetchResultViews({
     sheetId: selectedResultSheetId,
   });
   const [isAddView, setIsAddView] = useState(true);

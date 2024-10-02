@@ -10,7 +10,7 @@ import { formatDate } from "../utils/format-date";
 import { type SelectDataSetResult } from "../schema";
 import { selectedResultSheetIdAtom } from "../state/selected-result-sheet-id-atom";
 import { selectedResultViewIdAtom } from "../state/selected-result-view-id-atom";
-import { useFetchResultViews2 } from "../hooks/use-fetch-result-views2";
+import { useFetchResultViews } from "../hooks/use-fetch-result-views";
 import { Button } from "./ui/button";
 
 type Props = {
@@ -41,7 +41,7 @@ export const ListDataSetResults = ({ dataSetResults }: Props): JSX.Element => {
   const styles = useStyles();
   const [, setSelectedResultViewId] = useAtom(selectedResultViewIdAtom);
   const [selectedResultSheetId] = useAtom(selectedResultSheetIdAtom);
-  const { data: resultViews, mutate } = useFetchResultViews2({
+  const { data: resultViews, mutate } = useFetchResultViews({
     sheetId: selectedResultSheetId,
   });
 

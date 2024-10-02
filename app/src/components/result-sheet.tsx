@@ -1,5 +1,5 @@
 import { makeStyles, tokens } from "@fluentui/react-components";
-import { useFetchResultViews2 } from "../hooks/use-fetch-result-views2";
+import { useFetchResultViews } from "../hooks/use-fetch-result-views";
 import { TileResultView } from "./tile-result-view";
 import { EmptyResultViews } from "./empty-result-views";
 
@@ -50,7 +50,7 @@ type Props = {
  */
 export const ResultSheet = ({ sheetId }: Props): JSX.Element => {
   const styles = useStyles();
-  const { data } = useFetchResultViews2({ sheetId });
+  const { data } = useFetchResultViews({ sheetId });
 
   const resultViewsGridTemplate = (() => {
     if (!data) return "";

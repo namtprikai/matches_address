@@ -3,7 +3,7 @@ import { makeStyles, tokens } from "@fluentui/react-components";
 import { useAtom } from "jotai";
 import { selectedResultViewIdAtom } from "../state/selected-result-view-id-atom";
 import { useFetchResultView } from "../hooks/use-fetch-result-view";
-import { useFetchResultViews2 } from "../hooks/use-fetch-result-views2";
+import { useFetchResultViews } from "../hooks/use-fetch-result-views";
 import { Field } from "./ui/field";
 import { Button } from "./ui/button";
 
@@ -23,11 +23,9 @@ export const EditResultViewLayoutSort = (): JSX.Element => {
     useFetchResultView({
       resultViewId: selectedResultViewId,
     });
-  const { data: resultViews, mutate: mutateResultViews } = useFetchResultViews2(
-    {
-      sheetId: selectedResultView?.sheet_id,
-    },
-  );
+  const { data: resultViews, mutate: mutateResultViews } = useFetchResultViews({
+    sheetId: selectedResultView?.sheet_id,
+  });
 
   /** validationはbuttonのdisabledで管理 */
   const handleNext = async (): Promise<void> => {

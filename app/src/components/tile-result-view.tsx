@@ -12,7 +12,7 @@ import {
 import { useAtom } from "jotai";
 import { type SelectResultView } from "../schema";
 import { THEME_COLORS } from "../config/theme-colors";
-import { useFetchResultViews2 } from "../hooks/use-fetch-result-views2";
+import { useFetchResultViews } from "../hooks/use-fetch-result-views";
 import { selectedResultViewIdAtom } from "../state/selected-result-view-id-atom";
 import { TileViewStyle } from "./tile-view-style";
 import { DialogSurface } from "./ui/dialog-surface";
@@ -56,7 +56,7 @@ export const TileResultView = ({
     selectedResultViewIdAtom,
   );
 
-  const { data: resultViews, mutate } = useFetchResultViews2({
+  const { data: resultViews, mutate } = useFetchResultViews({
     sheetId: resultView.sheet_id,
   });
 

@@ -1,6 +1,6 @@
 import { makeStyles } from "@fluentui/react-components";
 import { useAtom } from "jotai";
-import { useFetchResultViews2 } from "../hooks/use-fetch-result-views2";
+import { useFetchResultViews } from "../hooks/use-fetch-result-views";
 import { selectedResultSheetIdAtom } from "../state/selected-result-sheet-id-atom";
 import { TileResultView } from "./tile-result-view";
 import { EmptyResultViews } from "./empty-result-views";
@@ -49,7 +49,7 @@ const useStyles = makeStyles({
 export const PreviewResultSheet = (): JSX.Element => {
   const styles = useStyles();
   const [selectedResultSheetId] = useAtom(selectedResultSheetIdAtom);
-  const { data } = useFetchResultViews2({
+  const { data } = useFetchResultViews({
     sheetId: selectedResultSheetId,
   });
 

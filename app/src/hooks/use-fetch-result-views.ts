@@ -1,11 +1,12 @@
 import useSWR, { type SWRResponse } from "swr";
-import { type CustomSelectResultViews } from "../ipc-main-listeners/select-result-views";
+import { type SelectResultView } from "../schema";
 
-const fetcher = ([sheetId]: [string, string]): Promise<
-  CustomSelectResultViews[]
+const fetcher = ([sheetId]: [number | undefined | null, string]): Promise<
+  SelectResultView[]
 > => {
-  const result = window.ipcRenderer.invoke("selectResultViews", {
-    sheetId: Number(sheetId),
+  if (!sheetId) return Promise.resolve([]);
+  const result = window.ipcRenderer.invoke("selectResultViews2", {
+    sheetId,
   });
   return result;
 };
@@ -13,8 +14,8 @@ const fetcher = ([sheetId]: [string, string]): Promise<
 export const useFetchResultViews = ({
   sheetId,
 }: {
-  sheetId: number | undefined;
-}): SWRResponse<CustomSelectResultViews[]> => {
-  const swr = useSWR([String(sheetId), "useFetchResultViews"], fetcher);
+  sheetId: number | undefined | null;
+}): SWRResponse<SelectResultView[]> => {
+  const swr = useSWR([sheetId, "useFetchResultViews2"], fetcher);
   return swr;
 };
