@@ -62,7 +62,9 @@ export function DetailWorkbook(): JSX.Element {
   const styles = useStyles();
   const { id } = useParams();
   const { data: workbook } = useFetchWorkbook({ id: Number(id) });
-  const { data: resultSheets } = useFetchResultSheets({ id: Number(id) });
+  const { data: resultSheets } = useFetchResultSheets({
+    workbookId: Number(id),
+  });
   const { onTabSelect, selectedValue, setSelectedValue } = useTabs();
 
   useEffect(() => {

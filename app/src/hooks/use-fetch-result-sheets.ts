@@ -1,7 +1,7 @@
 import useSWR, { type SWRResponse } from "swr";
 import { type SelectResultSheet } from "../schema";
 
-const fetcher = ([workbookId]: [number | undefined, string]): Promise<
+const fetcher = ([workbookId]: [number | undefined | null, string]): Promise<
   SelectResultSheet[]
 > => {
   if (!workbookId) return Promise.resolve([]);
@@ -12,10 +12,10 @@ const fetcher = ([workbookId]: [number | undefined, string]): Promise<
 };
 
 export const useFetchResultSheets = ({
-  id,
+  workbookId,
 }: {
-  id: number | undefined;
+  workbookId: number | undefined | null;
 }): SWRResponse<SelectResultSheet[]> => {
-  const swr = useSWR([id, "useFetchResultSheets"], fetcher);
+  const swr = useSWR([workbookId, "useFetchResultSheets"], fetcher);
   return swr;
 };

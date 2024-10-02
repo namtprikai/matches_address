@@ -1,7 +1,5 @@
 import { makeStyles } from "@fluentui/react-components";
 import { useAtom } from "jotai";
-import { useEffect } from "react";
-import { selectedResultViewIdAtom } from "../state/selected-result-view-id-atom";
 import { useFetchResultViews2 } from "../hooks/use-fetch-result-views2";
 import { selectedResultSheetIdAtom } from "../state/selected-result-sheet-id-atom";
 import { TileResultView } from "./tile-result-view";
@@ -50,22 +48,10 @@ const useStyles = makeStyles({
  */
 export const PreviewResultSheet = (): JSX.Element => {
   const styles = useStyles();
-  const [selectedResultViewId, setSelectedResultViewId] = useAtom(
-    selectedResultViewIdAtom,
-  );
   const [selectedResultSheetId] = useAtom(selectedResultSheetIdAtom);
   const { data } = useFetchResultViews2({
     sheetId: selectedResultSheetId,
   });
-
-  useEffect(() => {
-    if (!data || data.length === 0) return;
-    setSelectedResultViewId((prev) => {
-      if (!prev) return data[0].id;
-      if (!data.find((item) => item.id === prev)) return prev;
-      return prev;
-    });
-  }, [data, setSelectedResultViewId]);
 
   const resultViewsGridTemplate = (() => {
     if (!data) return "";
@@ -90,9 +76,7 @@ export const PreviewResultSheet = (): JSX.Element => {
           <TileResultView
             key={item.id}
             className={styles[`view${item.layoutIndex}` as keyof typeof styles]}
-            onClick={() => setSelectedResultViewId(item.id)}
             resultView={item}
-            selected={selectedResultViewId === item.id}
           />
         ))}
       </div>

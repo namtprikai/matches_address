@@ -4,6 +4,7 @@ import { useAtom } from "jotai";
 import { useEffect } from "react";
 import { selectedResultSheetIdAtom } from "../state/selected-result-sheet-id-atom";
 import { useFetchResultSheets } from "../hooks/use-fetch-result-sheets";
+import { selectedResultViewIdAtom } from "../state/selected-result-view-id-atom";
 import { Button } from "./ui/button";
 import { ButtonEditableSheetTitle } from "./button-editable-sheet-title";
 import { Tab } from "./ui/tab";
@@ -31,11 +32,12 @@ export const TabListEditResultSheet = ({
 }: Props): JSX.Element | null => {
   const styles = useStyles();
   const { data: resultSheets, mutate } = useFetchResultSheets({
-    id: workbookId,
+    workbookId,
   });
   const [selectedResultSheetId, setSelectedResultSheetId] = useAtom(
     selectedResultSheetIdAtom,
   );
+  const [, setSelectedResultViewId] = useAtom(selectedResultViewIdAtom);
 
   useEffect(() => {
     if (!resultSheets || resultSheets?.length === 0) return;
@@ -66,16 +68,29 @@ export const TabListEditResultSheet = ({
       </Button>
       <TabList
         className={styles.tabList}
-        onTabSelect={(_, data) => {
+        onTabSelect={async (_, data) => {
           if (!data.value || typeof data.value !== "number") return;
           setSelectedResultSheetId(data.value);
+          const resultViews = await window.ipcRenderer.invoke(
+            "selectResultViews2",
+            {
+              sheetId: data.value,
+            },
+          );
+          const firstView = resultViews.find((view) => view.layoutIndex === 1);
+          if (!firstView) return;
+          setSelectedResultViewId(firstView.id);
         }}
         selectedValue={selectedResultSheetId}
       >
         {resultSheets.map((item) => (
           <Tab key={item.id} id={item.title || ""} value={item.id}>
             <ButtonEditableSheetTitle
-              resultSheet={{ id: item.id, title: item.title }}
+              resultSheet={{
+                id: item.id,
+                title: item.title,
+                workbook_id: workbookId,
+              }}
             />
           </Tab>
         ))}

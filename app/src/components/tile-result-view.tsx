@@ -2,7 +2,6 @@ import { ArchiveRegular, Dismiss24Regular } from "@fluentui/react-icons";
 import {
   Card,
   CardHeader,
-  type CardProps,
   Dialog,
   DialogTrigger,
   makeStyles,
@@ -10,9 +9,11 @@ import {
   Subtitle2,
   tokens,
 } from "@fluentui/react-components";
+import { useAtom } from "jotai";
 import { type SelectResultView } from "../schema";
 import { THEME_COLORS } from "../config/theme-colors";
 import { useFetchResultViews2 } from "../hooks/use-fetch-result-views2";
+import { selectedResultViewIdAtom } from "../state/selected-result-view-id-atom";
 import { TileViewStyle } from "./tile-view-style";
 import { DialogSurface } from "./ui/dialog-surface";
 import { DialogBody } from "./ui/dialog-body";
@@ -21,8 +22,9 @@ import { DialogActions } from "./ui/dialog-actions";
 import { Button } from "./ui/button";
 import { DialogContent } from "./ui/dialog-content";
 
-type Props = CardProps & {
+type Props = {
   resultView: SelectResultView;
+  className?: string;
 };
 
 const useStyles = makeStyles({
@@ -47,24 +49,31 @@ const useStyles = makeStyles({
 
 export const TileResultView = ({
   resultView,
-  selected,
-  ...cardProps
+  className,
 }: Props): JSX.Element => {
   const styles = useStyles();
+  const [selectedResultViewId, setSelectedResultViewId] = useAtom(
+    selectedResultViewIdAtom,
+  );
+
   const { mutate } = useFetchResultViews2({
     sheetId: resultView.sheet_id,
   });
 
-  const deleteResultView = async (): Promise<void> => {
-    await window.ipcRenderer.invoke("deleteResultView", {
-      resultViewId: resultView.id,
-    });
+  const handleClick = (): void => {
+    setSelectedResultViewId(resultView.id);
   };
 
   const handleDelete = async (): Promise<void> => {
-    await deleteResultView();
+    if (!resultView.sheet_id) return;
+    await window.ipcRenderer.invoke("deleteResultView", {
+      resultViewId: resultView.id,
+      sheetId: resultView.sheet_id,
+    });
     void mutate();
   };
+
+  const selected = resultView.id === selectedResultViewId;
 
   if (
     !resultView.style ||
@@ -73,12 +82,12 @@ export const TileResultView = ({
   ) {
     return (
       <Card
-        {...cardProps}
         className={mergeClasses(
           styles.cardSurface,
           selected && styles.selected,
-          cardProps.className,
+          className,
         )}
+        onClick={handleClick}
       >
         <CardHeader
           action={
@@ -136,12 +145,12 @@ export const TileResultView = ({
 
   return (
     <Card
-      {...cardProps}
       className={mergeClasses(
         styles.cardSurface,
         selected && styles.selected,
-        cardProps.className,
+        className,
       )}
+      onClick={handleClick}
     >
       <CardHeader
         action={

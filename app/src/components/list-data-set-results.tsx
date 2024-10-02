@@ -58,12 +58,14 @@ export const ListDataSetResults = ({ dataSetResults }: Props): JSX.Element => {
           appearance="subtle"
           className={styles.button}
           onClick={async () => {
+            if (!resultViews) return;
+            const newLayoutIndex = resultViews.length + 1;
             const { insertedId } = await window.ipcRenderer.invoke(
               "insertResultViews",
               {
                 data_set_result_id: item.id,
                 sheet_id: selectedResultSheetId,
-                layoutIndex: resultViews?.length || 0 + 1,
+                layoutIndex: newLayoutIndex,
                 parameters: [],
               },
             );
