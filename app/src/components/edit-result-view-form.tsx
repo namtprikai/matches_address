@@ -25,8 +25,10 @@ export const EditResultViewForm = ({
   selectedResultSheetId: number | undefined;
 }): JSX.Element => {
   const styles = useStyles();
-  const [selectedResultViewId] = useAtom(selectedResultViewIdAtom);
-  const { mutate: mutateResultViews } = useFetchResultViews({
+  const [selectedResultViewId, setSelectedResultViewId] = useAtom(
+    selectedResultViewIdAtom,
+  );
+  const { data: resultViews, mutate: mutateResultViews } = useFetchResultViews({
     sheetId: selectedResultSheetId,
   });
   const { data: selectedResultView } = useFetchResultView({
@@ -36,6 +38,11 @@ export const EditResultViewForm = ({
     dataSetResultId: selectedResultView?.data_set_result_id,
   });
   const methods = useForm<EditResultViewFormType>();
+
+  useEffect(() => {
+    if (!resultViews || resultViews.length === 0) return;
+    setSelectedResultViewId((prev) => prev || resultViews[0].id);
+  }, [resultViews, setSelectedResultViewId]);
 
   useEffect(() => {
     // parametersがスキーマではNotNull()になっているけど最初のデータがない時はnullなので、nullチェックを入れる
