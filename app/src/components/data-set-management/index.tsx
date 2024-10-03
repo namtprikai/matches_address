@@ -61,13 +61,13 @@ export function DatasetList({ dataSets }: DatasetListProps): JSX.Element {
           <Button
             appearance="outline"
             className={styles.button}
-            icon={<DeleteRegular />}
+            icon={<ArrowDownloadRegular />}
             shape="square"
           />
           <Button
             appearance="outline"
             className={styles.button}
-            icon={<ArrowDownloadRegular />}
+            icon={<DeleteRegular />}
             shape="square"
           />
         </div>
