@@ -99,12 +99,14 @@ export function DatasetList({
     onSelectionChange(allRowsSelected ? 0 : dataSets.length);
   };
 
-  const handleDownload = (): void => {
+  const handleDownload = (e: MouseEvent): void => {
+    e.stopPropagation();
     // eslint-disable-next-line no-console -- for debug
     console.log("Download button clicked");
   };
 
-  const handleMenu = (): void => {
+  const handleMenu = (e: MouseEvent): void => {
+    e.stopPropagation();
     // eslint-disable-next-line no-console -- for debug
     console.log("Menu button clicked");
   };
