@@ -41,7 +41,7 @@ const useStyles = makeStyles({
     height: "293px",
     border: `1px dotted ${tokens.colorNeutralForeground3}`,
     borderRadius: tokens.borderRadiusXLarge,
-    margin: "0 24px",
+    margin: `${tokens.spacingVerticalNone} ${tokens.spacingHorizontalXXL}`,
   },
   noDataset: {
     display: "flex",
@@ -49,20 +49,20 @@ const useStyles = makeStyles({
     justifyContent: "center",
     alignItems: "center",
     color: tokens.colorNeutralForeground3,
-    fontSize: "14px",
+    fontSize: tokens.fontSizeBase200,
   },
   tab: {
-    padding: "10px 0",
+    padding: `${tokens.spacingVerticalMNudge} ${tokens.spacingHorizontalNone}`,
   },
   tabList: {
     display: "flex",
-    gap: "20px",
-    padding: "0 24px",
+    gap: tokens.spacingVerticalXL,
+    padding: `${tokens.spacingVerticalNone} ${tokens.spacingHorizontalXXL}`,
   },
   datasetTable: {
     display: "grid",
     gridTemplateColumns: "1fr 1fr",
-    gap: "8px",
+    gap: tokens.spacingVerticalS,
     ":hover": { cursor: "pointer" },
   },
   borderBottom: {
@@ -73,13 +73,13 @@ const useStyles = makeStyles({
     backgroundColor: "#E9EAF6",
   },
   datasetCell: {
-    padding: "8px 24px",
-    fontSize: "14px",
+    padding: `${tokens.spacingVerticalS} ${tokens.spacingHorizontalXXL}`,
+    fontSize: tokens.fontSizeBase200,
   },
   datasetHeader: {
     display: "flex",
     alignItems: "center",
-    gap: "12px",
+    gap: tokens.spacingVerticalM,
     color: tokens.colorNeutralForeground3,
     ":hover": { cursor: "pointer" },
   },
@@ -111,7 +111,7 @@ const useStyles = makeStyles({
     ":hover": { cursor: "pointer" },
   },
   maxSize: {
-    fontSize: "10px",
+    fontSize: tokens.fontSizeBase100,
     color: tokens.colorNeutralForeground3,
   },
 });
