@@ -2,6 +2,7 @@ import { ArchiveRegular, Dismiss24Regular } from "@fluentui/react-icons";
 import {
   Card,
   CardHeader,
+  type CardProps,
   Dialog,
   DialogTrigger,
   makeStyles,
@@ -25,6 +26,7 @@ import { DialogContent } from "./ui/dialog-content";
 type Props = {
   resultView: SelectResultView;
   className?: string;
+  cardProps?: CardProps;
 };
 
 const useStyles = makeStyles({
