@@ -83,27 +83,27 @@ export function Dataset(): JSX.Element {
 
 const _dummyDataSetSeeds: DatasetListProps["dataSets"] = [
   { name: "シードデータ", date: "2024/4/21" },
-  { name: "水道メーター.shp", date: "2024/4/21" },
-  { name: "前処理住民台帳.csv", date: "2024/4/21" },
-  { name: "前処理住民台帳.csv", date: "2024/4/21" },
-  { name: "前処理住民台帳.csv", date: "2024/4/21" },
-  { name: "水道メーター.shp", date: "2024/4/21" },
+  { name: "水道メーター1.shp", date: "2024/4/21" },
+  { name: "前処理住民台帳1.csv", date: "2024/4/21" },
+  { name: "前処理住民台帳2.csv", date: "2024/4/21" },
+  { name: "前処理住民台帳3.csv", date: "2024/4/21" },
+  { name: "水道メーター2.shp", date: "2024/4/21" },
 ];
 
 const _dummyDataSetNormalizations: DatasetListProps["dataSets"] = [
   { name: "正規化済みデータ", date: "2024/4/21" },
-  { name: "水道メーター.shp", date: "2024/4/21" },
-  { name: "前処理住民台帳.csv", date: "2024/4/21" },
-  { name: "前処理住民台帳.csv", date: "2024/4/21" },
-  { name: "前処理住民台帳.csv", date: "2024/4/21" },
-  { name: "水道メーター.shp", date: "2024/4/21" },
+  { name: "水道メーター1.shp", date: "2024/4/21" },
+  { name: "前処理住民台帳1.csv", date: "2024/4/21" },
+  { name: "前処理住民台帳2.csv", date: "2024/4/21" },
+  { name: "前処理住民台帳3.csv", date: "2024/4/21" },
+  { name: "水道メーター2.shp", date: "2024/4/21" },
 ];
 
 const _dummyDataSetResults: DatasetListProps["dataSets"] = [
   { name: "空き家判定結果データ", date: "2024/4/21" },
-  { name: "水道メーター.shp", date: "2024/4/21" },
-  { name: "前処理住民台帳.csv", date: "2024/4/21" },
-  { name: "前処理住民台帳.csv", date: "2024/4/21" },
-  { name: "前処理住民台帳.csv", date: "2024/4/21" },
-  { name: "水道メーター.shp", date: "2024/4/21" },
+  { name: "水道メーター1.shp", date: "2024/4/21" },
+  { name: "前処理住民台帳1.csv", date: "2024/4/21" },
+  { name: "前処理住民台帳2.csv", date: "2024/4/21" },
+  { name: "前処理住民台帳3.csv", date: "2024/4/21" },
+  { name: "水道メーター2.shp", date: "2024/4/21" },
 ];

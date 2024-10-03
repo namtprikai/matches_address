@@ -6,16 +6,19 @@ import {
   TableBody,
   TableCell,
   Button,
-  Checkbox,
   makeStyles,
   tokens,
+  useTableFeatures,
+  useTableSelection,
+  createTableColumn,
+  TableSelectionCell,
 } from "@fluentui/react-components";
 import {
   ArrowDownloadRegular,
   MoreHorizontalRegular,
   DeleteRegular,
 } from "@fluentui/react-icons";
-import { type ChangeEvent, useState } from "react";
+import { useState } from "react";
 
 const useStyles = makeStyles({
   header: {
@@ -36,20 +39,73 @@ const useStyles = makeStyles({
       border: `1px solid ${tokens.colorNeutralStroke1Selected}`,
     },
   },
+  table: {
+    marginTop: tokens.spacingVerticalL,
+  },
 });
 
+export type DataSet = {
+  name: string;
+  date: string;
+};
+
 export type DatasetListProps = {
-  dataSets: { name: string; date: string }[];
+  dataSets: DataSet[];
 };
 
 export function DatasetList({ dataSets }: DatasetListProps): JSX.Element {
   const styles = useStyles();
   const [selectedCount, setSelectedCount] = useState(0);
 
-  const handleCheckboxChange = (event: ChangeEvent<HTMLInputElement>): void => {
-    setSelectedCount((prevCount) =>
-      event.target.checked ? prevCount + 1 : prevCount - 1,
-    );
+  const columns = [
+    createTableColumn<DataSet>({ columnId: "name" }),
+    createTableColumn<DataSet>({ columnId: "date" }),
+  ];
+
+  const {
+    getRows,
+    selection: {
+      allRowsSelected,
+      someRowsSelected,
+      toggleAllRows,
+      toggleRow,
+      isRowSelected,
+    },
+  } = useTableFeatures(
+    {
+      columns,
+      items: dataSets,
+    },
+    [
+      useTableSelection({
+        selectionMode: "multiselect",
+      }),
+    ],
+  );
+
+  const rows = getRows((row) => {
+    const selected = isRowSelected(row.rowId);
+    return {
+      ...row,
+      onClick: (e: React.MouseEvent) => {
+        toggleRow(e, row.rowId);
+        setSelectedCount((prev) => (selected ? prev - 1 : prev + 1));
+      },
+      onKeyDown: (e: React.KeyboardEvent) => {
+        if (e.key === " ") {
+          e.preventDefault();
+          toggleRow(e, row.rowId);
+          setSelectedCount((prev) => (selected ? prev - 1 : prev + 1));
+        }
+      },
+      selected,
+      appearance: selected ? ("brand" as const) : ("none" as const),
+    };
+  });
+
+  const handleToggleAll = (e: React.MouseEvent): void => {
+    toggleAllRows(e);
+    setSelectedCount(allRowsSelected ? 0 : dataSets.length);
   };
 
   return (
@@ -72,23 +128,36 @@ export function DatasetList({ dataSets }: DatasetListProps): JSX.Element {
           />
         </div>
       </div>
-      <Table>
+      <Table className={styles.table}>
         <TableHeader>
           <TableRow>
-            <TableHeaderCell></TableHeaderCell>
+            <TableSelectionCell
+              checkboxIndicator={{ "aria-label": "Select all rows" }}
+              checked={
+                allRowsSelected ? true : someRowsSelected ? "mixed" : false
+              }
+              onClick={handleToggleAll}
+            />
             <TableHeaderCell>データセット名</TableHeaderCell>
             <TableHeaderCell>アップデート日</TableHeaderCell>
             <TableHeaderCell></TableHeaderCell>
           </TableRow>
         </TableHeader>
         <TableBody>
-          {dataSets.map((dataSet, index) => (
-            <TableRow key={index}>
-              <TableCell>
-                <Checkbox onChange={handleCheckboxChange} />
-              </TableCell>
-              <TableCell>{dataSet.name}</TableCell>
-              <TableCell>{dataSet.date}</TableCell>
+          {rows.map(({ item, selected, onClick, onKeyDown, appearance }) => (
+            <TableRow
+              key={item.name + item.date}
+              appearance={appearance}
+              aria-selected={selected}
+              onClick={onClick}
+              onKeyDown={onKeyDown}
+            >
+              <TableSelectionCell
+                checkboxIndicator={{ "aria-label": "Select row" }}
+                checked={selected}
+              />
+              <TableCell>{item.name}</TableCell>
+              <TableCell>{item.date}</TableCell>
               <TableCell>
                 <Button
                   appearance="subtle"
