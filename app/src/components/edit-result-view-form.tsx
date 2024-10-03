@@ -41,7 +41,8 @@ export const EditResultViewForm = ({
 
   useEffect(() => {
     if (!resultViews || resultViews.length === 0) return;
-    setSelectedResultViewId((prev) => prev || resultViews[0].id);
+    const firstView = resultViews.find((view) => view.layoutIndex === 1);
+    setSelectedResultViewId((prev) => prev || firstView?.id);
   }, [resultViews, setSelectedResultViewId]);
 
   useEffect(() => {
