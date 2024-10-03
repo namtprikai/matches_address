@@ -9,7 +9,7 @@ import { useEffect, useState } from "react";
 import {
   DatasetList,
   type DatasetListProps,
-} from "../../components/data-set-management";
+} from "../../components/dataset-management";
 import { useTabs } from "../../hooks/use-tabs";
 
 const useStyles = makeStyles({
