@@ -46,14 +46,14 @@ const useStyles = makeStyles({
 /**
  * ビューの追加画面で表示されるシートのプレビュー
  */
-export const PreviewResultSheet = (): JSX.Element => {
+export const PreviewResultSheet = (): JSX.Element | null => {
   const styles = useStyles();
   const [selectedResultSheetId] = useAtom(selectedResultSheetIdAtom);
   const { data } = useFetchResultViews({
     sheetId: selectedResultSheetId,
   });
 
-  if (!data) return <></>;
+  if (!data) return null;
 
   if (data.length === 0) return <EmptyResultViews />;
 
