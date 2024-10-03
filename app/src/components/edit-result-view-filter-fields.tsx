@@ -82,8 +82,10 @@ export const EditResultViewFilterFields = ({
   const { data: referenceDates } = useFetchReferenceDates({
     dataSetResultId: resultView?.data_set_result_id,
   });
-  const yearItems = referenceDates?.map((r) =>
-    new Date(r).getFullYear().toString(),
+
+  // データセットは年度単位で入力する前提だが、ユーザーの入力によっては年の値の重複する可能性が必ずしも排除しきれないため重複を除外する処理を入れる
+  const yearItems = Array.from(
+    new Set(referenceDates?.map((r) => new Date(r).getFullYear().toString())),
   );
 
   return (
