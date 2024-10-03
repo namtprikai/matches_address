@@ -53,7 +53,9 @@ export const PreviewResultSheet = (): JSX.Element => {
     sheetId: selectedResultSheetId,
   });
 
-  if (!data || data.length === 0) return <EmptyResultViews />;
+  if (!data) return <></>;
+
+  if (data.length === 0) return <EmptyResultViews />;
 
   const resultViewsGridTemplate = (() => {
     switch (data.length) {

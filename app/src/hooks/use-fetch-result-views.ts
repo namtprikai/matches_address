@@ -2,9 +2,9 @@ import useSWR, { type SWRResponse } from "swr";
 import { type SelectResultView } from "../schema";
 
 const fetcher = ([sheetId]: [number | undefined | null, string]): Promise<
-  SelectResultView[]
+  SelectResultView[] | null
 > => {
-  if (!sheetId) return Promise.resolve([]);
+  if (!sheetId) return Promise.resolve(null);
   const result = window.ipcRenderer.invoke("selectResultViews", {
     sheetId,
   });
@@ -15,7 +15,7 @@ export const useFetchResultViews = ({
   sheetId,
 }: {
   sheetId: number | undefined | null;
-}): SWRResponse<SelectResultView[]> => {
+}): SWRResponse<SelectResultView[] | null> => {
   const swr = useSWR([sheetId, "useFetchResultViews"], fetcher);
   return swr;
 };
