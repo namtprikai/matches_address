@@ -86,7 +86,7 @@ export const PreviewResultSheet = (): JSX.Element => {
           <TileResultView
             key={item.result_views.id}
             // eslint-disable-next-line @typescript-eslint/ban-ts-comment -- indexは1~4までしか入ってこない前提で期待通りには動作しているので無視。良い書き方があれば修正したい
-            // @ts-ignore
+            // @ts-expect-error
             className={styles[`view${index + 1}`]}
             onClick={(): void => setSelectedResultViewId(item.result_views.id)}
             selected={selectedResultViewId === item.result_views.id}

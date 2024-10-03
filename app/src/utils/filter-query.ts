@@ -1,11 +1,11 @@
-import { eq, sql, type SQL, type Subquery } from "drizzle-orm";
+import { sql } from "drizzle-orm";
 import { type FilterCondition } from "../@types/charts";
 
-// eslint-disable-next-line @typescript-eslint/explicit-function-return-type -- 型推論を利用するため
 export const FilterQuery = ({
   conditions,
 }: {
   conditions: FilterCondition[];
+  // eslint-disable-next-line @typescript-eslint/explicit-function-return-type -- 型推論を利用するため
 }) => {
   return conditions.map((condition) => {
     if (condition.referenceColumnType === "text") {
@@ -106,5 +106,7 @@ export const FilterQuery = ({
           return sql.raw(``);
       }
     }
+
+    return sql.raw(``);
   });
 };

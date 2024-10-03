@@ -21,6 +21,7 @@ export const useFetchFilterDataSetForTable = (
 
   const fetchFilteredDataSetDetailForTable =
     useCallback(async (): Promise<void> => {
+      // @ts-expect-error -- props.typeのunion discriminationがspread構文を利用すると効かないため関数そのものリファククタも含め検討
       const result = await window.ipcRenderer.invoke("filterDataSetForTable", {
         ...props,
         limit: pagenation.limitPerPage,

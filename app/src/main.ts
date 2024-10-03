@@ -10,6 +10,7 @@ import os from "os";
 import { readdirSync } from "fs";
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
+// eslint-disable-next-line @typescript-eslint/no-require-imports -- CJS環境で動くため
 if (require("electron-squirrel-startup")) {
   app.quit();
 }
