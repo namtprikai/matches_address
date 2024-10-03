@@ -69,6 +69,7 @@
   "dependencies": {
     "better-sqlite3": "^11.2.1",
     "electron-squirrel-startup": "^1.0.1",
+    "react-dropzone": "^14.2.9",
     "vite-plugin-native": "^2.2.1"
   },
   "optionalDependencies": {
