@@ -18,7 +18,7 @@ import {
   MoreHorizontalRegular,
   DeleteRegular,
 } from "@fluentui/react-icons";
-import { useState } from "react";
+import { type KeyboardEvent, type MouseEvent, useState } from "react";
 
 const useStyles = makeStyles({
   header: {
@@ -87,11 +87,11 @@ export function DatasetList({ dataSets }: DatasetListProps): JSX.Element {
     const selected = isRowSelected(row.rowId);
     return {
       ...row,
-      onClick: (e: React.MouseEvent) => {
+      onClick: (e: MouseEvent) => {
         toggleRow(e, row.rowId);
         setSelectedCount((prev) => (selected ? prev - 1 : prev + 1));
       },
-      onKeyDown: (e: React.KeyboardEvent) => {
+      onKeyDown: (e: KeyboardEvent) => {
         if (e.key === " ") {
           e.preventDefault();
           toggleRow(e, row.rowId);
@@ -103,7 +103,7 @@ export function DatasetList({ dataSets }: DatasetListProps): JSX.Element {
     };
   });
 
-  const handleToggleAll = (e: React.MouseEvent): void => {
+  const handleToggleAll = (e: MouseEvent): void => {
     toggleAllRows(e);
     setSelectedCount(allRowsSelected ? 0 : dataSets.length);
   };
