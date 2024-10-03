@@ -16,6 +16,7 @@ import {
   tokens,
 } from "@fluentui/react-components";
 import { useNavigate, useParams } from "react-router-dom";
+import { useAtom } from "jotai";
 import { Button } from "../../../../components/ui/button";
 import { useFetchWorkbook } from "../../../../hooks/use-fetch-workbook";
 import { useFetchResultSheets } from "../../../../hooks/use-fetch-result-sheets";
@@ -23,6 +24,7 @@ import { useTabs } from "../../../../hooks/use-tabs";
 import { ResultSheet } from "../../../../components/result-sheet";
 import { Tab } from "../../../../components/ui/tab";
 import { DialogContent } from "../../../../components/ui/dialog-content";
+import { selectedResultViewIdAtom } from "../../../../state/selected-result-view-id-atom";
 
 const useStyles = makeStyles({
   root: {
@@ -66,10 +68,12 @@ export function DetailWorkbook(): JSX.Element {
     workbookId: Number(id),
   });
   const { onTabSelect, selectedValue, setSelectedValue } = useTabs();
+  const [, setSelectedResultViewId] = useAtom(selectedResultViewIdAtom);
 
   useEffect(() => {
+    setSelectedResultViewId(undefined); // 詳細ページではビューのフォーカスを外す
     setSelectedValue(resultSheets?.[0]?.id);
-  }, [resultSheets, setSelectedValue]);
+  }, [resultSheets, setSelectedResultViewId, setSelectedValue]);
 
   return (
     <div className={styles.root}>
