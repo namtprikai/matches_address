@@ -5,7 +5,6 @@ import {
   tokens,
 } from "@fluentui/react-components";
 import { useAtom } from "jotai";
-import { useEffect } from "react";
 import { formatDate } from "../utils/format-date";
 import { type SelectDataSetResult } from "../schema";
 import { selectedResultSheetIdAtom } from "../state/selected-result-sheet-id-atom";
@@ -44,11 +43,6 @@ export const ListDataSetResults = ({ dataSetResults }: Props): JSX.Element => {
   const { data: resultViews, mutate } = useFetchResultViews({
     sheetId: selectedResultSheetId,
   });
-
-  useEffect(() => {
-    if (!resultViews || resultViews.length === 0) return;
-    setSelectedResultViewId((prev) => prev || resultViews[0].id);
-  }, [resultViews, setSelectedResultViewId]);
 
   return (
     <div className={styles.root}>
