@@ -3,12 +3,12 @@ import { FormProvider, useForm } from "react-hook-form";
 import { makeStyles } from "@fluentui/react-components";
 import { useEffect } from "react";
 import { type EditResultViewFormType } from "../@types/form-schema";
-import { selectedResultViewAtom } from "../state/selected-result-view-atom";
 import { selectedResultViewIdAtom } from "../state/selected-result-view-id-atom";
-import { resultViewsAtom } from "../state/result-views-atom";
 import { type SelectResultView } from "../schema";
 import { useFetchDataSetResultItem } from "../hooks/use-fetch-data-set-result-item";
-import { EditResultViewFileds } from "./edit-result-view-fields";
+import { useFetchResultView } from "../hooks/use-fetch-result-view";
+import { useFetchResultViews } from "../hooks/use-fetch-result-views";
+import { EditResultViewFields } from "./edit-result-view-fields";
 import { EditResultViewFilterFields } from "./edit-result-view-filter-fields";
 import { Button } from "./ui/button";
 
@@ -19,52 +19,60 @@ const useStyles = makeStyles({
   },
 });
 
-export const EditResultViewForm = (): JSX.Element => {
+export const EditResultViewForm = ({
+  selectedResultSheetId,
+}: {
+  selectedResultSheetId: number | undefined;
+}): JSX.Element => {
   const styles = useStyles();
-
-  const [selectedResultViewId] = useAtom(selectedResultViewIdAtom);
-  const [selectedResultView, refresh] = useAtom(selectedResultViewAtom);
-  const [, refreshResultViews] = useAtom(resultViewsAtom);
-
-  const { data } = useFetchDataSetResultItem({
+  const [selectedResultViewId, setSelectedResultViewId] = useAtom(
+    selectedResultViewIdAtom,
+  );
+  const { data: resultViews, mutate: mutateResultViews } = useFetchResultViews({
+    sheetId: selectedResultSheetId,
+  });
+  const { data: selectedResultView } = useFetchResultView({
+    resultViewId: selectedResultViewId,
+  });
+  const { data: dataSetResult } = useFetchDataSetResultItem({
     dataSetResultId: selectedResultView?.data_set_result_id,
   });
-
-  const year = selectedResultView?.parameters.find(
-    (parameter) => parameter.key === "year" && parameter.type === "filter",
-  )?.value;
-
-  const methods = useForm<EditResultViewFormType>({
-    defaultValues: {
-      title: selectedResultView?.title ?? "",
-      style: selectedResultView?.style ?? "map",
-      unit: selectedResultView?.unit ?? "building",
-      parameters: selectedResultView?.parameters ?? [],
-      year: {
-        start: year?.start,
-        end: year?.end,
-      },
-      areas: [],
-    },
-  });
-
-  const { handleSubmit, reset } = methods;
+  const methods = useForm<EditResultViewFormType>();
 
   useEffect(() => {
-    reset({
+    if (!resultViews || resultViews.length === 0) return;
+    const firstView = resultViews.find((view) => view.layoutIndex === 1);
+    setSelectedResultViewId((prev) => prev || firstView?.id);
+  }, [resultViews, setSelectedResultViewId]);
+
+  useEffect(() => {
+    // parametersがスキーマではNotNull()になっているけど最初のデータがない時はnullなので、nullチェックを入れる
+    // FIXME: スキーマをnullableに修正すべきかも
+    const selectedYear = selectedResultView?.parameters?.find(
+      (parameter) => parameter.key === "year" && parameter.type === "filter",
+    )?.value;
+
+    methods.reset({
       title: selectedResultView?.title ?? "",
       style: selectedResultView?.style ?? "map",
       unit: selectedResultView?.unit ?? "building",
       parameters: selectedResultView?.parameters ?? [],
       year: {
-        start: year?.start,
-        end: year?.end,
+        start: selectedYear?.start,
+        end: selectedYear?.end,
       },
       areas: [],
     });
-  }, [selectedResultView, reset, year]);
+    methods.setValue("title", selectedResultView?.title ?? "");
+  }, [
+    methods,
+    selectedResultView?.parameters,
+    selectedResultView?.style,
+    selectedResultView?.title,
+    selectedResultView?.unit,
+  ]);
 
-  const onSubmit = handleSubmit(async (data) => {
+  const onSubmit = methods.handleSubmit(async (data) => {
     if (!selectedResultViewId) return;
 
     const parameters = data.parameters;
@@ -77,8 +85,8 @@ export const EditResultViewForm = (): JSX.Element => {
     const yearParameter = {
       key: "year",
       value: {
-        start: data.year.start,
-        end: data.year.end,
+        start: data.year?.start,
+        end: data.year?.end,
       },
       type: "filter",
     };
@@ -95,16 +103,15 @@ export const EditResultViewForm = (): JSX.Element => {
         ] as SelectResultView["parameters"], // union の型推論が効きづらいため、明示的に型を指定
       },
     });
-    refresh();
-    // resultViewsの再取得を行い、更新されたデータを反映する
-    refreshResultViews();
+
+    void mutateResultViews();
   });
 
   return (
     <FormProvider {...methods}>
       <form className={styles.form} onSubmit={onSubmit}>
-        <EditResultViewFileds dataSetTitle={data && data[0].title} />
-        <EditResultViewFilterFields />
+        <EditResultViewFields dataSetTitle={dataSetResult?.[0].title} />
+        <EditResultViewFilterFields resultView={selectedResultView} />
         <Button appearance="primary" type="submit">
           入力内容を保存する
         </Button>

@@ -10,9 +10,11 @@ import {
   Subtitle2,
   tokens,
 } from "@fluentui/react-components";
-import { useNavigate } from "react-router-dom";
-import { type SelectResultView, type SelectDataSetResult } from "../schema";
+import { useAtom } from "jotai";
+import { type SelectResultView } from "../schema";
 import { THEME_COLORS } from "../config/theme-colors";
+import { useFetchResultViews } from "../hooks/use-fetch-result-views";
+import { selectedResultViewIdAtom } from "../state/selected-result-view-id-atom";
 import { TileViewStyle } from "./tile-view-style";
 import { DialogSurface } from "./ui/dialog-surface";
 import { DialogBody } from "./ui/dialog-body";
@@ -21,9 +23,10 @@ import { DialogActions } from "./ui/dialog-actions";
 import { Button } from "./ui/button";
 import { DialogContent } from "./ui/dialog-content";
 
-type Props = CardProps & {
+type Props = {
   resultView: SelectResultView;
-  dataSetResult: SelectDataSetResult | null;
+  className?: string;
+  cardProps?: CardProps;
 };
 
 const useStyles = makeStyles({
@@ -48,23 +51,35 @@ const useStyles = makeStyles({
 
 export const TileResultView = ({
   resultView,
-  dataSetResult,
-  selected,
-  ...cardProps
+  className,
 }: Props): JSX.Element => {
   const styles = useStyles();
-  const navigate = useNavigate();
+  const [selectedResultViewId, setSelectedResultViewId] = useAtom(
+    selectedResultViewIdAtom,
+  );
 
-  const deleteResultView = async (): Promise<void> => {
-    await window.ipcRenderer.invoke("deleteResultView", {
-      resultViewId: resultView.id,
-    });
+  const { data: resultViews, mutate } = useFetchResultViews({
+    sheetId: resultView.sheet_id,
+  });
+
+  const handleClick = (): void => {
+    setSelectedResultViewId(resultView.id);
   };
 
   const handleDelete = async (): Promise<void> => {
-    await deleteResultView();
-    navigate(0);
+    if (!resultView.sheet_id) return;
+    await window.ipcRenderer.invoke("deleteResultView", {
+      resultViewId: resultView.id,
+      sheetId: resultView.sheet_id,
+    });
+    void mutate();
+    const firstView = resultViews?.find((view) => view.layoutIndex === 1);
+    if (firstView) {
+      setSelectedResultViewId(firstView.id);
+    }
   };
+
+  const selected = resultView.id === selectedResultViewId;
 
   if (
     !resultView.style ||
@@ -73,12 +88,12 @@ export const TileResultView = ({
   ) {
     return (
       <Card
-        {...cardProps}
         className={mergeClasses(
           styles.cardSurface,
           selected && styles.selected,
-          cardProps.className,
+          className,
         )}
+        onClick={handleClick}
       >
         <CardHeader
           action={
@@ -136,12 +151,12 @@ export const TileResultView = ({
 
   return (
     <Card
-      {...cardProps}
       className={mergeClasses(
         styles.cardSurface,
         selected && styles.selected,
-        cardProps.className,
+        className,
       )}
+      onClick={handleClick}
     >
       <CardHeader
         action={
@@ -190,15 +205,15 @@ export const TileResultView = ({
           <Subtitle2>{`${resultView.title || "タイトル未入力"}`}</Subtitle2>
         }
       />
-      {dataSetResult === null ? (
-        <div>データセットが選択されていません</div>
-      ) : (
+      {resultView.data_set_result_id ? (
         <TileViewStyle
           parameters={resultView.parameters}
-          resultId={dataSetResult.id}
+          resultId={resultView.data_set_result_id}
           style={resultView.style}
           type={resultView.unit}
         />
+      ) : (
+        <div>データセットが選択されていません</div>
       )}
     </Card>
   );

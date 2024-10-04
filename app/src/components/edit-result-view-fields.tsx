@@ -32,7 +32,7 @@ type Props = {
   dataSetTitle?: string | null | undefined;
 };
 
-export const EditResultViewFileds = ({ dataSetTitle }: Props): JSX.Element => {
+export const EditResultViewFields = ({ dataSetTitle }: Props): JSX.Element => {
   const styles = useStyles();
   const { register, watch, control, setValue } =
     useFormContext<EditResultViewFormType>();

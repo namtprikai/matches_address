@@ -1,10 +1,6 @@
 import { useParams } from "react-router-dom";
 import { makeStyles, tokens } from "@fluentui/react-components";
-import { useAtom } from "jotai";
 import { useFetchWorkbook } from "../hooks/use-fetch-workbook";
-import { resultSheetsAtom } from "../state/result-sheets-atom";
-import { selectedWorkbookIdAtom } from "../state/selected-workbook-id-atom";
-import { selectedResultSheetIdAtom } from "../state/selected-result-sheet-id-atom";
 import { Button } from "./ui/button";
 import { TabListEditResultSheet } from "./tab-list-edit-result-sheet";
 import { SidebarEditResultView } from "./sidebar-edit-result-view";
@@ -38,36 +34,32 @@ const useStyles = makeStyles({
 
 export const EditWorkbook = (): JSX.Element => {
   const styles = useStyles();
-  const { id } = useParams();
-  const [, setSelectedWorkbookId] = useAtom(selectedWorkbookIdAtom);
-  setSelectedWorkbookId(Number(id));
-
-  const { data: workbook } = useFetchWorkbook({ id });
-
-  const [resultSheets] = useAtom(resultSheetsAtom);
-  const [selectedResultSheetId] = useAtom(selectedResultSheetIdAtom);
 
   return (
     <div className={styles.root}>
       <div className={styles.sidebar}>
         <SidebarEditResultView />
       </div>
-
-      <div className={styles.content}>
-        <h2 className={styles.heading}>{workbook?.title}</h2>
-
-        <TabListEditResultSheet />
-        <div>
-          {resultSheets.map((item) =>
-            selectedResultSheetId === item.id ? (
-              <PreviewResultSheet key={item.id} />
-            ) : null,
-          )}
-        </div>
-        <a href={`#analysis/workbook/${id}`}>
-          <Button>詳細に戻る</Button>
-        </a>
-      </div>
+      <Content />
     </div>
   );
 };
+
+function Content(): JSX.Element {
+  const styles = useStyles();
+  const { id } = useParams();
+  const { data: workbook } = useFetchWorkbook({ id: Number(id) });
+
+  return (
+    <div className={styles.content}>
+      <h2 className={styles.heading}>{workbook?.title}</h2>
+      <TabListEditResultSheet workbookId={workbook?.id} />
+      <div>
+        <PreviewResultSheet />
+      </div>
+      <a href={`#analysis/workbook/${id}`}>
+        <Button>詳細に戻る</Button>
+      </a>
+    </div>
+  );
+}

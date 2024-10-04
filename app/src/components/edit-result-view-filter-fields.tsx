@@ -1,8 +1,6 @@
 import { makeStyles, tokens } from "@fluentui/react-components";
 import { useFieldArray, useFormContext } from "react-hook-form";
-import { useAtomValue } from "jotai";
 import { lazy, Suspense } from "react";
-import { selectedResultViewAtom } from "../state/selected-result-view-atom";
 import { type EditResultViewFormType } from "../@types/form-schema";
 import { TILE_VIEW_CONFIG } from "../config/tile-view-config";
 import { type SelectResultView } from "../schema";
@@ -37,12 +35,14 @@ const useStyles = makeStyles({
   },
 });
 
-export const EditResultViewFilterFields = (): JSX.Element => {
+export const EditResultViewFilterFields = ({
+  resultView,
+}: {
+  resultView: SelectResultView | undefined;
+}): JSX.Element => {
   const styles = useStyles();
 
   const { register, watch, control } = useFormContext<EditResultViewFormType>();
-
-  const resultView = useAtomValue(selectedResultViewAtom);
 
   const { fields, replace } = useFieldArray({
     control,
@@ -82,6 +82,8 @@ export const EditResultViewFilterFields = (): JSX.Element => {
   const { data: referenceDates } = useFetchReferenceDates({
     dataSetResultId: resultView?.data_set_result_id,
   });
+
+  // データセットは年度単位で入力する前提だが、ユーザーの入力によっては年の値の重複する可能性が必ずしも排除しきれないため重複を除外する処理を入れる
   const yearItems = Array.from(
     new Set(referenceDates?.map((r) => new Date(r).getFullYear().toString())),
   );
@@ -93,7 +95,7 @@ export const EditResultViewFilterFields = (): JSX.Element => {
       <Field label="期間">
         <div className={styles.year}>
           <Select
-            value={style === "map" ? "" : year.start}
+            value={style === "map" ? "" : year?.start}
             {...register("year.start")}
             disabled={style === "map"}
           >
@@ -106,7 +108,7 @@ export const EditResultViewFilterFields = (): JSX.Element => {
           </Select>
           <span>〜</span>
           <Select
-            value={style === "map" ? "" : year.end}
+            value={style === "map" ? "" : year?.end}
             {...register("year.end")}
             disabled={style === "map"}
           >
@@ -120,7 +122,7 @@ export const EditResultViewFilterFields = (): JSX.Element => {
         </div>
       </Field>
 
-      <Suspense fallback={null}>
+      <Suspense>
         <AreaFilterForm
           areas={areas}
           dataSetResultId={resultView?.data_set_result_id ?? undefined}

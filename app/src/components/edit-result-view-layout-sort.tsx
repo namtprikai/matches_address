@@ -1,9 +1,9 @@
 import { ChevronRightRegular, ChevronLeftRegular } from "@fluentui/react-icons";
 import { makeStyles, tokens } from "@fluentui/react-components";
 import { useAtom } from "jotai";
-import { resultViewsAtom } from "../state/result-views-atom";
 import { selectedResultViewIdAtom } from "../state/selected-result-view-id-atom";
-import { selectedResultViewAtom } from "../state/selected-result-view-atom";
+import { useFetchResultView } from "../hooks/use-fetch-result-view";
+import { useFetchResultViews } from "../hooks/use-fetch-result-views";
 import { Field } from "./ui/field";
 import { Button } from "./ui/button";
 
@@ -19,8 +19,13 @@ export const EditResultViewLayoutSort = (): JSX.Element => {
   const styles = useStyles();
 
   const [selectedResultViewId] = useAtom(selectedResultViewIdAtom);
-  const [selectedResultView, refresh] = useAtom(selectedResultViewAtom);
-  const [resultViews, refreshResultViews] = useAtom(resultViewsAtom);
+  const { data: selectedResultView, mutate: mutateResultView } =
+    useFetchResultView({
+      resultViewId: selectedResultViewId,
+    });
+  const { data: resultViews, mutate: mutateResultViews } = useFetchResultViews({
+    sheetId: selectedResultView?.sheet_id,
+  });
 
   /** validationはbuttonのdisabledで管理 */
   const handleNext = async (): Promise<void> => {
@@ -33,8 +38,8 @@ export const EditResultViewLayoutSort = (): JSX.Element => {
         layoutIndex: selectedResultView?.layoutIndex || 0,
       },
     });
-    refresh();
-    refreshResultViews();
+    void mutateResultView();
+    void mutateResultViews();
   };
 
   /** validationはbuttonのdisabledで管理 */
@@ -48,8 +53,8 @@ export const EditResultViewLayoutSort = (): JSX.Element => {
         layoutIndex: (selectedResultView?.layoutIndex || 0) - 2,
       },
     });
-    refresh();
-    refreshResultViews();
+    void mutateResultView();
+    void mutateResultViews();
   };
 
   return (
@@ -65,7 +70,7 @@ export const EditResultViewLayoutSort = (): JSX.Element => {
           前へ
         </Button>
         <Button
-          disabled={selectedResultView?.layoutIndex === resultViews.length}
+          disabled={selectedResultView?.layoutIndex === resultViews?.length}
           icon={<ChevronRightRegular />}
           onClick={handleNext}
         >
