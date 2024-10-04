@@ -1,4 +1,4 @@
-import { FileUploader } from "../../components/file-uploader";
+import { FileUploader } from "../../components/ui/file-uploader/file-uploader";
 import { Map } from "../../components/map";
 
 export function Debug(): JSX.Element {
@@ -7,7 +7,12 @@ export function Debug(): JSX.Element {
       <h1>(開発用)</h1>
       <a href="#">Go to home page</a>
       <Map areas={[]} dataSetResultId={1} type="building" />
-      <FileUploader />
+      <FileUploader
+        onChange={() => {
+          return;
+        }}
+        value={null}
+      />
     </div>
   );
 }
