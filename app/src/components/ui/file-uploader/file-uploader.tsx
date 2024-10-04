@@ -1,12 +1,14 @@
 import { makeStyles } from "@fluentui/react-components";
 import { useCallback, useState } from "react";
 import { useDropzone } from "react-dropzone";
-import { ArchiveRegular } from "@fluentui/react-icons";
-import { formatByteValue } from "../utils/format-byte-value";
-import { Button } from "./ui/button";
+import { SelectedFile } from "./selected-file";
+import { UploadFileSymbol } from "./upload-file-symbol";
+import { DropFileSymbol } from "./drop-file-symbol";
 
 type Props = {
   variant?: "default" | "simple";
+  value: File | null;
+  onChange: (file: File | null) => void;
 };
 
 const useStyles = makeStyles({
@@ -29,7 +31,9 @@ export const FileUploader = ({ variant = "default" }: Props): JSX.Element => {
   const onDrop = useCallback((acceptedFiles: File[]) => {
     setSelectedFile(acceptedFiles[0]);
   }, []);
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop });
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    onDrop,
+  });
 
   const styles = useStyles();
 
@@ -38,27 +42,17 @@ export const FileUploader = ({ variant = "default" }: Props): JSX.Element => {
       <div {...getRootProps()} className={styles.root}>
         <input hidden type="file" {...getInputProps()} />
         {selectedFile ? (
-          <div>
-            <div>
-              <p>{selectedFile.path}</p>
-              <p>
-                {formatByteValue(selectedFile.size, {
-                  unit: "MB",
-                })}
-              </p>
-              <div>
-                <Button
-                  appearance="subtle"
-                  icon={<ArchiveRegular />}
-                  type="button"
-                />
-              </div>
-            </div>
-          </div>
+          <SelectedFile
+            file={selectedFile}
+            onDelete={(event) => {
+              event.stopPropagation(); // ファイル選択のイベントが発火しないようにする
+              setSelectedFile(null);
+            }}
+          />
         ) : isDragActive ? (
-          <p>ファイルをそのままドロップ</p>
+          <DropFileSymbol />
         ) : (
-          <p>ここにドラッグ&ドロップ</p>
+          <UploadFileSymbol />
         )}
       </div>
     );
