@@ -26,6 +26,7 @@ import { DialogContent } from "./ui/dialog-content";
 type Props = {
   resultView: SelectResultView;
   className?: string;
+  disabled?: boolean;
   cardProps?: CardProps;
 };
 
@@ -52,6 +53,7 @@ const useStyles = makeStyles({
 export const TileResultView = ({
   resultView,
   className,
+  disabled,
 }: Props): JSX.Element => {
   const styles = useStyles();
   const [selectedResultViewId, setSelectedResultViewId] = useAtom(
@@ -93,7 +95,7 @@ export const TileResultView = ({
           selected && styles.selected,
           className,
         )}
-        onClick={handleClick}
+        onClick={disabled ? undefined : handleClick}
       >
         <CardHeader
           action={
@@ -156,7 +158,7 @@ export const TileResultView = ({
         selected && styles.selected,
         className,
       )}
-      onClick={handleClick}
+      onClick={disabled ? undefined : handleClick}
     >
       <CardHeader
         action={
