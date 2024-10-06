@@ -1,0 +1,716 @@
+"""
+# E012 名寄せ機能
+* アップロードされた住所カラムに該当するすべての列の名寄せ（住所の正規化）をする機能
+"""
+
+import os
+import re
+import unicodedata
+import argparse
+import chardet
+import gradio as gr
+import pandas as pd
+
+# 入力する各データのカラムを定義
+INPUT_COLUMNS = {
+    "suido_status": {
+        "suido_number": None,
+        "usage_status": None,
+        "suido_status_address": None,
+        "usage_start_date": None,
+        "usage_end_date": None
+    },
+    "suido_use": {
+        "suido_number": None,
+        "meter_reading_date": None,
+        "suido_usage": None,
+    },
+    "juki": {
+        "setai_code": None,
+        "juki_address": None,
+        "birth": None,
+        "gender": None,
+        "move_date": None
+    },
+    "touki": {
+        "touki_address": None,
+        "structure": None,
+        "registration_date": None
+    },
+    "akiya_result": {
+        "akiya_result_ID": None,
+        "akiya_result_address": None,
+        "akiya_result_lat": None,
+        "akiya_result_lon": None
+    },
+    "geocoding": {
+        "geocoding_address": None,
+        "geocoding_lat": None,
+        "geocofing_lon": None
+    }
+}
+
+#　出力する各データのカラムを定義
+OUTPUT_COLUMNS = {
+    "suido_status": {
+        "suido_number": "水道番号",
+        "usage_status": "開閉栓区分",
+        "suido_address": "設置場所",
+        "usage_start_date": "使用開始日",
+        "usage_end_date": "使用中止日",
+        "convert_suido_address": "正規化住所"
+    },
+    "suido_use": {
+        "suido_number": "水道番号",
+        "meter_reading_date": "水道検針日",
+        "suido_usage": "水道使用量"
+    },
+    "juki": {
+        "setai_code": "世帯コード",
+        "juki_address": "住所",
+        "birth": "生年月日",
+        "gender": "性別",
+        "move_date":"住定異動年月日",
+        "convert_juki_address": "正規化住所"
+    },
+    "touki": {
+        "touki_address": "住所",
+        "structure": "登記構造",
+        "registration_date": "登記日付",
+        "convert_touki_address": "正規化住所"
+    },
+    "akiya_result": {
+        "akiya_result_ID": "ID",
+        "akiya_result__address": "住所",
+        "akiya_result_lat": "緯度",
+        "akiya_result_lon": "経度",
+        "convert_akiya_address": "正規化住所"
+    },
+    "geocoding": {
+        "geocoding_address": "住所",
+        "geocoding_lat": "lat",
+        "geocoding_lon": "lon",
+        "convert_geo_address": "正規化住所"
+    }
+}
+
+# 変換用の漢数字と半角数字の対応辞書
+kanji_to_number = {
+    '一': 1, '二': 2, '三': 3, '四': 4, '五': 5, 
+    '六': 6, '七': 7, '八': 8, '九': 9, '十': 10
+}
+
+# データ処理を行うための基本クラス
+class DataProcessor:
+    def __init__(self, input_paths, output_paths):
+        """
+        DataProcessorクラスの初期化メソッド
+
+        Parameters
+        ----------
+        input_paths : dict
+            入力ファイルのパスを含む辞書
+        output_paths : dict
+            出力ファイルのパスを含む辞書
+        """
+        # 入力ファイルのパスを設定
+        self.INPUT_PATHS = input_paths
+        # 出力ファイルのパスを設定
+        self.OUTPUT_PATHS = output_paths
+        
+    @staticmethod
+    def save_csv(df, path):
+        """
+        データフレームをCSVファイルとして保存する。
+        Shift-JIS、CP932、UTF-8の順で保存を試みる。
+
+        Parameters
+        ----------
+        df : pandas.DataFrame
+            保存するデータフレーム
+        path : str
+            保存先のファイルパス
+        """
+        def shift_jis_compatible(text):
+            """
+            テキストをShift-JISエンコーディングと互換性のある形式に変換する。
+
+            Parameters
+            ----------
+            text : str or any
+                変換するテキスト。文字列でない場合はそのまま返す。
+
+            Returns
+            -------
+            str or any
+                Shift-JIS互換の文字列、または元の値（文字列でない場合）
+            """
+            # 入力が文字列でない場合、変換せずにそのまま返す
+            if not isinstance(text, str):
+                return text
+            
+            # CJK互換漢字の変換マップ
+            cjk_compat_chars = {
+                '\ufa11': '\u5d0e',      # CJK互換漢字の「﨑」を通常の「崎」に変換
+                '\U000219c3': '\u5b87',  # CJK互換漢字の「𡧃」を通常の「宇」に変換
+                '\u9ad9': '\u9ad8',      # CJK互換漢字の「髙」を通常の「高」に変換
+                '\u7028': '\u702c',      # CJK互換漢字の「瀨」を通常の「瀬」に変換
+                '\u66fb': '\u6607',      # CJK互換漢字の「曻」を通常の「昇」に変換
+                '\u5fb7': '\u5fb3',      # CJK互換漢字の「德」を通常の「徳」に変換
+                '\uf9dc': '\u9686',      # CJK互換漢字の「隆」を通常の「隆」に変換
+                '\u6801': '\u67f3',      # CJK互換漢字の「栁」を通常の「柳」に変換
+                '\ufa1a': '\u7965',      # CJK互換漢字の「祥」を通常の「祥」に変換
+                '\uf929': '\u6717'       # CJK互換漢字の「朗」を通常の「朗」に変換
+            }
+            # CJK互換漢字を通常の漢字に置換
+            for compat, normal in cjk_compat_chars.items():
+                text = text.replace(compat, normal)
+            
+            # Shift-JISで表現できない文字の置換マップ
+            replace_map = {
+                '①': '(1)', '②': '(2)', '③': '(3)', '④': '(4)', '⑤': '(5)',
+                '⑥': '(6)', '⑦': '(7)', '⑧': '(8)', '⑨': '(9)', '⑩': '(10)'
+            }
+            
+            # Shift-JISで表現できない文字を置換
+            for k, v in replace_map.items():
+                text = text.replace(k, v)
+            
+            # Shift-JISに変換できない文字を「?」に置き換える
+            encoded_text = ''
+            for char in text:
+                try:
+                    # 文字をShift-JISでエンコードしてみる
+                    char.encode('shift_jis')
+                    # エンコードできた場合はそのまま追加
+                    encoded_text += char
+                except UnicodeEncodeError:
+                    # エンコードできなかった場合は「?」に置き換え
+                    encoded_text += '?'
+            
+            return encoded_text
+
+        # データフレームの各列にShift-JIS互換処理を適用
+        df = df.applymap(shift_jis_compatible)
+
+        # エンコーディングの優先順位リスト
+        encodings = ['shift_jis', 'cp932', 'utf-8']
+
+        # 各エンコーディングで保存を試みる
+        for encoding in encodings:
+            try:
+                # データフレームをCSVとして保存
+                df.to_csv(path, encoding=encoding, index=False, errors='replace')
+                # 成功した場合、メッセージを表示して関数を終了
+                print(f"ファイルが {encoding} handle_optional_fileに保存されました: {path}")
+                return
+            except Exception as e:
+                # エラーが発生した場合、メッセージを表示して次のエンコーディングを試す
+                print(f"ファイル {path} を {encoding} エンコーディングで保存中にエラーが発生しました: {e}")
+
+        # すべてのエンコーディングで失敗した場合のメッセージ
+        print(f"ファイル {path} をいずれのエンコーディングでも保存できませんでした。")
+    
+    def process(self):
+        """
+        データ処理を実行する抽象メソッド
+        サブクラスでこのメソッドを実装する必要がある
+        """
+        raise NotImplementedError("Subclasses must implement this method")
+
+
+# データのクリーンアップ用のクラス
+class CleanData:
+    # 単独カタカナの置換
+    @staticmethod
+    def replace_single_katakana(text):
+        """
+        単独カタカナを置換する
+
+        Parameters
+        ----------
+        text : str
+            処理対象のテキスト
+
+        Returns
+        -------
+        str
+            単独カタカナが置換されたテキスト
+        """
+        # 単独の「ノ」「ケ」「ツ」を置換するための正規表現パターン
+        single_no_pattern = r'(?<![ｦ-ﾟ])ﾉ(?![ｦ-ﾟ])|(?<![ァ-ン])ノ(?![ァ-ン])'
+        single_ke_pattern = r'(?<![ｦ-ﾟ])ｹ(?![ｦ-ﾟ])|(?<![ァ-ン])ケ(?![ァ-ン])'
+        single_tsu_pattern = r'(?<![ｦ-ﾟ])ﾂ(?![ｦ-ﾟ])|(?<![ァ-ン])ツ(?![ァ-ン])'
+        if isinstance(text, str):
+            text = re.sub(single_no_pattern, "の", text)
+            text = re.sub(single_ke_pattern, "が", text)
+            text = re.sub(single_tsu_pattern, "つ", text)
+        return text
+    
+    @staticmethod
+    def convert_fullwidth_to_halfwidth_digits(text):
+        """
+        全角数字を半角数字に変換する
+
+        Parameters
+        ----------
+        text : str or any
+            変換対象のテキスト
+
+        Returns
+        -------
+        str or any
+            全角数字が半角数字に変換されたテキスト。
+            入力が文字列でない場合は元の値をそのまま返す。
+        """
+        if isinstance(text, str):
+            # 全角数字から半角数字への変換マップ
+            fullwidth_to_halfwidth = str.maketrans("０１２３４５６７８９", "0123456789")
+            return text.translate(fullwidth_to_halfwidth)
+        return text
+
+    @staticmethod
+    def convert_address(address):
+        """
+        住所のフォーマットを変換する。都道府県名、市名、半角と全角スペースを削除。丁目、番地をハイフンに変換。
+
+        Parameters
+        ----------
+        address : str
+            変換対象の住所
+
+        Returns
+        -------
+        str
+            変換された住所
+        """
+        if isinstance(address, str):        
+            # 都道府県名リスト
+            prefectures = [
+                "北海道", "青森県", "岩手県", "宮城県", "秋田県", "山形県", "福島県",
+                "茨城県", "栃木県", "群馬県", "埼玉県", "千葉県", "東京都", "神奈川県",
+                "新潟県", "富山県", "石川県", "福井県", "山梨県", "長野県", "岐阜県",
+                "静岡県", "愛知県", "三重県", "滋賀県", "京都府", "大阪府", "兵庫県",
+                "奈良県", "和歌山県", "鳥取県", "島根県", "岡山県", "広島県", "山口県",
+                "徳島県", "香川県", "愛媛県", "高知県", "福岡県", "佐賀県", "長崎県",
+                "熊本県", "大分県", "宮崎県", "鹿児島県", "沖縄県"
+            ]
+            # 都道府県名を削除
+            pattern = "^(" + "|".join(map(re.escape, prefectures)) + ")"
+            address = re.sub(pattern, "", address)
+            
+            # 市名を削除（最初に出現する[市]で終わる部分）
+            address = re.sub(r'[^\s]+?[市]', '', address, count=1)
+            
+            # 全角・半角スペースを削除
+            address = re.sub(r'[\s　]+', '', address)
+            
+            # ハイフンを半角ハイフン（U+002D）に変換
+            address = re.sub(r'[－—―−]', '-', address)
+                
+            # 丁目をハイフンに変換
+            address = re.sub(r"(\d+)丁目", r"\1-", address)
+            
+            # 番地をハイフンに変換
+            address = re.sub(r"(\d+)番地の(\d+号?)", r"\1-\2", address)
+            address = re.sub(r"(\d+)番地?(\d+号?)", r"\1-\2", address)
+            address = re.sub(r"(\d+)番地?$", r"\1", address)
+            
+            # 連続する半角ハイフンを一つに統合
+            address = re.sub(r'-+', '-', address)
+            
+            # 末尾のハイフンを削除
+            address = re.sub(r'-$', '', address)
+            
+            # すべてのピリオド（半角と全角）を削除
+            address = re.sub(r'[\u002E\uFF0E]', '', address)
+            
+            # 「〇丁目」の漢数字部分を半角数字に変換
+            address = re.sub(r'([一二三四五六七八九十]+)丁目', kanji_to_chome, address)
+
+        return address
+
+    @staticmethod
+    def normalize_text(text):
+        """
+        テキストを正規化する
+
+        Parameters
+        ----------
+        text : str
+            正規化対象のテキスト
+
+        Returns
+        -------
+        str
+            正規化されたテキスト
+        """
+        if isinstance(text, str):
+            # Unicode正規化（NFKC）を適用
+            return unicodedata.normalize("NFKC", text)
+        return text
+
+    @staticmethod
+    def convert_halfwidth_to_fullwidth(text):
+        """
+        半角カタカナを全角カタカナに変換する
+
+        Parameters
+        ----------
+        text : str
+            変換対象のテキスト
+
+        Returns
+        -------
+        str
+            半角カタカナが全角カタカナに変換されたテキスト
+        """
+        half_to_full_katakana_map = str.maketrans(
+            "ｦｧｨｩｪｫｬｭｮｯｰｱｲｳｴｵｶｷｸｹｺｻｼｽｾｿﾀﾁﾂﾃﾄﾅﾆﾇﾈﾉﾊﾋﾌﾍﾎﾏﾐﾑﾒﾓﾔﾕﾖﾗﾘﾙﾚﾛﾜﾝﾞﾟ",
+            "ヲァィゥェォャュョッーアイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワン゛゜"
+        )
+        if pd.isna(text):
+            return text
+        # 半角カタカナを全角カタカナに変換
+        text = text.translate(half_to_full_katakana_map)
+        # 濁点と半濁点の処理
+        text = re.sub(r'(\w゛)', lambda x: chr(ord(x.group(1)[0]) + 1), text)
+        text = re.sub(r'(\w゜)', lambda x: chr(ord(x.group(1)[0]) + 2), text)
+        return text 
+    
+
+# 各ファイルごとの処理クラス
+class EachFileProcessor(DataProcessor):
+    def process_file(self, file_key):
+        """
+        指定されたファイルキーに対応するファイルを処理する
+
+        Parameters
+        ----------
+        file_key : str
+            処理対象のファイルキー
+        """
+        # ファイルを読み込む
+        df = read_file(self.INPUT_PATHS[file_key], file_key)
+        if df is None:
+            print(f"{file_key}の処理をスキップします。")
+            return
+        
+        if file_key == "suido_use":
+            self.save_csv(df, self.OUTPUT_PATHS[file_key])
+        else:
+            cols = INPUT_COLUMNS[file_key]
+
+            # 住所列が欠損している行を削除
+            df = df.dropna(subset=cols[f"{file_key}_address"])
+            
+            # 住所の正規化処理を適用
+            df["正規化住所"] = (df[cols[f"{file_key}_address"]]
+                        .apply(CleanData.normalize_text)
+                        .apply(CleanData.convert_fullwidth_to_halfwidth_digits)
+                        .apply(CleanData.convert_halfwidth_to_fullwidth)
+                        .apply(CleanData.replace_single_katakana)
+                        .apply(CleanData.convert_address))
+            
+            # 処理結果をCSVファイルとして保存
+            self.save_csv(df, self.OUTPUT_PATHS[file_key])
+
+
+
+def set_columns(
+    suido_number, usage_status, suido_status_address, usage_start_date, usage_end_date,
+    suido_number2, meter_reading_date, suido_usage,
+    setai_code, juki_address, birth, gender, move_date,
+    touki_address, structure, registration_date,
+    akiya_result_ID, akiya_result_address, akiya_result_lat, akiya_result_lon,
+    geocoding_address, geocoding_lat, geocoding_lon
+):
+    """
+    ユーザーが選択したカラムをINPUT_COLUMNSに反映
+    """
+    # suido_statusセクション
+    INPUT_COLUMNS["suido_status"]["suido_number"] = suido_number
+    INPUT_COLUMNS["suido_status"]["usage_status"] = usage_status
+    INPUT_COLUMNS["suido_status"]["suido_status_address"] = suido_status_address
+    INPUT_COLUMNS["suido_status"]["usage_start_date"] = usage_start_date
+    INPUT_COLUMNS["suido_status"]["usage_end_date"] = usage_end_date
+    
+    # suido_use
+    INPUT_COLUMNS["suido_use"]["suido_number2"] = suido_number2
+    INPUT_COLUMNS["suido_use"]["meter_reading_date"] = meter_reading_date
+    INPUT_COLUMNS["suido_use"]["suido_usage"] = suido_usage
+
+
+    # jukiセクション
+    INPUT_COLUMNS["juki"]["setai_code"] = setai_code
+    INPUT_COLUMNS["juki"]["juki_address"] = juki_address
+    INPUT_COLUMNS["juki"]["birth"] = birth
+    INPUT_COLUMNS["juki"]["gender"] = gender
+    INPUT_COLUMNS["juki"]["move_date"] = move_date
+    
+    # toukiセクション
+    INPUT_COLUMNS["touki"]["touki_address"] = touki_address
+    INPUT_COLUMNS["touki"]["structure"] = structure
+    INPUT_COLUMNS["touki"]["registration_date"] = registration_date
+    
+    # akiya_resultセクション
+    INPUT_COLUMNS["akiya_result"]["akiya_result_ID"] = akiya_result_ID
+    INPUT_COLUMNS["akiya_result"]["akiya_result_address"] = akiya_result_address
+    INPUT_COLUMNS["akiya_result"]["akiya_result_lat"] = akiya_result_lat
+    INPUT_COLUMNS["akiya_result"]["akiya_result_lon"] = akiya_result_lon
+    
+    # geocodingセクション
+    INPUT_COLUMNS["geocoding"]["geocoding_address"] = geocoding_address
+    INPUT_COLUMNS["geocoding"]["geocoding_lat"] = geocoding_lat
+    INPUT_COLUMNS["geocoding"]["geocofing_lon"] = geocoding_lon
+    
+    return INPUT_COLUMNS
+
+# 漢数字を数字に変換する関数
+def kanji_to_arabic(kanji):
+    total = 0
+    temp = 0
+    for char in kanji:
+        num = kanji_to_number.get(char, None)
+        if num is not None:
+            if num == 10:
+                if temp == 0:  # "十" の前に数字がない場合（例: 十一）
+                    temp = 1
+                total += temp * 10
+                temp = 0
+            else:
+                temp += num
+    total += temp
+    return total
+
+# 正規表現で「〇丁目」の漢数字部分を数字に変換
+def kanji_to_chome(match):
+    kanji = match.group(1)
+    number = kanji_to_arabic(kanji)  # 漢数字を対応する数字に変換
+    return f"{number}丁目"
+
+def detect_encoding(file_path):
+    """
+    ファイルのエンコーディングを検出する
+
+    Parameters
+    ----------
+    file_path : str
+        検出対象のファイルパス
+
+    Returns
+    -------
+    encoding : str
+        検出されたエンコーディング
+    """
+    # ファイルの内容を読み込む
+    with open(file_path, 'rb') as file:
+        raw_data = file.read()
+    # エンコーディングを検出して返す
+    result = chardet.detect(raw_data)
+    return result['encoding']
+
+
+def read_file(path, key, **kwargs):
+    """
+    ファイルを読み込み、OUTPUT_COLUMNSに指定されたカラムのみを残す
+
+    Parameters
+    ----------
+    path : str
+        読み込むファイルのパス
+    key : str
+        OUTPUT_COLUMNSのキー（例: "suido_status"）
+    **kwargs : dict
+        pandas.read_csv または pandas.read_excel に渡す追加のキーワード引数
+
+    Returns
+    -------
+    df : pandas.DataFrame
+        読み込まれたデータフレーム（指定されたカラムのみ残す）、エラー時はNone
+    """
+    try:
+        # ファイルの拡張子を取得し、小文字に変換
+        file_extension = os.path.splitext(path)[1].lower()
+        
+        if file_extension == '.csv':
+            # CSVファイルの場合の処理
+            encodings = ['shift_jis', 'cp932', 'utf-8', 'utf-16']
+            for encoding in encodings:
+                try:
+                    # 各エンコーディングでファイルの読み込みを試みる
+                    df = pd.read_csv(path, encoding=encoding, low_memory=False, **kwargs)
+                    break  # 読み込み成功したらループを抜ける
+                except UnicodeDecodeError:
+                    continue
+            else:
+                # エンコーディングが見つからなかった場合
+                detected_encoding = detect_encoding(path)
+                df = pd.read_csv(path, encoding=detected_encoding, **kwargs)
+        
+        elif file_extension in ['.xlsx', '.xls']:
+            # Excelファイルを読み込む
+            df = pd.read_excel(path, **kwargs)
+        
+        else:
+            # サポートされていないファイル形式
+            raise ValueError(f"サポートされていないファイル形式です: {file_extension}")
+
+        # 指定されたkeyのOUTPUT_COLUMNSに従ってカラムをフィルタリング
+        if key in OUTPUT_COLUMNS:
+            output_columns = list(OUTPUT_COLUMNS[key].values())  # OUTPUT_COLUMNSのカラム名リスト
+            # 存在しないカラムがあっても問題なく動作するように
+            df = df[df.columns.intersection(output_columns)]
+        else:
+            raise ValueError(f"指定されたキー '{key}' が OUTPUT_COLUMNS に存在しません。")
+
+        return df
+
+    except Exception as e:
+        print(f"ファイルの読み込み中にエラーが発生しました: {e}")
+        return None
+
+
+def handle_optional_file(file, key, main_df, main_address_col, INPUT_COLUMNS):
+    """
+    任意のファイルが指定されなかった場合、ダミーデータを生成し、ファイルが指定された場合はread_fileを使用する
+    """
+    if file is None or not os.path.exists(file):
+        print(f"{key}データが入力されていません。ダミーデータを生成します。")
+        return generate_dummy_data(main_df, main_address_col, INPUT_COLUMNS[key])
+    else:
+        return read_file(file, key)  # read_file関数を使用してファイルを読み込む
+
+
+def generate_dummy_data(main_df, main_address_col, DATA_COLUMNS):
+    """
+    ダミーデータを生成する関数
+    Parameters:
+    - main_df: メインのデータフレーム
+    - main_address_col: メインデータの住所カラム名
+    - columns: 生成するダミーデータのカラム定義
+    """
+
+    columns = list(DATA_COLUMNS.keys())
+
+    # 各カラムに対するデフォルト値の辞書
+    default_values = {
+        "structure": "木造",
+        "registration_date": "1990/01/01",
+        "suido_number": 999999, 
+        "usage_status": 1, 
+        "suido_status_address": "欠損", 
+        "usage_start_date": 20990331, 
+        "usage_end_date": "",
+        "suido_number2": 999999, 
+        "meter_reading_date": 20230714, 
+        "suido_usage": 	999,
+        "setai_code": 999999, 
+        "juki_address": "欠損", 
+        "birth": 20100331, 
+        "gender": 1, 
+        "move_date": "2010/01/01",
+        "touki_address": "欠損"
+    }
+    
+    dummy_data = {}
+    for col in columns:
+        if col == main_address_col:
+            # 住所カラムはメインデータからコピー
+            dummy_data[col] = main_df[main_address_col]
+        else:
+            output_col = DATA_COLUMNS[col]
+            # default_values辞書にあればその値、なければ"1"を使う
+            dummy_data[output_col] = [default_values.get(col, '1')] * len(main_df)
+    dummy_data[main_address_col] = main_df[main_address_col]  # 住所はメインデータの住所をコピー
+    
+    return pd.DataFrame(dummy_data)
+
+
+
+def process_data(input_files):
+    """
+    すべてのデータファイルを処理する
+
+    Parameters
+    ----------
+    suido_status_file : file
+        水道ステータスデータファイル
+    suido_use_file : file
+        水道使用量データファイル
+    juki_file : file
+        住基データファイル
+    touki_file : file
+        登記データファイル
+    akiya_result_file : file
+        空き家結果データファイル
+    geocoding_file : file
+        ジオコーディングデータファイル
+
+    Returns
+    -------
+    list
+        処理済みファイルのパスリスト
+    """  
+    # 入力ファイルのパスを設定
+    # 各ファイルオブジェクトから名前（パス）を取得し、辞書形式で保存
+    input_paths = input_files
+    
+    # 出力ファイルのパスを設定
+    # 処理後のファイルの保存先パスを辞書形式で定義
+    output_paths = {
+        "suido_status": "suido_status_cleaned.csv",
+        "suido_use": "suido_use_cleaned.csv",
+        "juki": "juki_cleaned.csv",
+        "touki": "touki_cleaned.csv",
+        "akiya_result": "akiya_result_cleaned.csv",
+        "geocoding": "geocoding_cleaned.csv"
+    }
+    
+    # EachFileProcessorインスタンスを作成
+    # 入力パスと出力パスを引数として、ファイル処理用のオブジェクトを生成
+    processor = EachFileProcessor(input_paths, output_paths)
+    
+    # 各データファイルを順番に処理
+    for file_key in input_paths.keys():
+        # 処理中のファイル名を表示
+        print(f"{file_key}データを処理中...")
+        # EachFileProcessorのprocess_fileメソッドを呼び出して各ファイルを処理
+        processor.process_file(file_key)
+
+    print("すべての処理が完了しました!")
+
+    # 処理済みファイルのパスリストを返す
+    # 出力パスのうち、実際にファイルが生成されたもののみをリストにして返す
+    return [path for path in output_paths.values() if os.path.exists(path)]
+
+def main():
+    parser = argparse.ArgumentParser(description="E012 - データクレンジング機能")
+    parser.add_argument("--suido_status", required=True, help="水道ステータスデータファイルのパス")
+    parser.add_argument("--suido_use", required=True, help="水道使用量データファイルのパス")
+    parser.add_argument("--juki", required=True, help="住基データファイルのパス")
+    parser.add_argument("--touki", required=True, help="登記データファイルのパス")
+    parser.add_argument("--akiya_result", required=True, help="空き家結果データファイルのパス")
+    parser.add_argument("--geocoding", required=True, help="ジオコーディングデータファイルのパス")
+    
+    args = parser.parse_args()
+
+    input_files = {
+        "suido_status": args.suido_status,
+        "suido_use": args.suido_use,
+        "juki": args.juki,
+        "touki": args.touki,
+        "akiya_result": args.akiya_result,
+        "geocoding": args.geocoding
+    }
+
+    processed_files = process_data(input_files)
+    
+    print("処理済みファイル:")
+    for file in processed_files:
+        print(file)
+
+if __name__ == "__main__":
+    main()
+
+        

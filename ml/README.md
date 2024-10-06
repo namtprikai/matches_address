@@ -1,4 +1,61 @@
-# Akiya ML codes
-## Docs
-* [コンパイル方法](https://microgeodata.sharepoint.com/:w:/r/sites/ProjectLINKS-ProjectLINKS/Shared%20Documents/LINKS07%20%E8%A1%8C%E6%94%BF%E6%83%85%E5%A0%B1%E3%82%92%E6%B4%BB%E7%94%A8%E3%81%97%E3%81%9F%E7%A9%BA%E3%81%8D%E5%AE%B6%E3%83%87%E3%83%BC%E3%82%BF%E3%81%AE%E6%95%B4%E5%82%99%E3%83%BB%E6%B4%BB%E7%94%A8%E5%AE%9F%E8%A8%BC%E8%AA%BF%E6%9F%BB/99_%E3%81%9D%E3%81%AE%E4%BB%96/%E3%83%87%E3%83%BC%E3%82%BF%E3%81%AE%E8%A9%B3%E7%B4%B0%E3%83%BB%E5%87%A6%E7%90%86/%E3%82%B3%E3%83%B3%E3%83%91%E3%82%A4%E3%83%AB/%E3%82%B3%E3%83%B3%E3%83%91%E3%82%A4%E3%83%AB%E6%96%B9%E6%B3%95.docx?d=w1b221ab24468460c8980e2cf9ab81752&csf=1&web=1&e=hbcJEi)
-* [実行方法](https://docs.google.com/spreadsheets/d/1eF9TXJiAIpCCtU5aqNpxwDG8eyxt8knS-KJcVeHkhWA/edit?gid=1824293693#gid=1824293693)
+# 空き家判定システム バックエンドコード
+
+## 概要
+
+プロジェクト：　「行政情報を活用した空き家データの整備・活用実証調査」
+
+本システムは全国的な空き家急増に対して、空き家実態把握の効率化・簡便化を実現することで、データに基づく迅速かつ効果的な空き家対策の立案・実行を支援できるようになることを目指しています。
+
+
+## 実行環境
+* 本システムの実行には、Python言語の実行体制が必要になります。別添の[デモアプリ実行環境構築マニュアル](https://microgeodata.sharepoint.com/:w:/r/sites/ProjectLINKS-ProjectLINKS/Shared%20Documents/LINKS07%20%E8%A1%8C%E6%94%BF%E6%83%85%E5%A0%B1%E3%82%92%E6%B4%BB%E7%94%A8%E3%81%97%E3%81%9F%E7%A9%BA%E3%81%8D%E5%AE%B6%E3%83%87%E3%83%BC%E3%82%BF%E3%81%AE%E6%95%B4%E5%82%99%E3%83%BB%E6%B4%BB%E7%94%A8%E5%AE%9F%E8%A8%BC%E8%AA%BF%E6%9F%BB/80_%E4%B8%AD%E9%96%93%E7%B4%8D%E5%93%81/%E3%83%90%E3%83%83%E3%82%AF%E3%82%A8%E3%83%B3%E3%83%89%E3%83%AC%E3%83%93%E3%83%A5%E3%83%BC%E4%BC%9A%E8%B3%87%E6%96%99/%E3%83%86%E3%82%99%E3%83%A2%E3%82%A2%E3%83%95%E3%82%9A%E3%83%AA%E5%AE%9F%E8%A1%8C%E7%92%B0%E5%A2%83%E6%A7%8B%E7%AF%89%E3%83%9E%E3%83%8B%E3%83%A5%E3%82%A2%E3%83%AB.docx?d=w3417f162b6994cb79d07d1122c4b81ba&csf=1&web=1&e=4zKI8v)をご参照ください。
+
+## ファイル構成
+* ソースコードはsrcフォルダとGradioフォルダの2種類に分かれています。
+  * srcフォルダ: 本システムの各機能の処理が記載されたコードとなります。引数を指定して実行します。最終的に本ファイルをコンパイルし、Exeファイル化して実行します。
+  * Gradioフォルダ：　srcフォルダのコードをライブラリとして読み込み、Gradioという簡易デモインターフェース上でGUI上で動作確認することができます。
+
+## 実行方法
+* ターミナル上で各処理のディレクトリに入り、該当ディレクトリでpythonを実行します。
+
+### Gradioを実行する方法
+
+E012を実行する場合
+```
+cd ./Gradio/E001_DataMatching
+python E012.py
+```
+
+Gradioではデモ用とデバッグ用の２種類のコードを用意しています。
+
+Ex. E012の場合
+* デモ用：　E012.py
+ * ファイルのドラッグ&ドロップ、メニュー選択等を行って、アップされたデータに応じて適切な項目を選択・実行していきます。
+* デバッグ用：　E012_debug.py
+ * 試行錯誤をすぐに行えるように、あらかじめファイルパスやオプションが入力され、実行するだけの状態となっています。あらかじめる読み込まれるファイルパスは以下の構成となっています。
+
+豊橋市（23201）の場合
+```
+./Gradio/E001_DataMatching/23201
+├── E012
+│   ├── inputs # 入力データをこちらにセットしてください。
+│   │   ├── akiya_result.csv
+│   │   ├── geocoding.csv
+│   │   ├── juki_2023.csv #年度ごとに用意してください
+│   │   ├── touki.csv
+│   │   ├── suido_use_2023.csv #年度ごとに用意してください
+│   │   └── suido_status_2023.csv #年度ごとに用意してください
+│   └── outputs
+├── E013
+│   ├── inputs
+│   └── outputs
+├── E014
+│   ├── inputs
+│   └── outputs
+├── E015
+│   ├── inputs
+│   └── outputs
+└── E016
+    ├── inputs
+    └── outputs
+```
