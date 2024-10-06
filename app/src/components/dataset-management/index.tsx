@@ -34,6 +34,7 @@ const useStyles = makeStyles({
 });
 
 export type DataSet = {
+  id: number;
   name: string;
   date: string;
 };
@@ -131,7 +132,7 @@ export function DatasetList({
       <TableBody>
         {rows.map(({ item, selected, onClick, appearance }) => (
           <TableRow
-            key={item.name}
+            key={item.id}
             appearance={appearance}
             aria-selected={selected}
             onClick={onClick}
