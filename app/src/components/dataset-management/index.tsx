@@ -11,6 +11,11 @@ import {
   TableSelectionCell,
   makeStyles,
   tokens,
+  Menu,
+  MenuTrigger,
+  MenuPopover,
+  MenuList,
+  MenuItem,
 } from "@fluentui/react-components";
 import {
   ArrowDownloadRegular,
@@ -107,10 +112,16 @@ export function DatasetList({
     console.log("Download button clicked");
   };
 
-  const handleMenu = (e: MouseEvent): void => {
+  const handleEditMenuClick = (e: MouseEvent): void => {
     e.stopPropagation();
     // eslint-disable-next-line no-console -- for debug
-    console.log("Menu button clicked");
+    console.log("Edit button clicked");
+  };
+
+  const handleDeleteMenuClick = (e: MouseEvent): void => {
+    e.stopPropagation();
+    // eslint-disable-next-line no-console -- for debug
+    console.log("Delete button clicked");
   };
 
   return (
@@ -150,12 +161,24 @@ export function DatasetList({
                 icon={<ArrowDownloadRegular />}
                 onClick={handleDownload}
               />
-              <Button
-                appearance="subtle"
-                aria-label="詳細メニュー"
-                icon={<MoreVerticalRegular />}
-                onClick={handleMenu}
-              />
+              <Menu>
+                <MenuTrigger disableButtonEnhancement>
+                  <Button
+                    appearance="subtle"
+                    aria-label="詳細メニュー"
+                    icon={<MoreVerticalRegular />}
+                    onClick={(e) => e.stopPropagation()}
+                  />
+                </MenuTrigger>
+                <MenuPopover>
+                  <MenuList>
+                    <MenuItem onClick={handleEditMenuClick}>
+                      データ名の編集
+                    </MenuItem>
+                    <MenuItem onClick={handleDeleteMenuClick}>削除</MenuItem>
+                  </MenuList>
+                </MenuPopover>
+              </Menu>
             </TableCell>
           </TableRow>
         ))}
