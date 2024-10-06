@@ -43,6 +43,7 @@ export type DatasetListProps = {
   onSelectionChange: Dispatch<SetStateAction<number>>;
 };
 
+// TODO: ファイル名かコンポーネント名のどちらかを直して統一する
 export function DatasetList({
   dataSets,
   onSelectionChange,
