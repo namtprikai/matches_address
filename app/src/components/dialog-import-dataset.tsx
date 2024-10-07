@@ -17,7 +17,6 @@ import { ArrowSortRegular, DismissFilled } from "@fluentui/react-icons";
 
 import { useState } from "react";
 import { Tab } from "../components/ui/tab";
-import FileUpload from "../../assets/FileUpload.png";
 import { Button } from "./ui/button";
 import { DialogSurface } from "./ui/dialog-surface";
 import { DialogBody } from "./ui/dialog-body";
@@ -253,7 +252,6 @@ export const DialogImportDataset = (
             {selectedTab === 1 && (
               <div className={styles.uploadWrap}>
                 <div className={styles.noDataset}>
-                  <img alt="upload" src={FileUpload} />
                   <span className={styles.dragAndDrop}>
                     ここにドラッグ&ドロップ
                   </span>
