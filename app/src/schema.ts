@@ -593,10 +593,8 @@ export const normalized_data_sets = sqliteTable("normalized_data_sets", {
   job_results_id: integer("job_results_id").notNull(),
 });
 
-export type SelectDataSetNormalization =
-  typeof normalized_data_sets.$inferSelect;
-export type InsertDataSetNormalization =
-  typeof normalized_data_sets.$inferInsert;
+export type SelectNormalizedDataSet = typeof normalized_data_sets.$inferSelect;
+export type InsertNormalizedDataSet = typeof normalized_data_sets.$inferInsert;
 
 /** データセット:シード */
 export const raw_data_sets = sqliteTable("raw_data_sets", {
@@ -608,5 +606,5 @@ export const raw_data_sets = sqliteTable("raw_data_sets", {
   job_results_id: integer("job_results_id").notNull(),
 });
 
-export type SelectDataSetSource = typeof raw_data_sets.$inferSelect;
-export type InsertDataSetSource = typeof raw_data_sets.$inferInsert;
+export type SelectRawDataSet = typeof raw_data_sets.$inferSelect;
+export type InsertRawDataSet = typeof raw_data_sets.$inferInsert;
