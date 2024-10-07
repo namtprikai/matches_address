@@ -1,5 +1,5 @@
 import { makeStyles, mergeClasses, tokens } from "@fluentui/react-components";
-import FileUploadIcon from "../../../../assets/file-upload-icon.svg";
+import FileUploadIcon from "../../../../public/file-upload-icon.svg";
 import { THEME_COLORS } from "../../../config/theme-colors";
 
 const useStyles = makeStyles({
