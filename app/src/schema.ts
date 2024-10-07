@@ -591,6 +591,14 @@ export const normalized_data_sets = sqliteTable("normalized_data_sets", {
   // job_resultsの内部パス / NOT NULL
   file_path: text("file_path").notNull(),
   job_results_id: integer("job_results_id").notNull(),
+
+  created_at: text("created_at")
+    .default(sql`(CURRENT_TIMESTAMP)`)
+    .notNull(),
+  updated_at: text("updated_at")
+    .default(sql`(CURRENT_TIMESTAMP)`)
+    .notNull()
+    .$onUpdate(() => sql`(CURRENT_TIMESTAMP)`),
 });
 
 export type SelectNormalizedDataSet = typeof normalized_data_sets.$inferSelect;
@@ -604,6 +612,14 @@ export const raw_data_sets = sqliteTable("raw_data_sets", {
   // job_resultsの内部パス / NOT NULL
   file_path: text("file_path").notNull(),
   job_results_id: integer("job_results_id").notNull(),
+
+  created_at: text("created_at")
+    .default(sql`(CURRENT_TIMESTAMP)`)
+    .notNull(),
+  updated_at: text("updated_at")
+    .default(sql`(CURRENT_TIMESTAMP)`)
+    .notNull()
+    .$onUpdate(() => sql`(CURRENT_TIMESTAMP)`),
 });
 
 export type SelectRawDataSet = typeof raw_data_sets.$inferSelect;
