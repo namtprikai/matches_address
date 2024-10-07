@@ -95,8 +95,17 @@ export function Dataset(): JSX.Element {
     console.log("Delete button clicked");
   };
 
-  const handleEditItem = (id: Dataset["id"]): void => {
-    // TODO: Open edit dialog
+  // TODO: DBのデータを更新するように修正する
+  const handleEditItem = (
+    id: Dataset["id"],
+    newName: Dataset["name"],
+  ): void => {
+    setSelectedDatasets((prev) => {
+      if (!prev) return prev;
+      return prev.map((dataset) =>
+        dataset.id === id ? { ...dataset, name: newName } : dataset,
+      );
+    });
   };
 
   const handleDeleteItem = (id: Dataset["id"]): void => {
@@ -145,8 +154,8 @@ export function Dataset(): JSX.Element {
             <DatasetList
               dataSets={selectedDatasets}
               onDelete={handleDeleteItem}
-              onEdit={handleEditItem}
               onSelectionChange={setSelectedCount}
+              onSubmit={handleEditItem}
             />
           ) : null}
         </div>

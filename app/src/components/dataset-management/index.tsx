@@ -22,12 +22,14 @@ import {
 import {
   ArrowDownloadRegular,
   MoreVerticalRegular,
+  Dismiss24Regular,
 } from "@fluentui/react-icons";
 import {
   type Dispatch,
   type SetStateAction,
   type MouseEvent,
   type KeyboardEvent,
+  useState,
 } from "react";
 import { DialogSurface } from "../ui/dialog-surface";
 import { DialogTitle } from "../ui/dialog-title";
@@ -35,6 +37,7 @@ import { DialogActions } from "../ui/dialog-actions";
 import { DialogBody } from "../ui/dialog-body";
 import { DialogContent } from "../ui/dialog-content";
 import { Button } from "../ui/button";
+import { Input } from "../ui/input";
 
 const useStyles = makeStyles({
   actions: {
@@ -48,6 +51,9 @@ const useStyles = makeStyles({
     padding: 0,
     fontWeight: "normal",
   },
+  input: {
+    width: "100%",
+  },
 });
 
 export type Dataset = {
@@ -59,7 +65,7 @@ export type Dataset = {
 export type DatasetListProps = {
   dataSets: Dataset[];
   onSelectionChange: Dispatch<SetStateAction<number>>;
-  onEdit: (id: Dataset["id"]) => void;
+  onSubmit: (id: Dataset["id"], newName: string) => void;
   onDelete: (id: Dataset["id"]) => void;
 };
 
@@ -67,7 +73,7 @@ export type DatasetListProps = {
 export function DatasetList({
   dataSets,
   onSelectionChange,
-  onEdit,
+  onSubmit,
   onDelete,
 }: DatasetListProps): JSX.Element {
   const styles = useStyles();
@@ -128,8 +134,11 @@ export function DatasetList({
     console.log("Download button clicked");
   };
 
-  const handleEditMenuClick = (id: Dataset["id"]): void => {
-    onEdit(id);
+  const handleEditMenuClick = (
+    id: Dataset["id"],
+    newName: Dataset["name"],
+  ): void => {
+    onSubmit(id, newName);
   };
 
   const handleDeleteMenuClick = (id: Dataset["id"]): void => {
@@ -184,13 +193,13 @@ export function DatasetList({
                 </MenuTrigger>
                 <MenuPopover>
                   <MenuList>
-                    <MenuItem
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleEditMenuClick(item.id);
-                      }}
-                    >
-                      データ名の編集
+                    <MenuItem onClick={(e) => e.stopPropagation()}>
+                      <EditDialog
+                        initialName={item.name}
+                        onSubmit={(newName) =>
+                          handleEditMenuClick(item.id, newName)
+                        }
+                      />
                     </MenuItem>
                     <MenuItem onClick={(e) => e.stopPropagation()}>
                       <DeleteDialog
@@ -208,6 +217,74 @@ export function DatasetList({
   );
 }
 
+function EditDialog({
+  initialName,
+  onSubmit,
+}: {
+  initialName: string;
+  onSubmit: (newName: string) => void;
+}): JSX.Element {
+  // TODO: 仮の動作確認のためのロジックなのでDBスキーマが決まりしだい修正する
+  const styles = useStyles();
+  const [newName, setNewName] = useState(initialName);
+  const [open, setOpen] = useState(false);
+
+  const handleSubmit = (): void => {
+    onSubmit(newName);
+    setOpen(false);
+  };
+
+  return (
+    <Dialog onOpenChange={(_, data) => setOpen(data.open)} open={open}>
+      <DialogTrigger disableButtonEnhancement>
+        <Button
+          appearance="transparent"
+          className={styles.menuItemButton}
+          onClick={(e) => {
+            e.stopPropagation();
+            setOpen(true);
+          }}
+        >
+          データ名の編集
+        </Button>
+      </DialogTrigger>
+      <DialogSurface aria-describedby={undefined}>
+        <DialogBody>
+          <DialogTitle
+            action={
+              <DialogTrigger action="close">
+                <Button
+                  appearance="subtle"
+                  aria-label="close"
+                  icon={
+                    <Dismiss24Regular
+                      color={tokens.colorNeutralForeground1}
+                      strokeWidth={2}
+                    />
+                  }
+                />
+              </DialogTrigger>
+            }
+          >
+            データ名の編集
+          </DialogTitle>
+          <DialogContent>
+            <Input
+              className={styles.input}
+              onChange={(e) => setNewName(e.target.value)}
+              value={newName}
+            />
+          </DialogContent>
+          <DialogActions>
+            <Button appearance="primary" onClick={handleSubmit} size="medium">
+              保存
+            </Button>
+          </DialogActions>
+        </DialogBody>
+      </DialogSurface>
+    </Dialog>
+  );
+}
 function DeleteDialog({ onDelete }: { onDelete: () => void }): JSX.Element {
   const styles = useStyles();
 
