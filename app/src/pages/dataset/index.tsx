@@ -9,7 +9,7 @@ import {
 } from "@fluentui/react-components";
 import { ArrowDownloadRegular, DeleteRegular } from "@fluentui/react-icons";
 import { useTabs } from "../../hooks/use-tabs";
-import { type DataSet, DatasetList } from "../../components/dataset-management";
+import { type Dataset, DatasetList } from "../../components/dataset-management";
 
 const useStyles = makeStyles({
   root: {
@@ -58,7 +58,7 @@ export function Dataset(): JSX.Element {
   const initialTabValue: TabValue = "seed";
   const { onTabSelect, selectedValue } = useTabs<TabValue>(initialTabValue);
   const [selectedDatasets, setSelectedDatasets] = useState<
-    DataSet[] | undefined
+    Dataset[] | undefined
   >(undefined);
   const [selectedCount, setSelectedCount] = useState(0);
 
@@ -142,7 +142,7 @@ export function Dataset(): JSX.Element {
   );
 }
 
-const _dummyDataSetSeeds: DataSet[] = [
+const _dummyDataSetSeeds: Dataset[] = [
   { id: 1, name: "シードデータ", date: "2024/4/21" },
   { id: 2, name: "水道メーター1.shp", date: "2024/4/21" },
   { id: 3, name: "前処理住民台帳1.csv", date: "2024/4/21" },
@@ -151,7 +151,7 @@ const _dummyDataSetSeeds: DataSet[] = [
   { id: 6, name: "水道メーター2.shp", date: "2024/4/21" },
 ];
 
-const _dummyDataSetNormalizations: DataSet[] = [
+const _dummyDataSetNormalizations: Dataset[] = [
   { id: 1, name: "正規化済みデータ", date: "2024/4/21" },
   { id: 2, name: "水道メーター1.shp", date: "2024/4/21" },
   { id: 3, name: "前処理住民台帳1.csv", date: "2024/4/21" },
@@ -160,7 +160,7 @@ const _dummyDataSetNormalizations: DataSet[] = [
   { id: 6, name: "水道メーター2.shp", date: "2024/4/21" },
 ];
 
-const _dummyDataSetResults: DataSet[] = [
+const _dummyDataSetResults: Dataset[] = [
   { id: 1, name: "空き家判定結果データ", date: "2024/4/21" },
   { id: 2, name: "水道メーター1.shp", date: "2024/4/21" },
   { id: 3, name: "前処理住民台帳1.csv", date: "2024/4/21" },

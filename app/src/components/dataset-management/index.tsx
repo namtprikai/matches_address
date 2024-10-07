@@ -38,14 +38,14 @@ const useStyles = makeStyles({
   },
 });
 
-export type DataSet = {
+export type Dataset = {
   id: number;
   name: string;
   date: string;
 };
 
 export type DatasetListProps = {
-  dataSets: DataSet[];
+  dataSets: Dataset[];
   onSelectionChange: Dispatch<SetStateAction<number>>;
 };
 
@@ -56,8 +56,8 @@ export function DatasetList({
 }: DatasetListProps): JSX.Element {
   const styles = useStyles();
   const columns = [
-    createTableColumn<DataSet>({ columnId: "name" }),
-    createTableColumn<DataSet>({ columnId: "date" }),
+    createTableColumn<Dataset>({ columnId: "name" }),
+    createTableColumn<Dataset>({ columnId: "date" }),
   ];
 
   const {
