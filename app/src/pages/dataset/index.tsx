@@ -108,6 +108,7 @@ export function Dataset(): JSX.Element {
     });
   };
 
+  // TODO: DBのデータを削除するように修正する
   const handleDeleteItem = (id: Dataset["id"]): void => {
     setSelectedDatasets((prev) => {
       if (!prev) return prev;
