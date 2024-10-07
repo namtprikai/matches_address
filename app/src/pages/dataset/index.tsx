@@ -95,6 +95,10 @@ export function Dataset(): JSX.Element {
     console.log("Delete button clicked");
   };
 
+  const handleEditItem = (id: Dataset["id"]): void => {
+    // TODO: Open edit dialog
+  };
+
   const handleDeleteItem = (id: Dataset["id"]): void => {
     setSelectedDatasets((prev) => {
       if (!prev) return prev;
@@ -141,6 +145,7 @@ export function Dataset(): JSX.Element {
             <DatasetList
               dataSets={selectedDatasets}
               onDelete={handleDeleteItem}
+              onEdit={handleEditItem}
               onSelectionChange={setSelectedCount}
             />
           ) : null}

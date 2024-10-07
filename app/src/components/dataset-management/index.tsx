@@ -16,6 +16,8 @@ import {
   MenuPopover,
   MenuList,
   MenuItem,
+  Dialog,
+  DialogTrigger,
 } from "@fluentui/react-components";
 import {
   ArrowDownloadRegular,
@@ -27,6 +29,11 @@ import {
   type MouseEvent,
   type KeyboardEvent,
 } from "react";
+import { DialogSurface } from "../ui/dialog-surface";
+import { DialogTitle } from "../ui/dialog-title";
+import { DialogActions } from "../ui/dialog-actions";
+import { DialogBody } from "../ui/dialog-body";
+import { DialogContent } from "../ui/dialog-content";
 import { Button } from "../ui/button";
 
 const useStyles = makeStyles({
@@ -35,6 +42,11 @@ const useStyles = makeStyles({
     alignItems: "center",
     justifyContent: "flex-end",
     gap: tokens.spacingHorizontalM,
+  },
+  menuItemButton: {
+    justifyContent: "flex-start",
+    padding: 0,
+    fontWeight: "normal",
   },
 });
 
@@ -47,6 +59,7 @@ export type Dataset = {
 export type DatasetListProps = {
   dataSets: Dataset[];
   onSelectionChange: Dispatch<SetStateAction<number>>;
+  onEdit: (id: Dataset["id"]) => void;
   onDelete: (id: Dataset["id"]) => void;
 };
 
@@ -54,6 +67,7 @@ export type DatasetListProps = {
 export function DatasetList({
   dataSets,
   onSelectionChange,
+  onEdit,
   onDelete,
 }: DatasetListProps): JSX.Element {
   const styles = useStyles();
@@ -115,8 +129,7 @@ export function DatasetList({
   };
 
   const handleEditMenuClick = (id: Dataset["id"]): void => {
-    // eslint-disable-next-line no-console -- for debug
-    console.log("Edit button clicked");
+    onEdit(id);
   };
 
   const handleDeleteMenuClick = (id: Dataset["id"]): void => {
@@ -179,13 +192,10 @@ export function DatasetList({
                     >
                       データ名の編集
                     </MenuItem>
-                    <MenuItem
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleDeleteMenuClick(item.id);
-                      }}
-                    >
-                      削除
+                    <MenuItem onClick={(e) => e.stopPropagation()}>
+                      <DeleteDialog
+                        onDelete={() => handleDeleteMenuClick(item.id)}
+                      />
                     </MenuItem>
                   </MenuList>
                 </MenuPopover>
@@ -195,5 +205,36 @@ export function DatasetList({
         ))}
       </TableBody>
     </Table>
+  );
+}
+
+function DeleteDialog({ onDelete }: { onDelete: () => void }): JSX.Element {
+  const styles = useStyles();
+
+  return (
+    <Dialog>
+      <DialogTrigger disableButtonEnhancement>
+        <Button
+          appearance="transparent"
+          className={styles.menuItemButton}
+          onClick={(e) => e.stopPropagation()}
+        >
+          削除
+        </Button>
+      </DialogTrigger>
+      <DialogSurface>
+        <DialogBody>
+          <DialogTitle>このデータを削除しますか？</DialogTitle>
+          <DialogContent>
+            削除したデータを復元することはできません
+          </DialogContent>
+          <DialogActions>
+            <Button appearance="primary" onClick={onDelete} size="medium">
+              削除
+            </Button>
+          </DialogActions>
+        </DialogBody>
+      </DialogSurface>
+    </Dialog>
   );
 }
