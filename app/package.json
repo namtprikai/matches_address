@@ -55,6 +55,7 @@
     "pmtiles": "^3.0.7",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
+    "react-dropzone": "^14.2.9",
     "react-hook-form": "^7.52.1",
     "react-router-dom": "^6.24.1",
     "recharts": "^2.13.0-alpha.4",
@@ -69,7 +70,6 @@
   "dependencies": {
     "better-sqlite3": "^11.2.1",
     "electron-squirrel-startup": "^1.0.1",
-    "react-dropzone": "^14.2.9",
     "vite-plugin-native": "^2.2.1"
   },
   "optionalDependencies": {
