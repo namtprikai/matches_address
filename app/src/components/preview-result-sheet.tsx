@@ -77,6 +77,7 @@ export const PreviewResultSheet = (): JSX.Element | null => {
           <TileResultView
             key={item.id}
             className={styles[`view${item.layoutIndex}` as keyof typeof styles]}
+            focusable
             resultView={item}
           />
         ))}

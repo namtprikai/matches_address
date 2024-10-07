@@ -26,7 +26,7 @@ import { DialogContent } from "./ui/dialog-content";
 type Props = {
   resultView: SelectResultView;
   className?: string;
-  disabled?: boolean;
+  focusable?: boolean;
   cardProps?: CardProps;
 };
 
@@ -53,7 +53,7 @@ const useStyles = makeStyles({
 export const TileResultView = ({
   resultView,
   className,
-  disabled,
+  focusable,
 }: Props): JSX.Element => {
   const styles = useStyles();
   const [selectedResultViewId, setSelectedResultViewId] = useAtom(
@@ -95,7 +95,7 @@ export const TileResultView = ({
           selected && styles.selected,
           className,
         )}
-        onClick={disabled ? undefined : handleClick}
+        onClick={focusable ? handleClick : undefined}
       >
         <CardHeader
           action={
@@ -158,7 +158,7 @@ export const TileResultView = ({
         selected && styles.selected,
         className,
       )}
-      onClick={disabled ? undefined : handleClick}
+      onClick={focusable ? handleClick : undefined}
     >
       <CardHeader
         action={
