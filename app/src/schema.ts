@@ -582,3 +582,31 @@ export const data_set_detail_areas = sqliteTable("data_set_detail_areas", {
 
 export type SelectDataSetDetailArea = typeof data_set_detail_areas.$inferSelect;
 export type InsertDataSetDetailArea = typeof data_set_detail_areas.$inferInsert;
+
+/** データセット:正規化済み */
+export const normalized_data_sets = sqliteTable("normalized_data_sets", {
+  id: integer("id").primaryKey(),
+  // 表示・編集用のファイル名 初期値はnullになる
+  file_name: text("file_name"),
+  // job_resultsの内部パス / NOT NULL
+  file_path: text("file_path").notNull(),
+  job_results_id: integer("job_results_id").notNull(),
+});
+
+export type SelectDataSetNormalization =
+  typeof normalized_data_sets.$inferSelect;
+export type InsertDataSetNormalization =
+  typeof normalized_data_sets.$inferInsert;
+
+/** データセット:シード */
+export const raw_data_sets = sqliteTable("raw_data_sets", {
+  id: integer("id").primaryKey(),
+  // 表示・編集用のファイル名 / NOT NULL
+  file_name: text("file_name").notNull(),
+  // job_resultsの内部パス / NOT NULL
+  file_path: text("file_path").notNull(),
+  job_results_id: integer("job_results_id").notNull(),
+});
+
+export type SelectDataSetSource = typeof raw_data_sets.$inferSelect;
+export type InsertDataSetSource = typeof raw_data_sets.$inferInsert;
