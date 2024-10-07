@@ -18,7 +18,7 @@ if (require("electron-squirrel-startup")) {
 const hono = new Hono();
 const port = 3000;
 
-const development = process.env.NODE_ENV === "development";
+const isDev = process.env.NODE_ENV === "development";
 
 const createWindow = (): void => {
   // Create the browser window.
@@ -40,16 +40,15 @@ const createWindow = (): void => {
   }
 
   // Open the DevTools when in development mode.
-  if (process.env.NODE_ENV === "development") {
+  if (isDev) {
     mainWindow.webContents.openDevTools();
   }
 };
 
 void app.whenReady().then(async () => {
-  const migrationsFolder =
-    process.env.NODE_ENV === "development"
-      ? "drizzle"
-      : join(process.resourcesPath, "drizzle");
+  const migrationsFolder = isDev
+    ? "drizzle"
+    : join(process.resourcesPath, "drizzle");
   migrate(db, { migrationsFolder });
 
   if (!MAIN_WINDOW_VITE_DEV_SERVER_URL) {
@@ -80,7 +79,7 @@ void app.whenReady().then(async () => {
   const reactDevToolExtensionPath = getReactDevToolsPath();
 
   // if React DevTool is not installed
-  if (reactDevToolExtensionPath && development) {
+  if (reactDevToolExtensionPath && isDev) {
     await session.defaultSession.loadExtension(reactDevToolExtensionPath);
   }
 
