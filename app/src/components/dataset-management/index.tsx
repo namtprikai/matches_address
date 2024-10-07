@@ -47,12 +47,14 @@ export type Dataset = {
 export type DatasetListProps = {
   dataSets: Dataset[];
   onSelectionChange: Dispatch<SetStateAction<number>>;
+  onDelete: (id: Dataset["id"]) => void;
 };
 
 // TODO: ファイル名かコンポーネント名のどちらかを直して統一する
 export function DatasetList({
   dataSets,
   onSelectionChange,
+  onDelete,
 }: DatasetListProps): JSX.Element {
   const styles = useStyles();
   const columns = [
@@ -112,16 +114,13 @@ export function DatasetList({
     console.log("Download button clicked");
   };
 
-  const handleEditMenuClick = (e: MouseEvent): void => {
-    e.stopPropagation();
+  const handleEditMenuClick = (id: Dataset["id"]): void => {
     // eslint-disable-next-line no-console -- for debug
     console.log("Edit button clicked");
   };
 
-  const handleDeleteMenuClick = (e: MouseEvent): void => {
-    e.stopPropagation();
-    // eslint-disable-next-line no-console -- for debug
-    console.log("Delete button clicked");
+  const handleDeleteMenuClick = (id: Dataset["id"]): void => {
+    onDelete(id);
   };
 
   return (
@@ -172,10 +171,22 @@ export function DatasetList({
                 </MenuTrigger>
                 <MenuPopover>
                   <MenuList>
-                    <MenuItem onClick={handleEditMenuClick}>
+                    <MenuItem
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleEditMenuClick(item.id);
+                      }}
+                    >
                       データ名の編集
                     </MenuItem>
-                    <MenuItem onClick={handleDeleteMenuClick}>削除</MenuItem>
+                    <MenuItem
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeleteMenuClick(item.id);
+                      }}
+                    >
+                      削除
+                    </MenuItem>
                   </MenuList>
                 </MenuPopover>
               </Menu>

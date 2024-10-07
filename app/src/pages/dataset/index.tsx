@@ -90,9 +90,16 @@ export function Dataset(): JSX.Element {
     console.log("Download button clicked");
   };
 
-  const handleDelete = (): void => {
+  const handleDeleteSelectedItems = (): void => {
     // eslint-disable-next-line no-console -- for debug
     console.log("Delete button clicked");
+  };
+
+  const handleDeleteItem = (id: Dataset["id"]): void => {
+    setSelectedDatasets((prev) => {
+      if (!prev) return prev;
+      return prev.filter((dataset) => dataset.id !== id);
+    });
   };
 
   return (
@@ -125,7 +132,7 @@ export function Dataset(): JSX.Element {
               appearance="outline"
               className={styles.button}
               icon={<DeleteRegular />}
-              onClick={handleDelete}
+              onClick={handleDeleteSelectedItems}
             />
           </div>
         </div>
@@ -133,6 +140,7 @@ export function Dataset(): JSX.Element {
           {selectedDatasets ? (
             <DatasetList
               dataSets={selectedDatasets}
+              onDelete={handleDeleteItem}
               onSelectionChange={setSelectedCount}
             />
           ) : null}
