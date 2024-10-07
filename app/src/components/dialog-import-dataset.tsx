@@ -5,8 +5,16 @@ import {
   type SelectTabData,
   type SelectTabEvent,
   TabList,
+  Table,
+  TableHeader,
+  TableHeaderCell,
+  TableBody,
+  TableRow,
+  TableCell,
+  mergeClasses,
 } from "@fluentui/react-components";
 import { ArrowSortRegular, DismissFilled } from "@fluentui/react-icons";
+
 import { useState } from "react";
 import { Tab } from "../components/ui/tab";
 import FileUpload from "../../assets/FileUpload.png";
@@ -59,6 +67,12 @@ const useStyles = makeStyles({
     gap: tokens.spacingVerticalXL,
     padding: `${tokens.spacingVerticalNone} ${tokens.spacingHorizontalXXL}`,
   },
+  tableHeader: {
+    display: "block",
+  },
+  tableBody: {
+    height: "293px",
+  },
   datasetTable: {
     display: "grid",
     gridTemplateColumns: "1fr 1fr",
@@ -75,6 +89,8 @@ const useStyles = makeStyles({
   datasetCell: {
     padding: `${tokens.spacingVerticalS} ${tokens.spacingHorizontalXXL}`,
     fontSize: tokens.fontSizeBase200,
+    display: "flex",
+    alignItems: "center",
   },
   datasetHeader: {
     display: "flex",
@@ -84,7 +100,6 @@ const useStyles = makeStyles({
     ":hover": { cursor: "pointer" },
   },
   tableHeight: {
-    height: "293px",
     borderBottom: `1px solid ${tokens.colorNeutralStroke2}`,
     borderTop: `1px solid ${tokens.colorNeutralStroke2}`,
   },
@@ -125,7 +140,7 @@ type DialogImportDatasetProps = {
 export const DialogImportDataset = (
   props: DialogImportDatasetProps,
 ): JSX.Element => {
-  const { open, onClose } = props;
+  const { open = true, onClose } = props;
   const styles = useStyles();
   const [selectedTab, setSelectedTab] = useState(0);
 
@@ -181,46 +196,49 @@ export const DialogImportDataset = (
             {selectedTab === 0 && (
               <>
                 {datasets.length > 0 ? (
-                  <div className={styles.tableHeight}>
-                    {/* ヘッダー */}
-                    <div
-                      className={`${styles.datasetTable} ${styles.borderBottom}`}
-                    >
-                      <div
-                        className={`${styles.datasetCell} ${styles.datasetHeader}`}
+                  <Table className={styles.tableHeight}>
+                    <TableHeader className={styles.tableHeader}>
+                      <TableRow
+                        className={`${styles.datasetTable} ${styles.borderBottom}`}
                       >
-                        データセット名
-                        <ArrowSortRegular />
-                      </div>
-                      <div
-                        className={`${styles.datasetCell} ${styles.datasetHeader}`}
-                      >
-                        最終更新
-                        <ArrowSortRegular />
-                      </div>
-                    </div>
-                    {/* データセットリスト */}
-                    {datasets.map((dataset, index) => (
-                      <div
-                        key={index}
-                        className={`${styles.datasetTable} ${
-                          selectedDatasetIndex === index
-                            ? styles.selectedDatasetTable
-                            : styles.borderBottom
-                        }`}
-                        onClick={() => setSelectedDatasetIndex(index)}
-                      >
-                        <span
-                          className={`${styles.datasetCell} ${styles.dataName}`}
+                        <TableHeaderCell
+                          className={`${styles.datasetCell} ${styles.datasetHeader}`}
                         >
-                          {dataset.name}
-                        </span>
-                        <span className={styles.datasetCell}>
-                          {dataset.lastUpdated}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
+                          データセット名
+                          <ArrowSortRegular />
+                        </TableHeaderCell>
+                        <TableHeaderCell
+                          className={`${styles.datasetCell} ${styles.datasetHeader}`}
+                        >
+                          最終更新
+                          <ArrowSortRegular />
+                        </TableHeaderCell>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody className={styles.tableBody}>
+                      {datasets.map((dataset, index) => (
+                        <TableRow
+                          key={index}
+                          className={mergeClasses(
+                            styles.datasetTable,
+                            selectedDatasetIndex === index
+                              ? styles.selectedDatasetTable
+                              : styles.borderBottom,
+                          )}
+                          onClick={() => setSelectedDatasetIndex(index)}
+                        >
+                          <TableCell
+                            className={`${styles.datasetCell} ${styles.dataName}`}
+                          >
+                            {dataset.name}
+                          </TableCell>
+                          <TableCell className={styles.datasetCell}>
+                            {dataset.lastUpdated}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
                 ) : (
                   <div className={styles.noDatasetWrap}>
                     <span className={styles.noDataset}>
@@ -230,6 +248,7 @@ export const DialogImportDataset = (
                 )}
               </>
             )}
+
             {/* MEMO: 今後別コンポーネントに切り出し */}
             {selectedTab === 1 && (
               <div className={styles.uploadWrap}>
