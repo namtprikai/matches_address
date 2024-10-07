@@ -18,7 +18,7 @@ if (require("electron-squirrel-startup")) {
 const hono = new Hono();
 const port = 3000;
 
-const development = process.env.ELECTRON_ENV === "development";
+const development = process.env.NODE_ENV === "development";
 
 const createWindow = (): void => {
   // Create the browser window.
