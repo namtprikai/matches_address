@@ -1,7 +1,7 @@
 import { memo, useEffect, useState } from "react";
+import { Checkbox, makeStyles } from "@fluentui/react-components";
 import { type FetchAreaGroupsArg } from "../ipc-main-listeners/fetch-area-groups";
 import { useFetchAreaGroups } from "../hooks/use-fetch-area-groups";
-import { Checkbox, makeStyles } from "@fluentui/react-components";
 
 const useStyles = makeStyles({
   options: {
@@ -25,8 +25,6 @@ export const AreaFilterFormOptions = memo((props: Props) => {
     dataSetResultId: props.dataSetResultId,
     unit: props.unit,
   });
-
-  console.log(props.selectedAreas);
 
   const [selectedAreas, setSelectedAreas] = useState<string[]>(
     props.selectedAreas,
