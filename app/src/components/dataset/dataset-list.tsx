@@ -83,9 +83,7 @@ export function DatasetList({
     createTableColumn<Dataset>({ columnId: "name" }),
     createTableColumn<Dataset>({ columnId: "date" }),
   ];
-  const [selectedRows, setSelectedRows] = useState(
-    () => new Set<TableRowId>([]),
-  );
+  const [selectedRows, setSelectedRows] = useState(new Set<TableRowId>());
 
   useEffect(
     function resetSelection() {
