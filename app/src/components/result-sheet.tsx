@@ -1,5 +1,4 @@
 import { makeStyles, tokens } from "@fluentui/react-components";
-import { useMemo } from "react";
 import { useFetchResultViews } from "../hooks/use-fetch-result-views";
 import { TileResultView } from "./tile-result-view";
 import { EmptyResultViews } from "./empty-result-views";
@@ -51,10 +50,9 @@ type Props = {
  */
 export const ResultSheet = ({ sheetId }: Props): JSX.Element => {
   const styles = useStyles();
-
   const { data } = useFetchResultViews({ sheetId });
 
-  const resultViewsGridTemplate = useMemo(() => {
+  const resultViewsGridTemplate = (() => {
     if (!data) return "";
     switch (data.length) {
       case 2:
@@ -66,7 +64,7 @@ export const ResultSheet = ({ sheetId }: Props): JSX.Element => {
       default:
         return "";
     }
-  }, [data, styles.template2th, styles.template3th, styles.template4th]);
+  })();
 
   if (!data || data.length === 0) return <EmptyResultViews />;
 
@@ -74,13 +72,7 @@ export const ResultSheet = ({ sheetId }: Props): JSX.Element => {
     <div className={styles.root}>
       <div className={resultViewsGridTemplate}>
         {data.map((item) => (
-          <TileResultView
-            key={item.result_views?.id}
-            {...{
-              resultView: item.result_views,
-              dataSetResult: item.data_set_results,
-            }}
-          />
+          <TileResultView key={item.id} resultView={item} />
         ))}
       </div>
     </div>

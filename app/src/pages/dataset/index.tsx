@@ -1,9 +1,25 @@
-import { Card, makeStyles, tokens } from "@fluentui/react-components";
+import { useEffect, useState } from "react";
+import {
+  Card,
+  makeStyles,
+  Tab,
+  TabList,
+  tokens,
+  Button,
+} from "@fluentui/react-components";
+import { ArrowDownloadRegular, DeleteRegular } from "@fluentui/react-icons";
+import { useTabs } from "../../hooks/use-tabs";
+import { type DataSet, DatasetList } from "../../components/dataset-management";
 
 const useStyles = makeStyles({
   root: {
     display: "grid",
     gap: tokens.spacingVerticalL,
+  },
+  header: {
+    display: "flex",
+    alignItems: "center",
+    gap: tokens.spacingHorizontalL,
   },
   heading: {
     fontSize: tokens.fontSizeBase500,
@@ -13,15 +29,142 @@ const useStyles = makeStyles({
     display: "block",
     minHeight: "300px",
   },
+  actions: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    "& > div": {
+      display: "flex",
+      alignItems: "center",
+      gap: tokens.spacingHorizontalM,
+    },
+  },
+  button: {
+    border: `1px solid ${tokens.colorNeutralStroke2}`,
+    borderRadius: tokens.borderRadiusMedium,
+    "&:hover, &:active, &:focus, &:focus-within": {
+      border: `1px solid ${tokens.colorNeutralStroke1Selected}`,
+    },
+  },
+  datasetList: {
+    marginTop: tokens.spacingVerticalL,
+  },
 });
+
+type TabValue = "seed" | "normalization" | "akiya";
 
 export function Dataset(): JSX.Element {
   const styles = useStyles();
+  const initialTabValue: TabValue = "seed";
+  const { onTabSelect, selectedValue } = useTabs<TabValue>(initialTabValue);
+  const [selectedDatasets, setSelectedDatasets] = useState<
+    DataSet[] | undefined
+  >(undefined);
+  const [selectedCount, setSelectedCount] = useState(0);
+
+  useEffect(() => {
+    switch (selectedValue) {
+      case "seed":
+        setSelectedDatasets(_dummyDataSetSeeds);
+        break;
+      case "normalization":
+        setSelectedDatasets(_dummyDataSetNormalizations);
+        break;
+      case "akiya":
+        setSelectedDatasets(_dummyDataSetResults);
+        break;
+      default: {
+        const exhaustiveCheck: never = selectedValue;
+        throw new Error(`Unhandled tab value: ${exhaustiveCheck}`);
+      }
+    }
+  }, [selectedValue]);
+
+  const handleUpload = (): void => {
+    // eslint-disable-next-line no-console -- for debug
+    console.log("Upload button clicked");
+  };
+
+  const handleDownload = (): void => {
+    // eslint-disable-next-line no-console -- for debug
+    console.log("Download button clicked");
+  };
+
+  const handleDelete = (): void => {
+    // eslint-disable-next-line no-console -- for debug
+    console.log("Delete button clicked");
+  };
 
   return (
     <div className={styles.root}>
-      <h2 className={styles.heading}>データセット管理</h2>
-      <Card className={styles.content}></Card>
+      <div className={styles.header}>
+        <h2 className={styles.heading}>データセット管理</h2>
+        <TabList
+          defaultSelectedValue={initialTabValue}
+          onTabSelect={onTabSelect}
+        >
+          <Tab value="seed">シードデータ</Tab>
+          <Tab value="normalization">正規化済データ</Tab>
+          <Tab value="akiya">空き家判定結果データ</Tab>
+        </TabList>
+      </div>
+      <Card className={styles.content}>
+        <div className={styles.actions}>
+          <Button appearance="primary" onClick={handleUpload}>
+            + 新規アップロード
+          </Button>
+          <div>
+            <span>{selectedCount}件選択中</span>
+            <Button
+              appearance="outline"
+              className={styles.button}
+              icon={<ArrowDownloadRegular />}
+              onClick={handleDownload}
+            />
+            <Button
+              appearance="outline"
+              className={styles.button}
+              icon={<DeleteRegular />}
+              onClick={handleDelete}
+            />
+          </div>
+        </div>
+        <div className={styles.datasetList}>
+          {selectedDatasets ? (
+            <DatasetList
+              dataSets={selectedDatasets}
+              onSelectionChange={setSelectedCount}
+            />
+          ) : null}
+        </div>
+      </Card>
     </div>
   );
 }
+
+const _dummyDataSetSeeds: DataSet[] = [
+  { name: "シードデータ", date: "2024/4/21" },
+  { name: "水道メーター1.shp", date: "2024/4/21" },
+  { name: "前処理住民台帳1.csv", date: "2024/4/21" },
+  { name: "前処理住民台帳2.csv", date: "2024/4/21" },
+  { name: "前処理住民台帳3.csv", date: "2024/4/21" },
+  { name: "水道メーター2.shp", date: "2024/4/21" },
+];
+
+const _dummyDataSetNormalizations: DataSet[] = [
+  { name: "正規化済みデータ", date: "2024/4/21" },
+  { name: "水道メーター1.shp", date: "2024/4/21" },
+  { name: "前処理住民台帳1.csv", date: "2024/4/21" },
+  { name: "前処理住民台帳2.csv", date: "2024/4/21" },
+  { name: "前処理住民台帳3.csv", date: "2024/4/21" },
+  { name: "水道メーター2.shp", date: "2024/4/21" },
+];
+
+const _dummyDataSetResults: DataSet[] = [
+  { name: "空き家判定結果データ", date: "2024/4/21" },
+  { name: "水道メーター1.shp", date: "2024/4/21" },
+  { name: "前処理住民台帳1.csv", date: "2024/4/21" },
+  { name: "前処理住民台帳2.csv", date: "2024/4/21" },
+  { name: "前処理住民台帳3.csv", date: "2024/4/21" },
+  { name: "水道メーター2.shp", date: "2024/4/21" },
+];

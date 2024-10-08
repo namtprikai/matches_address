@@ -4,13 +4,16 @@ import {
   makeStyles,
   tokens,
 } from "@fluentui/react-components";
-import { type SelectDataSetResult } from "../schema";
+import { useAtom } from "jotai";
 import { formatDate } from "../utils/format-date";
+import { type SelectDataSetResult } from "../schema";
+import { selectedResultSheetIdAtom } from "../state/selected-result-sheet-id-atom";
+import { selectedResultViewIdAtom } from "../state/selected-result-view-id-atom";
+import { useFetchResultViews } from "../hooks/use-fetch-result-views";
 import { Button } from "./ui/button";
 
 type Props = {
   dataSetResults: SelectDataSetResult[] | undefined;
-  onClickItem?: (dataSetResult: SelectDataSetResult) => void;
 };
 
 const useStyles = makeStyles({
@@ -33,11 +36,14 @@ const useStyles = makeStyles({
   },
 });
 
-export const ListDataSetResults = ({
-  dataSetResults,
-  onClickItem,
-}: Props): JSX.Element => {
+export const ListDataSetResults = ({ dataSetResults }: Props): JSX.Element => {
   const styles = useStyles();
+  const [, setSelectedResultViewId] = useAtom(selectedResultViewIdAtom);
+  const [selectedResultSheetId] = useAtom(selectedResultSheetIdAtom);
+  const { data: resultViews, mutate } = useFetchResultViews({
+    sheetId: selectedResultSheetId,
+  });
+
   return (
     <div className={styles.root}>
       {dataSetResults?.map((item) => (
@@ -45,7 +51,21 @@ export const ListDataSetResults = ({
           key={item.id}
           appearance="subtle"
           className={styles.button}
-          onClick={() => onClickItem && onClickItem(item)}
+          onClick={async () => {
+            if (!resultViews) return;
+            const newLayoutIndex = resultViews.length + 1;
+            const { insertedId } = await window.ipcRenderer.invoke(
+              "insertResultViews",
+              {
+                data_set_result_id: item.id,
+                sheet_id: selectedResultSheetId,
+                layoutIndex: newLayoutIndex,
+                parameters: [],
+              },
+            );
+            void mutate();
+            setSelectedResultViewId(insertedId);
+          }}
           shape="square"
         >
           <Body1>{item.title}</Body1>

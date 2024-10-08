@@ -1,0 +1,96 @@
+"""
+# E014 テキストマッチング機能
+* 任意のアセットに対しテキストマッチングによるインデキシング処理を行う機能。この機能には特定のワードをキーとした結合、除外、確率計算等が含まれる。
+* テキストマッチングには完全一致と部分一致による結合方式を持つ。部分一致ではテキストマッチング度合いを示す類似率を算出する。ユーザーは部分一致において類似度の閾値を指定し、閾値以上の類似率のデータを結合する。
+
+閾値以下の類似度の住所は"対応住所なし"として出力される.
+入力は、住所を含むCSVファイル2つと、N-gramのサイズ、類似度の閾値を指定する.
+出力は、2つのCSVファイルを住所をもとにマッチングした結果を含むCSVファイル.
+"""
+
+from typing import List, Tuple
+import io
+import os
+import sys
+import chardet
+import gradio as gr
+import pandas as pd
+from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
+from scipy.sparse import csr_matrix
+# ./srcをパスに追加
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../src')))
+
+# E014.pyからすべての関数をインポート
+from E001_DataMatching.E014 import *
+
+# カスタムCSS
+CUSTOM_CSS = """
+#csv label {
+    font-size: 20px;
+    font-weight: bold;
+    color: lightblue;
+}
+"""
+
+OUTPUT_PATH = "matched_data.csv"
+
+def update_column_dropdowns_and_radio_buttons(main_csv: io.BytesIO, sub_csv: io.BytesIO) -> Tuple[gr.Dropdown, gr.Dropdown, gr.Radio]:
+    """
+    ドロップダウンと選択肢を更新する
+    
+    Parameters
+    ----------
+    main_csv : io.BytesIO
+        メインのCSVファイル
+    sub_csv : io.BytesIO
+        サブのCSVファイル
+    
+    Returns
+    -------
+    Tuple[gr.Dropdown, gr.Dropdown, gr.Radio]
+        更新されたドロップダウンとラジオボタンの選択肢
+    """  
+    if main_csv is None or sub_csv is None:
+        return gr.update(), gr.update(), gr.update()
+    main_columns = get_column_names(main_csv.name)
+    sub_columns = get_column_names(sub_csv.name)
+    file_names = [main_csv.name.split('/')[-1], sub_csv.name.split('/')[-1]]
+    return gr.update(choices=main_columns), gr.update(choices=sub_columns), gr.update(choices=file_names, value=file_names[0])
+
+# Gradioインターフェースの設定
+with gr.Blocks(css=CUSTOM_CSS) as e014:
+    file_input_1 = gr.File(label="csvファイルを入力してください", elem_id="csv")
+    file_input_2 = gr.File(label="csvファイルを入力してください", elem_id="csv")
+    
+    column_dropdown_1 = gr.Dropdown(label="結合元の基準にする列を選択してください")
+    column_dropdown_2 = gr.Dropdown(label="結合対象の基準にする列を選択してください")
+    
+    merge_base = gr.Radio(choices=[], label="結合の基準にするファイルを選択してください")
+    
+    ngram_size = gr.Radio([1, 2, 3], value=2, label="N-gram Size")
+    similarity_threshold = gr.Slider(0.0, 1.0, value=0.5, label="Similarity Threshold", step=0.05)
+    
+    match_button = gr.Button("名寄せ実行")
+    
+    output_file = gr.File(label="Matched Data CSV")
+    results_text = gr.Textbox(label="結果")
+
+    file_input_1.change(update_column_dropdowns_and_radio_buttons, inputs=[file_input_1, file_input_2], outputs=[column_dropdown_1, column_dropdown_2, merge_base])
+    file_input_2.change(update_column_dropdowns_and_radio_buttons, inputs=[file_input_1, file_input_2], outputs=[column_dropdown_1, column_dropdown_2, merge_base])
+    
+    match_button.click(
+        embedding_address,
+        inputs=[
+            file_input_1, 
+            file_input_2, 
+            column_dropdown_1, 
+            column_dropdown_2,
+            merge_base,
+            ngram_size,
+            similarity_threshold
+        ],
+        outputs=[output_file, results_text]
+    )
+
+e014.launch()

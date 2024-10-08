@@ -5,9 +5,11 @@ export type EditResultViewFormType = {
   style: SelectResultView["style"];
   unit: SelectResultView["unit"];
   parameters: SelectResultView["parameters"];
-  year: {
-    start: string | undefined;
-    end: string | undefined;
-  };
+  year:
+    | {
+        start: string | undefined;
+        end: string | undefined;
+      }
+    | undefined;
   areas: string[];
 };

@@ -1,5 +1,7 @@
-import { app, BrowserWindow, ipcMain } from "electron";
-import path from "path";
+import { app, BrowserWindow, ipcMain, session } from "electron";
+import { join } from "path";
+import os from "os";
+import { readdirSync } from "fs";
 import { migrate } from "drizzle-orm/better-sqlite3/migrator";
 import { Hono } from "hono";
 import { serve } from "@hono/node-server";
@@ -16,13 +18,15 @@ if (require("electron-squirrel-startup")) {
 const hono = new Hono();
 const port = 3000;
 
+const isDev = process.env.NODE_ENV === "development";
+
 const createWindow = (): void => {
   // Create the browser window.
   const mainWindow = new BrowserWindow({
     width: 1200,
     height: 900,
     webPreferences: {
-      preload: path.join(__dirname, "preload.js"),
+      preload: join(__dirname, "preload.js"),
     },
   });
 
@@ -36,24 +40,20 @@ const createWindow = (): void => {
   }
 
   // Open the DevTools when in development mode.
-  if (process.env.NODE_ENV === "development") {
+  if (isDev) {
     mainWindow.webContents.openDevTools();
   }
 };
 
-void app.whenReady().then(() => {
-  const migrationsFolder =
-    process.env.NODE_ENV === "development"
-      ? "drizzle"
-      : path.join(process.resourcesPath, "drizzle");
+void app.whenReady().then(async () => {
+  const migrationsFolder = isDev
+    ? "drizzle"
+    : join(process.resourcesPath, "drizzle");
   migrate(db, { migrationsFolder });
 
   if (!MAIN_WINDOW_VITE_DEV_SERVER_URL) {
     // Set up Hono server for production
-    const distPath = path.join(
-      __dirname,
-      `../renderer/${MAIN_WINDOW_VITE_NAME}`,
-    );
+    const distPath = join(__dirname, `../renderer/${MAIN_WINDOW_VITE_NAME}`);
 
     // Serve static files
     hono.use("/*", serveStatic({ root: distPath }));
@@ -75,6 +75,14 @@ void app.whenReady().then(() => {
     ipcMain.handle(channel, listener);
   });
 
+  // React DevTool Path
+  const reactDevToolExtensionPath = getReactDevToolsPath();
+
+  // if React DevTool is not installed
+  if (reactDevToolExtensionPath && isDev) {
+    await session.defaultSession.loadExtension(reactDevToolExtensionPath);
+  }
+
   app.on("activate", () => {
     // On OS X it's common to re-create a window in the app when the
     // dock icon is clicked and there are no other windows open.
@@ -95,3 +103,28 @@ app.on("window-all-closed", () => {
 
 // In this file you can include the rest of your app's specific main process
 // code. You can also put them in separate files and import them here.
+
+const getReactDevToolsPath = (): string | null => {
+  const devtoolsId = "fmkadmapgofadopljbjfkapdkoienihi";
+  const platform = os.platform();
+
+  switch (platform) {
+    case "win32": {
+      const winDevToolsInstallPath = `${process.env.LOCALAPPDATA}\\Google\\Chrome\\User Data\\Default\\Extensions\\${devtoolsId}\\`;
+      const dirs = readdirSync(winDevToolsInstallPath);
+      return join(winDevToolsInstallPath, dirs[0]);
+    }
+    case "darwin": {
+      const macDevToolsInstallPath = `${os.homedir()}/Library/Application Support/Google/Chrome/Default/Extensions/${devtoolsId}/`;
+      const macDirs = readdirSync(macDevToolsInstallPath);
+      return join(macDevToolsInstallPath, macDirs[0]);
+    }
+    case "linux": {
+      const linuxDevToolsInstallPath = `${os.homedir()}/.config/google-chrome/Default/Extensions/${devtoolsId}/`;
+      const linuxDirs = readdirSync(linuxDevToolsInstallPath);
+      return join(linuxDevToolsInstallPath, linuxDirs[0]);
+    }
+    default:
+      return null;
+  }
+};

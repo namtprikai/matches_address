@@ -11,8 +11,8 @@ import { type FormProps } from "react-router-dom";
 import { useAtom } from "jotai";
 import { type SelectResultSheet } from "../schema";
 import { useOnClickOutside } from "../hooks/use-on-click-outside";
-import { resultSheetsAtom } from "../state/result-sheets-atom";
 import { selectedResultSheetIdAtom } from "../state/selected-result-sheet-id-atom";
+import { useFetchResultSheets } from "../hooks/use-fetch-result-sheets";
 import { DialogSurface } from "./ui/dialog-surface";
 import { DialogBody } from "./ui/dialog-body";
 import { DialogTitle } from "./ui/dialog-title";
@@ -21,7 +21,7 @@ import { Button } from "./ui/button";
 import { DialogContent } from "./ui/dialog-content";
 
 type Props = {
-  resultSheet: Pick<SelectResultSheet, "id" | "title">;
+  resultSheet: Pick<SelectResultSheet, "id" | "title" | "workbook_id">;
 };
 
 const useStyles = makeStyles({
@@ -42,7 +42,9 @@ export const ButtonEditableSheetTitle = ({
   // Dialogの開閉でonClickOutsideを制御するためのstate
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
 
-  const [, refreshSheets] = useAtom(resultSheetsAtom);
+  const { mutate } = useFetchResultSheets({
+    workbookId: resultSheet.workbook_id,
+  });
   const [, setSelectedResultSheetId] = useAtom(selectedResultSheetIdAtom);
 
   const [title, setTitle] = useState(resultSheet.title || "");
@@ -73,7 +75,7 @@ export const ButtonEditableSheetTitle = ({
   const handleDelete = async (): Promise<void> => {
     await deleteResultSheet();
     // 削除後にシート一覧を再取得する
-    refreshSheets();
+    void mutate();
     // 選択中のシートを解除する
     setSelectedResultSheetId(undefined);
   };
