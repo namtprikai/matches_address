@@ -18,6 +18,7 @@ import {
   MenuItem,
   Dialog,
   DialogTrigger,
+  type TableRowId,
 } from "@fluentui/react-components";
 import {
   ArrowDownloadRegular,
@@ -30,6 +31,7 @@ import {
   type MouseEvent,
   type KeyboardEvent,
   useState,
+  useEffect,
 } from "react";
 import { DialogSurface } from "../ui/dialog-surface";
 import { DialogTitle } from "../ui/dialog-title";
@@ -64,7 +66,7 @@ export type Dataset = {
 
 export type DatasetListProps = {
   dataSets: Dataset[];
-  onSelectionChange: Dispatch<SetStateAction<number>>;
+  onSelectionChange: Dispatch<SetStateAction<Dataset["id"][]>>;
   onSubmit: (id: Dataset["id"], newName: string) => void;
   onDelete: (id: Dataset["id"]) => void;
 };
@@ -81,6 +83,16 @@ export function DatasetList({
     createTableColumn<Dataset>({ columnId: "name" }),
     createTableColumn<Dataset>({ columnId: "date" }),
   ];
+  const [selectedRows, setSelectedRows] = useState(
+    () => new Set<TableRowId>([]),
+  );
+
+  useEffect(
+    function resetSelection() {
+      setSelectedRows(new Set());
+    },
+    [dataSets],
+  );
 
   const {
     getRows,
@@ -99,23 +111,34 @@ export function DatasetList({
     [
       useTableSelection({
         selectionMode: "multiselect",
+        selectedItems: selectedRows,
+        onSelectionChange: (_, data) => setSelectedRows(data.selectedItems),
       }),
     ],
   );
 
   const rows = getRows((row) => {
     const selected = isRowSelected(row.rowId);
+
     return {
       ...row,
       onClick: (e: MouseEvent) => {
         toggleRow(e, row.rowId);
-        onSelectionChange((prev) => (selected ? prev - 1 : prev + 1));
+        onSelectionChange((prev) =>
+          selected
+            ? prev.filter((id) => id !== row.item.id)
+            : [...prev, row.item.id],
+        );
       },
       onKeyDown: (e: KeyboardEvent) => {
         if (e.key === " ") {
           e.preventDefault();
           toggleRow(e, row.rowId);
-          onSelectionChange((prev) => (selected ? prev - 1 : prev + 1));
+          onSelectionChange((prev) =>
+            selected
+              ? prev.filter((id) => id !== row.item.id)
+              : [...prev, row.item.id],
+          );
         }
       },
       selected,
@@ -125,7 +148,9 @@ export function DatasetList({
 
   const handleToggleAll = (e: MouseEvent): void => {
     toggleAllRows(e);
-    onSelectionChange(allRowsSelected ? 0 : dataSets.length);
+    onSelectionChange(() =>
+      allRowsSelected ? [] : dataSets.map((dataset) => dataset.id),
+    );
   };
 
   const handleDownload = (e: MouseEvent): void => {

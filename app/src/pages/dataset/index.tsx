@@ -7,12 +7,13 @@ import {
   tokens,
   Button,
 } from "@fluentui/react-components";
-import { ArrowDownloadRegular, DeleteRegular } from "@fluentui/react-icons";
+import { ArrowDownloadRegular } from "@fluentui/react-icons";
 import { useTabs } from "../../hooks/use-tabs";
 import {
   type Dataset,
   DatasetList,
 } from "../../components/dataset/dataset-list";
+import { DeleteSelectedItemsDialog } from "../../components/dataset/delete-selected-items-dialog";
 
 const useStyles = makeStyles({
   root: {
@@ -63,7 +64,7 @@ export function Dataset(): JSX.Element {
   const [selectedDatasets, setSelectedDatasets] = useState<
     Dataset[] | undefined
   >(undefined);
-  const [selectedCount, setSelectedCount] = useState(0);
+  const [selectedItemIds, setSelectedItemIds] = useState<Dataset["id"][]>([]);
 
   useEffect(() => {
     switch (selectedValue) {
@@ -93,9 +94,13 @@ export function Dataset(): JSX.Element {
     console.log("Download button clicked");
   };
 
+  // TODO: DBのデータを削除するように修正する
   const handleDeleteSelectedItems = (): void => {
-    // eslint-disable-next-line no-console -- for debug
-    console.log("Delete button clicked");
+    setSelectedDatasets((prev) => {
+      if (!prev) return prev;
+      return prev.filter((dataset) => !selectedItemIds.includes(dataset.id));
+    });
+    setSelectedItemIds([]);
   };
 
   // TODO: DBのデータを更新するように修正する
@@ -138,18 +143,16 @@ export function Dataset(): JSX.Element {
             + 新規アップロード
           </Button>
           <div>
-            <span>{selectedCount}件選択中</span>
+            <span>{selectedItemIds.length}件選択中</span>
             <Button
               appearance="outline"
               className={styles.button}
               icon={<ArrowDownloadRegular />}
               onClick={handleDownload}
             />
-            <Button
-              appearance="outline"
-              className={styles.button}
-              icon={<DeleteRegular />}
-              onClick={handleDeleteSelectedItems}
+            <DeleteSelectedItemsDialog
+              disabled={selectedItemIds.length === 0}
+              onDelete={handleDeleteSelectedItems}
             />
           </div>
         </div>
@@ -158,7 +161,7 @@ export function Dataset(): JSX.Element {
             <DatasetList
               dataSets={selectedDatasets}
               onDelete={handleDeleteItem}
-              onSelectionChange={setSelectedCount}
+              onSelectionChange={setSelectedItemIds}
               onSubmit={handleEditItem}
             />
           ) : null}
