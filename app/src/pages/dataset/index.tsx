@@ -9,7 +9,10 @@ import {
 } from "@fluentui/react-components";
 import { ArrowDownloadRegular, DeleteRegular } from "@fluentui/react-icons";
 import { useTabs } from "../../hooks/use-tabs";
-import { type Dataset, DatasetList } from "../../components/dataset-management";
+import {
+  type Dataset,
+  DatasetList,
+} from "../../components/dataset/dataset-list";
 
 const useStyles = makeStyles({
   root: {
