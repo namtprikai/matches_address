@@ -1,3 +1,4 @@
+import { FileUploader } from "../../components/ui/file-uploader/file-uploader";
 import { Link } from "react-router-dom";
 import { makeStyles } from "@fluentui/react-components";
 import { Map } from "../../components/map";
@@ -19,6 +20,12 @@ export function Debug(): JSX.Element {
         <Link to="/normalization">Go to normalization page</Link>
       </div>
       <Map areas={[]} dataSetResultId={1} type="building" />
+      <FileUploader
+        onChange={() => {
+          return;
+        }}
+        value={null}
+      />
     </div>
   );
 }
