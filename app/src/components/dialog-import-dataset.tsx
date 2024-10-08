@@ -17,6 +17,8 @@ import {
 import { ArrowSortRegular, DismissFilled } from "@fluentui/react-icons";
 
 import { useState } from "react";
+import { useFetchRawDatasets } from "../hooks/use-fetch-data-set-for-dialog";
+
 import { Tab } from "../components/ui/tab";
 import { Button } from "./ui/button";
 import { DialogSurface } from "./ui/dialog-surface";
@@ -128,10 +130,8 @@ export const DialogImportDataset = (): JSX.Element => {
   >(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-  const datasets = [
-    { name: "modelA_akiya_search A", lastUpdated: "2024/8/31 20:32" },
-    { name: "modelA_akiya_search B", lastUpdated: "2024/3/31 10:32" },
-  ];
+  const { data: fetchedDatasets } = useFetchRawDatasets();
+  const datasets = fetchedDatasets || [];
 
   const handleClick = (): void => {
     if (selectedDatasetIndex !== null) {
@@ -214,7 +214,7 @@ export const DialogImportDataset = (): JSX.Element => {
                     <TableBody className={styles.tableBody}>
                       {datasets.map((dataset, index) => (
                         <TableRow
-                          key={index}
+                          key={dataset.id}
                           className={mergeClasses(
                             styles.datasetTable,
                             selectedDatasetIndex === index
@@ -226,10 +226,10 @@ export const DialogImportDataset = (): JSX.Element => {
                           <TableCell
                             className={`${styles.datasetCell} ${styles.dataName}`}
                           >
-                            {dataset.name}
+                            {dataset.file_name}
                           </TableCell>
                           <TableCell className={styles.datasetCell}>
-                            {dataset.lastUpdated}
+                            {dataset.created_at}
                           </TableCell>
                         </TableRow>
                       ))}
