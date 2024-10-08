@@ -6,6 +6,7 @@ import {
 } from "@fluentui/react-components";
 import { Error } from "./error";
 import { Debug } from "./debug";
+import { Normalization } from "./normalization";
 import { Layout } from "./layout";
 import "../styles/global.css";
 import { Workbook } from "./analysis/workbook";
@@ -46,6 +47,10 @@ const router = createHashRouter([
       {
         path: "dataset",
         element: <Dataset />,
+      },
+      {
+        path: "normalization",
+        element: <Normalization />,
       },
       {
         path: "debug",
