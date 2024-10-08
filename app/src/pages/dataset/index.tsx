@@ -61,9 +61,7 @@ export function Dataset(): JSX.Element {
   const styles = useStyles();
   const initialTabValue: TabValue = "seed";
   const { onTabSelect, selectedValue } = useTabs<TabValue>(initialTabValue);
-  const [selectedDatasets, setSelectedDatasets] = useState<
-    Dataset[] | undefined
-  >(undefined);
+  const [selectedDatasets, setSelectedDatasets] = useState<Dataset[]>([]);
   const [selectedItemIds, setSelectedItemIds] = useState<Dataset["id"][]>([]);
 
   useEffect(() => {
@@ -96,10 +94,9 @@ export function Dataset(): JSX.Element {
 
   // TODO: DBのデータを削除するように修正する
   const handleDeleteSelectedItems = (): void => {
-    setSelectedDatasets((prev) => {
-      if (!prev) return prev;
-      return prev.filter((dataset) => !selectedItemIds.includes(dataset.id));
-    });
+    setSelectedDatasets((prev) =>
+      prev.filter((dataset) => !selectedItemIds.includes(dataset.id)),
+    );
     setSelectedItemIds([]);
   };
 
@@ -108,20 +105,16 @@ export function Dataset(): JSX.Element {
     id: Dataset["id"],
     newName: Dataset["name"],
   ): void => {
-    setSelectedDatasets((prev) => {
-      if (!prev) return prev;
-      return prev.map((dataset) =>
+    setSelectedDatasets((prev) =>
+      prev.map((dataset) =>
         dataset.id === id ? { ...dataset, name: newName } : dataset,
-      );
-    });
+      ),
+    );
   };
 
   // TODO: DBのデータを削除するように修正する
   const handleDeleteItem = (id: Dataset["id"]): void => {
-    setSelectedDatasets((prev) => {
-      if (!prev) return prev;
-      return prev.filter((dataset) => dataset.id !== id);
-    });
+    setSelectedDatasets((prev) => prev.filter((dataset) => dataset.id !== id));
   };
 
   return (
@@ -157,14 +150,12 @@ export function Dataset(): JSX.Element {
           </div>
         </div>
         <div className={styles.datasetList}>
-          {selectedDatasets ? (
-            <DatasetList
-              dataSets={selectedDatasets}
-              onDelete={handleDeleteItem}
-              onSelectionChange={setSelectedItemIds}
-              onSubmit={handleEditItem}
-            />
-          ) : null}
+          <DatasetList
+            dataSets={selectedDatasets}
+            onDelete={handleDeleteItem}
+            onSelectionChange={setSelectedItemIds}
+            onSubmit={handleEditItem}
+          />
         </div>
       </Card>
     </div>
