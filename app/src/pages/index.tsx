@@ -13,6 +13,7 @@ import { EditWorkbook } from "./analysis/workbook/edit";
 import { DetailWorkbook } from "./analysis/workbook/detail";
 import { Dataset } from "./dataset";
 import { LayoutWithoutPadding } from "./layoutWithoutPadding";
+import { Model } from "./model";
 
 // クライアントだけで動作するアプリケーションのため`createHashRouter`を使用する
 const router = createHashRouter([
@@ -28,6 +29,10 @@ const router = createHashRouter([
       {
         path: "*",
         element: <>404 Not Found</>,
+      },
+      {
+        path: "model",
+        element: <Model />,
       },
       {
         path: "analysis/workbook",
