@@ -17,7 +17,6 @@ export function Debug(): JSX.Element {
       <h1>(開発用)</h1>
       <div className={styles.flex}>
         <a href="#">Go to home page</a>
-        <Link to="/normalization">Go to normalization page</Link>
       </div>
       <Map areas={[]} dataSetResultId={1} type="building" />
       <FileUploader
