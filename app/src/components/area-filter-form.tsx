@@ -118,10 +118,10 @@ export const AreaFilterForm = (props: AreaFilterFormProps): JSX.Element => {
             <DialogContent border>
               <Suspense fallback={<></>}>
                 <AreaFilterFormOptions
-                  searchText={deferredSearchText} // 遅延評価された値を渡す
-                  onChange={setSelectedAreas}
-                  selectedAreas={selectedAreas}
                   dataSetResultId={props.dataSetResultId}
+                  onChange={setSelectedAreas}
+                  searchText={deferredSearchText} // 遅延評価された値を渡す
+                  selectedAreas={selectedAreas}
                   unit={props.unit}
                 />
               </Suspense>
