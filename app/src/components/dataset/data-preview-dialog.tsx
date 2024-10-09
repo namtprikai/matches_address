@@ -40,6 +40,15 @@ const useStyles = makeStyles({
       border: `1px solid #BDBDBD`,
     },
   },
+  tableContainer: {
+    overflowX: "auto",
+  },
+  table: {
+    tableLayout: "auto",
+  },
+  td: {
+    minWidth: "153px",
+  },
 });
 
 type CSVRow = Record<string, string>;
@@ -102,6 +111,7 @@ export function DataPreviewDialog(): JSX.Element {
 }
 
 export function DataPreview(): JSX.Element {
+  const styles = useStyles();
   const [csvData, setCsvData] = useState<CSVRow[]>([]);
   const [headers, setHeaders] = useState<string[]>([]);
 
@@ -129,23 +139,27 @@ export function DataPreview(): JSX.Element {
   }, []);
 
   return (
-    <Table aria-label="CSV Data Table">
-      <TableHeader>
-        <TableRow>
-          {headers.map((header) => (
-            <TableHeaderCell key={header}>{header}</TableHeaderCell>
-          ))}
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {csvData.map((row, rowIndex) => (
-          <TableRow key={rowIndex}>
+    <div className={styles.tableContainer}>
+      <Table aria-label="CSV Data Table" className={styles.table}>
+        <TableHeader>
+          <TableRow>
             {headers.map((header) => (
-              <TableCell key={`${rowIndex}-${header}`}>{row[header]}</TableCell>
+              <TableHeaderCell key={header}>{header}</TableHeaderCell>
             ))}
           </TableRow>
-        ))}
-      </TableBody>
-    </Table>
+        </TableHeader>
+        <TableBody>
+          {csvData.map((row, rowIndex) => (
+            <TableRow key={rowIndex}>
+              {headers.map((header) => (
+                <TableCell key={`${rowIndex}-${header}`} className={styles.td}>
+                  {row[header]}
+                </TableCell>
+              ))}
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </div>
   );
 }
