@@ -5,7 +5,6 @@ import {
   Tab,
   TabList,
   tokens,
-  Button,
 } from "@fluentui/react-components";
 import { ArrowDownloadRegular } from "@fluentui/react-icons";
 import { useTabs } from "../../hooks/use-tabs";
@@ -14,6 +13,7 @@ import {
   DatasetList,
 } from "../../components/dataset/dataset-list";
 import { DeleteSelectedItemsDialog } from "../../components/dataset/delete-selected-items-dialog";
+import { Button } from "../../components/ui/button";
 
 const useStyles = makeStyles({
   root: {
@@ -132,7 +132,7 @@ export function Dataset(): JSX.Element {
       </div>
       <Card className={styles.content}>
         <div className={styles.actions}>
-          <Button appearance="primary" onClick={handleUpload}>
+          <Button appearance="outline" onClick={handleUpload}>
             + 新規アップロード
           </Button>
           <div>
