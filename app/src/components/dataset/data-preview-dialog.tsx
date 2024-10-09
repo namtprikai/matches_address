@@ -46,6 +46,9 @@ const useStyles = makeStyles({
   table: {
     tableLayout: "auto",
   },
+  th: {
+    backgroundColor: "#F5F5F5",
+  },
   td: {
     minWidth: "153px",
   },
@@ -141,7 +144,7 @@ function DataPreview(): JSX.Element {
   return (
     <div className={styles.tableContainer}>
       <Table aria-label="CSV Data Table" className={styles.table}>
-        <TableHeader>
+        <TableHeader className={styles.th}>
           <TableRow>
             {headers.map((header) => (
               <TableHeaderCell key={header}>{header}</TableHeaderCell>
