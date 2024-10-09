@@ -66,7 +66,7 @@ const menuItems = [
     icon: DocumentBulletListRegular,
     label: "モデル管理",
     value: "3",
-    href: "#wip",
+    href: "#model",
   },
   {
     icon: DocumentBulletListRegular,
