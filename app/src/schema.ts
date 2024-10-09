@@ -649,7 +649,9 @@ export type InsertJob = typeof jobs.$inferInsert;
 
 export const job_tasks = sqliteTable("job_tasks", {
   id: integer("id").primaryKey(),
-  job_id: integer("job_id").notNull(),
+  job_id: integer("job_id")
+    .references(() => jobs.id)
+    .notNull(),
   progress_percent: text("progress_percent"),
   preprocess_type: text("preprocess_type", {
     enum: ["住居単位データ作成", "空間結合"],
@@ -678,7 +680,9 @@ export type InsertJobTask = typeof job_tasks.$inferInsert;
 
 export const job_results = sqliteTable("job_results", {
   id: integer("id").primaryKey(),
-  job_id: integer("job_id").notNull(),
+  job_id: integer("job_id")
+    .references(() => jobs.id)
+    .notNull(),
   // Pythonが吐き出した内部パス(path/to/normalizeの名前)
   file_path: text("file_path").notNull(),
 
