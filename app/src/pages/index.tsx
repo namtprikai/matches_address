@@ -6,6 +6,7 @@ import {
 } from "@fluentui/react-components";
 import { Error } from "./error";
 import { Debug } from "./debug";
+import { Normalization } from "./normalization";
 import { Layout } from "./layout";
 import "../styles/global.css";
 import { Workbook } from "./analysis/workbook";
@@ -13,6 +14,7 @@ import { EditWorkbook } from "./analysis/workbook/edit";
 import { DetailWorkbook } from "./analysis/workbook/detail";
 import { Dataset } from "./dataset";
 import { LayoutWithoutPadding } from "./layoutWithoutPadding";
+import { Model } from "./model";
 
 // クライアントだけで動作するアプリケーションのため`createHashRouter`を使用する
 const router = createHashRouter([
@@ -30,6 +32,10 @@ const router = createHashRouter([
         element: <>404 Not Found</>,
       },
       {
+        path: "model",
+        element: <Model />,
+      },
+      {
         path: "analysis/workbook",
         element: <Workbook />,
         index: true,
@@ -41,6 +47,10 @@ const router = createHashRouter([
       {
         path: "dataset",
         element: <Dataset />,
+      },
+      {
+        path: "normalization",
+        element: <Normalization />,
       },
       {
         path: "debug",
