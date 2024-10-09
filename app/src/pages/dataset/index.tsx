@@ -6,7 +6,7 @@ import {
   TabList,
   tokens,
 } from "@fluentui/react-components";
-import { ArrowDownloadRegular } from "@fluentui/react-icons";
+import { ArrowDownloadRegular, AddRegular } from "@fluentui/react-icons";
 import { useTabs } from "../../hooks/use-tabs";
 import {
   type Dataset,
@@ -43,6 +43,11 @@ const useStyles = makeStyles({
       alignItems: "center",
       gap: tokens.spacingHorizontalM,
     },
+  },
+  uploadButton: {
+    display: "flex",
+    alignItems: "center",
+    gap: tokens.spacingHorizontalXS,
   },
   iconButton: {
     border: `1px solid ${tokens.colorNeutralStroke2}`,
@@ -133,8 +138,13 @@ export function Dataset(): JSX.Element {
       </div>
       <Card className={styles.content}>
         <div className={styles.actions}>
-          <Button appearance="outline" onClick={handleUpload}>
-            + 新規アップロード
+          <Button
+            appearance="outline"
+            className={styles.uploadButton}
+            onClick={handleUpload}
+          >
+            <AddRegular />
+            新規アップロード
           </Button>
           <div>
             <span>{selectedItemIds.length}件選択中</span>
