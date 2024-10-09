@@ -24,6 +24,7 @@ import { DialogBody } from "./ui/dialog-body";
 import { DialogTitle } from "./ui/dialog-title";
 import { DialogContent } from "./ui/dialog-content";
 import { DialogActions } from "./ui/dialog-actions";
+import { FileUploader } from "./ui/file-uploader/file-uploader";
 
 const useStyles = makeStyles({
   dialogTitle: {
@@ -43,13 +44,9 @@ const useStyles = makeStyles({
     height: "293px",
   },
   uploadWrap: {
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    height: "293px",
-    border: `1px dotted ${tokens.colorNeutralForeground3}`,
-    borderRadius: tokens.borderRadiusXLarge,
-    margin: `${tokens.spacingVerticalNone} ${tokens.spacingHorizontalXXL}`,
+    height: "325px",
+    padding: `${tokens.spacingVerticalNone} ${tokens.spacingVerticalXS} ${tokens.spacingHorizontalM}`,
+    borderBottom: `1px solid ${tokens.colorNeutralStroke2}`,
   },
   noDataset: {
     display: "flex",
@@ -87,7 +84,7 @@ const useStyles = makeStyles({
     backgroundColor: "#E9EAF6",
   },
   datasetCell: {
-    padding: `${tokens.spacingVerticalS} ${tokens.spacingHorizontalXXL}`,
+    padding: `${tokens.spacingVerticalNone} ${tokens.spacingHorizontalXXL}`,
     fontSize: tokens.fontSizeBase200,
     display: "flex",
     alignItems: "center",
@@ -114,20 +111,6 @@ const useStyles = makeStyles({
     ":hover": {
       backgroundColor: "#EFF0F0",
     },
-  },
-  dragAndDrop: {
-    color: "#6264A7",
-    fontWeight: "600",
-  },
-  clickHere: {
-    color: "#6264A7",
-    fontWeight: "600",
-    textDecoration: "underline",
-    ":hover": { cursor: "pointer" },
-  },
-  maxSize: {
-    fontSize: tokens.fontSizeBase100,
-    color: tokens.colorNeutralForeground3,
   },
   dataButton: {
     height: "28px",
@@ -264,16 +247,12 @@ export const DialogImportDataset = (): JSX.Element => {
 
             {selectedTab === 1 && (
               <div className={styles.uploadWrap}>
-                <div className={styles.noDataset}>
-                  <span className={styles.dragAndDrop}>
-                    ここにドラッグ&ドロップ
-                  </span>
-                  <span>
-                    または<span className={styles.clickHere}>クリック</span>
-                    してインポート
-                  </span>
-                  <span className={styles.maxSize}>最大サイズ 50MB</span>
-                </div>
+                <FileUploader
+                  onChange={() => {
+                    return;
+                  }}
+                  value={null}
+                />
               </div>
             )}
           </DialogContent>
