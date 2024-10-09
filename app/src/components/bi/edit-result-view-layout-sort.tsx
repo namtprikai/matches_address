@@ -1,11 +1,11 @@
 import { ChevronRightRegular, ChevronLeftRegular } from "@fluentui/react-icons";
 import { makeStyles, tokens } from "@fluentui/react-components";
 import { useAtom } from "jotai";
-import { selectedResultViewIdAtom } from "../state/selected-result-view-id-atom";
-import { useFetchResultView } from "../hooks/use-fetch-result-view";
-import { useFetchResultViews } from "../hooks/use-fetch-result-views";
-import { Field } from "./ui/field";
-import { Button } from "./ui/button";
+import { selectedResultViewIdAtom } from "../../state/selected-result-view-id-atom";
+import { useFetchResultView } from "../../hooks/use-fetch-result-view";
+import { useFetchResultViews } from "../../hooks/use-fetch-result-views";
+import { Field } from "../ui/field";
+import { Button } from "../ui/button";
 
 const useStyles = makeStyles({
   inner: {

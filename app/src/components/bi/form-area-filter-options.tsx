@@ -1,7 +1,7 @@
 import { memo, useEffect, useState } from "react";
 import { Checkbox, makeStyles } from "@fluentui/react-components";
-import { type FetchAreaGroupsArg } from "../ipc-main-listeners/fetch-area-groups";
-import { useFetchAreaGroups } from "../hooks/use-fetch-area-groups";
+import { type FetchAreaGroupsArg } from "../../ipc-main-listeners/fetch-area-groups";
+import { useFetchAreaGroups } from "../../hooks/use-fetch-area-groups";
 
 const useStyles = makeStyles({
   options: {

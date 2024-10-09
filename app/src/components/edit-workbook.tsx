@@ -3,7 +3,7 @@ import { makeStyles, tokens } from "@fluentui/react-components";
 import { useFetchWorkbook } from "../hooks/use-fetch-workbook";
 import { Button } from "./ui/button";
 import { TabListEditResultSheet } from "./tab-list-edit-result-sheet";
-import { SidebarEditResultView } from "./sidebar-edit-result-view";
+import { SidebarEditResultView } from "./bi/sidebar-edit-result-view";
 import { PreviewResultSheet } from "./preview-result-sheet";
 
 const useStyles = makeStyles({

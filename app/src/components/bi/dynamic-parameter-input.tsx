@@ -1,15 +1,15 @@
 import { type ForwardedRef, forwardRef, Fragment } from "react";
 import { makeStyles, type DropdownProps } from "@fluentui/react-components";
-import { type TileViewFieldOption } from "../@types/charts";
+import { type TileViewFieldOption } from "../../@types/charts";
 import {
   AREA_DATASET_COLUMN_METADATA,
   BUILDING_DATASET_COLUMN_METADATA,
-} from "../config/column-metadata";
-import { Select } from "./ui/select";
+} from "../../config/column-metadata";
+import { Select } from "../ui/select";
+import { Field } from "../ui/field";
+import { Dropdown } from "../ui/dropdown";
+import { DialogFieldOption } from "../dialog-field-option";
 import { DynamicColumnOptions } from "./dynamic-column-options";
-import { Field } from "./ui/field";
-import { Dropdown } from "./ui/dropdown";
-import { DialogFieldOption } from "./dialog-field-option";
 
 const useStyles = makeStyles({
   selectedOptions: {

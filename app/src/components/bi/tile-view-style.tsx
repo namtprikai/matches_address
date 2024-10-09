@@ -1,13 +1,13 @@
-import { type SelectResultView } from "../schema";
+import { type SelectResultView } from "../../schema";
 import {
   type AREA_DATASET_COLUMN,
   type BUILDING_DATASET_COLUMN,
-} from "../config/column-metadata";
+} from "../../config/column-metadata";
+import { Map } from "../map";
+import { TableView } from "./table-view";
 import { ChartBar } from "./chart-bar";
 import { ChartLine } from "./chart-line";
 import { ChartPie } from "./chart-pie";
-import { Map } from "./map";
-import { TableView } from "./table-view";
 
 type Props = {
   style: SelectResultView["style"];

@@ -14,18 +14,18 @@ import { useState } from "react";
 import {
   type AREA_DATASET_COLUMN,
   type BUILDING_DATASET_COLUMN,
-} from "../config/column-metadata";
-import { getColumnMetadata } from "../utils/get-column-metadata";
-import { DialogBody } from "./ui/dialog-body";
-import { DialogSurface } from "./ui/dialog-surface";
-import { DialogTitle } from "./ui/dialog-title";
-import { Button } from "./ui/button";
-import { DialogActions } from "./ui/dialog-actions";
+} from "../../config/column-metadata";
+import { getColumnMetadata } from "../../utils/get-column-metadata";
+import { DialogBody } from "../ui/dialog-body";
+import { DialogSurface } from "../ui/dialog-surface";
+import { DialogTitle } from "../ui/dialog-title";
+import { Button } from "../ui/button";
+import { DialogActions } from "../ui/dialog-actions";
+import { Field } from "../ui/field";
+import { Select } from "../ui/select";
+import { Input } from "../ui/input";
+import { DialogContent } from "../ui/dialog-content";
 import { FormFilteringResultView } from "./form-filtering-result-view";
-import { Field } from "./ui/field";
-import { Select } from "./ui/select";
-import { Input } from "./ui/input";
-import { DialogContent } from "./ui/dialog-content";
 
 const useStyles = makeStyles({
   groupField: {

@@ -12,9 +12,9 @@ import {
   type ValueType,
 } from "recharts/types/component/DefaultTooltipContent";
 import { makeStyles, tokens } from "@fluentui/react-components";
-import { CHART_COLORS } from "../config/chart-colors";
-import { useFetchFilterDataSetForChart } from "../hooks/use-fetch-filtered-data-set-for-chart";
-import { type FilterDataSetForChartArgs } from "../ipc-main-listeners/filter-data-set-for-chart";
+import { CHART_COLORS } from "../../config/chart-colors";
+import { useFetchFilterDataSetForChart } from "../../hooks/use-fetch-filtered-data-set-for-chart";
+import { type FilterDataSetForChartArgs } from "../../ipc-main-listeners/filter-data-set-for-chart";
 
 const useStyle = makeStyles({
   tooltip: {

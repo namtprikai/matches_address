@@ -1,6 +1,6 @@
 import { makeStyles, tokens } from "@fluentui/react-components";
 import { useFetchResultViews } from "../hooks/use-fetch-result-views";
-import { TileResultView } from "./tile-result-view";
+import { TileResultView } from "./bi/tile-result-view";
 import { EmptyResultViews } from "./empty-result-views";
 
 const useStyles = makeStyles({

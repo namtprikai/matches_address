@@ -1,14 +1,14 @@
 import { Fragment, lazy, Suspense, useDeferredValue, useState } from "react";
 import { Dialog, DialogTrigger, makeStyles } from "@fluentui/react-components";
-import { type FetchAreaGroupsArg } from "../ipc-main-listeners/fetch-area-groups";
-import { Field } from "./ui/field";
-import { Button } from "./ui/button";
-import { DialogSurface } from "./ui/dialog-surface";
-import { DialogBody } from "./ui/dialog-body";
-import { DialogTitle } from "./ui/dialog-title";
-import { DialogContent } from "./ui/dialog-content";
-import { DialogActions } from "./ui/dialog-actions";
-import { Input } from "./ui/input";
+import { type FetchAreaGroupsArg } from "../../ipc-main-listeners/fetch-area-groups";
+import { Field } from "../ui/field";
+import { Button } from "../ui/button";
+import { DialogSurface } from "../ui/dialog-surface";
+import { DialogBody } from "../ui/dialog-body";
+import { DialogTitle } from "../ui/dialog-title";
+import { DialogContent } from "../ui/dialog-content";
+import { DialogActions } from "../ui/dialog-actions";
+import { Input } from "../ui/input";
 
 const useStyles = makeStyles({
   selectedOptions: {

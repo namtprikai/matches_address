@@ -11,17 +11,17 @@ import {
   tokens,
 } from "@fluentui/react-components";
 import { useAtom } from "jotai";
-import { type SelectResultView } from "../schema";
-import { THEME_COLORS } from "../config/theme-colors";
-import { useFetchResultViews } from "../hooks/use-fetch-result-views";
-import { selectedResultViewIdAtom } from "../state/selected-result-view-id-atom";
+import { type SelectResultView } from "../../schema";
+import { THEME_COLORS } from "../../config/theme-colors";
+import { useFetchResultViews } from "../../hooks/use-fetch-result-views";
+import { selectedResultViewIdAtom } from "../../state/selected-result-view-id-atom";
+import { DialogSurface } from "../ui/dialog-surface";
+import { DialogBody } from "../ui/dialog-body";
+import { DialogTitle } from "../ui/dialog-title";
+import { DialogActions } from "../ui/dialog-actions";
+import { Button } from "../ui/button";
+import { DialogContent } from "../ui/dialog-content";
 import { TileViewStyle } from "./tile-view-style";
-import { DialogSurface } from "./ui/dialog-surface";
-import { DialogBody } from "./ui/dialog-body";
-import { DialogTitle } from "./ui/dialog-title";
-import { DialogActions } from "./ui/dialog-actions";
-import { Button } from "./ui/button";
-import { DialogContent } from "./ui/dialog-content";
 
 type Props = {
   resultView: SelectResultView;

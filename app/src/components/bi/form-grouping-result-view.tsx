@@ -9,16 +9,16 @@ import {
 import { useFieldArray, useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
 import { Delete20Regular } from "@fluentui/react-icons";
-import { type ChartColumnType } from "../@types/charts";
-import { Field } from "./ui/field";
-import { Button } from "./ui/button";
-import { Input } from "./ui/input";
-import { DialogBody } from "./ui/dialog-body";
-import { DialogSurface } from "./ui/dialog-surface";
-import { DialogTitle } from "./ui/dialog-title";
-import { DialogActions } from "./ui/dialog-actions";
-import { Select } from "./ui/select";
-import { DialogContent } from "./ui/dialog-content";
+import { type ChartColumnType } from "../../@types/charts";
+import { Field } from "../ui/field";
+import { Button } from "../ui/button";
+import { Input } from "../ui/input";
+import { DialogBody } from "../ui/dialog-body";
+import { DialogSurface } from "../ui/dialog-surface";
+import { DialogTitle } from "../ui/dialog-title";
+import { DialogActions } from "../ui/dialog-actions";
+import { Select } from "../ui/select";
+import { DialogContent } from "../ui/dialog-content";
 
 const useStyles = makeStyles({
   groupField: {

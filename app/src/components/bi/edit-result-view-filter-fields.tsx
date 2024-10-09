@@ -1,14 +1,14 @@
 import { makeStyles, tokens } from "@fluentui/react-components";
 import { useFieldArray, useFormContext } from "react-hook-form";
 import { lazy, Suspense } from "react";
-import { type EditResultViewFormType } from "../@types/form-schema";
-import { TILE_VIEW_CONFIG } from "../config/tile-view-config";
-import { type SelectResultView } from "../schema";
-import { useFetchReferenceDates } from "../hooks/use-fetch-reference-dates";
-import { Field } from "./ui/field";
-import { Select } from "./ui/select";
-import { Fieldset } from "./ui/fieldset";
-import { FieldLegend } from "./ui/field-legend";
+import { type EditResultViewFormType } from "../../@types/form-schema";
+import { TILE_VIEW_CONFIG } from "../../config/tile-view-config";
+import { type SelectResultView } from "../../schema";
+import { useFetchReferenceDates } from "../../hooks/use-fetch-reference-dates";
+import { Field } from "../ui/field";
+import { Select } from "../ui/select";
+import { Fieldset } from "../ui/fieldset";
+import { FieldLegend } from "../ui/field-legend";
 import { FormFilteringParameters } from "./form-filtering-parameters";
 import { FormAreaFilter } from "./form-area-filter";
 
