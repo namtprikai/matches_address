@@ -33,6 +33,9 @@ const useStyles = makeStyles({
     alignItems: "center",
     gap: tokens.spacingHorizontalM,
   },
+  content: {
+    paddingBottom: tokens.spacingVerticalXXL,
+  },
   button: {
     border: ` 1px solid ${tokens.colorNeutralStroke2}`,
     borderRadius: tokens.borderRadiusMedium,
@@ -104,7 +107,7 @@ export function DataPreviewDialog(): JSX.Element {
           </div>
         </DialogTitle>
         <DialogBody>
-          <DialogContent>
+          <DialogContent className={styles.content}>
             <DataPreview />
           </DialogContent>
         </DialogBody>
