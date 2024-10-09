@@ -34,8 +34,8 @@ const useStyles = makeStyles({
     gap: tokens.spacingHorizontalM,
   },
   button: {
-    border: `1px solid #E0E0E0`,
-    borderRadius: "4px",
+    border: ` 1px solid ${tokens.colorNeutralStroke2}`,
+    borderRadius: tokens.borderRadiusMedium,
     "&:hover, &:active, &:focus, &:focus-within": {
       border: `1px solid #BDBDBD`,
     },
