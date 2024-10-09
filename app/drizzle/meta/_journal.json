@@ -78,16 +78,6 @@
       "when": 1728373182429,
       "tag": "0012_soft_moonstone",
       "breakpoints": true
-<<<<<<< Updated upstream
-=======
-    },
-    {
-      "idx": 14,
-      "version": "6",
-      "when": 1728444810619,
-      "tag": "0014_chubby_silhouette",
-      "breakpoints": true
->>>>>>> Stashed changes
     }
   ]
 }
