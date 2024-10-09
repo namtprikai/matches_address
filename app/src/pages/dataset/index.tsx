@@ -5,11 +5,15 @@ import {
   Tab,
   TabList,
   tokens,
-  Button,
 } from "@fluentui/react-components";
-import { ArrowDownloadRegular, DeleteRegular } from "@fluentui/react-icons";
+import { ArrowDownloadRegular, AddRegular } from "@fluentui/react-icons";
 import { useTabs } from "../../hooks/use-tabs";
-import { type DataSet, DatasetList } from "../../components/dataset-management";
+import {
+  type Dataset,
+  DatasetList,
+} from "../../components/dataset/dataset-list";
+import { DeleteSelectedItemsDialog } from "../../components/dataset/delete-selected-items-dialog";
+import { Button } from "../../components/ui/button";
 
 const useStyles = makeStyles({
   root: {
@@ -28,6 +32,7 @@ const useStyles = makeStyles({
   content: {
     display: "block",
     minHeight: "300px",
+    padding: `${tokens.spacingVerticalXXL} ${tokens.spacingHorizontalXXL}`,
   },
   actions: {
     display: "flex",
@@ -39,7 +44,12 @@ const useStyles = makeStyles({
       gap: tokens.spacingHorizontalM,
     },
   },
-  button: {
+  uploadButton: {
+    display: "flex",
+    alignItems: "center",
+    gap: tokens.spacingHorizontalXS,
+  },
+  iconButton: {
     border: `1px solid ${tokens.colorNeutralStroke2}`,
     borderRadius: tokens.borderRadiusMedium,
     "&:hover, &:active, &:focus, &:focus-within": {
@@ -57,10 +67,8 @@ export function Dataset(): JSX.Element {
   const styles = useStyles();
   const initialTabValue: TabValue = "seed";
   const { onTabSelect, selectedValue } = useTabs<TabValue>(initialTabValue);
-  const [selectedDatasets, setSelectedDatasets] = useState<
-    DataSet[] | undefined
-  >(undefined);
-  const [selectedCount, setSelectedCount] = useState(0);
+  const [selectedDatasets, setSelectedDatasets] = useState<Dataset[]>([]);
+  const [selectedItemIds, setSelectedItemIds] = useState<Dataset["id"][]>([]);
 
   useEffect(() => {
     switch (selectedValue) {
@@ -90,9 +98,29 @@ export function Dataset(): JSX.Element {
     console.log("Download button clicked");
   };
 
-  const handleDelete = (): void => {
-    // eslint-disable-next-line no-console -- for debug
-    console.log("Delete button clicked");
+  // TODO: DBのデータを削除するように修正する
+  const handleDeleteSelectedItems = (): void => {
+    setSelectedDatasets((prev) =>
+      prev.filter((dataset) => !selectedItemIds.includes(dataset.id)),
+    );
+    setSelectedItemIds([]);
+  };
+
+  // TODO: DBのデータを更新するように修正する
+  const handleEditItem = (
+    id: Dataset["id"],
+    newName: Dataset["name"],
+  ): void => {
+    setSelectedDatasets((prev) =>
+      prev.map((dataset) =>
+        dataset.id === id ? { ...dataset, name: newName } : dataset,
+      ),
+    );
+  };
+
+  // TODO: DBのデータを削除するように修正する
+  const handleDeleteItem = (id: Dataset["id"]): void => {
+    setSelectedDatasets((prev) => prev.filter((dataset) => dataset.id !== id));
   };
 
   return (
@@ -110,61 +138,64 @@ export function Dataset(): JSX.Element {
       </div>
       <Card className={styles.content}>
         <div className={styles.actions}>
-          <Button appearance="primary" onClick={handleUpload}>
-            + 新規アップロード
+          <Button
+            appearance="outline"
+            className={styles.uploadButton}
+            onClick={handleUpload}
+          >
+            <AddRegular />
+            新規アップロード
           </Button>
           <div>
-            <span>{selectedCount}件選択中</span>
+            <span>{selectedItemIds.length}件選択中</span>
             <Button
               appearance="outline"
-              className={styles.button}
+              className={styles.iconButton}
               icon={<ArrowDownloadRegular />}
               onClick={handleDownload}
             />
-            <Button
-              appearance="outline"
-              className={styles.button}
-              icon={<DeleteRegular />}
-              onClick={handleDelete}
+            <DeleteSelectedItemsDialog
+              disabled={selectedItemIds.length === 0}
+              onDelete={handleDeleteSelectedItems}
             />
           </div>
         </div>
         <div className={styles.datasetList}>
-          {selectedDatasets ? (
-            <DatasetList
-              dataSets={selectedDatasets}
-              onSelectionChange={setSelectedCount}
-            />
-          ) : null}
+          <DatasetList
+            dataSets={selectedDatasets}
+            onDelete={handleDeleteItem}
+            onSelectionChange={setSelectedItemIds}
+            onSubmit={handleEditItem}
+          />
         </div>
       </Card>
     </div>
   );
 }
 
-const _dummyDataSetSeeds: DataSet[] = [
-  { name: "シードデータ", date: "2024/4/21" },
-  { name: "水道メーター1.shp", date: "2024/4/21" },
-  { name: "前処理住民台帳1.csv", date: "2024/4/21" },
-  { name: "前処理住民台帳2.csv", date: "2024/4/21" },
-  { name: "前処理住民台帳3.csv", date: "2024/4/21" },
-  { name: "水道メーター2.shp", date: "2024/4/21" },
+const _dummyDataSetSeeds: Dataset[] = [
+  { id: 1, name: "シードデータ", date: "2024/4/21" },
+  { id: 2, name: "水道メーター1.shp", date: "2024/4/21" },
+  { id: 3, name: "前処理住民台帳1.csv", date: "2024/4/21" },
+  { id: 4, name: "前処理住民台帳2.csv", date: "2024/4/21" },
+  { id: 5, name: "前処理住民台帳3.csv", date: "2024/4/21" },
+  { id: 6, name: "水道メーター2.shp", date: "2024/4/21" },
 ];
 
-const _dummyDataSetNormalizations: DataSet[] = [
-  { name: "正規化済みデータ", date: "2024/4/21" },
-  { name: "水道メーター1.shp", date: "2024/4/21" },
-  { name: "前処理住民台帳1.csv", date: "2024/4/21" },
-  { name: "前処理住民台帳2.csv", date: "2024/4/21" },
-  { name: "前処理住民台帳3.csv", date: "2024/4/21" },
-  { name: "水道メーター2.shp", date: "2024/4/21" },
+const _dummyDataSetNormalizations: Dataset[] = [
+  { id: 1, name: "正規化済みデータ", date: "2024/4/21" },
+  { id: 2, name: "水道メーター1.shp", date: "2024/4/21" },
+  { id: 3, name: "前処理住民台帳1.csv", date: "2024/4/21" },
+  { id: 4, name: "前処理住民台帳2.csv", date: "2024/4/21" },
+  { id: 5, name: "前処理住民台帳3.csv", date: "2024/4/21" },
+  { id: 6, name: "水道メーター2.shp", date: "2024/4/21" },
 ];
 
-const _dummyDataSetResults: DataSet[] = [
-  { name: "空き家判定結果データ", date: "2024/4/21" },
-  { name: "水道メーター1.shp", date: "2024/4/21" },
-  { name: "前処理住民台帳1.csv", date: "2024/4/21" },
-  { name: "前処理住民台帳2.csv", date: "2024/4/21" },
-  { name: "前処理住民台帳3.csv", date: "2024/4/21" },
-  { name: "水道メーター2.shp", date: "2024/4/21" },
+const _dummyDataSetResults: Dataset[] = [
+  { id: 1, name: "空き家判定結果データ", date: "2024/4/21" },
+  { id: 2, name: "水道メーター1.shp", date: "2024/4/21" },
+  { id: 3, name: "前処理住民台帳1.csv", date: "2024/4/21" },
+  { id: 4, name: "前処理住民台帳2.csv", date: "2024/4/21" },
+  { id: 5, name: "前処理住民台帳3.csv", date: "2024/4/21" },
+  { id: 6, name: "水道メーター2.shp", date: "2024/4/21" },
 ];
