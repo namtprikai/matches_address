@@ -191,26 +191,26 @@ export const DialogImportDataset = (): JSX.Element => {
 
             {selectedTab === 0 && (
               <>
-                {datasets.length > 0 ? (
-                  <Table className={styles.tableHeight}>
-                    <TableHeader className={styles.tableHeader}>
-                      <TableRow
-                        className={`${styles.datasetTable} ${styles.borderBottom}`}
+                <Table className={styles.tableHeight}>
+                  <TableHeader className={styles.tableHeader}>
+                    <TableRow
+                      className={`${styles.datasetTable} ${styles.borderBottom}`}
+                    >
+                      <TableHeaderCell
+                        className={`${styles.datasetCell} ${styles.datasetHeader}`}
                       >
-                        <TableHeaderCell
-                          className={`${styles.datasetCell} ${styles.datasetHeader}`}
-                        >
-                          データセット名
-                          <ArrowSortRegular />
-                        </TableHeaderCell>
-                        <TableHeaderCell
-                          className={`${styles.datasetCell} ${styles.datasetHeader}`}
-                        >
-                          最終更新
-                          <ArrowSortRegular />
-                        </TableHeaderCell>
-                      </TableRow>
-                    </TableHeader>
+                        データセット名
+                        <ArrowSortRegular />
+                      </TableHeaderCell>
+                      <TableHeaderCell
+                        className={`${styles.datasetCell} ${styles.datasetHeader}`}
+                      >
+                        最終更新
+                        <ArrowSortRegular />
+                      </TableHeaderCell>
+                    </TableRow>
+                  </TableHeader>
+                  {datasets.length > 0 ? (
                     <TableBody className={styles.tableBody}>
                       {datasets.map((dataset, index) => (
                         <TableRow
@@ -234,14 +234,14 @@ export const DialogImportDataset = (): JSX.Element => {
                         </TableRow>
                       ))}
                     </TableBody>
-                  </Table>
-                ) : (
-                  <div className={styles.noDatasetWrap}>
-                    <span className={styles.noDataset}>
-                      現在表示できるデータセットはありません
-                    </span>
-                  </div>
-                )}
+                  ) : (
+                    <div className={styles.noDatasetWrap}>
+                      <span className={styles.noDataset}>
+                        現在表示できるデータセットはありません
+                      </span>
+                    </div>
+                  )}
+                </Table>
               </>
             )}
 
