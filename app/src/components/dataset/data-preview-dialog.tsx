@@ -110,7 +110,7 @@ export function DataPreviewDialog(): JSX.Element {
   );
 }
 
-export function DataPreview(): JSX.Element {
+function DataPreview(): JSX.Element {
   const styles = useStyles();
   const [csvData, setCsvData] = useState<CSVRow[]>([]);
   const [headers, setHeaders] = useState<string[]>([]);
