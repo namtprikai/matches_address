@@ -624,3 +624,93 @@ export const raw_data_sets = sqliteTable("raw_data_sets", {
 
 export type SelectRawDataSet = typeof raw_data_sets.$inferSelect;
 export type InsertRawDataSet = typeof raw_data_sets.$inferInsert;
+
+export const jobs = sqliteTable("jobs", {
+  id: integer("id").primaryKey(),
+  status: text("status"), // job_tasksでprogress_percent取得できるならcomputedに表示できるかも
+  type: text("type", { enum: ["preprocess", "ml", "result"] }),
+  parameters: text("parameters", { mode: "json" })
+    .$type<Record<string, string>>() /** WIP:定義 */
+    .notNull(),
+
+  created_at: text("created_at")
+    .default(sql`(CURRENT_TIMESTAMP)`)
+    .notNull(),
+  updated_at: text("updated_at")
+    .default(sql`(CURRENT_TIMESTAMP)`)
+    .notNull()
+    .$onUpdate(() => sql`(CURRENT_TIMESTAMP)`),
+});
+
+export type SelectJob = typeof jobs.$inferSelect;
+export type InsertJob = typeof jobs.$inferInsert;
+
+export const job_tasks = sqliteTable("job_tasks", {
+  id: integer("id").primaryKey(),
+  job_id: integer("job_id")
+    .references(() => jobs.id)
+    .notNull(),
+  progress_percent: text("progress_percent"),
+  preprocess_type: text("preprocess_type", {
+    enum: ["住居単位データ作成", "空間結合"],
+  }),
+  error_code: text("error_code", { enum: ["undefined_error"] }),
+
+  // 完了したら設定される
+  result: blob("result", {
+    mode: "json",
+  }).$type<Record<string, string>>() /** WIP:定義 */,
+
+  // 完了したら設定される
+  finished_at: text("finished_at").default(sql`(CURRENT_TIMESTAMP)`),
+
+  created_at: text("created_at")
+    .default(sql`(CURRENT_TIMESTAMP)`)
+    .notNull(),
+  updated_at: text("updated_at")
+    .default(sql`(CURRENT_TIMESTAMP)`)
+    .notNull()
+    .$onUpdate(() => sql`(CURRENT_TIMESTAMP)`),
+});
+
+export type SelectJobTask = typeof job_tasks.$inferSelect;
+export type InsertJobTask = typeof job_tasks.$inferInsert;
+
+export const job_results = sqliteTable("job_results", {
+  id: integer("id").primaryKey(),
+  job_id: integer("job_id")
+    .references(() => jobs.id)
+    .notNull(),
+  // Pythonが吐き出した内部パス(path/to/normalizeの名前)
+  file_path: text("file_path").notNull(),
+
+  created_at: text("created_at")
+    .default(sql`(CURRENT_TIMESTAMP)`)
+    .notNull(),
+  updated_at: text("updated_at")
+    .default(sql`(CURRENT_TIMESTAMP)`)
+    .notNull()
+    .$onUpdate(() => sql`(CURRENT_TIMESTAMP)`),
+});
+
+export type SelectJobResult = typeof job_results.$inferSelect;
+export type InsertJobResult = typeof job_results.$inferInsert;
+
+export const model_files = sqliteTable("model_files", {
+  id: integer("id").primaryKey(),
+  file_name: text("file_name"),
+  note: text("note"),
+  // 内部パス
+  file_path: text("file_path"),
+
+  created_at: text("created_at")
+    .default(sql`(CURRENT_TIMESTAMP)`)
+    .notNull(),
+  updated_at: text("updated_at")
+    .default(sql`(CURRENT_TIMESTAMP)`)
+    .notNull()
+    .$onUpdate(() => sql`(CURRENT_TIMESTAMP)`),
+});
+
+export type SelectModelFile = typeof model_files.$inferSelect;
+export type InsertModelFile = typeof model_files.$inferInsert;
