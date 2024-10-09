@@ -43,7 +43,7 @@ const useStyles = makeStyles({
       gap: tokens.spacingHorizontalM,
     },
   },
-  button: {
+  iconButton: {
     border: `1px solid ${tokens.colorNeutralStroke2}`,
     borderRadius: tokens.borderRadiusMedium,
     "&:hover, &:active, &:focus, &:focus-within": {
@@ -139,7 +139,7 @@ export function Dataset(): JSX.Element {
             <span>{selectedItemIds.length}件選択中</span>
             <Button
               appearance="outline"
-              className={styles.button}
+              className={styles.iconButton}
               icon={<ArrowDownloadRegular />}
               onClick={handleDownload}
             />
