@@ -42,11 +42,19 @@ const useStyles = makeStyles({
   },
 });
 
+// FIXME: 後ほど削除
+type MockData = {
+  id: number;
+  title: string;
+  created_at: string;
+  updated_at: string;
+}[];
+
 export const TableModel = (): JSX.Element => {
   const styles = useStyles();
 
   // FIXME: 後ほど削除
-  const mockData = [];
+  const mockData: MockData = [];
 
   if (mockData.length === 0) {
     return (
