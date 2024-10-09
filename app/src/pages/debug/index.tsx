@@ -1,6 +1,6 @@
-import { FileUploader } from "../../components/ui/file-uploader/file-uploader";
 import { Link } from "react-router-dom";
 import { makeStyles } from "@fluentui/react-components";
+import { FileUploader } from "../../components/ui/file-uploader/file-uploader";
 import { Map } from "../../components/map";
 
 const useStyles = makeStyles({
