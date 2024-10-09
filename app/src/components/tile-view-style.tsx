@@ -3,9 +3,9 @@ import {
   type AREA_DATASET_COLUMN,
   type BUILDING_DATASET_COLUMN,
 } from "../config/column-metadata";
-import { BarChart } from "./bar-charts";
-import { LineChart } from "./line-charts";
-import { PieChart } from "./pie-charts";
+import { ChartBar } from "./chart-bar";
+import { ChartLine } from "./chart-line";
+import { ChartPie } from "./chart-pie";
 import { Map } from "./map";
 import { TableView } from "./table-view";
 
@@ -84,7 +84,7 @@ export const TileViewStyle = ({
     if (type === "building") {
       return (
         <div>
-          <PieChart
+          <ChartPie
             filterByAreas={areaParameter?.value}
             filterByYear={{
               startValue: yearParameter?.value?.start,
@@ -104,7 +104,7 @@ export const TileViewStyle = ({
 
     return (
       <div>
-        <PieChart
+        <ChartPie
           filterByAreas={areaParameter?.value}
           filterByYear={{
             startValue: yearParameter?.value?.start,
@@ -140,7 +140,7 @@ export const TileViewStyle = ({
     if (type === "building") {
       return (
         <div>
-          <BarChart
+          <ChartBar
             filterByAreas={areaParameter?.value}
             filterByYear={{
               startValue: yearParameter?.value?.start,
@@ -160,7 +160,7 @@ export const TileViewStyle = ({
 
     return (
       <div>
-        <BarChart
+        <ChartBar
           filterByAreas={areaParameter?.value}
           filterByYear={{
             startValue: yearParameter?.value?.start,
@@ -196,7 +196,7 @@ export const TileViewStyle = ({
     if (type === "building") {
       return (
         <div>
-          <LineChart
+          <ChartLine
             filterByAreas={areaParameter?.value}
             filterByYear={{
               startValue: yearParameter?.value?.start,
@@ -216,7 +216,7 @@ export const TileViewStyle = ({
 
     return (
       <div>
-        <LineChart
+        <ChartLine
           filterByAreas={areaParameter?.value}
           filterByYear={{
             startValue: yearParameter?.value?.start,

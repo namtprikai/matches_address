@@ -17,7 +17,7 @@ import { CHART_COLORS } from "../config/chart-colors";
 import { useFetchFilterDataSetForChart } from "../hooks/use-fetch-filtered-data-set-for-chart";
 import { type FilterDataSetForChartArgs } from "../ipc-main-listeners/filter-data-set-for-chart";
 
-export type LineChartProps = FilterDataSetForChartArgs;
+export type ChartLineProps = FilterDataSetForChartArgs;
 
 const CustomizedDot = ({
   cx,
@@ -109,7 +109,7 @@ const CustomizedActiveDot = ({
   );
 };
 
-export const LineChart = (props: LineChartProps): JSX.Element => {
+export const ChartLine = (props: ChartLineProps): JSX.Element => {
   const { chartProps } = useFetchFilterDataSetForChart(props);
 
   const data = chartProps.data;

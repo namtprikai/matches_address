@@ -15,9 +15,9 @@ import { useFetchFilterDataSetForChart } from "../hooks/use-fetch-filtered-data-
 import { type FilterDataSetForChartArgs } from "../ipc-main-listeners/filter-data-set-for-chart";
 import { CustomTooltip } from "./custom-tooltip";
 
-export type BarChartProps = FilterDataSetForChartArgs;
+export type ChartBarProps = FilterDataSetForChartArgs;
 
-export const BarChart = (props: BarChartProps): JSX.Element => {
+export const ChartBar = (props: ChartBarProps): JSX.Element => {
   const { chartProps } = useFetchFilterDataSetForChart(props);
 
   const data = chartProps.data;

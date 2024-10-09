@@ -27,9 +27,9 @@ const useStyle = makeStyles({
   },
 });
 
-export type PieChartProps = FilterDataSetForChartArgs;
+export type ChartPieProps = FilterDataSetForChartArgs;
 
-export const PieChart = (props: PieChartProps): JSX.Element => {
+export const ChartPie = (props: ChartPieProps): JSX.Element => {
   const { chartProps } = useFetchFilterDataSetForChart(props);
 
   const data = chartProps.data;
