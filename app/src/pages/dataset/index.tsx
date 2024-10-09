@@ -32,6 +32,7 @@ const useStyles = makeStyles({
   content: {
     display: "block",
     minHeight: "300px",
+    padding: `${tokens.spacingVerticalXXL} ${tokens.spacingHorizontalXXL}`,
   },
   actions: {
     display: "flex",
