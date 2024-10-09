@@ -19,7 +19,7 @@ const useStyles = makeStyles({
   },
 });
 
-export const EditResultViewForm = ({
+export const FormEditResultView = ({
   selectedResultSheetId,
 }: {
   selectedResultSheetId: number | undefined;

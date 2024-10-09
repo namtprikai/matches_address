@@ -150,7 +150,7 @@ type Props = {
   unit?: string;
 };
 
-export const EditorGroupingForm = ({
+export const FormGroupingResultView = ({
   parameters,
   onSave,
   columnType = "text",

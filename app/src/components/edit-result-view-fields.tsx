@@ -18,7 +18,7 @@ import { Field } from "./ui/field";
 import { Input } from "./ui/input";
 import { Select } from "./ui/select";
 import { DynamicParameterInput } from "./dynamic-parameter-input";
-import { EditorGroupingForm } from "./editor-grouping-form";
+import { FormGroupingResultView } from "./form-grouping-result-view";
 
 const useStyles = makeStyles({
   fontBlackInput: {
@@ -148,7 +148,7 @@ export const EditResultViewFields = ({ dataSetTitle }: Props): JSX.Element => {
                   value={field.value}
                 />
                 {fieldOption?.grouping && (
-                  <EditorGroupingForm
+                  <FormGroupingResultView
                     columnLabel={columnMetadata?.label}
                     columnType={columnMetadata?.type}
                     onSave={(parameters) => {

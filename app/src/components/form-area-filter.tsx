@@ -37,17 +37,17 @@ const useStyles = makeStyles({
 // コンポーネントを遅延評価で読み込むことでパフォーマンスに配慮
 // 元は１つ上の親コンポーネントで読み込んでいたが、Dialogを開いた際に読み込まれるように変更
 const AreaFilterFormOptions = lazy(() =>
-  import("./area-filter-form-options").then((module) => ({
-    default: module.AreaFilterFormOptions,
+  import("./form-area-filter-options").then((module) => ({
+    default: module.FormAreaFilterOptions,
   })),
 );
 
-type AreaFilterFormProps = {
+type Props = {
   areas: string[];
   onSave: (value: string[]) => void;
 } & FetchAreaGroupsArg;
 
-export const AreaFilterForm = (props: AreaFilterFormProps): JSX.Element => {
+export const FormAreaFilter = (props: Props): JSX.Element => {
   const [open, setOpen] = useState(false);
   const [selectedAreas, setSelectedAreas] = useState<string[]>(props.areas);
   const [searchText, setSearchText] = useState("");

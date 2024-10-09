@@ -20,7 +20,7 @@ type Props = FetchAreaGroupsArg & {
   onChange: (value: string[]) => void;
 };
 
-export const AreaFilterFormOptions = memo((props: Props) => {
+export const FormAreaFilterOptions = memo((props: Props) => {
   const { data } = useFetchAreaGroups({
     dataSetResultId: props.dataSetResultId,
     unit: props.unit,
@@ -83,4 +83,4 @@ export const AreaFilterFormOptions = memo((props: Props) => {
   );
 });
 
-AreaFilterFormOptions.displayName = "AreaFilterFormOptions";
+FormAreaFilterOptions.displayName = "AreaFilterFormOptions";

@@ -14,7 +14,7 @@ import { useFetchDataSetResults } from "../hooks/use-fetch-data-set-results";
 import { useFetchResultViews } from "../hooks/use-fetch-result-views";
 import { selectedResultSheetIdAtom } from "../state/selected-result-sheet-id-atom";
 import { Button } from "./ui/button";
-import { EditResultViewForm } from "./edit-result-view-form";
+import { FormEditResultView } from "./form-edit-result-view";
 import { ListDataSetResults } from "./list-data-set-results";
 import { EditResultViewLayoutSort } from "./edit-result-view-layout-sort";
 
@@ -79,7 +79,7 @@ export const SidebarEditResultView = (): JSX.Element => {
               <AddView />
             ) : (
               <>
-                <EditResultViewForm
+                <FormEditResultView
                   selectedResultSheetId={selectedResultSheetId}
                 />
                 <EditResultViewLayoutSort />

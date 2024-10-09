@@ -43,7 +43,7 @@ type Props = {
   onSave: (options: { key: string; active: boolean }[]) => void;
 };
 
-export const FilterColumnSelector = ({
+export const FormFilteringResultView = ({
   options,
   appearance,
   unit,
