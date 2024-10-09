@@ -12,6 +12,7 @@ import {
   TableRow,
   TableCell,
   mergeClasses,
+  DialogTrigger,
 } from "@fluentui/react-components";
 import { ArrowSortRegular, DismissFilled } from "@fluentui/react-icons";
 
@@ -128,35 +129,31 @@ const useStyles = makeStyles({
     fontSize: tokens.fontSizeBase100,
     color: tokens.colorNeutralForeground3,
   },
+  dataButton: {
+    height: "28px",
+    backgroundColor: "#6366A7",
+    color: "#FFFFFF",
+    padding: "5px 22px",
+  },
 });
 
-type DialogImportDatasetProps = {
-  onSave: (value: string[]) => void;
-  open: boolean;
-  onClose: () => void;
-};
-
-export const DialogImportDataset = (
-  props: DialogImportDatasetProps,
-): JSX.Element => {
-  const { open = true, onClose } = props;
+export const DialogImportDataset = (): JSX.Element => {
   const styles = useStyles();
   const [selectedTab, setSelectedTab] = useState(0);
+  const [selectedDatasetIndex, setSelectedDatasetIndex] = useState<
+    number | null
+  >(null);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   const datasets = [
     { name: "modelA_akiya_search A", lastUpdated: "2024/8/31 20:32" },
     { name: "modelA_akiya_search B", lastUpdated: "2024/3/31 10:32" },
   ];
 
-  const [selectedDatasetIndex, setSelectedDatasetIndex] = useState<
-    number | null
-  >(null);
-
   const handleClick = (): void => {
     if (selectedDatasetIndex !== null) {
-      const selectedDataset = datasets[selectedDatasetIndex];
-      props.onSave([selectedDataset.name]);
-      onClose();
+      // const dataset = datasets[selectedDatasetIndex];
+      setIsDialogOpen(false);
     }
   };
 
@@ -164,19 +161,36 @@ export const DialogImportDataset = (
     setSelectedTab(data.value as number);
     setSelectedDatasetIndex(null);
   };
-
   return (
-    <Dialog onOpenChange={onClose} open={open}>
+    <Dialog
+      onOpenChange={(_, { open }) => setIsDialogOpen(open)}
+      open={isDialogOpen}
+    >
+      <DialogTrigger disableButtonEnhancement>
+        <Button
+          className={styles.dataButton}
+          onClick={() => setIsDialogOpen(true)}
+        >
+          データを選択
+        </Button>
+      </DialogTrigger>
       <DialogSurface>
         <DialogBody>
-          <DialogTitle className={styles.dialogTitle}>
-            <span>ファイルをインポート</span>
-            <DismissFilled
-              aria-label="閉じる"
-              className={styles.icon}
-              onClick={onClose}
-              title="閉じる"
-            />
+          <DialogTitle
+            action={
+              <DialogTrigger action="close">
+                <Button
+                  appearance="subtle"
+                  aria-label="close"
+                  icon={
+                    <DismissFilled className={styles.icon} strokeWidth={2} />
+                  }
+                />
+              </DialogTrigger>
+            }
+            className={styles.dialogTitle}
+          >
+            ファイルをインポート
           </DialogTitle>
           <DialogContent padding={false}>
             <TabList
@@ -248,7 +262,6 @@ export const DialogImportDataset = (
               </>
             )}
 
-            {/* MEMO: 今後別コンポーネントに切り出し */}
             {selectedTab === 1 && (
               <div className={styles.uploadWrap}>
                 <div className={styles.noDataset}>
