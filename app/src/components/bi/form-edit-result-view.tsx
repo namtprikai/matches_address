@@ -8,9 +8,9 @@ import { type SelectResultView } from "../../schema";
 import { useFetchDataSetResultItem } from "../../hooks/use-fetch-data-set-result-item";
 import { useFetchResultView } from "../../hooks/use-fetch-result-view";
 import { useFetchResultViews } from "../../hooks/use-fetch-result-views";
+import { Button } from "../ui/button";
 import { EditResultViewFields } from "./edit-result-view-fields";
 import { EditResultViewFilterFields } from "./edit-result-view-filter-fields";
-import { Button } from "../ui/button";
 
 const useStyles = makeStyles({
   form: {
