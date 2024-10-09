@@ -629,9 +629,7 @@ export const jobs = sqliteTable("jobs", {
   id: integer("id").primaryKey(),
   status: text("status"), // job_tasksでprogress_percent取得できるならcomputedに表示できるかも
   type: text("type", { enum: ["preprocess", "ml", "result"] }),
-  parameters: blob("parameters", {
-    mode: "json",
-  })
+  parameters: text("parameters", { mode: "json" })
     .$type<Record<string, string>>() /** WIP:定義 */
     .notNull(),
 
