@@ -14,7 +14,7 @@ import {
 } from "../../components/dataset/dataset-list";
 import { DeleteSelectedItemsDialog } from "../../components/dataset/delete-selected-items-dialog";
 import { Button } from "../../components/ui/button";
-import { DataPreview } from "../../components/dataset/data-preview";
+import { DataPreviewDialog } from "../../components/dataset/data-preview";
 
 const useStyles = makeStyles({
   root: {
@@ -170,7 +170,7 @@ export function Dataset(): JSX.Element {
           />
         </div>
       </Card>
-      <DataPreview />
+      <DataPreviewDialog />
     </div>
   );
 }
