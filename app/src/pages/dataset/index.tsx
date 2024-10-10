@@ -104,9 +104,25 @@ export function Dataset(): JSX.Element {
     }
   };
 
-  const handleDownload = (): void => {
-    // eslint-disable-next-line no-console -- for debug
-    console.log("Download button clicked");
+  const handleDownload = async (): Promise<void> => {
+    try {
+      const response = await fetch("/dummy-data.csv");
+      if (!response.ok) {
+        throw new Error("Network response was not ok");
+      }
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = "dummy-data.csv";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Download failed:", error);
+      alert("ダウンロードに失敗しました。");
+    }
   };
 
   // TODO: DBのデータを削除するように修正する
