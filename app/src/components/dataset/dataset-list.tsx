@@ -5,10 +5,6 @@ import {
   TableHeaderCell,
   TableBody,
   TableCell,
-  useTableFeatures,
-  useTableSelection,
-  createTableColumn,
-  TableSelectionCell,
   makeStyles,
   tokens,
   Menu,
@@ -18,7 +14,6 @@ import {
   MenuItem,
   Dialog,
   DialogTrigger,
-  type TableRowId,
   Checkbox,
 } from "@fluentui/react-components";
 import {
@@ -30,9 +25,7 @@ import {
   type Dispatch,
   type SetStateAction,
   type MouseEvent,
-  type KeyboardEvent,
   useState,
-  useEffect,
 } from "react";
 import { DialogSurface } from "../ui/dialog-surface";
 import { DialogTitle } from "../ui/dialog-title";
@@ -41,6 +34,7 @@ import { DialogBody } from "../ui/dialog-body";
 import { DialogContent } from "../ui/dialog-content";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
+import { DataPreviewDialog } from "./data-preview-dialog";
 
 const useStyles = makeStyles({
   actions: {
@@ -143,7 +137,9 @@ export function DatasetList({
             <TableCell>
               <Checkbox onChange={() => handleCheckboxChange(dataset.id)} />
             </TableCell>
-            <TableCell>{dataset.name}</TableCell>
+            <TableCell>
+              <DataPreviewDialog datasetName={dataset.name} />
+            </TableCell>
             <TableCell>{dataset.date}</TableCell>
             <TableCell className={styles.actions}>
               <Button
