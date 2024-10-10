@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { type ChangeEvent, useEffect, useRef, useState } from "react";
 import {
   Card,
   makeStyles,
@@ -70,6 +70,7 @@ export function Dataset(): JSX.Element {
   const { onTabSelect, selectedValue } = useTabs<TabValue>(initialTabValue);
   const [selectedDatasets, setSelectedDatasets] = useState<Dataset[]>([]);
   const [selectedItemIds, setSelectedItemIds] = useState<Dataset["id"][]>([]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     switch (selectedValue) {
@@ -89,9 +90,18 @@ export function Dataset(): JSX.Element {
     }
   }, [selectedValue]);
 
-  const handleUpload = (): void => {
-    // eslint-disable-next-line no-console -- for debug
-    console.log("Upload button clicked");
+  const handleUploadButtonClick = (): void => {
+    fileInputRef.current?.click();
+  };
+
+  const handleUpload = (e: ChangeEvent<HTMLInputElement>): void => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setSelectedDatasets((prev) => [
+        { id: prev.length + 1, name: file.name, date: "2024/4/21" },
+        ...prev,
+      ]);
+    }
   };
 
   const handleDownload = (): void => {
@@ -139,10 +149,16 @@ export function Dataset(): JSX.Element {
       </div>
       <Card className={styles.content}>
         <div className={styles.actions}>
+          <input
+            ref={fileInputRef}
+            onChange={handleUpload}
+            style={{ display: "none" }}
+            type="file"
+          />
           <Button
             appearance="outline"
             className={styles.uploadButton}
-            onClick={handleUpload}
+            onClick={handleUploadButtonClick}
           >
             <AddRegular />
             新規アップロード
