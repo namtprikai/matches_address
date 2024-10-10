@@ -12,10 +12,18 @@ import {
   mergeClasses,
 } from "@fluentui/react-components";
 
+import { ErrorCircleFilled } from "@fluentui/react-icons";
+
 const useStyles = makeStyles({
   root: {
     display: "grid",
     gap: tokens.spacingVerticalXXL,
+  },
+  pageContainer: {
+    display: "flex",
+    flexDirection: "column",
+    minHeight: "calc(100vh - 48px)",
+    justifyContent: "space-between",
   },
   heading: {
     fontSize: tokens.fontSizeBase500,
@@ -51,6 +59,8 @@ const useStyles = makeStyles({
     },
   },
   successRateCell: {
+    display: "flex",
+    alignItems: "center",
     fontWeight: tokens.fontWeightBold,
     color: "#09583B",
   },
@@ -79,6 +89,25 @@ const useStyles = makeStyles({
     backgroundColor: "#09583B",
     color: "#fff",
   },
+  errorIcon: {
+    color: "#6264A7",
+  },
+  restartButtonWrapper: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "flex-end",
+    backgroundColor: "#fff",
+    height: "68px",
+    width: "100%",
+    padding: tokens.spacingHorizontalXXL,
+  },
+  restartButton: {
+    backgroundColor: "#6264A7",
+    color: "#fff",
+    borderRadius: "100px",
+    padding: `${tokens.spacingVerticalMNudge} ${tokens.spacingHorizontalL}`,
+    height: "40px",
+  },
 });
 
 const data = [
@@ -98,55 +127,63 @@ export function JobDetail(): JSX.Element {
   const styles = useStyles();
 
   return (
-    <div className={styles.root}>
-      <h2 className={styles.heading}>処理結果</h2>
+    <div className={styles.pageContainer}>
+      <div className={styles.root}>
+        <h2 className={styles.heading}>処理結果</h2>
 
-      <div className={styles.result}>
-        <span className={styles.message}>処理が完了しました。</span>
-        <div className={styles.buttonWrapper}>
-          <Button className={mergeClasses(styles.button, styles.saveWithName)}>
-            名前をつけて保存
-          </Button>
-          <Button className={styles.button}>プレビューを見る</Button>
-          <Button className={styles.button}>ダウンロード</Button>
+        <div className={styles.result}>
+          <span className={styles.message}>処理が完了しました。</span>
+          <div className={styles.buttonWrapper}>
+            <Button
+              className={mergeClasses(styles.button, styles.saveWithName)}
+            >
+              名前をつけて保存
+            </Button>
+            <Button className={styles.button}>プレビューを見る</Button>
+            <Button className={styles.button}>ダウンロード</Button>
+          </div>
         </div>
-      </div>
 
-      <Card className={styles.content}>
-        {/* TODO: コンポーネントに切り出し */}
-        <Table className={styles.table}>
-          <TableHeader className={styles.tableHeader}>
-            <TableRow>
-              <TableHeaderCell className={styles.headerCell}>
-                処理の種類
-              </TableHeaderCell>
-              <TableHeaderCell className={styles.headerCell}>
-                指標
-              </TableHeaderCell>
-              <TableHeaderCell className={styles.headerCell}>
-                成功率
-              </TableHeaderCell>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {data.map((item, index) => (
-              <TableRow key={index} className={styles.tableRow}>
-                <TableCell className={styles.tableCell}>
-                  {item.processType}
-                </TableCell>
-                <TableCell className={styles.tableCell}>
-                  {item.indexRate}
-                </TableCell>
-                <TableCell className={styles.tableCell}>
-                  <span className={styles.successRateCell}>
-                    {item.successRate}
-                  </span>
-                </TableCell>
+        <Card className={styles.content}>
+          {/* TODO: コンポーネントに切り出し */}
+          <Table className={styles.table}>
+            <TableHeader className={styles.tableHeader}>
+              <TableRow>
+                <TableHeaderCell className={styles.headerCell}>
+                  処理の種類
+                </TableHeaderCell>
+                <TableHeaderCell className={styles.headerCell}>
+                  指標
+                </TableHeaderCell>
+                <TableHeaderCell className={styles.headerCell}>
+                  成功率
+                </TableHeaderCell>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </Card>
+            </TableHeader>
+            <TableBody>
+              {data.map((item, index) => (
+                <TableRow key={index} className={styles.tableRow}>
+                  <TableCell className={styles.tableCell}>
+                    {item.processType}
+                  </TableCell>
+                  <TableCell className={styles.tableCell}>
+                    {item.indexRate}
+                  </TableCell>
+                  <TableCell className={styles.tableCell}>
+                    <div className={styles.successRateCell}>
+                      {item.successRate}
+                      <ErrorCircleFilled className={styles.errorIcon} />
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </Card>
+      </div>
+      <div className={styles.restartButtonWrapper}>
+        <Button className={styles.restartButton}>再実行へ</Button>
+      </div>
     </div>
   );
 }
