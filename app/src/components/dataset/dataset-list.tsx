@@ -37,6 +37,9 @@ import { Input } from "../ui/input";
 import { DataPreviewDialog } from "./data-preview-dialog";
 
 const useStyles = makeStyles({
+  tableHeader: {
+    backgroundColor: tokens.colorNeutralBackground3,
+  },
   actions: {
     display: "flex",
     alignItems: "center",
@@ -123,7 +126,7 @@ export function DatasetList({
 
   return (
     <Table>
-      <TableHeader>
+      <TableHeader className={styles.tableHeader}>
         <TableRow>
           <TableHeaderCell className={styles.checkboxTh}></TableHeaderCell>
           <TableHeaderCell>データセット名</TableHeaderCell>
