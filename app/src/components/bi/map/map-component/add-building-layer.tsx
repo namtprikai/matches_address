@@ -1,6 +1,6 @@
 import { type FeatureIdentifier, Popup, type Map } from "maplibre-gl";
 import { renderToString } from "react-dom/server";
-import { type SelectDataSetDetailBuilding } from "../../../schema";
+import { type SelectDataSetDetailBuilding } from "../../../../schema";
 import { BuildingPopup, type BuildingProperties } from "./building-popup";
 import { VACANCY_RATE_HIGH, VACANCY_RATE_MEDIUM } from ".";
 

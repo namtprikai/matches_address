@@ -8,9 +8,9 @@ import {
   TableRow,
   tokens,
 } from "@fluentui/react-components";
-import { useFetchFilterDataSetForTable } from "../hooks/use-fetch-filtered-data-set-for-table";
-import { type FilterDataSetForTableArgs } from "../ipc-main-listeners/filter-data-set-for-table";
-import { Pagenation } from "./ui/pagenation";
+import { useFetchFilterDataSetForTable } from "../../hooks/use-fetch-filtered-data-set-for-table";
+import { type FilterDataSetForTableArgs } from "../../ipc-main-listeners/filter-data-set-for-table";
+import { Pagenation } from "../ui/pagenation";
 
 const useStyles = makeStyles({
   root: {

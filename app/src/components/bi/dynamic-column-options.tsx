@@ -2,11 +2,11 @@ import { Option } from "@fluentui/react-components";
 import {
   type ChartDynamicColumnInput,
   type TileViewFieldOption,
-} from "../@types/charts";
+} from "../../@types/charts";
 import {
   AREA_DATASET_COLUMN_METADATA,
   BUILDING_DATASET_COLUMN_METADATA,
-} from "../config/column-metadata";
+} from "../../config/column-metadata";
 
 type Props = {
   unit: "building" | "area";

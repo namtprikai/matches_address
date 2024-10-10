@@ -1,14 +1,14 @@
 import { Fragment, lazy, Suspense, useDeferredValue, useState } from "react";
 import { Dialog, DialogTrigger, makeStyles } from "@fluentui/react-components";
-import { type FetchAreaGroupsArg } from "../ipc-main-listeners/fetch-area-groups";
-import { Field } from "./ui/field";
-import { Button } from "./ui/button";
-import { DialogSurface } from "./ui/dialog-surface";
-import { DialogBody } from "./ui/dialog-body";
-import { DialogTitle } from "./ui/dialog-title";
-import { DialogContent } from "./ui/dialog-content";
-import { DialogActions } from "./ui/dialog-actions";
-import { Input } from "./ui/input";
+import { type FetchAreaGroupsArg } from "../../ipc-main-listeners/fetch-area-groups";
+import { Field } from "../ui/field";
+import { Button } from "../ui/button";
+import { DialogSurface } from "../ui/dialog-surface";
+import { DialogBody } from "../ui/dialog-body";
+import { DialogTitle } from "../ui/dialog-title";
+import { DialogContent } from "../ui/dialog-content";
+import { DialogActions } from "../ui/dialog-actions";
+import { Input } from "../ui/input";
 
 const useStyles = makeStyles({
   selectedOptions: {
@@ -37,17 +37,17 @@ const useStyles = makeStyles({
 // コンポーネントを遅延評価で読み込むことでパフォーマンスに配慮
 // 元は１つ上の親コンポーネントで読み込んでいたが、Dialogを開いた際に読み込まれるように変更
 const AreaFilterFormOptions = lazy(() =>
-  import("./area-filter-form-options").then((module) => ({
-    default: module.AreaFilterFormOptions,
+  import("./form-area-filter-options").then((module) => ({
+    default: module.FormAreaFilterOptions,
   })),
 );
 
-type AreaFilterFormProps = {
+type Props = {
   areas: string[];
   onSave: (value: string[]) => void;
 } & FetchAreaGroupsArg;
 
-export const AreaFilterForm = (props: AreaFilterFormProps): JSX.Element => {
+export const FormAreaFilter = (props: Props): JSX.Element => {
   const [open, setOpen] = useState(false);
   const [selectedAreas, setSelectedAreas] = useState<string[]>(props.areas);
   const [searchText, setSearchText] = useState("");

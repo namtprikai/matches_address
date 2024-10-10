@@ -2,7 +2,7 @@ import { makeStyles } from "@fluentui/react-components";
 import { useAtom } from "jotai";
 import { useFetchResultViews } from "../hooks/use-fetch-result-views";
 import { selectedResultSheetIdAtom } from "../state/selected-result-sheet-id-atom";
-import { TileResultView } from "./tile-result-view";
+import { TileResultView } from "./bi/tile-result-view";
 import { EmptyResultViews } from "./empty-result-views";
 
 const useStyles = makeStyles({

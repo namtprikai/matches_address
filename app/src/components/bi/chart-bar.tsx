@@ -10,14 +10,14 @@ import {
   CartesianGrid as ReCartesianGrid,
 } from "recharts";
 import { useState } from "react";
-import { CHART_COLORS } from "../config/chart-colors";
-import { useFetchFilterDataSetForChart } from "../hooks/use-fetch-filtered-data-set-for-chart";
-import { type FilterDataSetForChartArgs } from "../ipc-main-listeners/filter-data-set-for-chart";
-import { CustomTooltip } from "./custom-tooltip";
+import { CHART_COLORS } from "../../config/chart-colors";
+import { useFetchFilterDataSetForChart } from "../../hooks/use-fetch-filtered-data-set-for-chart";
+import { type FilterDataSetForChartArgs } from "../../ipc-main-listeners/filter-data-set-for-chart";
+import { CustomTooltip } from "../custom-tooltip";
 
-export type BarChartProps = FilterDataSetForChartArgs;
+export type ChartBarProps = FilterDataSetForChartArgs;
 
-export const BarChart = (props: BarChartProps): JSX.Element => {
+export const ChartBar = (props: ChartBarProps): JSX.Element => {
   const { chartProps } = useFetchFilterDataSetForChart(props);
 
   const data = chartProps.data;

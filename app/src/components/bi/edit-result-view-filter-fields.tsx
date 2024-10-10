@@ -1,16 +1,16 @@
 import { makeStyles, tokens } from "@fluentui/react-components";
 import { useFieldArray, useFormContext } from "react-hook-form";
 import { lazy, Suspense } from "react";
-import { type EditResultViewFormType } from "../@types/form-schema";
-import { TILE_VIEW_CONFIG } from "../config/tile-view-config";
-import { type SelectResultView } from "../schema";
-import { useFetchReferenceDates } from "../hooks/use-fetch-reference-dates";
-import { Field } from "./ui/field";
-import { Select } from "./ui/select";
-import { Fieldset } from "./ui/fieldset";
-import { FieldLegend } from "./ui/field-legend";
-import { EditorFilterParametersForm } from "./editor-filter-parameters-form";
-import { AreaFilterForm } from "./area-filter-form";
+import { type EditResultViewFormType } from "../../@types/form-schema";
+import { TILE_VIEW_CONFIG } from "../../config/tile-view-config";
+import { type SelectResultView } from "../../schema";
+import { useFetchReferenceDates } from "../../hooks/use-fetch-reference-dates";
+import { Field } from "../ui/field";
+import { Select } from "../ui/select";
+import { Fieldset } from "../ui/fieldset";
+import { FieldLegend } from "../ui/field-legend";
+import { FormFilteringParameters } from "./form-filtering-parameters";
+import { FormAreaFilter } from "./form-area-filter";
 
 const useStyles = makeStyles({
   form: {
@@ -117,7 +117,7 @@ export const EditResultViewFilterFields = ({
       </Field>
 
       <Suspense>
-        <AreaFilterForm
+        <FormAreaFilter
           areas={areas}
           dataSetResultId={resultView?.data_set_result_id ?? undefined}
           onSave={(values) => {
@@ -142,7 +142,7 @@ export const EditResultViewFilterFields = ({
         />
       </Suspense>
 
-      <EditorFilterParametersForm
+      <FormFilteringParameters
         onSave={(parameters) => {
           const prevOtherParameters = fields.filter((f) => {
             return f.type !== "filter" || f.key === "year" || f.key === "area";

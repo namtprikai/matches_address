@@ -1,7 +1,7 @@
 import { forwardRef } from "react";
 import { mergeClasses } from "@fluentui/react-components";
-import { type SelectDataSetDetailBuilding } from "../../../schema";
-import { formatDate } from "../../../utils/format-date";
+import { type SelectDataSetDetailBuilding } from "../../../../schema";
+import { formatDate } from "../../../../utils/format-date";
 import styles from "./building-popup.module.css";
 import { VACANCY_RATE_HIGH, VACANCY_RATE_MEDIUM } from ".";
 

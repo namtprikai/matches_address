@@ -2,15 +2,15 @@ import { useAtom } from "jotai";
 import { FormProvider, useForm } from "react-hook-form";
 import { makeStyles } from "@fluentui/react-components";
 import { useEffect } from "react";
-import { type EditResultViewFormType } from "../@types/form-schema";
-import { selectedResultViewIdAtom } from "../state/selected-result-view-id-atom";
-import { type SelectResultView } from "../schema";
-import { useFetchDataSetResultItem } from "../hooks/use-fetch-data-set-result-item";
-import { useFetchResultView } from "../hooks/use-fetch-result-view";
-import { useFetchResultViews } from "../hooks/use-fetch-result-views";
+import { type EditResultViewFormType } from "../../@types/form-schema";
+import { selectedResultViewIdAtom } from "../../state/selected-result-view-id-atom";
+import { type SelectResultView } from "../../schema";
+import { useFetchDataSetResultItem } from "../../hooks/use-fetch-data-set-result-item";
+import { useFetchResultView } from "../../hooks/use-fetch-result-view";
+import { useFetchResultViews } from "../../hooks/use-fetch-result-views";
+import { Button } from "../ui/button";
 import { EditResultViewFields } from "./edit-result-view-fields";
 import { EditResultViewFilterFields } from "./edit-result-view-filter-fields";
-import { Button } from "./ui/button";
 
 const useStyles = makeStyles({
   form: {
@@ -19,7 +19,7 @@ const useStyles = makeStyles({
   },
 });
 
-export const EditResultViewForm = ({
+export const FormEditResultView = ({
   selectedResultSheetId,
 }: {
   selectedResultSheetId: number | undefined;

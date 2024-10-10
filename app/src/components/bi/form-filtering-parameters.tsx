@@ -14,18 +14,18 @@ import { useState } from "react";
 import {
   type AREA_DATASET_COLUMN,
   type BUILDING_DATASET_COLUMN,
-} from "../config/column-metadata";
-import { getColumnMetadata } from "../utils/get-column-metadata";
-import { DialogBody } from "./ui/dialog-body";
-import { DialogSurface } from "./ui/dialog-surface";
-import { DialogTitle } from "./ui/dialog-title";
-import { Button } from "./ui/button";
-import { DialogActions } from "./ui/dialog-actions";
-import { FilterColumnSelector } from "./filter-column-selector";
-import { Field } from "./ui/field";
-import { Select } from "./ui/select";
-import { Input } from "./ui/input";
-import { DialogContent } from "./ui/dialog-content";
+} from "../../config/column-metadata";
+import { getColumnMetadata } from "../../utils/get-column-metadata";
+import { DialogBody } from "../ui/dialog-body";
+import { DialogSurface } from "../ui/dialog-surface";
+import { DialogTitle } from "../ui/dialog-title";
+import { Button } from "../ui/button";
+import { DialogActions } from "../ui/dialog-actions";
+import { Field } from "../ui/field";
+import { Select } from "../ui/select";
+import { Input } from "../ui/input";
+import { DialogContent } from "../ui/dialog-content";
+import { FormFilteringResultView } from "./form-filtering-result-view";
 
 const useStyles = makeStyles({
   groupField: {
@@ -143,17 +143,17 @@ const schema = z.object({
 
 type parameters = z.infer<typeof schema.shape.parameters>;
 
-type EditorFilterParametersFormProps = {
+type Props = {
   parameters: parameters;
   options: (BUILDING_DATASET_COLUMN | AREA_DATASET_COLUMN)[];
   unit: "building" | "area";
   onSave: (parameters: parameters) => void;
 };
 
-export const EditorFilterParametersForm = ({
+export const FormFilteringParameters = ({
   onSave,
   ...props
-}: EditorFilterParametersFormProps): JSX.Element => {
+}: Props): JSX.Element => {
   const [open, setOpen] = useState(false);
 
   const { control, register, handleSubmit } = useForm({
@@ -248,7 +248,7 @@ export const EditorFilterParametersForm = ({
         <DialogBody>
           <DialogTitle
             action={
-              <FilterColumnSelector
+              <FormFilteringResultView
                 appearance="normal"
                 onSave={handleSelector}
                 options={optionsWithActive}
@@ -268,7 +268,7 @@ export const EditorFilterParametersForm = ({
             <div className={styles.dialogInner}>
               {fields.length === 0 ? (
                 <div className={styles.selectorContainer}>
-                  <FilterColumnSelector
+                  <FormFilteringResultView
                     appearance="primary"
                     onSave={handleSelector}
                     options={optionsWithActive}

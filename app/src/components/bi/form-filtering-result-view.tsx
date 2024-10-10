@@ -10,14 +10,14 @@ import {
   AREA_DATASET_COLUMN_METADATA,
   type BUILDING_DATASET_COLUMN,
   BUILDING_DATASET_COLUMN_METADATA,
-} from "../config/column-metadata";
-import { Button } from "./ui/button";
-import { DialogSurface } from "./ui/dialog-surface";
-import { DialogBody } from "./ui/dialog-body";
-import { DialogTitle } from "./ui/dialog-title";
-import { Field } from "./ui/field";
-import { DialogContent } from "./ui/dialog-content";
-import { DialogActions } from "./ui/dialog-actions";
+} from "../../config/column-metadata";
+import { Button } from "../ui/button";
+import { DialogSurface } from "../ui/dialog-surface";
+import { DialogBody } from "../ui/dialog-body";
+import { DialogTitle } from "../ui/dialog-title";
+import { Field } from "../ui/field";
+import { DialogContent } from "../ui/dialog-content";
+import { DialogActions } from "../ui/dialog-actions";
 
 const useStyles = makeStyles({
   fieldset: {
@@ -43,7 +43,7 @@ type Props = {
   onSave: (options: { key: string; active: boolean }[]) => void;
 };
 
-export const FilterColumnSelector = ({
+export const FormFilteringResultView = ({
   options,
   appearance,
   unit,

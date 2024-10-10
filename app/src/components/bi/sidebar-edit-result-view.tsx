@@ -10,12 +10,12 @@ import {
 } from "@fluentui/react-components";
 import { useAtom } from "jotai";
 import { Suspense, useEffect, useState } from "react";
-import { useFetchDataSetResults } from "../hooks/use-fetch-data-set-results";
-import { useFetchResultViews } from "../hooks/use-fetch-result-views";
-import { selectedResultSheetIdAtom } from "../state/selected-result-sheet-id-atom";
-import { Button } from "./ui/button";
-import { EditResultViewForm } from "./edit-result-view-form";
-import { ListDataSetResults } from "./list-data-set-results";
+import { useFetchDataSetResults } from "../../hooks/use-fetch-data-set-results";
+import { useFetchResultViews } from "../../hooks/use-fetch-result-views";
+import { selectedResultSheetIdAtom } from "../../state/selected-result-sheet-id-atom";
+import { Button } from "../ui/button";
+import { ListDataSetResults } from "../list-data-set-results";
+import { FormEditResultView } from "./form-edit-result-view";
 import { EditResultViewLayoutSort } from "./edit-result-view-layout-sort";
 
 const useStyles = makeStyles({
@@ -79,7 +79,7 @@ export const SidebarEditResultView = (): JSX.Element => {
               <AddView />
             ) : (
               <>
-                <EditResultViewForm
+                <FormEditResultView
                   selectedResultSheetId={selectedResultSheetId}
                 />
                 <EditResultViewLayoutSort />

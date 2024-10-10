@@ -1,7 +1,6 @@
 import { Link } from "react-router-dom";
 import { makeStyles } from "@fluentui/react-components";
 import { FileUploader } from "../../components/ui/file-uploader/file-uploader";
-import { Map } from "../../components/map";
 
 const useStyles = makeStyles({
   flex: {
@@ -18,7 +17,6 @@ export function Debug(): JSX.Element {
       <div className={styles.flex}>
         <a href="#">Go to home page</a>
       </div>
-      <Map areas={[]} dataSetResultId={1} type="building" />
       <FileUploader
         onChange={() => {
           return;

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { makeStyles, tokens } from "@fluentui/react-components";
-import { useFetchReferenceDates } from "../../hooks/use-fetch-reference-dates";
+import { useFetchReferenceDates } from "../../../hooks/use-fetch-reference-dates";
 import {
   VacancyLevelCheckbox,
   type VacancyLevels,

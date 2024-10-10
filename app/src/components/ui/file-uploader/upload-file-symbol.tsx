@@ -1,5 +1,4 @@
 import { makeStyles, mergeClasses, tokens } from "@fluentui/react-components";
-import FileUploadIcon from "../../../../public/file-upload-icon.svg";
 import { THEME_COLORS } from "../../../config/theme-colors";
 
 const useStyles = makeStyles({
@@ -27,7 +26,7 @@ export const UploadFileSymbol = (): JSX.Element => {
 
   return (
     <div className={styles.root}>
-      <img alt="upload file" src={FileUploadIcon} />
+      <img alt="upload file" src="/file-upload-icon.svg" />
       <div>
         <p className={mergeClasses(styles.text, styles.highlighted)}>
           ここにドラッグ&ドロップ

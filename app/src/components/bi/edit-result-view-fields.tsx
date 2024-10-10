@@ -1,24 +1,24 @@
 import { useFieldArray, useFormContext } from "react-hook-form";
 import { Fragment } from "react/jsx-runtime";
 import { makeStyles } from "@fluentui/react-components";
-import { result_views, type SelectResultView } from "../schema";
-import { LanguageMap } from "../lang";
-import { TILE_VIEW_CONFIG } from "../config/tile-view-config";
-import { getResultViewFieldOption } from "../utils/get-view-field-option";
-import { type EditResultViewFormType } from "../@types/form-schema";
+import { result_views, type SelectResultView } from "../../schema";
+import { LanguageMap } from "../../lang";
+import { TILE_VIEW_CONFIG } from "../../config/tile-view-config";
+import { getResultViewFieldOption } from "../../utils/get-view-field-option";
+import { type EditResultViewFormType } from "../../@types/form-schema";
 import {
   type AREA_DATASET_COLUMN,
   AREA_DATASET_COLUMN_METADATA,
   type BUILDING_DATASET_COLUMN,
   BUILDING_DATASET_COLUMN_METADATA,
-} from "../config/column-metadata";
-import { Fieldset } from "./ui/fieldset";
-import { FieldLegend } from "./ui/field-legend";
-import { Field } from "./ui/field";
-import { Input } from "./ui/input";
-import { Select } from "./ui/select";
+} from "../../config/column-metadata";
+import { Fieldset } from "../ui/fieldset";
+import { FieldLegend } from "../ui/field-legend";
+import { Field } from "../ui/field";
+import { Input } from "../ui/input";
+import { Select } from "../ui/select";
 import { DynamicParameterInput } from "./dynamic-parameter-input";
-import { EditorGroupingForm } from "./editor-grouping-form";
+import { FormGroupingResultView } from "./form-grouping-result-view";
 
 const useStyles = makeStyles({
   fontBlackInput: {
@@ -148,7 +148,7 @@ export const EditResultViewFields = ({ dataSetTitle }: Props): JSX.Element => {
                   value={field.value}
                 />
                 {fieldOption?.grouping && (
-                  <EditorGroupingForm
+                  <FormGroupingResultView
                     columnLabel={columnMetadata?.label}
                     columnType={columnMetadata?.type}
                     onSave={(parameters) => {
