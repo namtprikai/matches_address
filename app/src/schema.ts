@@ -70,7 +70,7 @@ export const result_views = sqliteTable("result_views", {
    *  value: string // inputのvalue属性に対応
    * }
    */
-  parameters: blob("parameters", {
+  parameters: text("parameters", {
     mode: "json",
   })
     .$type<
