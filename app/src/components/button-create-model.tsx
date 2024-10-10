@@ -1,5 +1,6 @@
 import { AddFilled } from "@fluentui/react-icons";
 import {
+  makeStyles,
   Menu,
   MenuItem,
   MenuList,
@@ -7,9 +8,19 @@ import {
   MenuTrigger,
   tokens,
 } from "@fluentui/react-components";
+import { Link } from "react-router-dom";
 import { Button } from "./ui/button";
 
+const useStyles = makeStyles({
+  navigationToNormalization: {
+    textDecoration: "none",
+    color: "inherit",
+  },
+});
+
 export const ButtonCreateModel = (): JSX.Element => {
+  const styles = useStyles();
+
   return (
     <Menu>
       <MenuTrigger disableButtonEnhancement>
@@ -29,7 +40,14 @@ export const ButtonCreateModel = (): JSX.Element => {
 
       <MenuPopover>
         <MenuList>
-          <MenuItem>正規化処理から始める</MenuItem>
+          <MenuItem>
+            <Link
+              className={styles.navigationToNormalization}
+              to={"/normalization"}
+            >
+              正規化処理から始める
+            </Link>
+          </MenuItem>
           <MenuItem>正規化処理済データから始める</MenuItem>
         </MenuList>
       </MenuPopover>
