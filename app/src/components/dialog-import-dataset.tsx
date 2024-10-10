@@ -131,7 +131,7 @@ export const DialogImportDataset = (): JSX.Element => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   const { data: fetchedDatasets } = useFetchRawDatasets();
-  const datasets = fetchedDatasets || [];
+  const datasets = fetchedDatasets ?? [];
 
   const handleClick = (): void => {
     if (selectedDatasetIndex !== null) {
