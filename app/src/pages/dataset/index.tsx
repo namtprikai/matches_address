@@ -94,6 +94,7 @@ export function Dataset(): JSX.Element {
     fileInputRef.current?.click();
   };
 
+  // TODO: バックエンド処理
   const handleUpload = (e: ChangeEvent<HTMLInputElement>): void => {
     const file = e.target.files?.[0];
     if (file) {
@@ -104,6 +105,7 @@ export function Dataset(): JSX.Element {
     }
   };
 
+  // TODO: バックエンド処理
   const handleDownload = async (): Promise<void> => {
     try {
       const response = await fetch("/dummy-data.csv");
@@ -125,7 +127,7 @@ export function Dataset(): JSX.Element {
     }
   };
 
-  // TODO: DBのデータを削除するように修正する
+  // TODO: バックエンド処理
   const handleDeleteSelectedItems = (): void => {
     setSelectedDatasets((prev) =>
       prev.filter((dataset) => !selectedItemIds.includes(dataset.id)),
@@ -133,7 +135,7 @@ export function Dataset(): JSX.Element {
     setSelectedItemIds([]);
   };
 
-  // TODO: DBのデータを更新するように修正する
+  // TODO: バックエンド処理
   const handleEditItem = (
     id: Dataset["id"],
     newName: Dataset["name"],
@@ -145,7 +147,7 @@ export function Dataset(): JSX.Element {
     );
   };
 
-  // TODO: DBのデータを削除するように修正する
+  // TODO: バックエンド処理
   const handleDeleteItem = (id: Dataset["id"]): void => {
     setSelectedDatasets((prev) => prev.filter((dataset) => dataset.id !== id));
   };
