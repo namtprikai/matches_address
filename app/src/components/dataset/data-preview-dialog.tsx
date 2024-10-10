@@ -50,7 +50,7 @@ const useStyles = makeStyles({
     tableLayout: "auto",
   },
   th: {
-    backgroundColor: "#F5F5F5",
+    backgroundColor: tokens.colorNeutralBackground3,
   },
   td: {
     minWidth: "153px",
