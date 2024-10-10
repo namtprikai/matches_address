@@ -19,6 +19,7 @@ import {
   Dialog,
   DialogTrigger,
   type TableRowId,
+  Checkbox,
 } from "@fluentui/react-components";
 import {
   ArrowDownloadRegular,
@@ -48,6 +49,9 @@ const useStyles = makeStyles({
     justifyContent: "flex-end",
     gap: tokens.spacingHorizontalM,
   },
+  checkboxTh: {
+    width: "44px",
+  },
   menuItemButton: {
     justifyContent: "flex-start",
     padding: 0,
@@ -65,7 +69,7 @@ export type Dataset = {
 };
 
 export type DatasetListProps = {
-  dataSets: Dataset[];
+  datasets: Dataset[];
   onSelectionChange: Dispatch<SetStateAction<Dataset["id"][]>>;
   onSubmit: (id: Dataset["id"], newName: string) => void;
   onDelete: (id: Dataset["id"]) => void;
@@ -73,82 +77,20 @@ export type DatasetListProps = {
 
 // TODO: ファイル名かコンポーネント名のどちらかを直して統一する
 export function DatasetList({
-  dataSets,
+  datasets,
   onSelectionChange,
   onSubmit,
   onDelete,
 }: DatasetListProps): JSX.Element {
   const styles = useStyles();
-  const columns = [
-    createTableColumn<Dataset>({ columnId: "name" }),
-    createTableColumn<Dataset>({ columnId: "date" }),
-  ];
-  const [selectedRows, setSelectedRows] = useState(new Set<TableRowId>());
 
-  useEffect(
-    function resetSelection() {
-      setSelectedRows(new Set());
-    },
-    [dataSets],
-  );
-
-  const {
-    getRows,
-    selection: {
-      allRowsSelected,
-      someRowsSelected,
-      toggleAllRows,
-      toggleRow,
-      isRowSelected,
-    },
-  } = useTableFeatures(
-    {
-      columns,
-      items: dataSets,
-    },
-    [
-      useTableSelection({
-        selectionMode: "multiselect",
-        selectedItems: selectedRows,
-        onSelectionChange: (_, data) => setSelectedRows(data.selectedItems),
-      }),
-    ],
-  );
-
-  const rows = getRows((row) => {
-    const selected = isRowSelected(row.rowId);
-
-    return {
-      ...row,
-      onClick: (e: MouseEvent) => {
-        toggleRow(e, row.rowId);
-        onSelectionChange((prev) =>
-          selected
-            ? prev.filter((id) => id !== row.item.id)
-            : [...prev, row.item.id],
-        );
-      },
-      onKeyDown: (e: KeyboardEvent) => {
-        if (e.key === " ") {
-          e.preventDefault();
-          toggleRow(e, row.rowId);
-          onSelectionChange((prev) =>
-            selected
-              ? prev.filter((id) => id !== row.item.id)
-              : [...prev, row.item.id],
-          );
-        }
-      },
-      selected,
-      appearance: selected ? ("brand" as const) : ("none" as const),
-    };
-  });
-
-  const handleToggleAll = (e: MouseEvent): void => {
-    toggleAllRows(e);
-    onSelectionChange(() =>
-      allRowsSelected ? [] : dataSets.map((dataset) => dataset.id),
-    );
+  const handleCheckboxChange = (id: Dataset["id"]): void => {
+    onSelectionChange((prev) => {
+      if (prev.includes(id)) {
+        return prev.filter((item) => item !== id);
+      }
+      return [...prev, id];
+    });
   };
 
   // TODO: バックエンド処理
@@ -189,32 +131,20 @@ export function DatasetList({
     <Table>
       <TableHeader>
         <TableRow>
-          <TableSelectionCell
-            checkboxIndicator={{ "aria-label": "Select all rows" }}
-            checked={
-              allRowsSelected ? true : someRowsSelected ? "mixed" : false
-            }
-            onClick={handleToggleAll}
-          />
+          <TableHeaderCell className={styles.checkboxTh}></TableHeaderCell>
           <TableHeaderCell>データセット名</TableHeaderCell>
           <TableHeaderCell>アップデート日</TableHeaderCell>
           <TableHeaderCell></TableHeaderCell>
         </TableRow>
       </TableHeader>
       <TableBody>
-        {rows.map(({ item, selected, onClick, appearance }) => (
-          <TableRow
-            key={item.id}
-            appearance={appearance}
-            aria-selected={selected}
-            onClick={onClick}
-          >
-            <TableSelectionCell
-              checkboxIndicator={{ "aria-label": "Select row" }}
-              checked={selected}
-            />
-            <TableCell>{item.name}</TableCell>
-            <TableCell>{item.date}</TableCell>
+        {datasets.map((dataset) => (
+          <TableRow key={dataset.id}>
+            <TableCell>
+              <Checkbox onChange={() => handleCheckboxChange(dataset.id)} />
+            </TableCell>
+            <TableCell>{dataset.name}</TableCell>
+            <TableCell>{dataset.date}</TableCell>
             <TableCell className={styles.actions}>
               <Button
                 appearance="subtle"
@@ -235,15 +165,15 @@ export function DatasetList({
                   <MenuList>
                     <MenuItem onClick={(e) => e.stopPropagation()}>
                       <EditDialog
-                        initialName={item.name}
+                        initialName={dataset.name}
                         onSubmit={(newName) =>
-                          handleEditMenuClick(item.id, newName)
+                          handleEditMenuClick(dataset.id, newName)
                         }
                       />
                     </MenuItem>
                     <MenuItem onClick={(e) => e.stopPropagation()}>
                       <DeleteDialog
-                        onDelete={() => handleDeleteMenuClick(item.id)}
+                        onDelete={() => handleDeleteMenuClick(dataset.id)}
                       />
                     </MenuItem>
                   </MenuList>

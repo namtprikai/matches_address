@@ -197,7 +197,7 @@ export function Dataset(): JSX.Element {
         </div>
         <div className={styles.datasetList}>
           <DatasetList
-            dataSets={selectedDatasets}
+            datasets={selectedDatasets}
             onDelete={handleDeleteItem}
             onSelectionChange={setSelectedItemIds}
             onSubmit={handleEditItem}
