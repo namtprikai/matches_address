@@ -1,5 +1,5 @@
 import { forwardRef } from "react";
-import { type SelectDataSetDetailArea } from "../../../schema";
+import { type SelectDataSetDetailArea } from "../../../../schema";
 import styles from "./area-popup.module.css";
 import { VACANCY_RATE_HIGH, VACANCY_RATE_MEDIUM } from ".";
 

@@ -1,10 +1,10 @@
 import { and, eq, gt, or } from "drizzle-orm";
-import { type IpcMainListener } from "../../ipc-main-listeners";
 import {
   data_set_detail_areas,
   type SelectDataSetDetailArea,
-} from "../../schema";
-import { db } from "../../utils/db";
+} from "../../../schema";
+import { db } from "../../../utils/db";
+import { type IpcMainListener } from "../../../ipc-main-listeners";
 
 export const fetchAreasInBatches = ((
   _: unknown,
