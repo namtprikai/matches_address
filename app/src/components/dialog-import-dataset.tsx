@@ -45,7 +45,9 @@ const useStyles = makeStyles({
   },
   uploadWrap: {
     height: "325px",
-    padding: `${tokens.spacingVerticalNone} ${tokens.spacingVerticalXS} ${tokens.spacingHorizontalM}`,
+    padding: `${tokens.spacingVerticalNone} ${tokens.spacingVerticalS} ${
+      tokens.spacingHorizontalMNudge
+    }`,
     borderBottom: `1px solid ${tokens.colorNeutralStroke2}`,
   },
   noDataset: {
@@ -194,16 +196,25 @@ export const DialogImportDataset = (): JSX.Element => {
                 <Table className={styles.tableHeight}>
                   <TableHeader className={styles.tableHeader}>
                     <TableRow
-                      className={`${styles.datasetTable} ${styles.borderBottom}`}
+                      className={mergeClasses(
+                        styles.datasetTable,
+                        styles.borderBottom,
+                      )}
                     >
                       <TableHeaderCell
-                        className={`${styles.datasetCell} ${styles.datasetHeader}`}
+                        className={mergeClasses(
+                          styles.datasetCell,
+                          styles.datasetHeader,
+                        )}
                       >
                         データセット名
                         <ArrowSortRegular />
                       </TableHeaderCell>
                       <TableHeaderCell
-                        className={`${styles.datasetCell} ${styles.datasetHeader}`}
+                        className={mergeClasses(
+                          styles.datasetCell,
+                          styles.datasetHeader,
+                        )}
                       >
                         最終更新
                         <ArrowSortRegular />
@@ -224,7 +235,10 @@ export const DialogImportDataset = (): JSX.Element => {
                           onClick={() => setSelectedDatasetIndex(index)}
                         >
                           <TableCell
-                            className={`${styles.datasetCell} ${styles.dataName}`}
+                            className={mergeClasses(
+                              styles.datasetCell,
+                              styles.dataName,
+                            )}
                           >
                             {dataset.name}
                           </TableCell>
