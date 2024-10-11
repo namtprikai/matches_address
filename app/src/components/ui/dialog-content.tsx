@@ -19,18 +19,19 @@ const useStyles = makeStyles({
 
 type DialogContentProps = FUIDialogContentProps & {
   border?: boolean;
+  padding?: boolean;
 };
 
 export const DialogContent = forwardRef<HTMLDivElement, DialogContentProps>(
-  ({ className, ...props }, ref) => {
+  ({ className, padding = true, border, ...props }, ref) => {
     const styles = useStyles();
     return (
       <FUIDialogContent
         {...props}
         ref={ref}
         className={mergeClasses(
-          styles.dialogContent,
-          props.border && styles.dialogContentBordered,
+          padding && styles.dialogContent,
+          border && styles.dialogContentBordered,
           className,
         )}
       />

@@ -27,6 +27,7 @@ import { deleteResultSheet } from "./delete-result-sheet";
 import { createDummyDataSetResults } from "./create-dummy-data-set-results";
 import { deleteWorkbook } from "./delete-workbook";
 import { fetchAreaGroups } from "./fetch-area-groups";
+import { fetchRawDatasets } from "./fetch-data-set-for-dialog";
 import { updateResultViewsLayoutIndex } from "./update-result-views-layout-index";
 
 export const ipcMainListeners = {
@@ -52,6 +53,7 @@ export const ipcMainListeners = {
   fetchBuildingsInBatches,
   fetchReferenceDates,
   fetchAreaGroups,
+  fetchRawDatasets,
   createDummyDataSetResults,
   fetchAreasInBatches,
   deleteWorkbook,
