@@ -28,6 +28,7 @@ import { createDummyDataSetResults } from "./create-dummy-data-set-results";
 import { deleteWorkbook } from "./delete-workbook";
 import { fetchAreaGroups } from "./fetch-area-groups";
 import { updateResultViewsLayoutIndex } from "./update-result-views-layout-index";
+import { readCSVHeader } from "./read-csv-header";
 
 export const ipcMainListeners = {
   helloFromPython,
@@ -45,6 +46,7 @@ export const ipcMainListeners = {
   insertResultViews,
   updateResultViews,
   readResultViews,
+  readCSVHeader,
   selectResultView,
   deleteResultView,
   filterDataSetForChart,
