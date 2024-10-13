@@ -185,6 +185,7 @@ export function Dataset(): JSX.Element {
             <Button
               appearance="outline"
               className={styles.iconButton}
+              disabled={selectedItemIds.length === 0}
               icon={<ArrowDownloadRegular />}
               onClick={handleDownload}
             />
