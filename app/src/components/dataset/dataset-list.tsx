@@ -72,7 +72,6 @@ export type DatasetListProps = {
   onDelete: (id: Dataset["id"]) => void;
 };
 
-// TODO: ファイル名かコンポーネント名のどちらかを直して統一する
 export function DatasetList({
   datasets,
   onSelectionChange,
