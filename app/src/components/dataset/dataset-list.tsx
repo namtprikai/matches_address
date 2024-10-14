@@ -14,7 +14,11 @@ import {
   MenuItem,
   Dialog,
   DialogTrigger,
-  Checkbox,
+  useTableFeatures,
+  useTableSelection,
+  type TableRowId,
+  createTableColumn,
+  TableSelectionCell,
 } from "@fluentui/react-components";
 import {
   ArrowDownloadRegular,
@@ -25,7 +29,9 @@ import {
   type Dispatch,
   type SetStateAction,
   type MouseEvent,
+  type KeyboardEvent,
   useState,
+  useEffect,
 } from "react";
 import { DialogSurface } from "../ui/dialog-surface";
 import { DialogTitle } from "../ui/dialog-title";
@@ -80,13 +86,76 @@ export function DatasetList({
 }: DatasetListProps): JSX.Element {
   const styles = useStyles();
 
-  const handleCheckboxChange = (id: Dataset["id"]): void => {
-    onSelectionChange((prev) => {
-      if (prev.includes(id)) {
-        return prev.filter((item) => item !== id);
-      }
-      return [...prev, id];
-    });
+  const columns = [
+    createTableColumn<Dataset>({ columnId: "name" }),
+    createTableColumn<Dataset>({ columnId: "date" }),
+  ];
+  const [selectedRows, setSelectedRows] = useState(new Set<TableRowId>());
+
+  useEffect(
+    function resetSelection() {
+      setSelectedRows(new Set());
+    },
+    [datasets],
+  );
+
+  const {
+    getRows,
+    selection: {
+      allRowsSelected,
+      someRowsSelected,
+      toggleAllRows,
+      toggleRow,
+      isRowSelected,
+    },
+  } = useTableFeatures(
+    {
+      columns,
+      items: datasets,
+    },
+    [
+      useTableSelection({
+        selectionMode: "multiselect",
+        selectedItems: selectedRows,
+        onSelectionChange: (_, data) => setSelectedRows(data.selectedItems),
+      }),
+    ],
+  );
+
+  const rows = getRows((row) => {
+    const selected = isRowSelected(row.rowId);
+
+    return {
+      ...row,
+      onClick: (e: MouseEvent) => {
+        toggleRow(e, row.rowId);
+        onSelectionChange((prev) =>
+          selected
+            ? prev.filter((id) => id !== row.item.id)
+            : [...prev, row.item.id],
+        );
+      },
+      onKeyDown: (e: KeyboardEvent) => {
+        if (e.key === " ") {
+          e.preventDefault();
+          toggleRow(e, row.rowId);
+          onSelectionChange((prev) =>
+            selected
+              ? prev.filter((id) => id !== row.item.id)
+              : [...prev, row.item.id],
+          );
+        }
+      },
+      selected,
+      appearance: selected ? ("brand" as const) : ("none" as const),
+    };
+  });
+
+  const handleToggleAll = (e: MouseEvent): void => {
+    toggleAllRows(e);
+    onSelectionChange(() =>
+      allRowsSelected ? [] : datasets.map((dataset) => dataset.id),
+    );
   };
 
   // TODO: バックエンド処理
@@ -127,22 +196,34 @@ export function DatasetList({
     <Table>
       <TableHeader className={styles.tableHeader}>
         <TableRow>
-          <TableHeaderCell className={styles.checkboxTh}></TableHeaderCell>
+          <TableSelectionCell
+            checkboxIndicator={{ "aria-label": "Select all rows" }}
+            checked={
+              allRowsSelected ? true : someRowsSelected ? "mixed" : false
+            }
+            onClick={handleToggleAll}
+          />
           <TableHeaderCell>データセット名</TableHeaderCell>
           <TableHeaderCell>アップデート日</TableHeaderCell>
           <TableHeaderCell></TableHeaderCell>
         </TableRow>
       </TableHeader>
       <TableBody>
-        {datasets.map((dataset) => (
-          <TableRow key={dataset.id}>
+        {rows.map(({ item, selected, onClick, appearance }) => (
+          <TableRow
+            key={item.id}
+            appearance={appearance}
+            aria-selected={selected}
+            onClick={onClick}
+          >
+            <TableSelectionCell
+              checkboxIndicator={{ "aria-label": "Select row" }}
+              checked={selected}
+            />
             <TableCell>
-              <Checkbox onChange={() => handleCheckboxChange(dataset.id)} />
+              <DataPreviewDialog datasetName={item.name} />
             </TableCell>
-            <TableCell>
-              <DataPreviewDialog datasetName={dataset.name} />
-            </TableCell>
-            <TableCell>{dataset.date}</TableCell>
+            <TableCell>{item.date}</TableCell>
             <TableCell className={styles.actions}>
               <Button
                 appearance="subtle"
@@ -163,15 +244,15 @@ export function DatasetList({
                   <MenuList>
                     <MenuItem onClick={(e) => e.stopPropagation()}>
                       <EditDialog
-                        initialName={dataset.name}
+                        initialName={item.name}
                         onSubmit={(newName) =>
-                          handleEditMenuClick(dataset.id, newName)
+                          handleEditMenuClick(item.id, newName)
                         }
                       />
                     </MenuItem>
                     <MenuItem onClick={(e) => e.stopPropagation()}>
                       <DeleteDialog
-                        onDelete={() => handleDeleteMenuClick(dataset.id)}
+                        onDelete={() => handleDeleteMenuClick(item.id)}
                       />
                     </MenuItem>
                   </MenuList>

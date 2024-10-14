@@ -86,13 +86,18 @@ export function DataPreviewDialog({ datasetName }: Props): JSX.Element {
 
   return (
     <Dialog
-      onOpenChange={() => {
+      onOpenChange={(e) => {
+        e.stopPropagation();
         setOpen((prev) => !prev);
       }}
       open={open}
     >
       <DialogTrigger disableButtonEnhancement>
-        <Button appearance="transparent" className={styles.datasetButton}>
+        <Button
+          appearance="transparent"
+          className={styles.datasetButton}
+          onClick={(e) => e.stopPropagation()}
+        >
           {datasetName}
         </Button>
       </DialogTrigger>
