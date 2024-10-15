@@ -1,3 +1,4 @@
+import { app } from "electron";
 import path from "path";
 import { existsSync, mkdirSync } from "fs";
 import Database from "better-sqlite3";
@@ -10,7 +11,7 @@ const isDev = process.env.NODE_ENV === "development";
 const dbDirectory = path.resolve("./database");
 export const dbPath = isDev
   ? path.join(dbDirectory, "database.db")
-  : path.resolve(process.resourcesPath, "database.db");
+  : path.join(app.getPath("appData"), "database.db");
 
 if (isDev && !existsSync(dbDirectory)) {
   mkdirSync(dbDirectory, { recursive: true });
