@@ -31,6 +31,7 @@ import { fetchRawDatasets } from "./fetch-data-set-for-dialog";
 import { updateResultViewsLayoutIndex } from "./update-result-views-layout-index";
 import { selectRawDatasets } from "./select-raw-datasets";
 import { insertRawDatasets } from "./insert-raw-datasets";
+import { saveDatasetFile } from "./save-dataset-file";
 
 export const ipcMainListeners = {
   helloFromPython,
@@ -62,6 +63,7 @@ export const ipcMainListeners = {
   updateResultViewsLayoutIndex,
   selectRawDatasets,
   insertRawDatasets,
+  saveDatasetFile,
 };
 
 export const execFileAsync = promisify(execFile);
