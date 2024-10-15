@@ -101,7 +101,7 @@ export function DataPreviewDialog({ datasetName }: Props): JSX.Element {
           {datasetName}
         </Button>
       </DialogTrigger>
-      <DialogSurface>
+      <DialogSurface onClick={(e) => e.stopPropagation()}>
         <DialogTitle className={styles.dialogTitle}>
           <div className={styles.actions}>
             <Button
