@@ -18,7 +18,7 @@ const useStyles = makeStyles({
     alignItems: "center",
     justifyContent: "center",
     width: "100%",
-    minHeight: "200px",
+    height: "100%",
     border: "2px dashed #ccc",
     borderRadius: "5px",
     cursor: "pointer",

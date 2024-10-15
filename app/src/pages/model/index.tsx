@@ -1,5 +1,6 @@
 import { Card, makeStyles, tokens } from "@fluentui/react-components";
 import { ButtonCreateModel } from "../../components/button-create-model";
+import { DialogImportDataset } from "../../components/dialog-import-dataset";
 import { TableModel } from "../../components/table-model";
 
 const useStyles = makeStyles({
@@ -31,6 +32,7 @@ export function Model(): JSX.Element {
 
       <Card className={styles.content}>
         <ButtonCreateModel />
+        <DialogImportDataset />
         <TableModel />
       </Card>
     </div>
