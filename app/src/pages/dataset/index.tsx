@@ -14,7 +14,6 @@ import {
 } from "../../components/dataset/dataset-list";
 import { DeleteSelectedItemsDialog } from "../../components/dataset/delete-selected-items-dialog";
 import { Button } from "../../components/ui/button";
-import { DataPreviewDialog } from "../../components/dataset/data-preview-dialog";
 
 const useStyles = makeStyles({
   root: {
@@ -186,6 +185,7 @@ export function Dataset(): JSX.Element {
             <Button
               appearance="outline"
               className={styles.iconButton}
+              disabled={selectedItemIds.length === 0}
               icon={<ArrowDownloadRegular />}
               onClick={handleDownload}
             />
@@ -197,14 +197,13 @@ export function Dataset(): JSX.Element {
         </div>
         <div className={styles.datasetList}>
           <DatasetList
-            dataSets={selectedDatasets}
+            datasets={selectedDatasets}
             onDelete={handleDeleteItem}
             onSelectionChange={setSelectedItemIds}
             onSubmit={handleEditItem}
           />
         </div>
       </Card>
-      <DataPreviewDialog />
     </div>
   );
 }

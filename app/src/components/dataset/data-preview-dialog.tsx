@@ -36,7 +36,16 @@ const useStyles = makeStyles({
   content: {
     paddingBottom: tokens.spacingVerticalXXL,
   },
-  button: {
+  datasetButton: {
+    padding: 0,
+    justifyContent: "flex-start",
+    color: tokens.colorBrandForeground1,
+    textDecoration: "underline",
+    "&:hover": {
+      textDecoration: "none",
+    },
+  },
+  iconButton: {
     border: ` 1px solid ${tokens.colorNeutralStroke2}`,
     borderRadius: tokens.borderRadiusMedium,
     "&:hover, &:active, &:focus, &:focus-within": {
@@ -59,7 +68,11 @@ const useStyles = makeStyles({
 
 type CSVRow = Record<string, string>;
 
-export function DataPreviewDialog(): JSX.Element {
+interface Props {
+  datasetName: string;
+}
+
+export function DataPreviewDialog({ datasetName }: Props): JSX.Element {
   const styles = useStyles();
   const [open, setOpen] = useState(false);
 
@@ -73,15 +86,22 @@ export function DataPreviewDialog(): JSX.Element {
 
   return (
     <Dialog
-      onOpenChange={() => {
+      onOpenChange={(e) => {
+        e.stopPropagation();
         setOpen((prev) => !prev);
       }}
       open={open}
     >
       <DialogTrigger disableButtonEnhancement>
-        <Button>Open DataPreviewDialog</Button>
+        <Button
+          appearance="transparent"
+          className={styles.datasetButton}
+          onClick={(e) => e.stopPropagation()}
+        >
+          {datasetName}
+        </Button>
       </DialogTrigger>
-      <DialogSurface>
+      <DialogSurface onClick={(e) => e.stopPropagation()}>
         <DialogTitle className={styles.dialogTitle}>
           <div className={styles.actions}>
             <Button
@@ -94,13 +114,13 @@ export function DataPreviewDialog(): JSX.Element {
           <div className={styles.actions}>
             <Button
               appearance="outline"
-              className={styles.button}
+              className={styles.iconButton}
               icon={<ArrowDownloadRegular />}
               onClick={handleDownload}
             />
             <Button
               appearance="outline"
-              className={styles.button}
+              className={styles.iconButton}
               icon={<DeleteRegular />}
               onClick={handleDelete}
             />
