@@ -30,6 +30,7 @@ import { fetchAreaGroups } from "./fetch-area-groups";
 import { fetchRawDatasets } from "./fetch-data-set-for-dialog";
 import { updateResultViewsLayoutIndex } from "./update-result-views-layout-index";
 import { selectRawDatasets } from "./select-raw-datasets";
+import { insertRawDatasets } from "./insert-raw-datasets";
 
 export const ipcMainListeners = {
   helloFromPython,
@@ -60,6 +61,7 @@ export const ipcMainListeners = {
   deleteWorkbook,
   updateResultViewsLayoutIndex,
   selectRawDatasets,
+  insertRawDatasets,
 };
 
 export const execFileAsync = promisify(execFile);
