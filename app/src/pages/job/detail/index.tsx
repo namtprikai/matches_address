@@ -120,6 +120,10 @@ export function JobDetail(): JSX.Element {
 
   const hasData = data && data.length > 0;
 
+  const handlePreviewClick = (): void => {
+    navigate("/job/preview");
+  };
+
   return (
     <div className={styles.pageContainer}>
       <div className={styles.root}>
@@ -129,13 +133,15 @@ export function JobDetail(): JSX.Element {
           <span className={styles.message}>処理が完了しました。</span>
           <div className={styles.buttonWrapper}>
             <DialogSaveWithName />
-            <Button className={styles.button}>プレビューを見る</Button>
+            <Button className={styles.button} onClick={handlePreviewClick}>
+              プレビューを見る
+            </Button>
             <Button className={styles.button}>ダウンロード</Button>
           </div>
         </div>
 
         <Card className={styles.content}>
-          { hasData ? (
+          {hasData ? (
             <Table className={styles.table}>
               <TableHeader className={styles.tableHeader}>
                 <TableRow>
@@ -161,7 +167,7 @@ export function JobDetail(): JSX.Element {
                     </TableCell>
                     <TableCell className={styles.tableCell}>
                       <div className={styles.successRateCell}>
-                      {getIndexRate(item)}
+                        {getIndexRate(item)}
                         {item.error_code && (
                           <ErrorCircleFilled className={styles.errorIcon} />
                         )}
