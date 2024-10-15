@@ -61,7 +61,10 @@ export const TableModel = (): JSX.Element => {
       <TableHeader className={styles.tableHeader}>
         <TableRow className={styles.tableHeaderRow}>
           <TableHeaderCell className={styles.tableHeaderCell}>
-            名前
+            モデル名
+          </TableHeaderCell>
+          <TableHeaderCell className={styles.tableHeaderCell}>
+            モデル説明文
           </TableHeaderCell>
           <TableHeaderCell
             className={mergeClasses(
@@ -96,6 +99,7 @@ export const TableModel = (): JSX.Element => {
                 </FUILink>
               </Link>
             </TableCell>
+            <TableCell>{item.note}</TableCell>
             <TableCell className={styles.createdAtCell}>
               {formatDate(item.created_at)}
             </TableCell>
