@@ -5,10 +5,6 @@ import {
   TableHeaderCell,
   TableBody,
   TableCell,
-  useTableFeatures,
-  useTableSelection,
-  createTableColumn,
-  TableSelectionCell,
   makeStyles,
   tokens,
   Menu,
@@ -18,7 +14,11 @@ import {
   MenuItem,
   Dialog,
   DialogTrigger,
+  useTableFeatures,
+  useTableSelection,
   type TableRowId,
+  createTableColumn,
+  TableSelectionCell,
 } from "@fluentui/react-components";
 import {
   ArrowDownloadRegular,
@@ -40,13 +40,20 @@ import { DialogBody } from "../ui/dialog-body";
 import { DialogContent } from "../ui/dialog-content";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
+import { DataPreviewDialog } from "./data-preview-dialog";
 
 const useStyles = makeStyles({
+  tableHeader: {
+    backgroundColor: tokens.colorNeutralBackground3,
+  },
   actions: {
     display: "flex",
     alignItems: "center",
     justifyContent: "flex-end",
     gap: tokens.spacingHorizontalM,
+  },
+  checkboxTh: {
+    width: "44px",
   },
   menuItemButton: {
     justifyContent: "flex-start",
@@ -65,20 +72,20 @@ export type Dataset = {
 };
 
 export type DatasetListProps = {
-  dataSets: Dataset[];
+  datasets: Dataset[];
   onSelectionChange: Dispatch<SetStateAction<Dataset["id"][]>>;
   onSubmit: (id: Dataset["id"], newName: string) => void;
   onDelete: (id: Dataset["id"]) => void;
 };
 
-// TODO: ファイル名かコンポーネント名のどちらかを直して統一する
 export function DatasetList({
-  dataSets,
+  datasets,
   onSelectionChange,
   onSubmit,
   onDelete,
 }: DatasetListProps): JSX.Element {
   const styles = useStyles();
+
   const columns = [
     createTableColumn<Dataset>({ columnId: "name" }),
     createTableColumn<Dataset>({ columnId: "date" }),
@@ -89,7 +96,7 @@ export function DatasetList({
     function resetSelection() {
       setSelectedRows(new Set());
     },
-    [dataSets],
+    [datasets],
   );
 
   const {
@@ -104,7 +111,7 @@ export function DatasetList({
   } = useTableFeatures(
     {
       columns,
-      items: dataSets,
+      items: datasets,
     },
     [
       useTableSelection({
@@ -147,14 +154,31 @@ export function DatasetList({
   const handleToggleAll = (e: MouseEvent): void => {
     toggleAllRows(e);
     onSelectionChange(() =>
-      allRowsSelected ? [] : dataSets.map((dataset) => dataset.id),
+      allRowsSelected ? [] : datasets.map((dataset) => dataset.id),
     );
   };
 
-  const handleDownload = (e: MouseEvent): void => {
+  // TODO: バックエンド処理
+  const handleDownload = async (e: MouseEvent): Promise<void> => {
     e.stopPropagation();
-    // eslint-disable-next-line no-console -- for debug
-    console.log("Download button clicked");
+    try {
+      const response = await fetch("/dummy-data.csv");
+      if (!response.ok) {
+        throw new Error("Network response was not ok");
+      }
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = "dummy-data.csv";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Download failed:", error);
+      alert("ダウンロードに失敗しました。");
+    }
   };
 
   const handleEditMenuClick = (
@@ -170,7 +194,7 @@ export function DatasetList({
 
   return (
     <Table>
-      <TableHeader>
+      <TableHeader className={styles.tableHeader}>
         <TableRow>
           <TableSelectionCell
             checkboxIndicator={{ "aria-label": "Select all rows" }}
@@ -180,7 +204,7 @@ export function DatasetList({
             onClick={handleToggleAll}
           />
           <TableHeaderCell>データセット名</TableHeaderCell>
-          <TableHeaderCell>アップデート日</TableHeaderCell>
+          <TableHeaderCell>アップロード日</TableHeaderCell>
           <TableHeaderCell></TableHeaderCell>
         </TableRow>
       </TableHeader>
@@ -196,7 +220,9 @@ export function DatasetList({
               checkboxIndicator={{ "aria-label": "Select row" }}
               checked={selected}
             />
-            <TableCell>{item.name}</TableCell>
+            <TableCell>
+              <DataPreviewDialog datasetName={item.name} />
+            </TableCell>
             <TableCell>{item.date}</TableCell>
             <TableCell className={styles.actions}>
               <Button
