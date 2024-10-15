@@ -204,7 +204,7 @@ export function DatasetList({
             onClick={handleToggleAll}
           />
           <TableHeaderCell>データセット名</TableHeaderCell>
-          <TableHeaderCell>アップデート日</TableHeaderCell>
+          <TableHeaderCell>アップロード日</TableHeaderCell>
           <TableHeaderCell></TableHeaderCell>
         </TableRow>
       </TableHeader>
