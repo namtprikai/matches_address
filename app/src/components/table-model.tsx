@@ -12,6 +12,7 @@ import {
 } from "@fluentui/react-components";
 import { Link } from "react-router-dom";
 import { formatDate } from "../utils/format-date";
+import { useFetchModelFiles } from "../hooks/use-fetch-model-files";
 
 const useStyles = makeStyles({
   updatedAtHeaderCell: {
@@ -42,21 +43,14 @@ const useStyles = makeStyles({
   },
 });
 
-// FIXME: 後ほど削除
-type MockData = {
-  id: number;
-  title: string;
-  created_at: string;
-  updated_at: string;
-}[];
-
 export const TableModel = (): JSX.Element => {
   const styles = useStyles();
 
-  // FIXME: 後ほど削除
-  const mockData: MockData = [];
+  const { data } = useFetchModelFiles();
 
-  if (mockData.length === 0) {
+  if (data === undefined) return <></>;
+
+  if (data.length === 0) {
     return (
       <p className={styles.modelNotFound}>現在表示できるモデルはありません</p>
     );
@@ -88,7 +82,7 @@ export const TableModel = (): JSX.Element => {
         </TableRow>
       </TableHeader>
       <TableBody>
-        {mockData?.map((item) => (
+        {data.map((item) => (
           <TableRow key={item.id}>
             <TableCell>
               <Link to={`/analysis/model/${item.id}`}>
@@ -98,7 +92,7 @@ export const TableModel = (): JSX.Element => {
                     fontWeight: 600,
                   }}
                 >
-                  {item.title}
+                  {item.file_name}
                 </FUILink>
               </Link>
             </TableCell>
