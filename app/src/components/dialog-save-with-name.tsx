@@ -6,7 +6,8 @@ import {
   tokens,
   mergeClasses,
 } from "@fluentui/react-components";
-import { useNavigate, type FormProps } from "react-router-dom";
+import { useState } from "react"; // useState をインポート
+import { type FormProps } from "react-router-dom";
 import { Button } from "./ui/button";
 import { Form } from "./ui/form";
 import { DialogSurface } from "./ui/dialog-surface";
@@ -30,23 +31,23 @@ const useStyles = makeStyles({
     backgroundColor: "#09583B",
     color: "#fff",
   },
+  DialogBody: {
+    width: "449px",
+  },
 });
 
 export const DialogSaveWithName = (): JSX.Element => {
   const styles = useStyles();
-  const navigate = useNavigate();
+  const [inputValue, setInputValue] = useState(""); // 入力値の状態を管理
 
   /** フォーム制御についてはあとで考える */
   const handleSubmit: FormProps["onSubmit"] = (e) => {
     e.preventDefault();
-    const asyncSubmit = async (): Promise<void> => {
-      const data = Object.fromEntries(new FormData(e.currentTarget));
-      const res = await window.ipcRenderer.invoke("createWorkbooks", {
-        title: data.title.toString(),
-      });
-      navigate(`/analysis/workbook/${res.id}/edit`);
-    };
-    asyncSubmit().catch(console.error);
+    // フォーム送信時の処理をここに記述
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
+    setInputValue(e.target.value);
   };
 
   return (
@@ -56,7 +57,7 @@ export const DialogSaveWithName = (): JSX.Element => {
           名前をつけて保存
         </Button>
       </DialogTrigger>
-      <DialogSurface>
+      <DialogSurface className={styles.DialogBody}>
         <DialogBody>
           <DialogTitle
             action={
@@ -81,14 +82,16 @@ export const DialogSaveWithName = (): JSX.Element => {
               <Input
                 className={styles.input}
                 name="title"
+                onChange={handleInputChange}
                 placeholder="OO年度前処理済みデータ"
+                value={inputValue}
               />
             </Form>
           </DialogContent>
           <DialogActions>
             <Button
               appearance="primary"
-              form="save-with-name"
+              disabled={inputValue.trim() === ""}
               size="medium"
               type="submit"
             >
