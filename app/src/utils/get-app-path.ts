@@ -4,7 +4,7 @@ import { app } from "electron";
 
 /**
  * 環境に応じたアプリケーションファイルのパスを取得し、必要に応じてディレクトリを作成する関数
- * @param pathSegments パスセグメント（最後の要素がファイル名）
+ * @param paths パスの配列（最後の要素をファイル名にする）
  * @returns ファイルの完全パス
  */
 export function getAppPath(...paths: string[]): string {
@@ -15,7 +15,7 @@ export function getAppPath(...paths: string[]): string {
     // 開発環境: プロジェクト内の指定されたディレクトリを使用
     fullPath = path.join(process.cwd(), ...paths);
   } else {
-    // 本番環境: Electronのapp.getPath('userData')を使用
+    // 本番環境: Electronのapp.getPath('appData')を使用
     fullPath = path.join(app.getPath("appData"), ...paths);
   }
 
