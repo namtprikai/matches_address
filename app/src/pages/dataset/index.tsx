@@ -14,6 +14,9 @@ import {
 } from "../../components/dataset/dataset-list";
 import { DeleteRowsDialog } from "../../components/dataset/delete-rows-dialog";
 import { Button } from "../../components/ui/button";
+import { RawDataSetTable } from "../../components/dataset/raw-dataset-table";
+import { NormalizedDataSetTable } from "../../components/dataset/normalized-dataset-table";
+import { ResultDataSetTable } from "../../components/dataset/result-dataset-table";
 
 const useStyles = makeStyles({
   root: {
@@ -61,47 +64,21 @@ const useStyles = makeStyles({
   },
 });
 
-type TabValue = "seed" | "normalization" | "akiya";
+type TabValue = "seed" | "normalization" | "result";
 
 export function Dataset(): JSX.Element {
   const styles = useStyles();
   const initialTabValue: TabValue = "seed";
   const { onTabSelect, selectedValue } = useTabs<TabValue>(initialTabValue);
-  const [selectedDatasets, setSelectedDatasets] = useState<Dataset[]>([]);
   const [selectedItemIds, setSelectedItemIds] = useState<Dataset["id"][]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
-
-  useEffect(() => {
-    switch (selectedValue) {
-      case "seed":
-        setSelectedDatasets(_dummyDataSetSeeds);
-        break;
-      case "normalization":
-        setSelectedDatasets(_dummyDataSetNormalizations);
-        break;
-      case "akiya":
-        setSelectedDatasets(_dummyDataSetResults);
-        break;
-      default: {
-        const exhaustiveCheck: never = selectedValue;
-        throw new Error(`Unhandled tab value: ${exhaustiveCheck}`);
-      }
-    }
-  }, [selectedValue]);
 
   const handleUploadButtonClick = (): void => {
     fileInputRef.current?.click();
   };
 
-  // TODO: バックエンド処理
   const handleUpload = (e: ChangeEvent<HTMLInputElement>): void => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setSelectedDatasets((prev) => [
-        { id: prev.length + 1, name: file.name, date: "2024/4/21" },
-        ...prev,
-      ]);
-    }
+    // TODO: バックエンド処理
   };
 
   // TODO: バックエンド処理
@@ -126,29 +103,20 @@ export function Dataset(): JSX.Element {
     }
   };
 
-  // TODO: バックエンド処理
   const handleDeleteSelectedItems = (): void => {
-    setSelectedDatasets((prev) =>
-      prev.filter((dataset) => !selectedItemIds.includes(dataset.id)),
-    );
+    // TODO: バックエンド処理
     setSelectedItemIds([]);
   };
 
-  // TODO: バックエンド処理
   const handleEditItem = (
     id: Dataset["id"],
     newName: Dataset["name"],
   ): void => {
-    setSelectedDatasets((prev) =>
-      prev.map((dataset) =>
-        dataset.id === id ? { ...dataset, name: newName } : dataset,
-      ),
-    );
+    // TODO: バックエンド処理
   };
 
-  // TODO: バックエンド処理
   const handleDeleteItem = (id: Dataset["id"]): void => {
-    setSelectedDatasets((prev) => prev.filter((dataset) => dataset.id !== id));
+    // TODO: バックエンド処理
   };
 
   return (
@@ -196,41 +164,33 @@ export function Dataset(): JSX.Element {
           </div>
         </div>
         <div className={styles.datasetList}>
-          <DatasetList
-            datasets={selectedDatasets}
-            onDelete={handleDeleteItem}
-            onSelectionChange={setSelectedItemIds}
-            onSubmit={handleEditItem}
-          />
+          {
+            {
+              seed: (
+                <RawDataSetTable
+                  onDelete={handleDeleteItem}
+                  onSelectionChange={setSelectedItemIds}
+                  onSubmit={handleEditItem}
+                />
+              ),
+              normalization: (
+                <NormalizedDataSetTable
+                  onDelete={handleDeleteItem}
+                  onSelectionChange={setSelectedItemIds}
+                  onSubmit={handleEditItem}
+                />
+              ),
+              result: (
+                <ResultDataSetTable
+                  onDelete={handleDeleteItem}
+                  onSelectionChange={setSelectedItemIds}
+                  onSubmit={handleEditItem}
+                />
+              ),
+            }[selectedValue]
+          }
         </div>
       </Card>
     </div>
   );
 }
-
-const _dummyDataSetSeeds: Dataset[] = [
-  { id: 1, name: "シードデータ", date: "2024/4/21" },
-  { id: 2, name: "水道メーター1.shp", date: "2024/4/21" },
-  { id: 3, name: "前処理住民台帳1.csv", date: "2024/4/21" },
-  { id: 4, name: "前処理住民台帳2.csv", date: "2024/4/21" },
-  { id: 5, name: "前処理住民台帳3.csv", date: "2024/4/21" },
-  { id: 6, name: "水道メーター2.shp", date: "2024/4/21" },
-];
-
-const _dummyDataSetNormalizations: Dataset[] = [
-  { id: 1, name: "正規化済みデータ", date: "2024/4/21" },
-  { id: 2, name: "水道メーター1.shp", date: "2024/4/21" },
-  { id: 3, name: "前処理住民台帳1.csv", date: "2024/4/21" },
-  { id: 4, name: "前処理住民台帳2.csv", date: "2024/4/21" },
-  { id: 5, name: "前処理住民台帳3.csv", date: "2024/4/21" },
-  { id: 6, name: "水道メーター2.shp", date: "2024/4/21" },
-];
-
-const _dummyDataSetResults: Dataset[] = [
-  { id: 1, name: "空き家判定結果データ", date: "2024/4/21" },
-  { id: 2, name: "水道メーター1.shp", date: "2024/4/21" },
-  { id: 3, name: "前処理住民台帳1.csv", date: "2024/4/21" },
-  { id: 4, name: "前処理住民台帳2.csv", date: "2024/4/21" },
-  { id: 5, name: "前処理住民台帳3.csv", date: "2024/4/21" },
-  { id: 6, name: "水道メーター2.shp", date: "2024/4/21" },
-];
