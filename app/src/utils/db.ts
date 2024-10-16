@@ -1,21 +1,11 @@
-import { app } from "electron";
-import path from "path";
-import { existsSync, mkdirSync } from "fs";
 import Database from "better-sqlite3";
 import {
   drizzle,
   type BetterSQLite3Database,
 } from "drizzle-orm/better-sqlite3";
+import { getAppPath } from "./get-app-path";
 
-const isDev = process.env.NODE_ENV === "development";
-const dbDirectory = path.resolve("./database");
-export const dbPath = isDev
-  ? path.join(dbDirectory, "database.db")
-  : path.join(app.getPath("appData"), "database.db");
-
-if (isDev && !existsSync(dbDirectory)) {
-  mkdirSync(dbDirectory, { recursive: true });
-}
+export const dbPath = getAppPath("database", "database.db");
 
 const betterSqlite3 = new Database(dbPath);
 
