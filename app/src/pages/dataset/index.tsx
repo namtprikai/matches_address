@@ -1,4 +1,4 @@
-import { type ChangeEvent, useEffect, useRef, useState } from "react";
+import { type ChangeEvent, useRef, useState } from "react";
 import {
   Card,
   makeStyles,
@@ -8,11 +8,13 @@ import {
 } from "@fluentui/react-components";
 import { ArrowDownloadRegular, AddRegular } from "@fluentui/react-icons";
 import { useTabs } from "../../hooks/use-tabs";
-import { type Dataset } from "../../components/dataset/dataset-list";
 import { DeleteRowsDialog } from "../../components/dataset/delete-rows-dialog";
 import { Button } from "../../components/ui/button";
 import { RawDataSetTable } from "../../components/dataset/raw-dataset-table";
-import { NormalizedDataSetTable } from "../../components/dataset/normalized-dataset-table";
+import {
+  NormalizedDataSetTable,
+  type Dataset,
+} from "../../components/dataset/normalized-dataset-table";
 import { ResultDataSetTable } from "../../components/dataset/result-dataset-table";
 import { type InsertRawDataSet } from "../../schema";
 import { useFetchRawDatasets } from "../../hooks/use-fetch-raw-datasets";
