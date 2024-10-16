@@ -12,7 +12,7 @@ import {
   type Dataset,
   DatasetList,
 } from "../../components/dataset/dataset-list";
-import { DeleteSelectedItemsDialog } from "../../components/dataset/delete-selected-items-dialog";
+import { DeleteRowsDialog } from "../../components/dataset/delete-rows-dialog";
 import { Button } from "../../components/ui/button";
 
 const useStyles = makeStyles({
@@ -189,7 +189,7 @@ export function Dataset(): JSX.Element {
               icon={<ArrowDownloadRegular />}
               onClick={handleDownload}
             />
-            <DeleteSelectedItemsDialog
+            <DeleteRowsDialog
               disabled={selectedItemIds.length === 0}
               onDelete={handleDeleteSelectedItems}
             />
