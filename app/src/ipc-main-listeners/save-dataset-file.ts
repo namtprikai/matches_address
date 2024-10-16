@@ -13,7 +13,7 @@ export const saveDatasetFile = ((
   },
 ) => {
   const isDev = process.env.NODE_ENV === "development";
-  const folderName = "dataset-files";
+  const folderName = "database";
   const folderPath = isDev
     ? path.resolve(`./${folderName}`)
     : path.resolve(process.resourcesPath, folderName);
