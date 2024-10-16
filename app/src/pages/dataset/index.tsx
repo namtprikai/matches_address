@@ -140,6 +140,7 @@ export function Dataset(): JSX.Element {
             </Tab>
           ))}
         </TabList>
+        <Button onClick={handleAddDummyData}>ダミーデータを追加する</Button>
       </div>
       <Card className={styles.content}>
         <div className={styles.actions}>
@@ -202,4 +203,20 @@ export function Dataset(): JSX.Element {
       </Card>
     </div>
   );
+}
+
+async function handleAddDummyData(): Promise<void> {
+  const response = await fetch("/dummy-data.csv");
+  if (!response.ok) {
+    throw new Error("ファイルの取得に失敗しました");
+  }
+
+  const arrayBuffer = await response.arrayBuffer();
+  const uint8Array = new Uint8Array(arrayBuffer);
+  const fileName = `${crypto.randomUUID()}.csv`;
+
+  void window.ipcRenderer.invoke("saveDatasetFile", {
+    data: Array.from(uint8Array),
+    fileName,
+  });
 }
