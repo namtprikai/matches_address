@@ -48,6 +48,9 @@ const useStyles = makeStyles({
     minWidth: "24px",
     minHeight: "24px",
   },
+  title: {
+    minHeight: "22px",
+  },
 });
 
 export const TileResultView = ({
@@ -143,7 +146,9 @@ export const TileResultView = ({
             </Dialog>
           }
           header={
-            <Subtitle2>{`${resultView.title || "タイトル未入力"}`}</Subtitle2>
+            <Subtitle2 className={styles.title}>
+              {resultView.title ?? ""}
+            </Subtitle2>
           }
         />
         <div>パラメーターの値を正しく設定してください</div>
@@ -204,7 +209,9 @@ export const TileResultView = ({
           </Dialog>
         }
         header={
-          <Subtitle2>{`${resultView.title || "タイトル未入力"}`}</Subtitle2>
+          <Subtitle2 className={styles.title}>
+            {resultView.title ?? ""}
+          </Subtitle2>
         }
       />
       {resultView.data_set_result_id ? (
