@@ -64,7 +64,8 @@ const useStyles = makeStyles({
   },
 });
 
-type TabValue = "seed" | "normalization" | "result";
+const TAB_VALUES = ["seed", "normalization", "result"] as const;
+type TabValue = (typeof TAB_VALUES)[number];
 
 export function Dataset(): JSX.Element {
   const styles = useStyles();
@@ -127,9 +128,17 @@ export function Dataset(): JSX.Element {
           defaultSelectedValue={initialTabValue}
           onTabSelect={onTabSelect}
         >
-          <Tab value="seed">シードデータ</Tab>
-          <Tab value="normalization">正規化済データ</Tab>
-          <Tab value="akiya">空き家判定結果データ</Tab>
+          {TAB_VALUES.map((value) => (
+            <Tab key={value} value={value}>
+              {
+                {
+                  seed: "シードデータ",
+                  normalization: "正規化済データ",
+                  result: "空き家判定結果データ",
+                }[value]
+              }
+            </Tab>
+          ))}
         </TabList>
       </div>
       <Card className={styles.content}>
