@@ -8,15 +8,14 @@ import {
 } from "@fluentui/react-components";
 import { ArrowDownloadRegular, AddRegular } from "@fluentui/react-icons";
 import { useTabs } from "../../hooks/use-tabs";
-import {
-  type Dataset,
-  DatasetList,
-} from "../../components/dataset/dataset-list";
+import { type Dataset } from "../../components/dataset/dataset-list";
 import { DeleteRowsDialog } from "../../components/dataset/delete-rows-dialog";
 import { Button } from "../../components/ui/button";
 import { RawDataSetTable } from "../../components/dataset/raw-dataset-table";
 import { NormalizedDataSetTable } from "../../components/dataset/normalized-dataset-table";
 import { ResultDataSetTable } from "../../components/dataset/result-dataset-table";
+import { type InsertRawDataSet } from "../../schema";
+import { useFetchRawDatasets } from "../../hooks/use-fetch-raw-datasets";
 
 const useStyles = makeStyles({
   root: {
@@ -73,6 +72,7 @@ export function Dataset(): JSX.Element {
   const { onTabSelect, selectedValue } = useTabs<TabValue>(initialTabValue);
   const [selectedItemIds, setSelectedItemIds] = useState<Dataset["id"][]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const { mutate } = useFetchRawDatasets();
 
   const handleUploadButtonClick = (): void => {
     fileInputRef.current?.click();
@@ -120,6 +120,14 @@ export function Dataset(): JSX.Element {
     // TODO: バックエンド処理
   };
 
+  async function _handleAddDummyDataSets(): Promise<void> {
+    void Promise.all(
+      _dummyRawDataSets.map((seed) =>
+        window.ipcRenderer.invoke("insertRawDatasets", seed),
+      ),
+    ).then(() => mutate());
+  }
+
   return (
     <div className={styles.root}>
       <div className={styles.header}>
@@ -140,7 +148,9 @@ export function Dataset(): JSX.Element {
             </Tab>
           ))}
         </TabList>
-        <Button onClick={handleAddDummyData}>ダミーデータを追加する</Button>
+        <Button onClick={_handleAddDummyDataSets}>
+          ダミーデータを追加する
+        </Button>
       </div>
       <Card className={styles.content}>
         <div className={styles.actions}>
@@ -176,13 +186,7 @@ export function Dataset(): JSX.Element {
         <div className={styles.datasetList}>
           {
             {
-              seed: (
-                <RawDataSetTable
-                  onDelete={handleDeleteItem}
-                  onSelectionChange={setSelectedItemIds}
-                  onSubmit={handleEditItem}
-                />
-              ),
+              seed: <RawDataSetTable onSelectionChange={setSelectedItemIds} />,
               normalization: (
                 <NormalizedDataSetTable
                   onDelete={handleDeleteItem}
@@ -205,18 +209,29 @@ export function Dataset(): JSX.Element {
   );
 }
 
-async function handleAddDummyData(): Promise<void> {
-  const response = await fetch("/dummy-data.csv");
-  if (!response.ok) {
-    throw new Error("ファイルの取得に失敗しました");
-  }
-
-  const arrayBuffer = await response.arrayBuffer();
-  const uint8Array = new Uint8Array(arrayBuffer);
-  const fileName = `${crypto.randomUUID()}.csv`;
-
-  void window.ipcRenderer.invoke("saveDatasetFile", {
-    data: Array.from(uint8Array),
-    fileName,
-  });
-}
+const _dummyRawDataSets: InsertRawDataSet[] = [
+  {
+    file_name: "シードデータ",
+    file_path: "dummy-data.csv",
+  },
+  {
+    file_name: "水道メーター1.shp",
+    file_path: "dummy-data.csv",
+  },
+  {
+    file_name: "前処理住民台帳1.csv",
+    file_path: "dummy-data.csv",
+  },
+  {
+    file_name: "前処理住民台帳2.csv",
+    file_path: "dummy-data.csv",
+  },
+  {
+    file_name: "前処理住民台帳3.csv",
+    file_path: "dummy-data.csv",
+  },
+  {
+    file_name: "水道メーター2.shp",
+    file_path: "dummy-data.csv",
+  },
+];
