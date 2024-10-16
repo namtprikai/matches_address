@@ -72,7 +72,7 @@ const menuItems = [
     icon: DocumentBulletListRegular,
     label: "非同期処理",
     value: "4",
-    href: "#wip",
+    href: "#job",
   },
   {
     icon: DocumentBulletListRegular,

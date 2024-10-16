@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { type ChangeEvent, useEffect, useRef, useState } from "react";
 import {
   Card,
   makeStyles,
@@ -14,7 +14,6 @@ import {
 } from "../../components/dataset/dataset-list";
 import { DeleteSelectedItemsDialog } from "../../components/dataset/delete-selected-items-dialog";
 import { Button } from "../../components/ui/button";
-import { DataPreviewDialog } from "../../components/dataset/data-preview-dialog";
 
 const useStyles = makeStyles({
   root: {
@@ -70,6 +69,7 @@ export function Dataset(): JSX.Element {
   const { onTabSelect, selectedValue } = useTabs<TabValue>(initialTabValue);
   const [selectedDatasets, setSelectedDatasets] = useState<Dataset[]>([]);
   const [selectedItemIds, setSelectedItemIds] = useState<Dataset["id"][]>([]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     switch (selectedValue) {
@@ -89,17 +89,44 @@ export function Dataset(): JSX.Element {
     }
   }, [selectedValue]);
 
-  const handleUpload = (): void => {
-    // eslint-disable-next-line no-console -- for debug
-    console.log("Upload button clicked");
+  const handleUploadButtonClick = (): void => {
+    fileInputRef.current?.click();
   };
 
-  const handleDownload = (): void => {
-    // eslint-disable-next-line no-console -- for debug
-    console.log("Download button clicked");
+  // TODO: バックエンド処理
+  const handleUpload = (e: ChangeEvent<HTMLInputElement>): void => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setSelectedDatasets((prev) => [
+        { id: prev.length + 1, name: file.name, date: "2024/4/21" },
+        ...prev,
+      ]);
+    }
   };
 
-  // TODO: DBのデータを削除するように修正する
+  // TODO: バックエンド処理
+  const handleDownload = async (): Promise<void> => {
+    try {
+      const response = await fetch("/dummy-data.csv");
+      if (!response.ok) {
+        throw new Error("Network response was not ok");
+      }
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = "dummy-data.csv";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Download failed:", error);
+      alert("ダウンロードに失敗しました。");
+    }
+  };
+
+  // TODO: バックエンド処理
   const handleDeleteSelectedItems = (): void => {
     setSelectedDatasets((prev) =>
       prev.filter((dataset) => !selectedItemIds.includes(dataset.id)),
@@ -107,7 +134,7 @@ export function Dataset(): JSX.Element {
     setSelectedItemIds([]);
   };
 
-  // TODO: DBのデータを更新するように修正する
+  // TODO: バックエンド処理
   const handleEditItem = (
     id: Dataset["id"],
     newName: Dataset["name"],
@@ -119,7 +146,7 @@ export function Dataset(): JSX.Element {
     );
   };
 
-  // TODO: DBのデータを削除するように修正する
+  // TODO: バックエンド処理
   const handleDeleteItem = (id: Dataset["id"]): void => {
     setSelectedDatasets((prev) => prev.filter((dataset) => dataset.id !== id));
   };
@@ -139,10 +166,16 @@ export function Dataset(): JSX.Element {
       </div>
       <Card className={styles.content}>
         <div className={styles.actions}>
+          <input
+            ref={fileInputRef}
+            onChange={handleUpload}
+            style={{ display: "none" }}
+            type="file"
+          />
           <Button
             appearance="outline"
             className={styles.uploadButton}
-            onClick={handleUpload}
+            onClick={handleUploadButtonClick}
           >
             <AddRegular />
             新規アップロード
@@ -152,6 +185,7 @@ export function Dataset(): JSX.Element {
             <Button
               appearance="outline"
               className={styles.iconButton}
+              disabled={selectedItemIds.length === 0}
               icon={<ArrowDownloadRegular />}
               onClick={handleDownload}
             />
@@ -163,14 +197,13 @@ export function Dataset(): JSX.Element {
         </div>
         <div className={styles.datasetList}>
           <DatasetList
-            dataSets={selectedDatasets}
+            datasets={selectedDatasets}
             onDelete={handleDeleteItem}
             onSelectionChange={setSelectedItemIds}
             onSubmit={handleEditItem}
           />
         </div>
       </Card>
-      <DataPreviewDialog />
     </div>
   );
 }
