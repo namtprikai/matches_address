@@ -12,8 +12,6 @@ import {
   MenuPopover,
   MenuList,
   MenuItem,
-  Dialog,
-  DialogTrigger,
   useTableFeatures,
   useTableSelection,
   type TableRowId,
@@ -32,14 +30,10 @@ import {
   useState,
   useEffect,
 } from "react";
-import { DialogSurface } from "../ui/dialog-surface";
-import { DialogTitle } from "../ui/dialog-title";
-import { DialogActions } from "../ui/dialog-actions";
-import { DialogBody } from "../ui/dialog-body";
-import { DialogContent } from "../ui/dialog-content";
 import { Button } from "../ui/button";
 import { DataPreviewDialog } from "./data-preview-dialog";
 import { EditNameDialog } from "./edit-name-dialog";
+import { DeleteRowDialog } from "./delete-row-dialog";
 
 const useStyles = makeStyles({
   tableHeader: {
@@ -250,7 +244,7 @@ export function DatasetList({
                       />
                     </MenuItem>
                     <MenuItem onClick={(e) => e.stopPropagation()}>
-                      <DeleteDialog
+                      <DeleteRowDialog
                         onDelete={() => handleDeleteMenuClick(item.id)}
                       />
                     </MenuItem>
@@ -262,36 +256,5 @@ export function DatasetList({
         ))}
       </TableBody>
     </Table>
-  );
-}
-
-function DeleteDialog({ onDelete }: { onDelete: () => void }): JSX.Element {
-  const styles = useStyles();
-
-  return (
-    <Dialog>
-      <DialogTrigger disableButtonEnhancement>
-        <Button
-          appearance="transparent"
-          className={styles.menuItemButton}
-          onClick={(e) => e.stopPropagation()}
-        >
-          削除
-        </Button>
-      </DialogTrigger>
-      <DialogSurface>
-        <DialogBody>
-          <DialogTitle>このデータを削除しますか？</DialogTitle>
-          <DialogContent>
-            削除したデータを復元することはできません
-          </DialogContent>
-          <DialogActions>
-            <Button appearance="primary" onClick={onDelete} size="medium">
-              削除
-            </Button>
-          </DialogActions>
-        </DialogBody>
-      </DialogSurface>
-    </Dialog>
   );
 }
