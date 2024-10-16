@@ -1,6 +1,5 @@
 import { Card, makeStyles, tokens } from "@fluentui/react-components";
 import { ButtonCreateModel } from "../../components/button-create-model";
-import { DialogImportDataset } from "../../components/dialog-import-dataset";
 import { TableModel } from "../../components/table-model";
 import { Button } from "../../components/ui/button";
 
@@ -46,7 +45,7 @@ export function Model(): JSX.Element {
 
       <Card className={styles.content}>
         <ButtonCreateModel />
-        <DialogImportDataset />
+
         <TableModel />
       </Card>
     </div>
