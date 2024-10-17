@@ -32,6 +32,7 @@ import {
 import { Button } from "../ui/button";
 import { type SelectRawDataSet } from "../../schema";
 import { useFetchRawDatasets } from "../../hooks/use-fetch-raw-datasets";
+import { formatDate } from "../../utils/format-date";
 import { DataPreviewDialog } from "./data-preview-dialog";
 import { EditNameDialog } from "./edit-name-dialog";
 import { DeleteRowDialog } from "./delete-row-dialog";
@@ -196,7 +197,7 @@ export function RawDataSetTable({ onSelectionChange }: Props): JSX.Element {
             <TableCell>
               <DataPreviewDialog datasetName={item.file_name} />
             </TableCell>
-            <TableCell>{item.updated_at}</TableCell>
+            <TableCell>{formatDate(item.updated_at, "YYYY/MM/DD")}</TableCell>
             <TableCell className={styles.actions}>
               <Button
                 appearance="subtle"

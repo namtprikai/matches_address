@@ -32,6 +32,7 @@ import {
 import { Button } from "../ui/button";
 import { useFetchDataSetResults } from "../../hooks/use-fetch-data-set-results";
 import { type SelectDataSetResult } from "../../schema";
+import { formatDate } from "../../utils/format-date";
 import { DataPreviewDialog } from "./data-preview-dialog";
 import { EditNameDialog } from "./edit-name-dialog";
 import { DeleteRowDialog } from "./delete-row-dialog";
@@ -198,7 +199,7 @@ export function ResultDataSetTable({
             <TableCell>
               <DataPreviewDialog datasetName={item.title} />
             </TableCell>
-            <TableCell>{item.updated_at}</TableCell>
+            <TableCell>{formatDate(item.updated_at, "YYYY/MM/DD")}</TableCell>
             <TableCell className={styles.actions}>
               <Button
                 appearance="subtle"

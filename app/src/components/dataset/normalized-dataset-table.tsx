@@ -32,6 +32,7 @@ import {
 import { Button } from "../ui/button";
 import { type SelectNormalizedDataSet } from "../../schema";
 import { useFetchNormalizedDatasets } from "../../hooks/use-fetch-normalized-datasets";
+import { formatDate } from "../../utils/format-date";
 import { DataPreviewDialog } from "./data-preview-dialog";
 import { EditNameDialog } from "./edit-name-dialog";
 import { DeleteRowDialog } from "./delete-row-dialog";
@@ -198,7 +199,7 @@ export function NormalizedDataSetTable({
             <TableCell>
               <DataPreviewDialog datasetName={item.file_name} />
             </TableCell>
-            <TableCell>{item.updated_at}</TableCell>
+            <TableCell>{formatDate(item.updated_at, "YYYY/MM/DD")}</TableCell>
             <TableCell className={styles.actions}>
               <Button
                 appearance="subtle"
