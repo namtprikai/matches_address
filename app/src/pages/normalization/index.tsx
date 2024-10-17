@@ -1,5 +1,8 @@
 import { makeStyles, tokens } from "@fluentui/react-components";
+import { useState } from "react";
+import { set } from "react-hook-form";
 import { FormNormalization } from "../../components/form-normalization";
+import { type NormalizationParameters } from "../../@types/normalization";
 
 const useStyles = makeStyles({
   root: {
@@ -18,6 +21,9 @@ const useStyles = makeStyles({
 
 export function Normalization(): JSX.Element {
   const styles = useStyles();
+  const [parameters, setParameters] = useState<NormalizationParameters | null>(
+    null,
+  );
 
   return (
     <div className={styles.root}>
@@ -25,7 +31,7 @@ export function Normalization(): JSX.Element {
       <div>
         <FormNormalization
           onSave={(parameters) => {
-            console.log(parameters);
+            setParameters(parameters);
           }}
           value={{
             settings: {
