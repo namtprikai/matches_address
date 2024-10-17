@@ -10,6 +10,7 @@ import {
 } from "@fluentui/react-components";
 import { Link } from "react-router-dom";
 import { Button } from "./ui/button";
+import { DialogImportDataset } from "./dialog-import-dataset";
 
 const useStyles = makeStyles({
   navigationToNormalization: {
@@ -48,7 +49,9 @@ export const ButtonCreateModel = (): JSX.Element => {
               正規化処理から始める
             </Link>
           </MenuItem>
-          <MenuItem>正規化処理済データから始める</MenuItem>
+          <MenuItem>
+            <DialogImportDataset />
+          </MenuItem>
         </MenuList>
       </MenuPopover>
     </Menu>

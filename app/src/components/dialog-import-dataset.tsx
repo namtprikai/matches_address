@@ -116,11 +116,11 @@ const useStyles = makeStyles({
       backgroundColor: "#EFF0F0",
     },
   },
-  dataButton: {
-    height: "28px",
-    backgroundColor: "#6366A7",
-    color: "#FFFFFF",
-    padding: "5px 22px",
+  menuItemButton: {
+    justifyContent: "flex-start",
+    padding: 0,
+    fontWeight: "normal",
+    width: "100%",
   },
 });
 
@@ -153,10 +153,14 @@ export const DialogImportDataset = (): JSX.Element => {
     >
       <DialogTrigger disableButtonEnhancement>
         <Button
-          className={styles.dataButton}
-          onClick={() => setIsDialogOpen(true)}
+          appearance="subtle"
+          className={styles.menuItemButton}
+          onClick={(e) => {
+            e.stopPropagation();
+            setIsDialogOpen(true);
+          }}
         >
-          データを選択
+          正規化処理済データから始める
         </Button>
       </DialogTrigger>
       <DialogSurface>

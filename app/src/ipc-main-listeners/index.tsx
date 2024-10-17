@@ -30,6 +30,8 @@ import { fetchAreaGroups } from "./fetch-area-groups";
 import { fetchRawDatasets } from "./fetch-data-set-for-dialog";
 import { updateResultViewsLayoutIndex } from "./update-result-views-layout-index";
 import { readCSVHeader } from "./read-csv-header";
+import { selectModelFiles } from "./select-model-files";
+import { _debugInsertModelFiles } from "./_debug-insert-model-files";
 
 export const ipcMainListeners = {
   helloFromPython,
@@ -60,6 +62,8 @@ export const ipcMainListeners = {
   fetchAreasInBatches,
   deleteWorkbook,
   updateResultViewsLayoutIndex,
+  selectModelFiles,
+  _debugInsertModelFiles,
 };
 
 export const execFileAsync = promisify(execFile);
