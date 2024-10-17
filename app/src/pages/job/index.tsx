@@ -10,6 +10,10 @@ import {
   TableCell,
 } from "@fluentui/react-components";
 import { useNavigate } from "react-router-dom";
+import { ErrorCircleFilled } from "@fluentui/react-icons";
+import { useFetchJobLists } from "../../hooks/use-fetch-job-lists";
+import { type SelectJob } from "../../schema";
+import { formatDate } from "../../utils/format-date";
 
 const useStyles = makeStyles({
   root: {
@@ -50,6 +54,8 @@ const useStyles = makeStyles({
     },
   },
   statusCell: {
+    display: "flex",
+    alignItems: "center",
     backgroundColor: "#ecf2ef",
     fontWeight: tokens.fontWeightSemibold,
     fontSize: tokens.fontSizeBase200,
@@ -58,39 +64,24 @@ const useStyles = makeStyles({
     borderRadius: tokens.borderRadiusSmall,
   },
   noData: {
-    color: "616161",
+    color: "#616161",
     fontSize: tokens.fontSizeBase300,
   },
 });
 
-const data = [
-  {
-    id: 1,
-    startDate: "2023/10/07 10:00",
-    processType: "前処理",
-    processStatus: "実行中",
-    saveStatus: "未保存",
-  },
-  {
-    id: 2,
-    startDate: "2023/10/06 14:30",
-    processType: "モデル作成",
-    processStatus: "完了",
-    saveStatus: "保存済み",
-  },
-];
-
 export function Job(): JSX.Element {
   const styles = useStyles();
   const navigate = useNavigate();
+  const { data } = useFetchJobLists();
+
+  const hasData = data && data.length > 0;
 
   return (
     <div className={styles.root}>
       <h2 className={styles.heading}>非同期処理一覧</h2>
 
       <Card className={styles.content}>
-        {/* TODO: コンポーネントに切り出し */}
-        {data.length > 0 ? (
+        {hasData ? (
           <Table className={styles.table}>
             <TableHeader className={styles.tableHeader}>
               <TableRow>
@@ -109,28 +100,45 @@ export function Job(): JSX.Element {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {data.map((item, index) => (
-                <TableRow
-                  key={index}
-                  className={styles.tableRow}
-                  onClick={() => navigate(`/job/detail/${item.id}`)}
-                >
-                  <TableCell className={styles.tableCell}>
-                    {item.startDate}
-                  </TableCell>
-                  <TableCell className={styles.tableCell}>
-                    {item.processType}
-                  </TableCell>
-                  <TableCell className={styles.tableCell}>
-                    <span className={styles.statusCell}>
-                      {item.processStatus}
-                    </span>
-                  </TableCell>
-                  <TableCell className={styles.tableCell}>
-                    <span className={styles.statusCell}>{item.saveStatus}</span>
-                  </TableCell>
-                </TableRow>
-              ))}
+              {data.map((item: SelectJob) => {
+                const statusInfo = getStatusInfo(item.status);
+                return (
+                  <TableRow
+                    key={item.id}
+                    className={styles.tableRow}
+                    onClick={() => navigate(`/job/detail/${item.id}`)}
+                  >
+                    <TableCell className={styles.tableCell}>
+                      {formatDate(item.created_at)}
+                    </TableCell>
+                    <TableCell className={styles.tableCell}>
+                      {item.type === "preprocess"
+                        ? "前処理"
+                        : item.type === "ml"
+                        ? "モデル作成"
+                        : item.type === "result"
+                        ? "空き家判定処理"
+                        : "不明"}
+                    </TableCell>
+                    <TableCell className={styles.tableCell}>
+                      <span
+                        className={styles.statusCell}
+                        style={
+                          statusInfo.color ? { color: statusInfo.color } : undefined
+                        }
+                      >
+                        {statusInfo.icon}
+                        {statusInfo.label}
+                      </span>
+                    </TableCell>
+                    <TableCell className={styles.tableCell}>
+                      <span className={styles.statusCell}>
+                        {item.status === "completed" ? "完了" : "未"}
+                      </span>
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
             </TableBody>
           </Table>
         ) : (
@@ -141,4 +149,22 @@ export function Job(): JSX.Element {
       </Card>
     </div>
   );
+}
+
+// MEMO: statusが決まりきっていないので仮置き progress_percent取得できるならcomputedに表示なる
+function getStatusInfo(
+  status: string | null | undefined,
+): { label: string; color?: string; icon?: JSX.Element } {
+  if (!status || status === "error") {
+    return {
+      label: "エラー",
+      icon: <ErrorCircleFilled style={{ marginRight: "4px" }} />,
+    };
+  } else if (status === "in_progress") {
+    return { label: "進行中", color: "#6264A7" };
+  } else if (status === "completed") {
+    return { label: "完了" };
+  } else {
+    return { label: status };
+  }
 }
