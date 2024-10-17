@@ -35,8 +35,13 @@ export function EditNameDialog({ initialName, onSubmit }: Props): JSX.Element {
   const styles = useStyles();
   const [newName, setNewName] = useState(initialName);
   const [open, setOpen] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = (): void => {
+    if (!newName) {
+      setError("データ名を入力してください");
+      return;
+    }
     onSubmit(newName);
     setOpen(false);
   };
@@ -78,9 +83,13 @@ export function EditNameDialog({ initialName, onSubmit }: Props): JSX.Element {
           <DialogContent>
             <Input
               className={styles.input}
-              onChange={(e) => setNewName(e.target.value)}
-              value={newName}
+              onChange={(e) => {
+                setNewName(e.target.value);
+                setError(null);
+              }}
+              value={newName || ""}
             />
+            {error && <div>{error}</div>}
           </DialogContent>
           <DialogActions>
             <Button appearance="primary" onClick={handleSubmit} size="medium">
