@@ -26,7 +26,7 @@ const useStyles = makeStyles({
 });
 
 interface Props {
-  initialName: string;
+  initialName: string | null;
   onSubmit: (newName: string) => void;
 }
 

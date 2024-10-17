@@ -31,6 +31,8 @@ import {
   useEffect,
 } from "react";
 import { Button } from "../ui/button";
+import { type SelectNormalizedDataSet } from "../../schema";
+import { useFetchNormalizedDatasets } from "../../hooks/use-fetch-normalized-datasets";
 import { DataPreviewDialog } from "./data-preview-dialog";
 import { EditNameDialog } from "./edit-name-dialog";
 import { DeleteRowDialog } from "./delete-row-dialog";
@@ -58,36 +60,26 @@ const useStyles = makeStyles({
   },
 });
 
-export type Dataset = {
-  id: number;
-  name: string;
-  date: string;
-};
-
 export type DatasetListProps = {
-  onSelectionChange: Dispatch<SetStateAction<Dataset["id"][]>>;
-  onSubmit: (id: Dataset["id"], newName: string) => void;
-  onDelete: (id: Dataset["id"]) => void;
+  onSelectionChange: Dispatch<SetStateAction<SelectNormalizedDataSet["id"][]>>;
 };
 
 export function NormalizedDataSetTable({
   onSelectionChange,
-  onSubmit,
-  onDelete,
 }: DatasetListProps): JSX.Element {
   const styles = useStyles();
   const columns = [
-    createTableColumn<Dataset>({ columnId: "name" }),
-    createTableColumn<Dataset>({ columnId: "date" }),
+    createTableColumn<SelectNormalizedDataSet>({ columnId: "name" }),
+    createTableColumn<SelectNormalizedDataSet>({ columnId: "date" }),
   ];
   const [selectedRows, setSelectedRows] = useState(new Set<TableRowId>());
-  const datasets: Dataset[] = _dummyDataSetNormalizations;
+  const { data } = useFetchNormalizedDatasets();
 
   useEffect(
     function resetSelection() {
       setSelectedRows(new Set());
     },
-    [datasets],
+    [data],
   );
 
   const {
@@ -102,7 +94,7 @@ export function NormalizedDataSetTable({
   } = useTableFeatures(
     {
       columns,
-      items: datasets,
+      items: data || [],
     },
     [
       useTableSelection({
@@ -145,7 +137,7 @@ export function NormalizedDataSetTable({
   const handleToggleAll = (e: MouseEvent): void => {
     toggleAllRows(e);
     onSelectionChange(() =>
-      allRowsSelected ? [] : datasets.map((dataset) => dataset.id),
+      allRowsSelected ? [] : data?.map((dataset) => dataset.id) || [],
     );
   };
 
@@ -173,14 +165,14 @@ export function NormalizedDataSetTable({
   };
 
   const handleEditMenuClick = (
-    id: Dataset["id"],
-    newName: Dataset["name"],
+    id: SelectNormalizedDataSet["id"],
+    newName: SelectNormalizedDataSet["file_name"],
   ): void => {
-    onSubmit(id, newName);
+    // TODO: バックエンド処理
   };
 
-  const handleDeleteMenuClick = (id: Dataset["id"]): void => {
-    onDelete(id);
+  const handleDeleteMenuClick = (id: SelectNormalizedDataSet["id"]): void => {
+    // TODO: バックエンド処理
   };
 
   return (
@@ -212,9 +204,9 @@ export function NormalizedDataSetTable({
               checked={selected}
             />
             <TableCell>
-              <DataPreviewDialog datasetName={item.name} />
+              <DataPreviewDialog datasetName={item.file_name} />
             </TableCell>
-            <TableCell>{item.date}</TableCell>
+            <TableCell>{item.updated_at}</TableCell>
             <TableCell className={styles.actions}>
               <Button
                 appearance="subtle"
@@ -235,7 +227,7 @@ export function NormalizedDataSetTable({
                   <MenuList>
                     <MenuItem onClick={(e) => e.stopPropagation()}>
                       <EditNameDialog
-                        initialName={item.name}
+                        initialName={item.file_name}
                         onSubmit={(newName) =>
                           handleEditMenuClick(item.id, newName)
                         }
@@ -256,12 +248,3 @@ export function NormalizedDataSetTable({
     </Table>
   );
 }
-
-const _dummyDataSetNormalizations: Dataset[] = [
-  { id: 1, name: "正規化済みデータ", date: "2024/4/21" },
-  { id: 2, name: "水道メーター1.shp", date: "2024/4/21" },
-  { id: 3, name: "前処理住民台帳1.csv", date: "2024/4/21" },
-  { id: 4, name: "前処理住民台帳2.csv", date: "2024/4/21" },
-  { id: 5, name: "前処理住民台帳3.csv", date: "2024/4/21" },
-  { id: 6, name: "水道メーター2.shp", date: "2024/4/21" },
-];
