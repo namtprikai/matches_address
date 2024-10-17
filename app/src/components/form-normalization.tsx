@@ -24,7 +24,6 @@ export const FormNormalization = ({ value, onSave }: Props): JSX.Element => {
         name={"data.residentRegister"}
         onChange={(value) => {
           setValue("data.residentRegister", value);
-          console.log(value);
         }}
         value={getValues().data.residentRegister}
       />
