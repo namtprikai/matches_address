@@ -150,20 +150,26 @@ export function Dataset(): JSX.Element {
       </div>
       <Card className={styles.content}>
         <div className={styles.actions}>
-          <input
-            ref={fileInputRef}
-            onChange={handleUpload}
-            style={{ display: "none" }}
-            type="file"
-          />
-          <Button
-            appearance="outline"
-            className={styles.uploadButton}
-            onClick={handleUploadButtonClick}
-          >
-            <AddRegular />
-            新規アップロード
-          </Button>
+          <div>
+            {selectedValue === "seed" ? (
+              <>
+                <input
+                  ref={fileInputRef}
+                  onChange={handleUpload}
+                  style={{ display: "none" }}
+                  type="file"
+                />
+                <Button
+                  appearance="outline"
+                  className={styles.uploadButton}
+                  onClick={handleUploadButtonClick}
+                >
+                  <AddRegular />
+                  新規アップロード
+                </Button>
+              </>
+            ) : null}
+          </div>
           <div>
             <span>{selectedItemIds.length}件選択中</span>
             <Button
