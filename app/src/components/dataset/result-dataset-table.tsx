@@ -28,7 +28,6 @@ import {
   type MouseEvent,
   type KeyboardEvent,
   useState,
-  useEffect,
 } from "react";
 import { Button } from "../ui/button";
 import { DataPreviewDialog } from "./data-preview-dialog";
@@ -82,13 +81,6 @@ export function ResultDataSetTable({
   ];
   const [selectedRows, setSelectedRows] = useState(new Set<TableRowId>());
   const datasets: Dataset[] = _dummyDataSetResults;
-
-  useEffect(
-    function resetSelection() {
-      setSelectedRows(new Set());
-    },
-    [datasets],
-  );
 
   const {
     getRows,

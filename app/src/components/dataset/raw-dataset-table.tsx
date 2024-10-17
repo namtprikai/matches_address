@@ -26,7 +26,6 @@ import {
   type MouseEvent,
   type KeyboardEvent,
   useState,
-  useEffect,
   type Dispatch,
   type SetStateAction,
 } from "react";
@@ -72,13 +71,6 @@ export function RawDataSetTable({ onSelectionChange }: Props): JSX.Element {
   ];
   const [selectedRows, setSelectedRows] = useState(new Set<TableRowId>());
   const { data } = useFetchRawDatasets();
-
-  useEffect(
-    function resetSelection() {
-      setSelectedRows(new Set());
-    },
-    [data],
-  );
 
   const {
     getRows,

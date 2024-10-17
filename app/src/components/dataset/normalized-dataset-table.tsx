@@ -28,7 +28,6 @@ import {
   type MouseEvent,
   type KeyboardEvent,
   useState,
-  useEffect,
 } from "react";
 import { Button } from "../ui/button";
 import { type SelectNormalizedDataSet } from "../../schema";
@@ -74,13 +73,6 @@ export function NormalizedDataSetTable({
   ];
   const [selectedRows, setSelectedRows] = useState(new Set<TableRowId>());
   const { data } = useFetchNormalizedDatasets();
-
-  useEffect(
-    function resetSelection() {
-      setSelectedRows(new Set());
-    },
-    [data],
-  );
 
   const {
     getRows,
