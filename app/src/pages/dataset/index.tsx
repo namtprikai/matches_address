@@ -12,10 +12,7 @@ import { DeleteRowsDialog } from "../../components/dataset/delete-rows-dialog";
 import { Button } from "../../components/ui/button";
 import { RawDataSetTable } from "../../components/dataset/raw-dataset-table";
 import { NormalizedDataSetTable } from "../../components/dataset/normalized-dataset-table";
-import {
-  ResultDataSetTable,
-  type Dataset,
-} from "../../components/dataset/result-dataset-table";
+import { ResultDataSetTable } from "../../components/dataset/result-dataset-table";
 import {
   type InsertNormalizedDataSet,
   type InsertRawDataSet,
@@ -76,7 +73,7 @@ export function Dataset(): JSX.Element {
   const styles = useStyles();
   const initialTabValue: TabValue = "seed";
   const { onTabSelect, selectedValue } = useTabs<TabValue>(initialTabValue);
-  const [selectedItemIds, setSelectedItemIds] = useState<Dataset["id"][]>([]);
+  const [selectedItemIds, setSelectedItemIds] = useState<number[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleUploadButtonClick = (): void => {
@@ -112,17 +109,6 @@ export function Dataset(): JSX.Element {
   const handleDeleteSelectedItems = (): void => {
     // TODO: バックエンド処理
     setSelectedItemIds([]);
-  };
-
-  const handleEditItem = (
-    id: Dataset["id"],
-    newName: Dataset["name"],
-  ): void => {
-    // TODO: バックエンド処理
-  };
-
-  const handleDeleteItem = (id: Dataset["id"]): void => {
-    // TODO: バックエンド処理
   };
 
   const { mutate: mutateRaw } = useFetchRawDatasets();
@@ -203,11 +189,7 @@ export function Dataset(): JSX.Element {
                 />
               ),
               result: (
-                <ResultDataSetTable
-                  onDelete={handleDeleteItem}
-                  onSelectionChange={setSelectedItemIds}
-                  onSubmit={handleEditItem}
-                />
+                <ResultDataSetTable onSelectionChange={setSelectedItemIds} />
               ),
             }[selectedValue]
           }
