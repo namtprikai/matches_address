@@ -67,8 +67,8 @@ type Props = {
 export function RawDataSetTable({ onSelectionChange }: Props): JSX.Element {
   const styles = useStyles();
   const columns = [
-    createTableColumn<SelectRawDataSet>({ columnId: "file_name" }),
-    createTableColumn<SelectRawDataSet>({ columnId: "updated_at" }),
+    createTableColumn<SelectRawDataSet>({ columnId: "name" }),
+    createTableColumn<SelectRawDataSet>({ columnId: "date" }),
   ];
   const [selectedRows, setSelectedRows] = useState(new Set<TableRowId>());
   const { data } = useFetchRawDatasets();
