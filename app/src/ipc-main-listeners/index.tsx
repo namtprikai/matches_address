@@ -31,6 +31,8 @@ import { updateResultViewsLayoutIndex } from "./update-result-views-layout-index
 import { selectRawDatasets } from "./select-raw-datasets";
 import { insertRawDatasets } from "./insert-raw-datasets";
 import { saveDatasetFile } from "./save-dataset-file";
+import { selectNormalizedDataSets } from "./select-normalized-datasets";
+import { insertNormalizedDatasets } from "./insert-normalized-datasets";
 
 export const ipcMainListeners = {
   helloFromPython,
@@ -62,6 +64,8 @@ export const ipcMainListeners = {
   selectRawDatasets,
   insertRawDatasets,
   saveDatasetFile,
+  selectNormalizedDataSets,
+  insertNormalizedDatasets,
 };
 
 export const execFileAsync = promisify(execFile);
