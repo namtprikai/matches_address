@@ -146,7 +146,8 @@ export const FormDataset = <
     },
   });
 
-  const SelectorView = () => {
+  // {}で囲んでif処理を書くのが可読性低いので別関数化
+  const SelectorView = (): JSX.Element => {
     if (dataSet) {
       return (
         <SelectedDataSetView
