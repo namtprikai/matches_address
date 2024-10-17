@@ -80,8 +80,25 @@ export function Dataset(): JSX.Element {
     fileInputRef.current?.click();
   };
 
-  const handleUpload = (e: ChangeEvent<HTMLInputElement>): void => {
-    // TODO: バックエンド処理
+  const handleUpload = async (
+    e: ChangeEvent<HTMLInputElement>,
+  ): Promise<void> => {
+    const file = e.target.files?.[0];
+    const ext = file?.name.split(".").pop();
+    if (!file || !ext) return;
+    const uuid = crypto.randomUUID();
+    const file_path = `${uuid}.${ext}`;
+    void window.ipcRenderer.invoke("insertRawDatasets", {
+      file_name: file.name,
+      file_path,
+    });
+    const arrayBuffer = await file.arrayBuffer();
+    const uint8Array = new Uint8Array(arrayBuffer);
+    void window.ipcRenderer.invoke("writeDatasetFile", {
+      data: Array.from(uint8Array),
+      fileName: file_path,
+    });
+    void mutateRaw();
   };
 
   // TODO: バックエンド処理
