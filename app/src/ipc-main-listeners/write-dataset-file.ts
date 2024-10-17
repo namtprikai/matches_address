@@ -13,10 +13,10 @@ export const writeDatasetFile = ((
   },
 ) => {
   const isDev = process.env.NODE_ENV === "development";
-  const folderName = "database";
+  const directoryName = "database";
   const folderPath = isDev
-    ? path.resolve(`./${folderName}`)
-    : path.resolve(process.resourcesPath, folderName);
+    ? path.resolve(directoryName)
+    : path.resolve(process.resourcesPath, directoryName);
 
   if (!existsSync(folderPath)) {
     mkdirSync(folderPath, { recursive: true });
