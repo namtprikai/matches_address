@@ -74,7 +74,7 @@ const useStyles = makeStyles({
 export const TableModel = (): JSX.Element => {
   const styles = useStyles();
 
-  const { data } = useFetchModelFiles();
+  const { data, mutate } = useFetchModelFiles();
 
   if (data === undefined) return <></>;
 
@@ -117,17 +117,46 @@ export const TableModel = (): JSX.Element => {
       </TableHeader>
       <TableBody>
         {data.map((item) => (
-          <TableRowItem key={item.id} item={item} />
+          <TableRowItem key={item.id} item={item} mutate={mutate} />
         ))}
       </TableBody>
     </Table>
   );
 };
 
+/** TableRowItemコンポーネントでのみ利用 */
+const editModelFileName = async (
+  id: number,
+  fileName: string,
+): Promise<void> => {
+  await window.ipcRenderer.invoke("updateModelFiles", {
+    modelFileId: id,
+    value: {
+      file_name: fileName,
+    },
+  });
+};
+
+/** TableRowItemコンポーネントでのみ利用 */
+const editModelNote = async (id: number, note: string): Promise<void> => {
+  await window.ipcRenderer.invoke("updateModelFiles", {
+    modelFileId: id,
+    value: {
+      note,
+    },
+  });
+};
+
 /**
  * TableModelコンポーネントでのみ利用
  */
-const TableRowItem = ({ item }: { item: SelectModelFile }): JSX.Element => {
+const TableRowItem = ({
+  item,
+  mutate,
+}: {
+  item: SelectModelFile;
+  mutate: () => void;
+}): JSX.Element => {
   const styles = useStyles();
 
   const editModelFileNameDialogState = useDialogState(false);
@@ -183,16 +212,18 @@ const TableRowItem = ({ item }: { item: SelectModelFile }): JSX.Element => {
         </Menu>
         <EditModelFileNameDialog
           dialogState={editModelFileNameDialogState}
-          initialFileName=""
-          onSubmit={() => {
-            /** @todo 編集処理 */
+          initialFileName={item.file_name || ""}
+          onSubmit={async (name) => {
+            await editModelFileName(item.id, name);
+            mutate();
           }}
         />
         <EditNoteDialog
           dialogState={editNoteDialogState}
-          initialNote=""
-          onSubmit={() => {
-            /** @todo 編集処理 */
+          initialNote={item.note || ""}
+          onSubmit={async (note) => {
+            await editModelNote(item.id, note);
+            mutate();
           }}
         />
         <DeleteMenuWithDialog
