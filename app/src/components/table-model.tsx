@@ -170,7 +170,7 @@ export const TableModel = (): JSX.Element => {
                     >
                       モデル説明文の編集
                     </MenuItem>
-                    <MenuItem>削除</MenuItem>
+                    <MenuItem className={styles.alert100}>削除</MenuItem>
                   </MenuList>
                 </MenuPopover>
               </Menu>
