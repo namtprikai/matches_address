@@ -31,6 +31,7 @@ import { fetchRawDatasets } from "./fetch-data-set-for-dialog";
 import { updateResultViewsLayoutIndex } from "./update-result-views-layout-index";
 import { selectModelFiles } from "./select-model-files";
 import { _debugInsertModelFiles } from "./_debug-insert-model-files";
+import { updateModelFiles } from "./update-model-files";
 
 export const ipcMainListeners = {
   helloFromPython,
@@ -62,6 +63,7 @@ export const ipcMainListeners = {
   updateResultViewsLayoutIndex,
   selectModelFiles,
   _debugInsertModelFiles,
+  updateModelFiles,
 };
 
 export const execFileAsync = promisify(execFile);
