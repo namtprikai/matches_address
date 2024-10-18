@@ -174,27 +174,27 @@ export const TableModel = (): JSX.Element => {
                   </MenuList>
                 </MenuPopover>
               </Menu>
+              <EditModelTitleDialog
+                dialogState={editModelTitleDialogState}
+                initialTitle=""
+                onSubmit={() => {
+                  /** @todo 編集処理 */
+                }}
+              />
+              <EditNoteDialog
+                dialogState={editNoteDialogState}
+                initialNote=""
+                onSubmit={() => {
+                  /** @todo 編集処理 */
+                }}
+              />
+              <DeleteMenuWithDialog
+                dialogState={deleteDialogState}
+                onDelete={() => {
+                  /** @todo 削除処理 */
+                }}
+              />
             </TableCell>
-            <EditModelTitleDialog
-              dialogState={editModelTitleDialogState}
-              initialTitle=""
-              onSubmit={() => {
-                /** @todo 編集処理 */
-              }}
-            />
-            <EditNoteDialog
-              dialogState={editNoteDialogState}
-              initialNote=""
-              onSubmit={() => {
-                /** @todo 編集処理 */
-              }}
-            />
-            <DeleteMenuWithDialog
-              dialogState={deleteDialogState}
-              onDelete={() => {
-                /** @todo 削除処理 */
-              }}
-            />
           </TableRow>
         ))}
       </TableBody>
