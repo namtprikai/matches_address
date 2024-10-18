@@ -181,9 +181,9 @@ const TableRowItem = ({ item }: { item: SelectModelFile }): JSX.Element => {
             </MenuList>
           </MenuPopover>
         </Menu>
-        <EditModelTitleDialog
+        <EditModelFileNameDialog
           dialogState={editModelTitleDialogState}
-          initialTitle=""
+          initialFileName=""
           onSubmit={() => {
             /** @todo 編集処理 */
           }}
@@ -209,16 +209,16 @@ const TableRowItem = ({ item }: { item: SelectModelFile }): JSX.Element => {
 /**
  * TableModelコンポーネントでのみ利用
  */
-const EditModelTitleDialog = ({
-  initialTitle,
+const EditModelFileNameDialog = ({
+  initialFileName,
   onSubmit,
   dialogState,
 }: {
-  initialTitle: string;
+  initialFileName: string;
   onSubmit: (name: string) => void;
   dialogState: ReturnUseDialogState;
 }): JSX.Element => {
-  const [title, setTitle] = useState(initialTitle);
+  const [title, setTitle] = useState(initialFileName);
   const { isOpen, setIsOpen } = dialogState;
 
   return (
