@@ -130,7 +130,7 @@ export const TableModel = (): JSX.Element => {
 const TableRowItem = ({ item }: { item: SelectModelFile }): JSX.Element => {
   const styles = useStyles();
 
-  const editModelTitleDialogState = useDialogState(false);
+  const editModelFileNameDialogState = useDialogState(false);
   const editNoteDialogState = useDialogState(false);
   const deleteDialogState = useDialogState(false);
 
@@ -170,7 +170,7 @@ const TableRowItem = ({ item }: { item: SelectModelFile }): JSX.Element => {
           <MenuPopover>
             <MenuList>
               <MenuItem
-                onClick={() => editModelTitleDialogState.setIsOpen(true)}
+                onClick={() => editModelFileNameDialogState.setIsOpen(true)}
               >
                 モデル名の編集
               </MenuItem>
@@ -182,7 +182,7 @@ const TableRowItem = ({ item }: { item: SelectModelFile }): JSX.Element => {
           </MenuPopover>
         </Menu>
         <EditModelFileNameDialog
-          dialogState={editModelTitleDialogState}
+          dialogState={editModelFileNameDialogState}
           initialFileName=""
           onSubmit={() => {
             /** @todo 編集処理 */
@@ -218,7 +218,7 @@ const EditModelFileNameDialog = ({
   onSubmit: (name: string) => void;
   dialogState: ReturnUseDialogState;
 }): JSX.Element => {
-  const [title, setTitle] = useState(initialFileName);
+  const [fileName, setFileName] = useState(initialFileName);
   const { isOpen, setIsOpen } = dialogState;
 
   return (
@@ -228,13 +228,13 @@ const EditModelFileNameDialog = ({
           <DialogTitle>モデル名の編集</DialogTitle>
           <DialogContent>
             <Input
-              onChange={(e) => setTitle(e.target.value)}
+              onChange={(e) => setFileName(e.target.value)}
               style={{ width: "100%" }}
-              value={title}
+              value={fileName}
             />
           </DialogContent>
           <DialogActions>
-            <Button appearance="primary" onClick={() => onSubmit(title)}>
+            <Button appearance="primary" onClick={() => onSubmit(fileName)}>
               保存
             </Button>
           </DialogActions>
