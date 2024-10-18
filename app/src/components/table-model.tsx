@@ -63,12 +63,6 @@ const useStyles = makeStyles({
     alignItems: "center",
     justifyContent: "flex-end",
   },
-  menuItemButton: {
-    justifyContent: "flex-start",
-    padding: 0,
-    fontWeight: "normal",
-    width: "100%",
-  },
   alert100: {
     color: "#C4314B",
   },
