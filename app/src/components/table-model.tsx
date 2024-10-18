@@ -28,6 +28,7 @@ import {
   useDialogState,
   type ReturnUseDialogState,
 } from "../hooks/use-dialog-state";
+import { type SelectModelFile } from "../schema";
 import { Button } from "./ui/button";
 import { DialogSurface } from "./ui/dialog-surface";
 import { DialogBody } from "./ui/dialog-body";
@@ -62,12 +63,6 @@ const useStyles = makeStyles({
     alignItems: "center",
     justifyContent: "flex-end",
   },
-  menuItemButton: {
-    justifyContent: "flex-start",
-    padding: 0,
-    fontWeight: "normal",
-    width: "100%",
-  },
   alert100: {
     color: "#C4314B",
   },
@@ -80,10 +75,6 @@ export const TableModel = (): JSX.Element => {
   const styles = useStyles();
 
   const { data } = useFetchModelFiles();
-
-  const editModelTitleDialogState = useDialogState(false);
-  const editNoteDialogState = useDialogState(false);
-  const deleteDialogState = useDialogState(false);
 
   if (data === undefined) return <></>;
 
@@ -126,79 +117,92 @@ export const TableModel = (): JSX.Element => {
       </TableHeader>
       <TableBody>
         {data.map((item) => (
-          <TableRow key={item.id}>
-            <TableCell>
-              <Link to={`/analysis/model/${item.id}`}>
-                <FUILink
-                  as="span"
-                  style={{
-                    fontWeight: 600,
-                  }}
-                >
-                  {item.file_name}
-                </FUILink>
-              </Link>
-            </TableCell>
-            <TableCell>
-              <Caption1>{item.note}</Caption1>
-            </TableCell>
-            <TableCell>
-              <Caption1>{formatDate(item.created_at)}</Caption1>
-            </TableCell>
-            <TableCell>
-              <Caption1>{formatDate(item.updated_at)}</Caption1>
-            </TableCell>
-            <TableCell className={styles.actions}>
-              <Menu>
-                <MenuTrigger disableButtonEnhancement>
-                  <Button
-                    appearance="subtle"
-                    aria-label="詳細メニュー"
-                    icon={<MoreVerticalRegular />}
-                    shape="rounded"
-                  />
-                </MenuTrigger>
-                <MenuPopover>
-                  <MenuList>
-                    <MenuItem
-                      onClick={() => editModelTitleDialogState.setIsOpen(true)}
-                    >
-                      モデル名の編集
-                    </MenuItem>
-                    <MenuItem
-                      onClick={() => editNoteDialogState.setIsOpen(true)}
-                    >
-                      モデル説明文の編集
-                    </MenuItem>
-                    <MenuItem className={styles.alert100}>削除</MenuItem>
-                  </MenuList>
-                </MenuPopover>
-              </Menu>
-              <EditModelTitleDialog
-                dialogState={editModelTitleDialogState}
-                initialTitle=""
-                onSubmit={() => {
-                  /** @todo 編集処理 */
-                }}
-              />
-              <EditNoteDialog
-                dialogState={editNoteDialogState}
-                initialNote=""
-                onSubmit={() => {
-                  /** @todo 編集処理 */
-                }}
-              />
-              <DeleteMenuWithDialog
-                dialogState={deleteDialogState}
-                onDelete={() => {
-                  /** @todo 削除処理 */
-                }}
-              />
-            </TableCell>
-          </TableRow>
+          <TableRowItem key={item.id} item={item} />
         ))}
       </TableBody>
     </Table>
+  );
+};
+
+/**
+ * TableModelコンポーネントでのみ利用
+ */
+const TableRowItem = ({ item }: { item: SelectModelFile }): JSX.Element => {
+  const styles = useStyles();
+
+  const editModelTitleDialogState = useDialogState(false);
+  const editNoteDialogState = useDialogState(false);
+  const deleteDialogState = useDialogState(false);
+
+  return (
+    <TableRow key={item.id}>
+      <TableCell>
+        <Link to={`/analysis/model/${item.id}`}>
+          <FUILink
+            as="span"
+            style={{
+              fontWeight: 600,
+            }}
+          >
+            {item.file_name}
+          </FUILink>
+        </Link>
+      </TableCell>
+      <TableCell>
+        <Caption1>{item.note}</Caption1>
+      </TableCell>
+      <TableCell>
+        <Caption1>{formatDate(item.created_at)}</Caption1>
+      </TableCell>
+      <TableCell>
+        <Caption1>{formatDate(item.updated_at)}</Caption1>
+      </TableCell>
+      <TableCell className={styles.actions}>
+        <Menu>
+          <MenuTrigger disableButtonEnhancement>
+            <Button
+              appearance="subtle"
+              aria-label="詳細メニュー"
+              icon={<MoreVerticalRegular />}
+              shape="rounded"
+            />
+          </MenuTrigger>
+          <MenuPopover>
+            <MenuList>
+              <MenuItem
+                onClick={() => editModelTitleDialogState.setIsOpen(true)}
+              >
+                モデル名の編集
+              </MenuItem>
+              <MenuItem onClick={() => editNoteDialogState.setIsOpen(true)}>
+                モデル説明文の編集
+              </MenuItem>
+              <MenuItem className={styles.alert100}>削除</MenuItem>
+            </MenuList>
+          </MenuPopover>
+        </Menu>
+        <EditModelTitleDialog
+          dialogState={editModelTitleDialogState}
+          initialTitle=""
+          onSubmit={() => {
+            /** @todo 編集処理 */
+          }}
+        />
+        <EditNoteDialog
+          dialogState={editNoteDialogState}
+          initialNote=""
+          onSubmit={() => {
+            /** @todo 編集処理 */
+          }}
+        />
+        <DeleteMenuWithDialog
+          dialogState={deleteDialogState}
+          onDelete={() => {
+            /** @todo 削除処理 */
+          }}
+        />
+      </TableCell>
+    </TableRow>
   );
 };
 
