@@ -33,6 +33,9 @@ import { insertRawDatasets } from "./insert-raw-datasets";
 import { writeDatasetFile } from "./write-dataset-file";
 import { selectNormalizedDataSets } from "./select-normalized-datasets";
 import { insertNormalizedDatasets } from "./insert-normalized-datasets";
+import { selectRawDataset } from "./select-raw-dataset";
+import { selectNormalizedDataSet } from "./select-normalized-dataset";
+import { selectDataSetResult } from "./select-data-set-result";
 
 export const ipcMainListeners = {
   helloFromPython,
@@ -66,6 +69,9 @@ export const ipcMainListeners = {
   writeDatasetFile,
   selectNormalizedDataSets,
   insertNormalizedDatasets,
+  selectRawDataset,
+  selectNormalizedDataSet,
+  selectDataSetResult,
 };
 
 export const execFileAsync = promisify(execFile);
