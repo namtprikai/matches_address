@@ -1,7 +1,22 @@
 import { useForm } from "react-hook-form";
+import { makeStyles, tokens } from "@fluentui/react-components";
 import { type NormalizationParameters } from "../@types/normalization";
 import { LanguageMap } from "../metadata";
 import { FormDataset } from "./form-dataset";
+
+const useStyles = makeStyles({
+  root: {
+    display: "flex",
+    gap: "20px",
+    flexDirection: "column",
+  },
+  formGrid: {
+    display: "grid",
+    gridTemplateColumns: "1fr 1fr",
+    gridAutoRows: "auto",
+    gap: `${tokens.spacingHorizontalXL} ${tokens.spacingVerticalXL}`,
+  },
+});
 
 type Props = {
   value: NormalizationParameters;
@@ -18,8 +33,10 @@ export const FormNormalization = ({ value, onSave }: Props): JSX.Element => {
     onSave(data);
   });
 
+  const styles = useStyles();
+
   return (
-    <form onSubmit={onSubmit}>
+    <form className={styles.root} onSubmit={onSubmit}>
       <FormDataset
         appearance="large"
         dataSetName={LanguageMap.NORMALIZATION_DATA_LABEL.residentRegistry}
@@ -29,6 +46,33 @@ export const FormNormalization = ({ value, onSave }: Props): JSX.Element => {
         }}
         value={getValues().data.residentRegistry}
       />
+      <FormDataset
+        appearance="large"
+        dataSetName={LanguageMap.NORMALIZATION_DATA_LABEL.waterStatus}
+        name={"data.waterStatus"}
+        onChange={(value) => {
+          setValue("data.waterStatus", value);
+        }}
+        value={getValues().data.waterStatus}
+      />
+      <div className={styles.formGrid}>
+        <FormDataset
+          dataSetName={LanguageMap.NORMALIZATION_DATA_LABEL.waterUsage}
+          name={"data.waterUsage"}
+          onChange={(value) => {
+            setValue("data.waterUsage", value);
+          }}
+          value={getValues().data.waterUsage}
+        />
+        <FormDataset
+          dataSetName={LanguageMap.NORMALIZATION_DATA_LABEL.landRegistry}
+          name={"data.landRegistry"}
+          onChange={(value) => {
+            setValue("data.landRegistry", value);
+          }}
+          value={getValues().data.landRegistry}
+        />
+      </div>
     </form>
   );
 };
