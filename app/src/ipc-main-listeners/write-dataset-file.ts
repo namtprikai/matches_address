@@ -8,7 +8,7 @@ export const writeDatasetFile = ((
     data,
     fileName,
   }: {
-    data: number[];
+    data: ArrayBuffer;
     fileName: string;
   },
 ) => {
@@ -22,9 +22,9 @@ export const writeDatasetFile = ((
     mkdirSync(folderPath, { recursive: true });
   }
 
-  const uint8Array = new Uint8Array(data);
+  const buffer = Buffer.from(data);
   const filePath = path.resolve(folderPath, fileName);
-  writeFile(filePath, uint8Array, (err) => {
+  writeFile(filePath, buffer, (err) => {
     if (err) {
       console.error("ファイルの保存中にエラーが発生しました:", err);
     } else {

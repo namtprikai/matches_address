@@ -93,10 +93,9 @@ export function Dataset(): JSX.Element {
       file_path,
     });
     const arrayBuffer = await file.arrayBuffer();
-    const uint8Array = new Uint8Array(arrayBuffer);
     // TODO: サイズが大きいファイルのためにパフォーマンス改善が必要かも
     void window.ipcRenderer.invoke("writeDatasetFile", {
-      data: Array.from(uint8Array),
+      data: arrayBuffer,
       fileName: file_path,
     });
     void mutateRaw();
