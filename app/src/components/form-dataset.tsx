@@ -1,19 +1,19 @@
 import {
   Card,
-  Label,
   makeStyles,
   mergeClasses,
   tokens,
 } from "@fluentui/react-components";
-import { Fragment, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { type FieldValues, type Path } from "react-hook-form";
 import { Delete16Regular } from "@fluentui/react-icons";
-import { useDatasetImporter } from "../hooks/use-dataset-importer";
 import { THEME_COLORS } from "../config/theme-colors";
 import { type SelectRawDataSet } from "../schema";
 import { LanguageMap } from "../metadata";
+import { useDialogState } from "../hooks/use-dialog-state";
 import { Dropdown } from "./ui/dropdown";
 import { Field } from "./ui/field";
+import { DialogImportDataset } from "./dialog-import-dataset";
 
 /**
  * データセットインポートのアイコンや文字部分をスタイリングするためにスタイルを別定義
@@ -163,18 +163,15 @@ export const FormDataset = <
 }): JSX.Element => {
   const [value] = useState<typeof props.value>(props.value);
   const [dataSet, setDataSet] = useState<SelectRawDataSet | null>(null);
+  const dialogState = useDialogState();
+
+  const { setIsOpen } = dialogState;
 
   const appearance = props.appearance || "default";
 
   useEffect(() => {
     props.onChange?.(value);
   }, [value, props]);
-
-  const { Dialog: DataSetImportDialog, setOpen } = useDatasetImporter({
-    onSelected: (data) => {
-      setDataSet(data);
-    },
-  });
 
   // {}で囲んでif処理を書くのが可読性低いので別関数化
   const SelectorView = (): JSX.Element => {
@@ -219,7 +216,7 @@ export const FormDataset = <
         <div
           className={styles.fileSelectorContainer}
           onClick={() => {
-            setOpen(true);
+            setIsOpen(true);
           }}
           role="button"
         >
@@ -233,7 +230,7 @@ export const FormDataset = <
           {columnsToDropDowns}
         </div>
       </div>
-      <DataSetImportDialog />
+      <DialogImportDataset dialogState={dialogState} />
     </Card>
   );
 };
