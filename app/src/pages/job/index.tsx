@@ -14,6 +14,10 @@ import { ErrorCircleFilled } from "@fluentui/react-icons";
 import { useFetchJobLists } from "../../hooks/use-fetch-job-lists";
 import { type SelectJob } from "../../schema";
 import { formatDate } from "../../utils/format-date";
+import {
+  TYPE_DISPLAY_MAP,
+  type JobType,
+} from "../../config/job-type-display-map";
 
 const useStyles = makeStyles({
   root: {
@@ -112,19 +116,17 @@ export function Job(): JSX.Element {
                       {formatDate(item.created_at)}
                     </TableCell>
                     <TableCell className={styles.tableCell}>
-                      {item.type === "preprocess"
-                        ? "前処理"
-                        : item.type === "ml"
-                        ? "モデル作成"
-                        : item.type === "result"
-                        ? "空き家判定処理"
+                      {item.type && TYPE_DISPLAY_MAP[item.type as JobType]
+                        ? TYPE_DISPLAY_MAP[item.type as JobType]
                         : "不明"}
                     </TableCell>
                     <TableCell className={styles.tableCell}>
                       <span
                         className={styles.statusCell}
                         style={
-                          statusInfo.color ? { color: statusInfo.color } : undefined
+                          statusInfo.color
+                            ? { color: statusInfo.color }
+                            : undefined
                         }
                       >
                         {statusInfo.icon}
@@ -152,9 +154,11 @@ export function Job(): JSX.Element {
 }
 
 // MEMO: statusが決まりきっていないので仮置き progress_percent取得できるならcomputedに表示なる
-function getStatusInfo(
-  status: string | null | undefined,
-): { label: string; color?: string; icon?: JSX.Element } {
+function getStatusInfo(status: string | null | undefined): {
+  label: string;
+  color?: string;
+  icon?: JSX.Element;
+} {
   if (!status || status === "error") {
     return {
       label: "エラー",
