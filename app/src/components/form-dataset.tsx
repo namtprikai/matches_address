@@ -140,7 +140,11 @@ export const FormDataset = <
     props.onChange?.(value);
   }, [value, props]);
 
-  const { Dialog, open, setOpen } = useDatasetImporter({
+  const {
+    Dialog: DataSetImportDialog,
+    open,
+    setOpen,
+  } = useDatasetImporter({
     onSelected: (data) => {
       setDataSet(data);
     },
@@ -175,7 +179,7 @@ export const FormDataset = <
       >
         <SelectorView />
       </div>
-      <Dialog />
+      <DataSetImportDialog />
     </Card>
   );
 };
