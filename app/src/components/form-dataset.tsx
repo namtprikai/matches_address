@@ -132,7 +132,7 @@ const useStyles = makeStyles({
     display: "flex",
     gap: "16px",
   },
-  columnDropdownContainer: {
+  dropdownContainer: {
     display: "grid",
     gridTemplateColumns: "1fr 1fr 1fr",
     gridAutoRows: "60px",
@@ -224,7 +224,7 @@ export const FormDataset = <
         </div>
         <div
           className={mergeClasses(
-            appearance === "large" && styles.columnDropdownContainer,
+            appearance === "large" && styles.dropdownContainer,
           )}
         >
           {columnsToDropDowns}
