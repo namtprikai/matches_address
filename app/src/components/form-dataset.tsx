@@ -1,10 +1,13 @@
-import { Card, makeStyles, tokens } from "@fluentui/react-components";
-import { useEffect, useState } from "react";
+import { Card, Label, makeStyles, tokens } from "@fluentui/react-components";
+import { Fragment, useEffect, useState } from "react";
 import { type FieldValues, type Path } from "react-hook-form";
 import { Delete16Regular } from "@fluentui/react-icons";
 import { useDatasetImporter } from "../hooks/use-dataset-importer";
 import { THEME_COLORS } from "../config/theme-colors";
 import { type SelectRawDataSet } from "../schema";
+import { LanguageMap } from "../metadata";
+import { Dropdown } from "./ui/dropdown";
+import { Field } from "./ui/field";
 
 /**
  * データセットインポートのアイコンや文字部分をスタイリングするためにスタイルを別定義
@@ -126,25 +129,21 @@ export const FormDataset = <
   COLUMN_TYPE extends object,
 >(props: {
   value: {
-    columns: COLUMN_TYPE;
-    path: string;
+    columns?: COLUMN_TYPE;
+    filePath?: string;
   };
   name: Path<FORM_TYPE>;
   dataSetName: string;
   onChange?: (value: typeof props.value) => void;
 }): JSX.Element => {
-  const [value, setValue] = useState<typeof props.value>(props.value);
+  const [value] = useState<typeof props.value>(props.value);
   const [dataSet, setDataSet] = useState<SelectRawDataSet | null>(null);
 
   useEffect(() => {
     props.onChange?.(value);
   }, [value, props]);
 
-  const {
-    Dialog: DataSetImportDialog,
-    open,
-    setOpen,
-  } = useDatasetImporter({
+  const { Dialog: DataSetImportDialog, setOpen } = useDatasetImporter({
     onSelected: (data) => {
       setDataSet(data);
     },
@@ -167,9 +166,25 @@ export const FormDataset = <
   };
 
   const styles = useStyles();
+  const columns = value.columns ? Object.entries(value.columns) : [];
+  const columnsToDropDowns = columns.map(([key]) => {
+    return (
+      <Field
+        key={key}
+        label={
+          LanguageMap.NORMALIZATION_PARAMETER_LABEL[
+            key as keyof typeof LanguageMap.NORMALIZATION_PARAMETER_LABEL
+          ] + "カラム"
+        }
+      >
+        <Dropdown />
+      </Field>
+    );
+  });
 
   return (
     <Card>
+      <p>{props.dataSetName}</p>
       <div
         className={styles.fileSelectorContainer}
         onClick={() => {
@@ -180,6 +195,7 @@ export const FormDataset = <
         <SelectorView />
       </div>
       <DataSetImportDialog />
+      <div>{columnsToDropDowns}</div>
     </Card>
   );
 };
