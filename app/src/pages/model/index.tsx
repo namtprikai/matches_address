@@ -1,7 +1,7 @@
 import { Card, makeStyles, tokens } from "@fluentui/react-components";
 import { ButtonCreateModel } from "../../components/button-create-model";
-import { DialogImportDataset } from "../../components/dialog-import-dataset";
 import { TableModel } from "../../components/table-model";
+import { Button } from "../../components/ui/button";
 
 const useStyles = makeStyles({
   root: {
@@ -30,9 +30,22 @@ export function Model(): JSX.Element {
     <div className={styles.root}>
       <h2 className={styles.heading}>モデル管理</h2>
 
+      <div>
+        <Button
+          onClick={() => {
+            window.ipcRenderer
+              .invoke("_debugInsertModelFiles")
+              .catch(console.error);
+          }}
+          size="small"
+        >
+          作成(debug)
+        </Button>
+      </div>
+
       <Card className={styles.content}>
         <ButtonCreateModel />
-        <DialogImportDataset />
+
         <TableModel />
       </Card>
     </div>

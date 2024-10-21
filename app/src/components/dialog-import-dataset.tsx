@@ -20,6 +20,7 @@ import { useState } from "react";
 
 import { Tab } from "../components/ui/tab";
 import { useFetchRawDatasets } from "../hooks/use-fetch-raw-datasets";
+import { type ReturnUseDialogState } from "../hooks/use-dialog-state";
 import { Button } from "./ui/button";
 import { DialogSurface } from "./ui/dialog-surface";
 import { DialogBody } from "./ui/dialog-body";
@@ -116,22 +117,26 @@ const useStyles = makeStyles({
       backgroundColor: "#EFF0F0",
     },
   },
-  dataButton: {
-    height: "28px",
-    backgroundColor: "#6366A7",
-    color: "#FFFFFF",
-    padding: "5px 22px",
+  menuItemButton: {
+    justifyContent: "flex-start",
+    padding: 0,
+    fontWeight: "normal",
+    width: "100%",
   },
 });
 
-export const DialogImportDataset = (): JSX.Element => {
+type Props = {
+  dialogState: ReturnUseDialogState;
+};
+
+export const DialogImportDataset = ({ dialogState }: Props): JSX.Element => {
   const styles = useStyles();
   const [selectedTab, setSelectedTab] = useState(0);
   const [selectedDatasetIndex, setSelectedDatasetIndex] = useState<
     number | null
   >(null);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
+  const { isOpen: isDialogOpen, setIsOpen: setIsDialogOpen } = dialogState;
   const { data: fetchedDatasets } = useFetchRawDatasets();
   const datasets = fetchedDatasets ?? [];
 
@@ -151,14 +156,6 @@ export const DialogImportDataset = (): JSX.Element => {
       onOpenChange={(_, { open }) => setIsDialogOpen(open)}
       open={isDialogOpen}
     >
-      <DialogTrigger disableButtonEnhancement>
-        <Button
-          className={styles.dataButton}
-          onClick={() => setIsDialogOpen(true)}
-        >
-          データを選択
-        </Button>
-      </DialogTrigger>
       <DialogSurface>
         <DialogBody>
           <DialogTitle
