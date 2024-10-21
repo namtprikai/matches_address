@@ -18,14 +18,68 @@ export const getDefaultNormalizationParameter = (): NormalizationParameters => {
       },
     },
     data: {
-      residentRegistry: {},
-      waterStatus: {},
-      waterUsage: {},
-      landRegistry: {},
-      vacantHouse: {},
-      geocoding: {},
-      buildingPolygon: {},
-      urbanPlanning: {},
+      residentRegistry: {
+        filePath: undefined,
+        columns: {
+          householdCode: undefined,
+          address: undefined,
+          birthDate: undefined,
+          gender: undefined,
+          residentDate: undefined,
+        },
+      },
+      waterStatus: {
+        filePath: undefined,
+        columns: {
+          waterSupplyNumber: undefined,
+          waterDisconnectionDate: undefined,
+          waterConnectionDate: undefined,
+          waterDisconnectionFlag: undefined,
+          address: undefined,
+        },
+      },
+      waterUsage: {
+        filePath: undefined,
+        columns: {
+          waterSupplyNumber: undefined,
+          waterUsage: undefined,
+          waterRecordedDate: undefined,
+        },
+      },
+      landRegistry: {
+        filePath: undefined,
+        columns: {
+          address: undefined,
+          structureName: undefined,
+          registrationDate: undefined,
+        },
+      },
+      vacantHouse: {
+        filePath: undefined,
+        columns: {
+          vacantHouseId: undefined,
+          address: undefined,
+          latitude: undefined,
+          longitude: undefined,
+        },
+      },
+      geocoding: {
+        filePath: undefined,
+        columns: {
+          address: undefined,
+          latitude: undefined,
+          longitude: undefined,
+        },
+      },
+      buildingPolygon: {
+        filePath: undefined,
+        columns: {
+          buildingId: undefined,
+        },
+      },
+      urbanPlanning: {
+        filePath: undefined,
+      },
     },
   };
 };
