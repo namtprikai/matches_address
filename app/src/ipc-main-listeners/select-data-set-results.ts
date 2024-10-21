@@ -7,13 +7,12 @@ export const selectDataSetResults = (async (
   _: unknown,
   dataSetResultId?: number,
 ): Promise<SelectDataSetResult[]> => {
-  if (dataSetResultId) {
-    return await db
-      .select()
-      .from(data_set_results)
-      .where(eq(data_set_results.id, dataSetResultId));
-  }
-  const all = await db.select().from(data_set_results).all();
+  const all = await db
+    .select()
+    .from(data_set_results)
+    .where(
+      dataSetResultId ? eq(data_set_results.id, dataSetResultId) : undefined,
+    );
 
   return all;
 }) satisfies IpcMainListener;
