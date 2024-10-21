@@ -21,6 +21,10 @@ import { DialogBody } from "../ui/dialog-body";
 import { DialogTitle } from "../ui/dialog-title";
 import { DialogContent } from "../ui/dialog-content";
 import { Button } from "../ui/button";
+import {
+  useFetchDataSetFile,
+  type DataSetType,
+} from "../../hooks/use-fetch-data-set-file";
 
 const useStyles = makeStyles({
   dialogTitle: {
@@ -66,13 +70,17 @@ const useStyles = makeStyles({
   },
 });
 
-type CSVRow = Record<string, string>;
-
 interface Props {
+  type: DataSetType;
+  id: number;
   datasetName: string | null;
 }
 
-export function DataPreviewDialog({ datasetName }: Props): JSX.Element {
+export function DataPreviewDialog({
+  type,
+  id,
+  datasetName,
+}: Props): JSX.Element {
   const styles = useStyles();
   const [open, setOpen] = useState(false);
 
@@ -109,7 +117,7 @@ export function DataPreviewDialog({ datasetName }: Props): JSX.Element {
               icon={<ArrowLeftRegular />}
               onClick={() => setOpen(false)}
             />
-            水道使用量.csv
+            {datasetName}
           </div>
           <div className={styles.actions}>
             <Button
@@ -128,7 +136,7 @@ export function DataPreviewDialog({ datasetName }: Props): JSX.Element {
         </DialogTitle>
         <DialogBody>
           <DialogContent className={styles.content}>
-            <DataPreview />
+            <DataPreview id={id} type={type} />
           </DialogContent>
         </DialogBody>
       </DialogSurface>
@@ -136,33 +144,15 @@ export function DataPreviewDialog({ datasetName }: Props): JSX.Element {
   );
 }
 
-function DataPreview(): JSX.Element {
+interface DataPreviewProps {
+  type: DataSetType;
+  id: number;
+}
+
+function DataPreview({ type, id }: DataPreviewProps): JSX.Element {
   const styles = useStyles();
-  const [csvData, setCsvData] = useState<CSVRow[]>([]);
-  const [headers, setHeaders] = useState<string[]>([]);
-
-  useEffect(() => {
-    const fetchCSV = async (): Promise<void> => {
-      const response = await fetch("/dummy-data.csv");
-      const csvText = await response.text();
-      const rows = csvText.split("\n").map((row) => row.split(","));
-      const headers = rows[0].map((header) => header.trim());
-      setHeaders(headers);
-
-      const data: CSVRow[] = rows
-        .slice(1)
-        .map((row) => {
-          return headers.reduce((obj, header, index) => {
-            obj[header] = row[index]?.trim() ?? "";
-            return obj;
-          }, {} as CSVRow);
-        })
-        .filter((row) => Object.values(row).some((value) => value !== ""));
-      setCsvData(data);
-    };
-
-    void fetchCSV();
-  }, []);
+  const { data } = useFetchDataSetFile({ type, id });
+  const headers = data && data.length > 0 ? Object.keys(data[0]) : [];
 
   return (
     <div className={styles.tableContainer}>
@@ -175,7 +165,7 @@ function DataPreview(): JSX.Element {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {csvData.map((row, rowIndex) => (
+          {data?.map((row, rowIndex) => (
             <TableRow key={rowIndex}>
               {headers.map((header) => (
                 <TableCell key={`${rowIndex}-${header}`} className={styles.td}>
