@@ -2,10 +2,10 @@ import { Card, makeStyles, tokens } from "@fluentui/react-components";
 import { useEffect, useState } from "react";
 import { type FieldValues, type Path } from "react-hook-form";
 import { Delete16Regular } from "@fluentui/react-icons";
-import { useDatasetImporter } from "../hooks/use-dataset-importer";
 import { THEME_COLORS } from "../config/theme-colors";
 import { type SelectRawDataSet } from "../schema";
-
+import { useDialogState } from "../hooks/use-dialog-state";
+import { DialogImportDataset } from "./dialog-import-dataset";
 /**
  * データセットインポートのアイコンや文字部分をスタイリングするためにスタイルを別定義
  */
@@ -135,16 +135,13 @@ export const FormDataset = <
 }): JSX.Element => {
   const [value, setValue] = useState<typeof props.value>(props.value);
   const [dataSet, setDataSet] = useState<SelectRawDataSet | null>(null);
+  const dialogState = useDialogState();
+
+  const { setIsOpen } = dialogState;
 
   useEffect(() => {
     props.onChange?.(value);
   }, [value, props]);
-
-  const { Dialog, open, setOpen } = useDatasetImporter({
-    onSelected: (data) => {
-      setDataSet(data);
-    },
-  });
 
   // {}で囲んでif処理を書くのが可読性低いので別関数化
   const SelectorView = (): JSX.Element => {
@@ -169,13 +166,18 @@ export const FormDataset = <
       <div
         className={styles.fileSelectorContainer}
         onClick={() => {
-          setOpen(true);
+          setIsOpen(true);
         }}
         role="button"
       >
         <SelectorView />
       </div>
-      <Dialog />
+      <DialogImportDataset
+        dialogState={dialogState}
+        onSelected={(data) => {
+          setDataSet(data);
+        }}
+      />
     </Card>
   );
 };
