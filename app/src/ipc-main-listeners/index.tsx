@@ -29,7 +29,6 @@ import { deleteWorkbook } from "./delete-workbook";
 import { fetchAreaGroups } from "./fetch-area-groups";
 import { fetchRawDatasets } from "./fetch-data-set-for-dialog";
 import { updateResultViewsLayoutIndex } from "./update-result-views-layout-index";
-import { readCSVHeader } from "./read-csv-header";
 import { selectModelFiles } from "./select-model-files";
 import { _debugInsertModelFiles } from "./_debug-insert-model-files";
 
@@ -49,7 +48,6 @@ export const ipcMainListeners = {
   insertResultViews,
   updateResultViews,
   readResultViews,
-  readCSVHeader,
   selectResultView,
   deleteResultView,
   filterDataSetForChart,
