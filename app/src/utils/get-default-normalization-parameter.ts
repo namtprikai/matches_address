@@ -9,7 +9,7 @@ import { type NormalizationParameters } from "../@types/normalization";
 export const getDefaultNormalizationParameter = (): NormalizationParameters => {
   return {
     settings: {
-      referencedData: "waterStatus",
+      referenceData: "waterStatus",
       referenceDate: "2021-01-01",
       advanced: {
         similarityThreshold: 0.95,

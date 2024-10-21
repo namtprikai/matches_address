@@ -7,7 +7,7 @@
 
 export type NormalizationParameters = {
   settings: {
-    referencedData: "waterStatus" | "residentRegistry";
+    referenceData: "waterStatus" | "residentRegistry";
     referenceDate: string;
     advanced: {
       similarityThreshold: number; // Default 0.95
