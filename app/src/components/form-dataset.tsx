@@ -1,4 +1,10 @@
-import { Card, Label, makeStyles, tokens } from "@fluentui/react-components";
+import {
+  Card,
+  Label,
+  makeStyles,
+  mergeClasses,
+  tokens,
+} from "@fluentui/react-components";
 import { Fragment, useEffect, useState } from "react";
 import { type FieldValues, type Path } from "react-hook-form";
 import { Delete16Regular } from "@fluentui/react-icons";
@@ -122,6 +128,24 @@ const useStyles = makeStyles({
     backgroundColor: tokens.colorNeutralBackground3,
     gap: `${tokens.spacingVerticalS} 0`,
   },
+  fieldContainer: {
+    display: "flex",
+    gap: "16px",
+  },
+  columnDropdownContainer: {
+    display: "grid",
+    gridTemplateColumns: "1fr 1fr 1fr",
+    gridAutoRows: "60px",
+    gap: `${tokens.spacingVerticalS} ${tokens.spacingHorizontalM}`,
+  },
+  dropdown: {
+    height: "36px",
+  },
+  field: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "2px",
+  },
 });
 
 export const FormDataset = <
@@ -134,10 +158,13 @@ export const FormDataset = <
   };
   name: Path<FORM_TYPE>;
   dataSetName: string;
+  appearance?: "default" | "large";
   onChange?: (value: typeof props.value) => void;
 }): JSX.Element => {
   const [value] = useState<typeof props.value>(props.value);
   const [dataSet, setDataSet] = useState<SelectRawDataSet | null>(null);
+
+  const appearance = props.appearance || "default";
 
   useEffect(() => {
     props.onChange?.(value);
@@ -171,13 +198,16 @@ export const FormDataset = <
     return (
       <Field
         key={key}
+        className={styles.field}
         label={
           LanguageMap.NORMALIZATION_PARAMETER_LABEL[
             key as keyof typeof LanguageMap.NORMALIZATION_PARAMETER_LABEL
           ] + "カラム"
         }
       >
-        <Dropdown />
+        <Dropdown className={styles.dropdown}>
+          <option value="test">Test</option>
+        </Dropdown>
       </Field>
     );
   });
@@ -185,17 +215,25 @@ export const FormDataset = <
   return (
     <Card>
       <p>{props.dataSetName}</p>
-      <div
-        className={styles.fileSelectorContainer}
-        onClick={() => {
-          setOpen(true);
-        }}
-        role="button"
-      >
-        <SelectorView />
+      <div className={styles.fieldContainer}>
+        <div
+          className={styles.fileSelectorContainer}
+          onClick={() => {
+            setOpen(true);
+          }}
+          role="button"
+        >
+          <SelectorView />
+        </div>
+        <div
+          className={mergeClasses(
+            appearance === "large" && styles.columnDropdownContainer,
+          )}
+        >
+          {columnsToDropDowns}
+        </div>
       </div>
       <DataSetImportDialog />
-      <div>{columnsToDropDowns}</div>
     </Card>
   );
 };

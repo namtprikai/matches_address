@@ -21,6 +21,7 @@ export const FormNormalization = ({ value, onSave }: Props): JSX.Element => {
   return (
     <form onSubmit={onSubmit}>
       <FormDataset
+        appearance="large"
         dataSetName={LanguageMap.NORMALIZATION_DATA_LABEL.residentRegistry}
         name={"data.residentRegistry"}
         onChange={(value) => {
