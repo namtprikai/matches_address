@@ -19,6 +19,7 @@ import {
 } from "../../schema";
 import { useFetchRawDatasets } from "../../hooks/use-fetch-raw-datasets";
 import { useFetchNormalizedDatasets } from "../../hooks/use-fetch-normalized-datasets";
+import { saveDataSetFile } from "../../utils/save-data-set-file";
 
 const useStyles = makeStyles({
   root: {
@@ -84,21 +85,9 @@ export function Dataset(): JSX.Element {
     e: ChangeEvent<HTMLInputElement>,
   ): Promise<void> => {
     const file = e.target.files?.[0];
-    const ext = file?.name.split(".").pop();
-    if (!file || !ext) return;
-    const uuid = crypto.randomUUID();
-    const file_path = `${uuid}.${ext}`;
-    void window.ipcRenderer.invoke("insertRawDatasets", {
-      file_name: file.name,
-      file_path,
-    });
-    const arrayBuffer = await file.arrayBuffer();
-    // TODO: サイズが大きいファイルのためにパフォーマンス改善が必要かも
-    void window.ipcRenderer.invoke("writeDatasetFile", {
-      data: arrayBuffer,
-      fileName: file_path,
-    });
+    void saveDataSetFile(file);
     void mutateRaw();
+    e.target.value = ""; // ファイル選択をリセットする
   };
 
   // TODO: バックエンド処理
