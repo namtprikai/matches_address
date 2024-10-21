@@ -3,6 +3,7 @@ import { useState } from "react";
 import { set } from "react-hook-form";
 import { FormNormalization } from "../../components/form-normalization";
 import { type NormalizationParameters } from "../../@types/normalization";
+import { getDefaultNormalizationParameter } from "../../utils/get-default-normalization-parameter";
 
 const useStyles = makeStyles({
   root: {
@@ -21,8 +22,8 @@ const useStyles = makeStyles({
 
 export function Normalization(): JSX.Element {
   const styles = useStyles();
-  const [parameters, setParameters] = useState<NormalizationParameters | null>(
-    null,
+  const [parameters, setParameters] = useState<NormalizationParameters>(
+    getDefaultNormalizationParameter,
   );
 
   return (
@@ -33,28 +34,7 @@ export function Normalization(): JSX.Element {
           onSave={(parameters) => {
             setParameters(parameters);
           }}
-          value={{
-            settings: {
-              referencedData: "waterSupply",
-              referenceDate: "2021-01-01",
-              advanced: {
-                similarityThreshold: 0.8,
-                nGramSize: 2,
-                joiningMethod: "intersection",
-              },
-            },
-            data: {
-              residentRegister: {
-                path: "path/to/residentRegister.csv",
-                columns: {
-                  householdCode: "",
-                  age: "",
-                  gender: "",
-                  address: "",
-                },
-              },
-            },
-          }}
+          value={parameters}
         />
       </div>
     </div>

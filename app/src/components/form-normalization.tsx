@@ -1,5 +1,6 @@
 import { useForm } from "react-hook-form";
 import { type NormalizationParameters } from "../@types/normalization";
+import { LanguageMap } from "../metadata";
 import { FormDataset } from "./form-dataset";
 
 type Props = {
@@ -20,12 +21,12 @@ export const FormNormalization = ({ value, onSave }: Props): JSX.Element => {
   return (
     <form onSubmit={onSubmit}>
       <FormDataset
-        dataSetName="ABC"
-        name={"data.residentRegister"}
+        dataSetName={LanguageMap.NORMALIZATION_DATA_LABEL.residentRegistry}
+        name={"data.residentRegistry"}
         onChange={(value) => {
-          setValue("data.residentRegister", value);
+          setValue("data.residentRegistry", value);
         }}
-        value={getValues().data.residentRegister}
+        value={getValues().data.residentRegistry}
       />
     </form>
   );
