@@ -17,66 +17,66 @@ export type NormalizationParameters = {
   };
   data: {
     residentRegistry: {
-      filePath: string;
-      columns: {
-        householdCode: string;
-        gender: string;
-        address: string;
-        birthDate: string;
-        residentDate: string;
+      filePath?: string;
+      columns?: {
+        householdCode?: string;
+        gender?: string;
+        address?: string;
+        birthDate?: string;
+        residentDate?: string;
       };
     };
     waterStatus: {
-      filePath: string;
-      columns: {
-        waterSupplyNumber: string;
-        waterDisconnectionDate: string;
-        waterConnectionDate: string;
-        waterDisconnectionFlag: string;
-        address: string;
+      filePath?: string;
+      columns?: {
+        waterSupplyNumber?: string;
+        waterDisconnectionDate?: string;
+        waterConnectionDate?: string;
+        waterDisconnectionFlag?: string;
+        address?: string;
       };
     };
     waterUsage: {
-      filePath: string;
-      columns: {
-        waterSupplyNumber: string;
-        waterUsage: string;
-        waterRecordedDate: string;
+      filePath?: string;
+      columns?: {
+        waterSupplyNumber?: string;
+        waterUsage?: string;
+        waterRecordedDate?: string;
       };
     };
     landRegistry: {
-      filePath: string;
-      columns: {
-        address: string;
-        structureName: string;
-        registrationDate: string;
+      filePath?: string;
+      columns?: {
+        address?: string;
+        structureName?: string;
+        registrationDate?: string;
       };
     };
     vacantHouse: {
-      filePath: string;
-      columns: {
-        vacantHouseId: string;
-        address: string;
-        latitude: string;
-        longitude: string;
+      filePath?: string;
+      columns?: {
+        vacantHouseId?: string;
+        address?: string;
+        latitude?: string;
+        longitude?: string;
       };
     };
     geocoding: {
-      filePath: string;
-      columns: {
-        address: string;
-        latitude: string;
-        longitude: string;
+      filePath?: string;
+      columns?: {
+        address?: string;
+        latitude?: string;
+        longitude?: string;
       };
     };
     buildingPolygon: {
-      filePath: string;
-      columns: {
-        buildingId: string;
+      filePath?: string;
+      columns?: {
+        buildingId?: string;
       };
     };
     urbanPlanning: {
-      filePath: string;
+      filePath?: string;
     };
   };
 };
