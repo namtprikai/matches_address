@@ -197,7 +197,12 @@ export function ResultDataSetTable({
               checked={selected}
             />
             <TableCell>
-              <DataPreviewDialog datasetName={item.title} />
+              {/* TODO: 建物/地域を選択するダイアログを表示する */}
+              {/* <DataPreviewDialog
+                datasetName={item.title}
+                id={item.id}
+                type="result"
+              /> */}
             </TableCell>
             <TableCell>{formatDate(item.updated_at, "YYYY/MM/DD")}</TableCell>
             <TableCell className={styles.actions}>
