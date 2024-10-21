@@ -4,7 +4,7 @@ type ResultViewsStyle = (typeof result_views.style.enumValues)[number];
 const RESULT_VIEWS_STYLE: {
   [key in ResultViewsStyle]: string;
 } = {
-  map: "地図",ß
+  map: "地図",
   bar: "棒グラフ",
   line: "折れ線グラフ",
   pie: "円グラフ",
@@ -41,7 +41,7 @@ const NORMALIZATION_PARAMETER_LABEL = {
   referenceData: "基準データ",
 };
 
-const NORMALIZATION_DATA = {
+const NORMALIZATION_DATA_LABEL = {
   residentRegistry: "住民基本台帳データ",
   waterStatus: "水道状況データ",
   waterUsage: "水道使用量データ",
@@ -55,4 +55,6 @@ const NORMALIZATION_DATA = {
 export const LanguageMap = {
   RESULT_VIEWS_STYLE,
   RESULT_VIEWS_UNIT,
+  NORMALIZATION_PARAMETER_LABEL,
+  NORMALIZATION_DATA_LABEL,
 };
