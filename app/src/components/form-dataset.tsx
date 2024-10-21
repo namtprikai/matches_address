@@ -230,7 +230,12 @@ export const FormDataset = <
           {columnsToDropDowns}
         </div>
       </div>
-      <DialogImportDataset dialogState={dialogState} />
+      <DialogImportDataset
+        dialogState={dialogState}
+        onSelected={(data) => {
+          setDataSet(data);
+        }}
+      />
     </Card>
   );
 };
