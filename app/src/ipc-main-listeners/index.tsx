@@ -32,6 +32,7 @@ import { updateResultViewsLayoutIndex } from "./update-result-views-layout-index
 import { selectModelFiles } from "./select-model-files";
 import { _debugInsertModelFiles } from "./_debug-insert-model-files";
 import { updateModelFiles } from "./update-model-files";
+import { deleteModelFiles } from "./delete-model-files";
 
 export const ipcMainListeners = {
   helloFromPython,
@@ -64,6 +65,7 @@ export const ipcMainListeners = {
   selectModelFiles,
   _debugInsertModelFiles,
   updateModelFiles,
+  deleteModelFiles,
 };
 
 export const execFileAsync = promisify(execFile);

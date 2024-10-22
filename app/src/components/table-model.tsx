@@ -147,6 +147,13 @@ const editModelNote = async (id: number, note: string): Promise<void> => {
   });
 };
 
+/** TableRowItemコンポーネントでのみ利用 */
+const deleteModelFile = async (id: number): Promise<void> => {
+  await window.ipcRenderer.invoke("deleteModelFiles", {
+    modelFileId: id,
+  });
+};
+
 /**
  * TableModelコンポーネントでのみ利用
  */
@@ -206,7 +213,12 @@ const TableRowItem = ({
               <MenuItem onClick={() => editNoteDialogState.setIsOpen(true)}>
                 モデル説明文の編集
               </MenuItem>
-              <MenuItem className={styles.alert100}>削除</MenuItem>
+              <MenuItem
+                className={styles.alert100}
+                onClick={() => deleteDialogState.setIsOpen(true)}
+              >
+                削除
+              </MenuItem>
             </MenuList>
           </MenuPopover>
         </Menu>
@@ -228,8 +240,9 @@ const TableRowItem = ({
         />
         <DeleteMenuWithDialog
           dialogState={deleteDialogState}
-          onDelete={() => {
-            /** @todo 削除処理 */
+          onDelete={async () => {
+            await deleteModelFile(item.id);
+            mutate();
           }}
         />
       </TableCell>
