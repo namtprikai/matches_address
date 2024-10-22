@@ -100,12 +100,12 @@ export function RawDataSetTable({ onSelectionChange }: Props): JSX.Element {
   );
 
   const rows = getRows((row) => {
-    const selected = isRowSelected(row.rowId);
+    const selected = isRowSelected(row.item.id);
 
     return {
       ...row,
       onClick: (e: MouseEvent) => {
-        toggleRow(e, row.rowId);
+        toggleRow(e, row.item.id);
         onSelectionChange((prev) =>
           selected
             ? prev.filter((id) => id !== row.item.id)
@@ -186,7 +186,11 @@ export function RawDataSetTable({ onSelectionChange }: Props): JSX.Element {
                   void handleDownload(item.id);
                 }}
               />
-              <RowMenu item={item} mutate={mutate} />
+              <RowMenu
+                item={item}
+                mutate={mutate}
+                onSelectionChange={onSelectionChange}
+              />
             </TableCell>
           </TableRow>
         ))}
@@ -198,9 +202,11 @@ export function RawDataSetTable({ onSelectionChange }: Props): JSX.Element {
 function RowMenu({
   item,
   mutate,
+  onSelectionChange,
 }: {
   item: SelectRawDataSet;
   mutate: KeyedMutator<SelectRawDataSet[]>;
+  onSelectionChange: Props["onSelectionChange"];
 }): JSX.Element {
   const editNameDialogState = useDialogState(false);
   const deleteDialogState = useDialogState(false);
@@ -238,6 +244,7 @@ function RowMenu({
       id,
     });
     void mutate((data) => data?.filter((d) => d.id !== id), false);
+    onSelectionChange((prev) => prev.filter((selectedId) => selectedId !== id));
   };
 
   return (

@@ -63,13 +63,13 @@ const useStyles = makeStyles({
   },
 });
 
-export type DatasetListProps = {
+type Props = {
   onSelectionChange: Dispatch<SetStateAction<SelectNormalizedDataSet["id"][]>>;
 };
 
 export function NormalizedDataSetTable({
   onSelectionChange,
-}: DatasetListProps): JSX.Element {
+}: Props): JSX.Element {
   const styles = useStyles();
   const columns = [
     createTableColumn<SelectNormalizedDataSet>({ columnId: "name" }),
@@ -102,12 +102,12 @@ export function NormalizedDataSetTable({
   );
 
   const rows = getRows((row) => {
-    const selected = isRowSelected(row.rowId);
+    const selected = isRowSelected(row.item.id);
 
     return {
       ...row,
       onClick: (e: MouseEvent) => {
-        toggleRow(e, row.rowId);
+        toggleRow(e, row.item.id);
         onSelectionChange((prev) =>
           selected
             ? prev.filter((id) => id !== row.item.id)
@@ -190,7 +190,11 @@ export function NormalizedDataSetTable({
                   void handleDownload(item.id);
                 }}
               />
-              <RowMenu item={item} mutate={mutate} />
+              <RowMenu
+                item={item}
+                mutate={mutate}
+                onSelectionChange={onSelectionChange}
+              />
             </TableCell>
           </TableRow>
         ))}
@@ -202,9 +206,11 @@ export function NormalizedDataSetTable({
 function RowMenu({
   item,
   mutate,
+  onSelectionChange,
 }: {
   item: SelectNormalizedDataSet;
   mutate: KeyedMutator<SelectNormalizedDataSet[]>;
+  onSelectionChange: Props["onSelectionChange"];
 }): JSX.Element {
   const editNameDialogState = useDialogState(false);
   const deleteDialogState = useDialogState(false);
@@ -231,6 +237,7 @@ function RowMenu({
       id,
     });
     void mutate((data) => data?.filter((d) => d.id !== id), false);
+    onSelectionChange((prev) => prev.filter((selectedId) => selectedId !== id));
   };
 
   return (

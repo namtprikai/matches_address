@@ -61,13 +61,11 @@ const useStyles = makeStyles({
   },
 });
 
-export type DatasetListProps = {
+type Props = {
   onSelectionChange: Dispatch<SetStateAction<SelectDataSetResult["id"][]>>;
 };
 
-export function ResultDataSetTable({
-  onSelectionChange,
-}: DatasetListProps): JSX.Element {
+export function ResultDataSetTable({ onSelectionChange }: Props): JSX.Element {
   const styles = useStyles();
   const columns = [
     createTableColumn<SelectDataSetResult>({ columnId: "name" }),
@@ -100,12 +98,12 @@ export function ResultDataSetTable({
   );
 
   const rows = getRows((row) => {
-    const selected = isRowSelected(row.rowId);
+    const selected = isRowSelected(row.item.id);
 
     return {
       ...row,
       onClick: (e: MouseEvent) => {
-        toggleRow(e, row.rowId);
+        toggleRow(e, row.item.id);
         onSelectionChange((prev) =>
           selected
             ? prev.filter((id) => id !== row.item.id)
@@ -192,7 +190,11 @@ export function ResultDataSetTable({
                 icon={<ArrowDownloadRegular />}
                 onClick={handleDownload}
               />
-              <RowMenu item={item} mutate={mutate} />
+              <RowMenu
+                item={item}
+                mutate={mutate}
+                onSelectionChange={onSelectionChange}
+              />
             </TableCell>
           </TableRow>
         ))}
@@ -204,9 +206,11 @@ export function ResultDataSetTable({
 function RowMenu({
   item,
   mutate,
+  onSelectionChange,
 }: {
   item: SelectDataSetResult;
   mutate: KeyedMutator<SelectDataSetResult[]>;
+  onSelectionChange: Props["onSelectionChange"];
 }): JSX.Element {
   const editNameDialogState = useDialogState(false);
   const deleteDialogState = useDialogState(false);
@@ -230,6 +234,7 @@ function RowMenu({
       id,
     });
     void mutate((data) => data?.filter((d) => d.id !== id), false);
+    onSelectionChange((prev) => prev.filter((selectedId) => selectedId !== id));
   };
 
   return (
