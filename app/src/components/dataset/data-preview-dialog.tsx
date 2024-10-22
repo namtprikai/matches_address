@@ -25,6 +25,7 @@ import {
   useFetchDataSetFile,
   type DataSetType,
 } from "../../hooks/use-fetch-data-set-file";
+import { downloadDataSetFile } from "../../utils/download-data-set-file";
 
 const useStyles = makeStyles({
   dialogTitle: {
@@ -84,8 +85,42 @@ export function DataPreviewDialog({
   const styles = useStyles();
   const [open, setOpen] = useState(false);
 
-  const handleDownload = (): void => {
-    // TODO: ダウンロードの処理を実装する
+  const handleDownload = async (): Promise<void> => {
+    switch (type) {
+      case "raw": {
+        const data = await window.ipcRenderer.invoke("selectRawDataset", {
+          id,
+        });
+        if (!data) return;
+        const buffer = await window.ipcRenderer.invoke("readDatasetFile", {
+          fileName: data.file_path,
+        });
+        void downloadDataSetFile(buffer, data.file_name);
+        break;
+      }
+      case "normalized": {
+        const data = await window.ipcRenderer.invoke(
+          "selectNormalizedDataSet",
+          {
+            id,
+          },
+        );
+        if (!data) return;
+        const buffer = await window.ipcRenderer.invoke("readDatasetFile", {
+          fileName: data.file_path,
+        });
+        void downloadDataSetFile(buffer, data.file_name || "");
+        break;
+      }
+      case "result": {
+        // TODO: 建物or地域のどちらのデータをダウンロードするか選択するダイアログを表示する
+        break;
+      }
+      default: {
+        const exhaustiveCheck: never = type;
+        throw new Error(`Unhandled type: ${exhaustiveCheck}`);
+      }
+    }
   };
 
   const handleDelete = (): void => {
