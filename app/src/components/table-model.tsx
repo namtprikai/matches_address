@@ -254,6 +254,7 @@ const TableRowItem = ({
         />
         <DeleteMenuWithDialog
           dialogState={deleteDialogState}
+          modelFileName={item.file_name}
           onDelete={async () => {
             await deleteModelFile(item.id);
             mutate();
@@ -341,9 +342,11 @@ const EditNoteDialog = ({
 const DeleteMenuWithDialog = ({
   onDelete,
   dialogState,
+  modelFileName,
 }: {
   onDelete: () => void;
   dialogState: ReturnUseDialogState;
+  modelFileName: string | null;
 }): JSX.Element => {
   const { isOpen, setIsOpen } = dialogState;
 
@@ -351,7 +354,11 @@ const DeleteMenuWithDialog = ({
     <Dialog onOpenChange={(_, data) => setIsOpen(data.open)} open={isOpen}>
       <DialogSurface>
         <DialogBody>
-          <DialogTitle>このモデルを削除しますか？</DialogTitle>
+          <DialogTitle>
+            {modelFileName
+              ? `「${modelFileName}」を削除しますか？`
+              : "このモデルを削除しますか？"}
+          </DialogTitle>
           <DialogContent>
             削除したモデルを復元することはできません
           </DialogContent>
