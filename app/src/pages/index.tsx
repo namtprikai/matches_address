@@ -20,6 +20,7 @@ import { JobDetail } from "./job/detail";
 import { ModelCreate } from "./model/create";
 import { JobPreview } from "./job/detail/preview";
 import { JobEvaluation } from "./evaluation";
+import { JobGraph } from "./job/detail/graph";
 
 // クライアントだけで動作するアプリケーションのため`createHashRouter`を使用する
 const router = createHashRouter([
@@ -55,6 +56,10 @@ const router = createHashRouter([
       {
         path: "job/preview",
         element: <JobPreview />,
+      },
+      {
+        path: "job/graph/:id",
+        element: <JobGraph />,
       },
       {
         path: "analysis/workbook",
