@@ -136,7 +136,10 @@ export function Dataset(): JSX.Element {
         <h2 className={styles.heading}>データセット管理</h2>
         <TabList
           defaultSelectedValue={initialTabValue}
-          onTabSelect={onTabSelect}
+          onTabSelect={(e, data) => {
+            onTabSelect(e, data);
+            setSelectedItemIds([]);
+          }}
         >
           {TAB_VALUES.map((value) => (
             <Tab key={value} value={value}>
