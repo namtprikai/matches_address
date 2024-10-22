@@ -34,6 +34,7 @@ import { type SelectRawDataSet } from "../../schema";
 import { useFetchRawDatasets } from "../../hooks/use-fetch-raw-datasets";
 import { formatDate } from "../../utils/format-date";
 import { useDialogState } from "../../hooks/use-dialog-state";
+import { downloadDataSetFile } from "../../utils/download-data-set-file";
 import { DataPreviewDialog } from "./data-preview-dialog";
 import { EditNameDialog } from "./edit-name-dialog";
 import { DeleteRowDialog } from "./delete-row-dialog";
@@ -142,14 +143,7 @@ export function RawDataSetTable({ onSelectionChange }: Props): JSX.Element {
       const buffer = await window.ipcRenderer.invoke("readDatasetFile", {
         fileName: data.file_path,
       });
-      const url = URL.createObjectURL(new Blob([buffer]));
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = data.file_name;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
+      void downloadDataSetFile(buffer, data.file_name);
     } catch (error) {
       console.error("Download failed:", error);
       alert("ダウンロードに失敗しました。");
