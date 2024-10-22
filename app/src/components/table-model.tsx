@@ -154,9 +154,7 @@ const deleteModelFile = async (id: number): Promise<void> => {
   });
 };
 
-/**
- * TableModelコンポーネントでのみ利用
- */
+/** TableModelコンポーネントでのみ利用 */
 const TableRowItem = ({
   item,
   mutate,
@@ -250,9 +248,7 @@ const TableRowItem = ({
   );
 };
 
-/**
- * TableModelコンポーネントでのみ利用
- */
+/** TableModelコンポーネントでのみ利用 */
 const EditModelFileNameDialog = ({
   initialFileName,
   onSubmit,
@@ -288,9 +284,7 @@ const EditModelFileNameDialog = ({
   );
 };
 
-/**
- * TableModelコンポーネントでのみ利用
- */
+/** TableModelコンポーネントでのみ利用 */
 const EditNoteDialog = ({
   initialNote,
   onSubmit,
@@ -326,9 +320,7 @@ const EditNoteDialog = ({
   );
 };
 
-/**
- * TableModelコンポーネントでのみ利用
- */
+/** TableModelコンポーネントでのみ利用 */
 const DeleteMenuWithDialog = ({
   onDelete,
   dialogState,
