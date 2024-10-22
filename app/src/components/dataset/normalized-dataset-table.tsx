@@ -26,7 +26,6 @@ import {
   type Dispatch,
   type SetStateAction,
   type MouseEvent,
-  type KeyboardEvent,
   useState,
 } from "react";
 import { type KeyedMutator } from "swr";

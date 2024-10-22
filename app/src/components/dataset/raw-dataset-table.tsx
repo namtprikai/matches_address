@@ -24,7 +24,6 @@ import {
 } from "@fluentui/react-icons";
 import {
   type MouseEvent,
-  type KeyboardEvent,
   useState,
   type Dispatch,
   type SetStateAction,
