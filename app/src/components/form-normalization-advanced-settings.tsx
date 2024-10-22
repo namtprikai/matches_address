@@ -1,0 +1,163 @@
+import {
+  Dialog,
+  DialogTrigger,
+  makeStyles,
+  Radio,
+  RadioGroup,
+  Slider,
+} from "@fluentui/react-components";
+import { useController, useForm } from "react-hook-form";
+import { type NormalizationParameters } from "../@types/normalization";
+import { useDialogState } from "../hooks/use-dialog-state";
+import { DialogSurface } from "./ui/dialog-surface";
+import { DialogBody } from "./ui/dialog-body";
+import { DialogTitle } from "./ui/dialog-title";
+import { DialogContent } from "./ui/dialog-content";
+import { Field } from "./ui/field";
+import { Input } from "./ui/input";
+import { DialogActions } from "./ui/dialog-actions";
+import { Button } from "./ui/button";
+
+const useStyles = makeStyles({
+  field: {
+    display: "flex",
+    alignItems: "center",
+    gap: "16px",
+    "& label": {
+      marginBottom: 0,
+      flexBasis: "140px",
+    },
+  },
+  sliderWrapper: {
+    display: "flex",
+    alignItems: "center",
+    flex: 1,
+  },
+  slider: {
+    flex: 1,
+    "& .fui-Slider__rail": {
+      "&::before": {
+        display: "none",
+        background: "none",
+      },
+    },
+  },
+});
+
+type Props = {
+  value: NormalizationParameters["settings"]["advanced"];
+  onChange: (value: NormalizationParameters["settings"]["advanced"]) => void;
+};
+
+export const FormNormalizationAdvancedSettings = ({
+  value,
+  onChange,
+}: Props): JSX.Element => {
+  // Dialog内の状態管理のためでuseFormを導入
+  const { reset, control, handleSubmit } = useForm<
+    NormalizationParameters["settings"]["advanced"]
+  >({
+    defaultValues: value,
+  });
+
+  const { field: similarityThresholdField } = useController({
+    name: "similarityThreshold",
+    control,
+  });
+
+  const { field: nGramSizeField } = useController({
+    name: "nGramSize",
+    control,
+  });
+
+  const { field: joiningMethodField } = useController({
+    name: "joiningMethod",
+    control,
+  });
+
+  const { isOpen, setIsOpen } = useDialogState();
+
+  const styles = useStyles();
+
+  const setDefaultValue = (): void => {
+    reset({
+      similarityThreshold: 0.95,
+      nGramSize: 2,
+      joiningMethod: "intersection",
+    });
+  };
+
+  const onSubmit = handleSubmit((data) => {
+    onChange(data);
+    setIsOpen(false);
+  });
+
+  return (
+    <Dialog
+      onOpenChange={(_, data) => {
+        setIsOpen(data.open);
+      }}
+      open={isOpen}
+    >
+      <DialogTrigger>
+        <button>高度な設定</button>
+      </DialogTrigger>
+      <DialogSurface>
+        <DialogBody>
+          <DialogTitle>高度な設定の変更</DialogTitle>
+          <DialogContent>
+            <Field className={styles.field} label={"N-gram Size"}>
+              <RadioGroup
+                layout="horizontal"
+                onChange={nGramSizeField.onChange}
+                value={nGramSizeField.value.toString()}
+              >
+                <Radio label={1} value={"1"} />
+                <Radio label={2} value={"2"} />
+                <Radio label={3} value={"3"} />
+              </RadioGroup>
+            </Field>
+            <Field className={styles.field} label={"Similarity Threshold"}>
+              <div className={styles.sliderWrapper}>
+                <Input
+                  ref={similarityThresholdField.ref}
+                  max={1}
+                  min={0}
+                  onChange={similarityThresholdField.onChange}
+                  step={0.01}
+                  type="number"
+                  value={similarityThresholdField.value.toString()}
+                />
+                <Slider
+                  ref={similarityThresholdField.ref}
+                  className={styles.slider}
+                  max={1}
+                  min={0}
+                  onChange={similarityThresholdField.onChange}
+                  step={0.01}
+                  value={similarityThresholdField.value}
+                />
+              </div>
+            </Field>
+            <Field className={styles.field} label={"結合方式"}>
+              <RadioGroup
+                layout="horizontal"
+                onChange={joiningMethodField.onChange}
+                value={joiningMethodField.value}
+              >
+                <Radio label={"交差結合"} value={"intersection"} />
+                <Radio label={"最近傍結合"} value={"nearest"} />
+              </RadioGroup>
+            </Field>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={setDefaultValue}>デフォルトに戻す</Button>
+            <DialogTrigger disableButtonEnhancement>
+              <Button onClick={onSubmit}>変更</Button>
+            </DialogTrigger>
+          </DialogActions>
+        </DialogBody>
+      </DialogSurface>
+    </Dialog>
+  );
+};
