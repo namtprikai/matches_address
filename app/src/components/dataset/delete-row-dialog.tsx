@@ -1,37 +1,29 @@
-import { Dialog, DialogTrigger, makeStyles } from "@fluentui/react-components";
+import { Dialog } from "@fluentui/react-components";
 import { DialogSurface } from "../ui/dialog-surface";
 import { DialogTitle } from "../ui/dialog-title";
 import { DialogActions } from "../ui/dialog-actions";
 import { DialogBody } from "../ui/dialog-body";
 import { DialogContent } from "../ui/dialog-content";
 import { Button } from "../ui/button";
-
-const useStyles = makeStyles({
-  menuItemButton: {
-    justifyContent: "flex-start",
-    padding: 0,
-    fontWeight: "normal",
-  },
-});
+import { type ReturnUseDialogState } from "../../hooks/use-dialog-state";
 
 interface Props {
   onDelete: () => void;
+  dialogState: ReturnUseDialogState;
 }
 
-export function DeleteRowDialog({ onDelete }: Props): JSX.Element {
-  const styles = useStyles();
+export function DeleteRowDialog({ onDelete, dialogState }: Props): JSX.Element {
+  const { isOpen, setIsOpen } = dialogState;
+
   return (
-    <Dialog>
-      <DialogTrigger disableButtonEnhancement>
-        <Button
-          appearance="transparent"
-          className={styles.menuItemButton}
-          onClick={(e) => e.stopPropagation()}
-        >
-          削除
-        </Button>
-      </DialogTrigger>
-      <DialogSurface>
+    <Dialog
+      onOpenChange={(e, data) => {
+        e.stopPropagation();
+        setIsOpen(data.open);
+      }}
+      open={isOpen}
+    >
+      <DialogSurface onClick={(e) => e.stopPropagation()}>
         <DialogBody>
           <DialogTitle>このデータを削除しますか？</DialogTitle>
           <DialogContent>

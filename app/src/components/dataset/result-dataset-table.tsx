@@ -33,6 +33,7 @@ import { Button } from "../ui/button";
 import { useFetchDataSetResults } from "../../hooks/use-fetch-data-set-results";
 import { type SelectDataSetResult } from "../../schema";
 import { formatDate } from "../../utils/format-date";
+import { useDialogState } from "../../hooks/use-dialog-state";
 import { DataPreviewDialog } from "./data-preview-dialog";
 import { EditNameDialog } from "./edit-name-dialog";
 import { DeleteRowDialog } from "./delete-row-dialog";
@@ -157,17 +158,6 @@ export function ResultDataSetTable({
     }
   };
 
-  const handleEditMenuClick = (
-    id: SelectDataSetResult["id"],
-    newTitle: SelectDataSetResult["title"],
-  ): void => {
-    // TODO: バックエンド処理
-  };
-
-  const handleDeleteMenuClick = (id: SelectDataSetResult["id"]): void => {
-    // TODO: バックエンド処理
-  };
-
   return (
     <Table>
       <TableHeader className={styles.tableHeader}>
@@ -207,37 +197,69 @@ export function ResultDataSetTable({
                 icon={<ArrowDownloadRegular />}
                 onClick={handleDownload}
               />
-              <Menu>
-                <MenuTrigger disableButtonEnhancement>
-                  <Button
-                    appearance="subtle"
-                    aria-label="詳細メニュー"
-                    icon={<MoreVerticalRegular />}
-                    onClick={(e) => e.stopPropagation()}
-                  />
-                </MenuTrigger>
-                <MenuPopover>
-                  <MenuList>
-                    <MenuItem onClick={(e) => e.stopPropagation()}>
-                      <EditNameDialog
-                        initialName={item.title}
-                        onSubmit={(newName) =>
-                          handleEditMenuClick(item.id, newName)
-                        }
-                      />
-                    </MenuItem>
-                    <MenuItem onClick={(e) => e.stopPropagation()}>
-                      <DeleteRowDialog
-                        onDelete={() => handleDeleteMenuClick(item.id)}
-                      />
-                    </MenuItem>
-                  </MenuList>
-                </MenuPopover>
-              </Menu>
+              <RowMenu item={item} />
             </TableCell>
           </TableRow>
         ))}
       </TableBody>
     </Table>
+  );
+}
+
+function RowMenu({ item }: { item: SelectDataSetResult }): JSX.Element {
+  const editNameDialogState = useDialogState(false);
+  const deleteDialogState = useDialogState(false);
+
+  const handleEditMenuClick = (
+    id: SelectDataSetResult["id"],
+    newName: SelectDataSetResult["title"],
+  ): void => {
+    // TODO: バックエンド処理
+  };
+
+  const handleDeleteMenuClick = (id: SelectDataSetResult["id"]): void => {
+    // TODO: バックエンド処理
+  };
+
+  return (
+    <>
+      <Menu>
+        <MenuTrigger disableButtonEnhancement>
+          <Button
+            appearance="subtle"
+            aria-label="詳細メニュー"
+            icon={<MoreVerticalRegular />}
+            onClick={(e) => e.stopPropagation()}
+          />
+        </MenuTrigger>
+        <MenuPopover onClick={(e) => e.stopPropagation()}>
+          <MenuList>
+            <MenuItem
+              onClick={() => {
+                editNameDialogState.setIsOpen(true);
+              }}
+            >
+              データ名の編集
+            </MenuItem>
+            <MenuItem
+              onClick={() => {
+                deleteDialogState.setIsOpen(true);
+              }}
+            >
+              削除
+            </MenuItem>
+          </MenuList>
+        </MenuPopover>
+      </Menu>
+      <EditNameDialog
+        dialogState={editNameDialogState}
+        initialName={item.title}
+        onSubmit={(newName) => handleEditMenuClick(item.id, newName)}
+      />
+      <DeleteRowDialog
+        dialogState={deleteDialogState}
+        onDelete={() => handleDeleteMenuClick(item.id)}
+      />
+    </>
   );
 }

@@ -33,6 +33,7 @@ import { Button } from "../ui/button";
 import { type SelectRawDataSet } from "../../schema";
 import { useFetchRawDatasets } from "../../hooks/use-fetch-raw-datasets";
 import { formatDate } from "../../utils/format-date";
+import { useDialogState } from "../../hooks/use-dialog-state";
 import { DataPreviewDialog } from "./data-preview-dialog";
 import { EditNameDialog } from "./edit-name-dialog";
 import { DeleteRowDialog } from "./delete-row-dialog";
@@ -155,17 +156,6 @@ export function RawDataSetTable({ onSelectionChange }: Props): JSX.Element {
     }
   };
 
-  const handleEditMenuClick = (
-    id: SelectRawDataSet["id"],
-    newName: SelectRawDataSet["file_name"],
-  ): void => {
-    // TODO: バックエンド処理
-  };
-
-  const handleDeleteMenuClick = (id: SelectRawDataSet["id"]): void => {
-    // TODO: バックエンド処理
-  };
-
   return (
     <Table>
       <TableHeader className={styles.tableHeader}>
@@ -205,37 +195,69 @@ export function RawDataSetTable({ onSelectionChange }: Props): JSX.Element {
                 icon={<ArrowDownloadRegular />}
                 onClick={handleDownload}
               />
-              <Menu>
-                <MenuTrigger disableButtonEnhancement>
-                  <Button
-                    appearance="subtle"
-                    aria-label="詳細メニュー"
-                    icon={<MoreVerticalRegular />}
-                    onClick={(e) => e.stopPropagation()}
-                  />
-                </MenuTrigger>
-                <MenuPopover>
-                  <MenuList>
-                    <MenuItem onClick={(e) => e.stopPropagation()}>
-                      <EditNameDialog
-                        initialName={item.file_name}
-                        onSubmit={(newName) =>
-                          handleEditMenuClick(item.id, newName)
-                        }
-                      />
-                    </MenuItem>
-                    <MenuItem onClick={(e) => e.stopPropagation()}>
-                      <DeleteRowDialog
-                        onDelete={() => handleDeleteMenuClick(item.id)}
-                      />
-                    </MenuItem>
-                  </MenuList>
-                </MenuPopover>
-              </Menu>
+              <RowMenu item={item} />
             </TableCell>
           </TableRow>
         ))}
       </TableBody>
     </Table>
+  );
+}
+
+function RowMenu({ item }: { item: SelectRawDataSet }): JSX.Element {
+  const editNameDialogState = useDialogState(false);
+  const deleteDialogState = useDialogState(false);
+
+  const handleEditMenuClick = (
+    id: SelectRawDataSet["id"],
+    newName: SelectRawDataSet["file_name"],
+  ): void => {
+    // TODO: バックエンド処理
+  };
+
+  const handleDeleteMenuClick = (id: SelectRawDataSet["id"]): void => {
+    // TODO: バックエンド処理
+  };
+
+  return (
+    <>
+      <Menu>
+        <MenuTrigger disableButtonEnhancement>
+          <Button
+            appearance="subtle"
+            aria-label="詳細メニュー"
+            icon={<MoreVerticalRegular />}
+            onClick={(e) => e.stopPropagation()}
+          />
+        </MenuTrigger>
+        <MenuPopover onClick={(e) => e.stopPropagation()}>
+          <MenuList>
+            <MenuItem
+              onClick={() => {
+                editNameDialogState.setIsOpen(true);
+              }}
+            >
+              データ名の編集
+            </MenuItem>
+            <MenuItem
+              onClick={() => {
+                deleteDialogState.setIsOpen(true);
+              }}
+            >
+              削除
+            </MenuItem>
+          </MenuList>
+        </MenuPopover>
+      </Menu>
+      <EditNameDialog
+        dialogState={editNameDialogState}
+        initialName={item.file_name}
+        onSubmit={(newName) => handleEditMenuClick(item.id, newName)}
+      />
+      <DeleteRowDialog
+        dialogState={deleteDialogState}
+        onDelete={() => handleDeleteMenuClick(item.id)}
+      />
+    </>
   );
 }
