@@ -31,10 +31,7 @@ interface Props {
   onDelete: () => void;
 }
 
-export function DeleteSelectedItemsDialog({
-  disabled,
-  onDelete,
-}: Props): JSX.Element {
+export function DeleteRowsDialog({ disabled, onDelete }: Props): JSX.Element {
   const styles = useStyles();
   const [open, setOpen] = useState(false);
   const handleDelete = (): void => {

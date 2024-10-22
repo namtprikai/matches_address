@@ -1,4 +1,4 @@
-import { type ChangeEvent, useEffect, useRef, useState } from "react";
+import { type ChangeEvent, useRef, useState } from "react";
 import {
   Card,
   makeStyles,
@@ -8,12 +8,16 @@ import {
 } from "@fluentui/react-components";
 import { ArrowDownloadRegular, AddRegular } from "@fluentui/react-icons";
 import { useTabs } from "../../hooks/use-tabs";
-import {
-  type Dataset,
-  DatasetList,
-} from "../../components/dataset/dataset-list";
-import { DeleteSelectedItemsDialog } from "../../components/dataset/delete-selected-items-dialog";
+import { DeleteRowsDialog } from "../../components/dataset/delete-rows-dialog";
 import { Button } from "../../components/ui/button";
+import { RawDataSetTable } from "../../components/dataset/raw-dataset-table";
+import {
+  NormalizedDataSetTable,
+  type Dataset,
+} from "../../components/dataset/normalized-dataset-table";
+import { ResultDataSetTable } from "../../components/dataset/result-dataset-table";
+import { type InsertRawDataSet } from "../../schema";
+import { useFetchRawDatasets } from "../../hooks/use-fetch-raw-datasets";
 
 const useStyles = makeStyles({
   root: {
@@ -61,47 +65,23 @@ const useStyles = makeStyles({
   },
 });
 
-type TabValue = "seed" | "normalization" | "akiya";
+const TAB_VALUES = ["seed", "normalization", "result"] as const;
+type TabValue = (typeof TAB_VALUES)[number];
 
 export function Dataset(): JSX.Element {
   const styles = useStyles();
   const initialTabValue: TabValue = "seed";
   const { onTabSelect, selectedValue } = useTabs<TabValue>(initialTabValue);
-  const [selectedDatasets, setSelectedDatasets] = useState<Dataset[]>([]);
   const [selectedItemIds, setSelectedItemIds] = useState<Dataset["id"][]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
-
-  useEffect(() => {
-    switch (selectedValue) {
-      case "seed":
-        setSelectedDatasets(_dummyDataSetSeeds);
-        break;
-      case "normalization":
-        setSelectedDatasets(_dummyDataSetNormalizations);
-        break;
-      case "akiya":
-        setSelectedDatasets(_dummyDataSetResults);
-        break;
-      default: {
-        const exhaustiveCheck: never = selectedValue;
-        throw new Error(`Unhandled tab value: ${exhaustiveCheck}`);
-      }
-    }
-  }, [selectedValue]);
+  const { mutate } = useFetchRawDatasets();
 
   const handleUploadButtonClick = (): void => {
     fileInputRef.current?.click();
   };
 
-  // TODO: バックエンド処理
   const handleUpload = (e: ChangeEvent<HTMLInputElement>): void => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setSelectedDatasets((prev) => [
-        { id: prev.length + 1, name: file.name, date: "2024/4/21" },
-        ...prev,
-      ]);
-    }
+    // TODO: バックエンド処理
   };
 
   // TODO: バックエンド処理
@@ -126,30 +106,29 @@ export function Dataset(): JSX.Element {
     }
   };
 
-  // TODO: バックエンド処理
   const handleDeleteSelectedItems = (): void => {
-    setSelectedDatasets((prev) =>
-      prev.filter((dataset) => !selectedItemIds.includes(dataset.id)),
-    );
+    // TODO: バックエンド処理
     setSelectedItemIds([]);
   };
 
-  // TODO: バックエンド処理
   const handleEditItem = (
     id: Dataset["id"],
     newName: Dataset["name"],
   ): void => {
-    setSelectedDatasets((prev) =>
-      prev.map((dataset) =>
-        dataset.id === id ? { ...dataset, name: newName } : dataset,
-      ),
-    );
+    // TODO: バックエンド処理
   };
 
-  // TODO: バックエンド処理
   const handleDeleteItem = (id: Dataset["id"]): void => {
-    setSelectedDatasets((prev) => prev.filter((dataset) => dataset.id !== id));
+    // TODO: バックエンド処理
   };
+
+  async function _handleAddDummyDataSets(): Promise<void> {
+    void Promise.all(
+      _dummyRawDataSets.map((seed) =>
+        window.ipcRenderer.invoke("insertRawDatasets", seed),
+      ),
+    ).then(() => mutate());
+  }
 
   return (
     <div className={styles.root}>
@@ -159,10 +138,21 @@ export function Dataset(): JSX.Element {
           defaultSelectedValue={initialTabValue}
           onTabSelect={onTabSelect}
         >
-          <Tab value="seed">シードデータ</Tab>
-          <Tab value="normalization">正規化済データ</Tab>
-          <Tab value="akiya">空き家判定結果データ</Tab>
+          {TAB_VALUES.map((value) => (
+            <Tab key={value} value={value}>
+              {
+                {
+                  seed: "シードデータ",
+                  normalization: "正規化済データ",
+                  result: "空き家判定結果データ",
+                }[value]
+              }
+            </Tab>
+          ))}
         </TabList>
+        <Button onClick={_handleAddDummyDataSets}>
+          ダミーデータを追加する
+        </Button>
       </div>
       <Card className={styles.content}>
         <div className={styles.actions}>
@@ -189,48 +179,61 @@ export function Dataset(): JSX.Element {
               icon={<ArrowDownloadRegular />}
               onClick={handleDownload}
             />
-            <DeleteSelectedItemsDialog
+            <DeleteRowsDialog
               disabled={selectedItemIds.length === 0}
               onDelete={handleDeleteSelectedItems}
             />
           </div>
         </div>
         <div className={styles.datasetList}>
-          <DatasetList
-            datasets={selectedDatasets}
-            onDelete={handleDeleteItem}
-            onSelectionChange={setSelectedItemIds}
-            onSubmit={handleEditItem}
-          />
+          {
+            {
+              seed: <RawDataSetTable onSelectionChange={setSelectedItemIds} />,
+              normalization: (
+                <NormalizedDataSetTable
+                  onDelete={handleDeleteItem}
+                  onSelectionChange={setSelectedItemIds}
+                  onSubmit={handleEditItem}
+                />
+              ),
+              result: (
+                <ResultDataSetTable
+                  onDelete={handleDeleteItem}
+                  onSelectionChange={setSelectedItemIds}
+                  onSubmit={handleEditItem}
+                />
+              ),
+            }[selectedValue]
+          }
         </div>
       </Card>
     </div>
   );
 }
 
-const _dummyDataSetSeeds: Dataset[] = [
-  { id: 1, name: "シードデータ", date: "2024/4/21" },
-  { id: 2, name: "水道メーター1.shp", date: "2024/4/21" },
-  { id: 3, name: "前処理住民台帳1.csv", date: "2024/4/21" },
-  { id: 4, name: "前処理住民台帳2.csv", date: "2024/4/21" },
-  { id: 5, name: "前処理住民台帳3.csv", date: "2024/4/21" },
-  { id: 6, name: "水道メーター2.shp", date: "2024/4/21" },
-];
-
-const _dummyDataSetNormalizations: Dataset[] = [
-  { id: 1, name: "正規化済みデータ", date: "2024/4/21" },
-  { id: 2, name: "水道メーター1.shp", date: "2024/4/21" },
-  { id: 3, name: "前処理住民台帳1.csv", date: "2024/4/21" },
-  { id: 4, name: "前処理住民台帳2.csv", date: "2024/4/21" },
-  { id: 5, name: "前処理住民台帳3.csv", date: "2024/4/21" },
-  { id: 6, name: "水道メーター2.shp", date: "2024/4/21" },
-];
-
-const _dummyDataSetResults: Dataset[] = [
-  { id: 1, name: "空き家判定結果データ", date: "2024/4/21" },
-  { id: 2, name: "水道メーター1.shp", date: "2024/4/21" },
-  { id: 3, name: "前処理住民台帳1.csv", date: "2024/4/21" },
-  { id: 4, name: "前処理住民台帳2.csv", date: "2024/4/21" },
-  { id: 5, name: "前処理住民台帳3.csv", date: "2024/4/21" },
-  { id: 6, name: "水道メーター2.shp", date: "2024/4/21" },
+const _dummyRawDataSets: InsertRawDataSet[] = [
+  {
+    file_name: "シードデータ",
+    file_path: "dummy-data.csv",
+  },
+  {
+    file_name: "水道メーター1.shp",
+    file_path: "dummy-data.csv",
+  },
+  {
+    file_name: "前処理住民台帳1.csv",
+    file_path: "dummy-data.csv",
+  },
+  {
+    file_name: "前処理住民台帳2.csv",
+    file_path: "dummy-data.csv",
+  },
+  {
+    file_name: "前処理住民台帳3.csv",
+    file_path: "dummy-data.csv",
+  },
+  {
+    file_name: "水道メーター2.shp",
+    file_path: "dummy-data.csv",
+  },
 ];

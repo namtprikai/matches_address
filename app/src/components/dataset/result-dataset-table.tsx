@@ -12,8 +12,6 @@ import {
   MenuPopover,
   MenuList,
   MenuItem,
-  Dialog,
-  DialogTrigger,
   useTableFeatures,
   useTableSelection,
   type TableRowId,
@@ -23,7 +21,6 @@ import {
 import {
   ArrowDownloadRegular,
   MoreVerticalRegular,
-  Dismiss24Regular,
 } from "@fluentui/react-icons";
 import {
   type Dispatch,
@@ -33,14 +30,11 @@ import {
   useState,
   useEffect,
 } from "react";
-import { DialogSurface } from "../ui/dialog-surface";
-import { DialogTitle } from "../ui/dialog-title";
-import { DialogActions } from "../ui/dialog-actions";
-import { DialogBody } from "../ui/dialog-body";
-import { DialogContent } from "../ui/dialog-content";
 import { Button } from "../ui/button";
-import { Input } from "../ui/input";
+import { useDialogState } from "../../hooks/use-dialog-state";
 import { DataPreviewDialog } from "./data-preview-dialog";
+import { EditNameDialog } from "./edit-name-dialog";
+import { DeleteRowDialog } from "./delete-row-dialog";
 
 const useStyles = makeStyles({
   tableHeader: {
@@ -72,25 +66,23 @@ export type Dataset = {
 };
 
 export type DatasetListProps = {
-  datasets: Dataset[];
   onSelectionChange: Dispatch<SetStateAction<Dataset["id"][]>>;
   onSubmit: (id: Dataset["id"], newName: string) => void;
   onDelete: (id: Dataset["id"]) => void;
 };
 
-export function DatasetList({
-  datasets,
+export function ResultDataSetTable({
   onSelectionChange,
   onSubmit,
   onDelete,
 }: DatasetListProps): JSX.Element {
   const styles = useStyles();
-
   const columns = [
     createTableColumn<Dataset>({ columnId: "name" }),
     createTableColumn<Dataset>({ columnId: "date" }),
   ];
   const [selectedRows, setSelectedRows] = useState(new Set<TableRowId>());
+  const datasets: Dataset[] = _dummyDataSetResults;
 
   useEffect(
     function resetSelection() {
@@ -181,17 +173,6 @@ export function DatasetList({
     }
   };
 
-  const handleEditMenuClick = (
-    id: Dataset["id"],
-    newName: Dataset["name"],
-  ): void => {
-    onSubmit(id, newName);
-  };
-
-  const handleDeleteMenuClick = (id: Dataset["id"]): void => {
-    onDelete(id);
-  };
-
   return (
     <Table>
       <TableHeader className={styles.tableHeader}>
@@ -231,33 +212,7 @@ export function DatasetList({
                 icon={<ArrowDownloadRegular />}
                 onClick={handleDownload}
               />
-              <Menu>
-                <MenuTrigger disableButtonEnhancement>
-                  <Button
-                    appearance="subtle"
-                    aria-label="詳細メニュー"
-                    icon={<MoreVerticalRegular />}
-                    onClick={(e) => e.stopPropagation()}
-                  />
-                </MenuTrigger>
-                <MenuPopover>
-                  <MenuList>
-                    <MenuItem onClick={(e) => e.stopPropagation()}>
-                      <EditDialog
-                        initialName={item.name}
-                        onSubmit={(newName) =>
-                          handleEditMenuClick(item.id, newName)
-                        }
-                      />
-                    </MenuItem>
-                    <MenuItem onClick={(e) => e.stopPropagation()}>
-                      <DeleteDialog
-                        onDelete={() => handleDeleteMenuClick(item.id)}
-                      />
-                    </MenuItem>
-                  </MenuList>
-                </MenuPopover>
-              </Menu>
+              <RowMenu item={item} />
             </TableCell>
           </TableRow>
         ))}
@@ -266,101 +221,69 @@ export function DatasetList({
   );
 }
 
-function EditDialog({
-  initialName,
-  onSubmit,
-}: {
-  initialName: string;
-  onSubmit: (newName: string) => void;
-}): JSX.Element {
-  // TODO: 仮の動作確認のためのロジックなのでDBスキーマが決まりしだい修正する
-  const styles = useStyles();
-  const [newName, setNewName] = useState(initialName);
-  const [open, setOpen] = useState(false);
+function RowMenu({ item }: { item: Dataset }): JSX.Element {
+  const editNameDialogState = useDialogState(false);
+  const deleteDialogState = useDialogState(false);
 
-  const handleSubmit = (): void => {
-    onSubmit(newName);
-    setOpen(false);
+  const handleEditMenuClick = (
+    id: Dataset["id"],
+    newName: Dataset["name"],
+  ): void => {
+    // TODO: バックエンド処理
+  };
+
+  const handleDeleteMenuClick = (id: Dataset["id"]): void => {
+    // TODO: バックエンド処理
   };
 
   return (
-    <Dialog onOpenChange={(_, data) => setOpen(data.open)} open={open}>
-      <DialogTrigger disableButtonEnhancement>
-        <Button
-          appearance="transparent"
-          className={styles.menuItemButton}
-          onClick={(e) => {
-            e.stopPropagation();
-            setOpen(true);
-          }}
-        >
-          データ名の編集
-        </Button>
-      </DialogTrigger>
-      <DialogSurface aria-describedby={undefined}>
-        <DialogBody>
-          <DialogTitle
-            action={
-              <DialogTrigger action="close">
-                <Button
-                  appearance="subtle"
-                  aria-label="close"
-                  icon={
-                    <Dismiss24Regular
-                      color={tokens.colorNeutralForeground1}
-                      strokeWidth={2}
-                    />
-                  }
-                />
-              </DialogTrigger>
-            }
-          >
-            データ名の編集
-          </DialogTitle>
-          <DialogContent>
-            <Input
-              className={styles.input}
-              onChange={(e) => setNewName(e.target.value)}
-              value={newName}
-            />
-          </DialogContent>
-          <DialogActions>
-            <Button appearance="primary" onClick={handleSubmit} size="medium">
-              保存
-            </Button>
-          </DialogActions>
-        </DialogBody>
-      </DialogSurface>
-    </Dialog>
-  );
-}
-function DeleteDialog({ onDelete }: { onDelete: () => void }): JSX.Element {
-  const styles = useStyles();
-
-  return (
-    <Dialog>
-      <DialogTrigger disableButtonEnhancement>
-        <Button
-          appearance="transparent"
-          className={styles.menuItemButton}
-          onClick={(e) => e.stopPropagation()}
-        >
-          削除
-        </Button>
-      </DialogTrigger>
-      <DialogSurface>
-        <DialogBody>
-          <DialogTitle>このデータを削除しますか？</DialogTitle>
-          <DialogContent>
-            削除したデータを復元することはできません
-          </DialogContent>
-          <DialogActions>
-            <Button appearance="primary" onClick={onDelete} size="medium">
+    <>
+      <Menu>
+        <MenuTrigger disableButtonEnhancement>
+          <Button
+            appearance="subtle"
+            aria-label="詳細メニュー"
+            icon={<MoreVerticalRegular />}
+            onClick={(e) => e.stopPropagation()}
+          />
+        </MenuTrigger>
+        <MenuPopover onClick={(e) => e.stopPropagation()}>
+          <MenuList>
+            <MenuItem
+              onClick={() => {
+                editNameDialogState.setIsOpen(true);
+              }}
+            >
+              データ名の編集
+            </MenuItem>
+            <MenuItem
+              onClick={() => {
+                deleteDialogState.setIsOpen(true);
+              }}
+            >
               削除
-            </Button>
-          </DialogActions>
-        </DialogBody>
-      </DialogSurface>
-    </Dialog>
+            </MenuItem>
+          </MenuList>
+        </MenuPopover>
+      </Menu>
+      <EditNameDialog
+        dialogState={editNameDialogState}
+        initialName={item.name}
+        onSubmit={(newName) => handleEditMenuClick(item.id, newName)}
+      />
+      <DeleteRowDialog
+        dialogState={deleteDialogState}
+        onDelete={() => handleDeleteMenuClick(item.id)}
+      />
+    </>
   );
 }
+
+const _dummyDataSetResults: Dataset[] = [
+  { id: 1, name: "空き家判定結果データ", date: "2024/4/21" },
+  { id: 2, name: "水道メーター1.shp", date: "2024/4/21" },
+  { id: 3, name: "前処理住民台帳1.csv", date: "2024/4/21" },
+  { id: 4, name: "前処理住民台帳2.csv", date: "2024/4/21" },
+  { id: 5, name: "前処理住民台帳3.csv", date: "2024/4/21" },
+  { id: 6, name: "水道メーター2.shp", date: "2024/4/21" },
+];
