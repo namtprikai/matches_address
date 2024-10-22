@@ -215,18 +215,31 @@ function RowMenu({
 }): JSX.Element {
   const editNameDialogState = useDialogState(false);
   const deleteDialogState = useDialogState(false);
+  // ファイル名と拡張子に分割
+  // 拡張子ファイルを扱うのはシードデータのみっぽいので、いったんここだけ対応する
+  const { name, ext } = (() => {
+    if (!item.file_name) {
+      return { name: "", ext: "" };
+    }
+    if (item.file_name.indexOf(".") === -1) {
+      return { name: item.file_name, ext: "" };
+    }
+    const [name, ext] = item.file_name.split(".");
+    return { name, ext };
+  })();
 
   const handleEditMenuClick = async (
     id: SelectRawDataSet["id"],
     newFileName: SelectRawDataSet["file_name"],
   ): Promise<void> => {
+    const fullFileName = newFileName + (ext ? `.${ext}` : "");
     await window.ipcRenderer.invoke("updateRawDataset", {
       id,
-      fileName: newFileName,
+      fileName: fullFileName,
     });
     void mutate(
       (data) =>
-        data?.map((d) => (d.id === id ? { ...d, file_name: newFileName } : d)),
+        data?.map((d) => (d.id === id ? { ...d, file_name: fullFileName } : d)),
       false, // すでにDBと同期が取れているので、再検証は不要（false）
     );
   };
@@ -267,7 +280,7 @@ function RowMenu({
       </Menu>
       <EditNameDialog
         dialogState={editNameDialogState}
-        initialName={item.file_name}
+        initialName={name}
         onSubmit={(newFileName) => handleEditMenuClick(item.id, newFileName)}
       />
       <DeleteRowDialog
