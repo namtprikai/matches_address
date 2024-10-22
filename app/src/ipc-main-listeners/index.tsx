@@ -27,10 +27,16 @@ import { deleteResultSheet } from "./delete-result-sheet";
 import { createDummyDataSetResults } from "./create-dummy-data-set-results";
 import { deleteWorkbook } from "./delete-workbook";
 import { fetchAreaGroups } from "./fetch-area-groups";
-import { fetchRawDatasets } from "./fetch-data-set-for-dialog";
 import { updateResultViewsLayoutIndex } from "./update-result-views-layout-index";
+import { selectRawDatasets } from "./select-raw-datasets";
+import { insertRawDatasets } from "./insert-raw-datasets";
+import { saveDatasetFile } from "./save-dataset-file";
+import { selectNormalizedDataSets } from "./select-normalized-datasets";
+import { insertNormalizedDatasets } from "./insert-normalized-datasets";
 import { selectModelFiles } from "./select-model-files";
 import { _debugInsertModelFiles } from "./_debug-insert-model-files";
+import { fetchJobLists } from "./fetch-job-lists";
+import { fetchJobTasks } from "./fetch-job-tasks";
 
 export const ipcMainListeners = {
   helloFromPython,
@@ -55,13 +61,19 @@ export const ipcMainListeners = {
   fetchBuildingsInBatches,
   fetchReferenceDates,
   fetchAreaGroups,
-  fetchRawDatasets,
   createDummyDataSetResults,
   fetchAreasInBatches,
   deleteWorkbook,
   updateResultViewsLayoutIndex,
+  selectRawDatasets,
+  insertRawDatasets,
+  saveDatasetFile,
+  selectNormalizedDataSets,
+  insertNormalizedDatasets,
   selectModelFiles,
   _debugInsertModelFiles,
+  fetchJobLists,
+  fetchJobTasks,
 };
 
 export const execFileAsync = promisify(execFile);
