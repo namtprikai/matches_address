@@ -36,6 +36,7 @@ import { DialogTitle } from "./ui/dialog-title";
 import { DialogContent } from "./ui/dialog-content";
 import { DialogActions } from "./ui/dialog-actions";
 import { Input } from "./ui/input";
+import { SeeAll } from "./ui/see-all";
 
 const useStyles = makeStyles({
   updatedAtHeaderCell: {
@@ -66,6 +67,13 @@ const useStyles = makeStyles({
   alert100: {
     color: "#C4314B",
   },
+  fileName: {
+    width: "220px",
+  },
+  note: {
+    whiteSpace: "pre-wrap",
+    overflowWrap: "break-word",
+  },
   moreVerticalButton: {
     width: "44px",
   },
@@ -88,7 +96,9 @@ export const TableModel = (): JSX.Element => {
     <Table>
       <TableHeader className={styles.tableHeader}>
         <TableRow className={styles.tableHeaderRow}>
-          <TableHeaderCell className={styles.tableHeaderCell}>
+          <TableHeaderCell
+            className={mergeClasses(styles.tableHeaderCell, styles.fileName)}
+          >
             モデル名
           </TableHeaderCell>
           <TableHeaderCell className={styles.tableHeaderCell}>
@@ -183,7 +193,11 @@ const TableRowItem = ({
         </Link>
       </TableCell>
       <TableCell>
-        <Caption1>{item.note}</Caption1>
+        {item.note && (
+          <Caption1 className={styles.note}>
+            <SeeAll content={item.note} />
+          </Caption1>
+        )}
       </TableCell>
       <TableCell>
         <Caption1>{formatDate(item.created_at)}</Caption1>
