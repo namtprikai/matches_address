@@ -6,15 +6,24 @@ import {
   type BetterSQLite3Database,
 } from "drizzle-orm/better-sqlite3";
 
-const isDev = process.env.NODE_ENV === "development";
-const dbDirectory = path.resolve("./database");
-export const dbPath = isDev
-  ? path.join(dbDirectory, "database.db")
-  : path.resolve(process.resourcesPath, "database.db");
+export const dbPath = (() => {
+  const directoryName = "database";
+  const fileName = "database.db";
 
-if (isDev && !existsSync(dbDirectory)) {
-  mkdirSync(dbDirectory, { recursive: true });
-}
+  let result: string;
+  if (process.env.NODE_ENV === "development") {
+    result = path.resolve(directoryName, fileName);
+  } else {
+    result = path.resolve(process.resourcesPath, directoryName, fileName);
+  }
+
+  const directory = path.dirname(result);
+  if (!existsSync(directory)) {
+    mkdirSync(directory, { recursive: true });
+  }
+
+  return result;
+})();
 
 const betterSqlite3 = new Database(dbPath);
 
