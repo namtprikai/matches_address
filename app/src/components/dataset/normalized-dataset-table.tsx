@@ -135,19 +135,21 @@ export function NormalizedDataSetTable({
     );
   };
 
-  // TODO: バックエンド処理
-  const handleDownload = async (e: MouseEvent): Promise<void> => {
-    e.stopPropagation();
+  const handleDownload = async (
+    id: SelectNormalizedDataSet["id"],
+  ): Promise<void> => {
     try {
-      const response = await fetch("/dummy-data.csv");
-      if (!response.ok) {
-        throw new Error("Network response was not ok");
-      }
-      const blob = await response.blob();
-      const url = URL.createObjectURL(blob);
+      const data = await window.ipcRenderer.invoke("selectRawDataset", {
+        id,
+      });
+      if (!data) return;
+      const buffer = await window.ipcRenderer.invoke("readDatasetFile", {
+        fileName: data.file_path,
+      });
+      const url = URL.createObjectURL(new Blob([buffer]));
       const link = document.createElement("a");
       link.href = url;
-      link.download = "dummy-data.csv";
+      link.download = data.file_name;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -199,7 +201,10 @@ export function NormalizedDataSetTable({
                 appearance="subtle"
                 aria-label="ダウンロード"
                 icon={<ArrowDownloadRegular />}
-                onClick={handleDownload}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  void handleDownload(item.id);
+                }}
               />
               <RowMenu item={item} />
             </TableCell>
