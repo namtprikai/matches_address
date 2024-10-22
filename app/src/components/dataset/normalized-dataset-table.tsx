@@ -141,14 +141,14 @@ export function NormalizedDataSetTable({
     id: SelectNormalizedDataSet["id"],
   ): Promise<void> => {
     try {
-      const data = await window.ipcRenderer.invoke("selectRawDataset", {
+      const data = await window.ipcRenderer.invoke("selectNormalizedDataSet", {
         id,
       });
       if (!data) return;
       const buffer = await window.ipcRenderer.invoke("readDatasetFile", {
         fileName: data.file_path,
       });
-      void downloadDataSetFile(buffer, data.file_name);
+      void downloadDataSetFile(buffer, data.file_name || "");
     } catch (error) {
       console.error("Download failed:", error);
       alert("ダウンロードに失敗しました。");
