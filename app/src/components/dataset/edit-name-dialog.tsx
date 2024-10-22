@@ -13,13 +13,9 @@ import { DialogBody } from "../ui/dialog-body";
 import { DialogContent } from "../ui/dialog-content";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
+import { type ReturnUseDialogState } from "../../hooks/use-dialog-state";
 
 const useStyles = makeStyles({
-  menuItemButton: {
-    justifyContent: "flex-start",
-    padding: 0,
-    fontWeight: "normal",
-  },
   input: {
     width: "100%",
   },
@@ -28,13 +24,18 @@ const useStyles = makeStyles({
 interface Props {
   initialName: string | null;
   onSubmit: (newName: string) => void;
+  dialogState: ReturnUseDialogState;
 }
 
-export function EditNameDialog({ initialName, onSubmit }: Props): JSX.Element {
+export function EditNameDialog({
+  initialName,
+  onSubmit,
+  dialogState,
+}: Props): JSX.Element {
   // TODO: 仮の動作確認のためのロジックなのでDBスキーマが決まりしだい修正する
   const styles = useStyles();
   const [newName, setNewName] = useState(initialName);
-  const [open, setOpen] = useState(false);
+  const { isOpen, setIsOpen } = dialogState;
   const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = (): void => {
@@ -43,24 +44,21 @@ export function EditNameDialog({ initialName, onSubmit }: Props): JSX.Element {
       return;
     }
     onSubmit(newName);
-    setOpen(false);
+    setIsOpen(false);
   };
 
   return (
-    <Dialog onOpenChange={(_, data) => setOpen(data.open)} open={open}>
-      <DialogTrigger disableButtonEnhancement>
-        <Button
-          appearance="transparent"
-          className={styles.menuItemButton}
-          onClick={(e) => {
-            e.stopPropagation();
-            setOpen(true);
-          }}
-        >
-          データ名の編集
-        </Button>
-      </DialogTrigger>
-      <DialogSurface aria-describedby={undefined}>
+    <Dialog
+      onOpenChange={(e, data) => {
+        e.stopPropagation();
+        setIsOpen(data.open);
+      }}
+      open={isOpen}
+    >
+      <DialogSurface
+        aria-describedby={undefined}
+        onClick={(e) => e.stopPropagation()}
+      >
         <DialogBody>
           <DialogTitle
             action={

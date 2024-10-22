@@ -9,10 +9,9 @@ import {
   TableRow,
   TableCell,
   Button,
-  mergeClasses,
 } from "@fluentui/react-components";
-
 import { ErrorCircleFilled } from "@fluentui/react-icons";
+import { DialogSaveWithName } from "../../../components/dialog-save-with-name";
 
 const useStyles = makeStyles({
   root: {
@@ -84,11 +83,6 @@ const useStyles = makeStyles({
     height: "32px",
     padding: `5px ${tokens.spacingHorizontalXL}`,
   },
-  saveWithName: {
-    border: 0,
-    backgroundColor: "#09583B",
-    color: "#fff",
-  },
   errorIcon: {
     color: "#6264A7",
   },
@@ -134,11 +128,7 @@ export function JobDetail(): JSX.Element {
         <div className={styles.result}>
           <span className={styles.message}>処理が完了しました。</span>
           <div className={styles.buttonWrapper}>
-            <Button
-              className={mergeClasses(styles.button, styles.saveWithName)}
-            >
-              名前をつけて保存
-            </Button>
+            <DialogSaveWithName />
             <Button className={styles.button}>プレビューを見る</Button>
             <Button className={styles.button}>ダウンロード</Button>
           </div>
