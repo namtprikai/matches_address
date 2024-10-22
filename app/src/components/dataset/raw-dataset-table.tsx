@@ -29,6 +29,7 @@ import {
   type Dispatch,
   type SetStateAction,
 } from "react";
+import { type KeyedMutator } from "swr";
 import { Button } from "../ui/button";
 import { type SelectRawDataSet } from "../../schema";
 import { useFetchRawDatasets } from "../../hooks/use-fetch-raw-datasets";
@@ -73,7 +74,7 @@ export function RawDataSetTable({ onSelectionChange }: Props): JSX.Element {
     createTableColumn<SelectRawDataSet>({ columnId: "date" }),
   ];
   const [selectedRows, setSelectedRows] = useState(new Set<TableRowId>());
-  const { data } = useFetchRawDatasets();
+  const { data, mutate } = useFetchRawDatasets();
 
   const {
     getRows,
@@ -196,7 +197,7 @@ export function RawDataSetTable({ onSelectionChange }: Props): JSX.Element {
                   void handleDownload(item.id);
                 }}
               />
-              <RowMenu item={item} />
+              <RowMenu item={item} mutate={mutate} />
             </TableCell>
           </TableRow>
         ))}
@@ -205,15 +206,29 @@ export function RawDataSetTable({ onSelectionChange }: Props): JSX.Element {
   );
 }
 
-function RowMenu({ item }: { item: SelectRawDataSet }): JSX.Element {
+function RowMenu({
+  item,
+  mutate,
+}: {
+  item: SelectRawDataSet;
+  mutate: KeyedMutator<SelectRawDataSet[]>;
+}): JSX.Element {
   const editNameDialogState = useDialogState(false);
   const deleteDialogState = useDialogState(false);
 
-  const handleEditMenuClick = (
+  const handleEditMenuClick = async (
     id: SelectRawDataSet["id"],
-    newName: SelectRawDataSet["file_name"],
-  ): void => {
-    // TODO: バックエンド処理
+    newFileName: SelectRawDataSet["file_name"],
+  ): Promise<void> => {
+    await window.ipcRenderer.invoke("updateRawDataset", {
+      id,
+      fileName: newFileName,
+    });
+    void mutate(
+      (data) =>
+        data?.map((d) => (d.id === id ? { ...d, file_name: newFileName } : d)),
+      false, // すでにDBと同期が取れているので、再検証は不要（false）
+    );
   };
 
   const handleDeleteMenuClick = (id: SelectRawDataSet["id"]): void => {
@@ -253,7 +268,7 @@ function RowMenu({ item }: { item: SelectRawDataSet }): JSX.Element {
       <EditNameDialog
         dialogState={editNameDialogState}
         initialName={item.file_name}
-        onSubmit={(newName) => handleEditMenuClick(item.id, newName)}
+        onSubmit={(newFileName) => handleEditMenuClick(item.id, newFileName)}
       />
       <DeleteRowDialog
         dialogState={deleteDialogState}

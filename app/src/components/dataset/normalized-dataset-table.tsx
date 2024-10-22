@@ -29,6 +29,7 @@ import {
   type KeyboardEvent,
   useState,
 } from "react";
+import { type KeyedMutator } from "swr";
 import { Button } from "../ui/button";
 import { type SelectNormalizedDataSet } from "../../schema";
 import { useFetchNormalizedDatasets } from "../../hooks/use-fetch-normalized-datasets";
@@ -75,7 +76,7 @@ export function NormalizedDataSetTable({
     createTableColumn<SelectNormalizedDataSet>({ columnId: "date" }),
   ];
   const [selectedRows, setSelectedRows] = useState(new Set<TableRowId>());
-  const { data } = useFetchNormalizedDatasets();
+  const { data, mutate } = useFetchNormalizedDatasets();
 
   const {
     getRows,
@@ -200,7 +201,7 @@ export function NormalizedDataSetTable({
                   void handleDownload(item.id);
                 }}
               />
-              <RowMenu item={item} />
+              <RowMenu item={item} mutate={mutate} />
             </TableCell>
           </TableRow>
         ))}
@@ -209,15 +210,29 @@ export function NormalizedDataSetTable({
   );
 }
 
-function RowMenu({ item }: { item: SelectNormalizedDataSet }): JSX.Element {
+function RowMenu({
+  item,
+  mutate,
+}: {
+  item: SelectNormalizedDataSet;
+  mutate: KeyedMutator<SelectNormalizedDataSet[]>;
+}): JSX.Element {
   const editNameDialogState = useDialogState(false);
   const deleteDialogState = useDialogState(false);
 
-  const handleEditMenuClick = (
+  const handleEditMenuClick = async (
     id: SelectNormalizedDataSet["id"],
-    newName: SelectNormalizedDataSet["file_name"],
-  ): void => {
-    // TODO: バックエンド処理
+    newFileName: SelectNormalizedDataSet["file_name"],
+  ): Promise<void> => {
+    await window.ipcRenderer.invoke("updateNormalizedDataset", {
+      id,
+      fileName: newFileName,
+    });
+    void mutate(
+      (data) =>
+        data?.map((d) => (d.id === id ? { ...d, file_name: newFileName } : d)),
+      false, // すでにDBと同期が取れているので、再検証は不要（false）
+    );
   };
 
   const handleDeleteMenuClick = (id: SelectNormalizedDataSet["id"]): void => {
@@ -257,7 +272,7 @@ function RowMenu({ item }: { item: SelectNormalizedDataSet }): JSX.Element {
       <EditNameDialog
         dialogState={editNameDialogState}
         initialName={item.file_name}
-        onSubmit={(newName) => handleEditMenuClick(item.id, newName)}
+        onSubmit={(newFileName) => handleEditMenuClick(item.id, newFileName)}
       />
       <DeleteRowDialog
         dialogState={deleteDialogState}

@@ -39,6 +39,9 @@ import { selectDataSetResult } from "./select-data-set-result";
 import { readDatasetFile } from "./read-dataset-file";
 import { selectModelFiles } from "./select-model-files";
 import { _debugInsertModelFiles } from "./_debug-insert-model-files";
+import { updateRawDataset } from "./update-raw-dataset";
+import { updateNormalizedDataset } from "./update-normalized-dataset";
+import { updateDataSetResult } from "./update-data-set-result";
 
 export const ipcMainListeners = {
   helloFromPython,
@@ -78,6 +81,9 @@ export const ipcMainListeners = {
   readDatasetFile,
   selectModelFiles,
   _debugInsertModelFiles,
+  updateRawDataset,
+  updateNormalizedDataset,
+  updateDataSetResult,
 };
 
 export const execFileAsync = promisify(execFile);
