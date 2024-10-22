@@ -112,17 +112,6 @@ export function RawDataSetTable({ onSelectionChange }: Props): JSX.Element {
             : [...prev, row.item.id],
         );
       },
-      onKeyDown: (e: KeyboardEvent) => {
-        if (e.key === " ") {
-          e.preventDefault();
-          toggleRow(e, row.rowId);
-          onSelectionChange((prev) =>
-            selected
-              ? prev.filter((id) => id !== row.item.id)
-              : [...prev, row.item.id],
-          );
-        }
-      },
       selected,
       appearance: selected ? ("brand" as const) : ("none" as const),
     };
