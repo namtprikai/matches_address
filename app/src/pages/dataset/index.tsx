@@ -19,6 +19,7 @@ import {
 } from "../../schema";
 import { useFetchRawDatasets } from "../../hooks/use-fetch-raw-datasets";
 import { useFetchNormalizedDatasets } from "../../hooks/use-fetch-normalized-datasets";
+import { saveDataSetFile } from "../../utils/save-data-set-file";
 
 const useStyles = makeStyles({
   root: {
@@ -66,12 +67,12 @@ const useStyles = makeStyles({
   },
 });
 
-const TAB_VALUES = ["seed", "normalization", "result"] as const;
+const TAB_VALUES = ["raw", "normalization", "result"] as const;
 type TabValue = (typeof TAB_VALUES)[number];
 
 export function Dataset(): JSX.Element {
   const styles = useStyles();
-  const initialTabValue: TabValue = "seed";
+  const initialTabValue: TabValue = "raw";
   const { onTabSelect, selectedValue } = useTabs<TabValue>(initialTabValue);
   const [selectedItemIds, setSelectedItemIds] = useState<number[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -80,8 +81,13 @@ export function Dataset(): JSX.Element {
     fileInputRef.current?.click();
   };
 
-  const handleUpload = (e: ChangeEvent<HTMLInputElement>): void => {
-    // TODO: バックエンド処理
+  const handleUpload = async (
+    e: ChangeEvent<HTMLInputElement>,
+  ): Promise<void> => {
+    const file = e.target.files?.[0];
+    void saveDataSetFile(file);
+    void mutateRaw();
+    e.target.value = ""; // ファイル選択をリセットする
   };
 
   // TODO: バックエンド処理
@@ -136,7 +142,7 @@ export function Dataset(): JSX.Element {
             <Tab key={value} value={value}>
               {
                 {
-                  seed: "シードデータ",
+                  raw: "シードデータ",
                   normalization: "正規化済データ",
                   result: "空き家判定結果データ",
                 }[value]
@@ -150,20 +156,26 @@ export function Dataset(): JSX.Element {
       </div>
       <Card className={styles.content}>
         <div className={styles.actions}>
-          <input
-            ref={fileInputRef}
-            onChange={handleUpload}
-            style={{ display: "none" }}
-            type="file"
-          />
-          <Button
-            appearance="outline"
-            className={styles.uploadButton}
-            onClick={handleUploadButtonClick}
-          >
-            <AddRegular />
-            新規アップロード
-          </Button>
+          <div>
+            {selectedValue === "raw" ? (
+              <>
+                <input
+                  ref={fileInputRef}
+                  onChange={handleUpload}
+                  style={{ display: "none" }}
+                  type="file"
+                />
+                <Button
+                  appearance="outline"
+                  className={styles.uploadButton}
+                  onClick={handleUploadButtonClick}
+                >
+                  <AddRegular />
+                  新規アップロード
+                </Button>
+              </>
+            ) : null}
+          </div>
           <div>
             <span>{selectedItemIds.length}件選択中</span>
             <Button
@@ -182,7 +194,7 @@ export function Dataset(): JSX.Element {
         <div className={styles.datasetList}>
           {
             {
-              seed: <RawDataSetTable onSelectionChange={setSelectedItemIds} />,
+              raw: <RawDataSetTable onSelectionChange={setSelectedItemIds} />,
               normalization: (
                 <NormalizedDataSetTable
                   onSelectionChange={setSelectedItemIds}
