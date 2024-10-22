@@ -5,6 +5,7 @@ import {
   Radio,
   RadioGroup,
   Slider,
+  tokens,
 } from "@fluentui/react-components";
 import { useController, useForm } from "react-hook-form";
 import { type NormalizationParameters } from "../@types/normalization";
@@ -41,6 +42,14 @@ const useStyles = makeStyles({
         background: "none",
       },
     },
+  },
+  dialogContent: {
+    padding: 0,
+    borderTop: "1px solid #e0e0e0",
+  },
+  formSection: {
+    padding: `${tokens.spacingHorizontalL} ${tokens.spacingVerticalXXL}`,
+    borderBottom: "1px solid #e0e0e0",
   },
 });
 
@@ -100,60 +109,76 @@ export const FormNormalizationAdvancedSettings = ({
       open={isOpen}
     >
       <DialogTrigger>
-        <button>高度な設定</button>
+        <Button appearance="transparent">高度な設定を変更</Button>
       </DialogTrigger>
       <DialogSurface>
         <DialogBody>
           <DialogTitle>高度な設定の変更</DialogTitle>
-          <DialogContent>
-            <Field className={styles.field} label={"N-gram Size"}>
-              <RadioGroup
-                layout="horizontal"
-                onChange={nGramSizeField.onChange}
-                value={nGramSizeField.value.toString()}
-              >
-                <Radio label={1} value={"1"} />
-                <Radio label={2} value={"2"} />
-                <Radio label={3} value={"3"} />
-              </RadioGroup>
-            </Field>
-            <Field className={styles.field} label={"Similarity Threshold"}>
-              <div className={styles.sliderWrapper}>
-                <Input
-                  ref={similarityThresholdField.ref}
-                  max={1}
-                  min={0}
-                  onChange={similarityThresholdField.onChange}
-                  step={0.01}
-                  type="number"
-                  value={similarityThresholdField.value.toString()}
-                />
-                <Slider
-                  ref={similarityThresholdField.ref}
-                  className={styles.slider}
-                  max={1}
-                  min={0}
-                  onChange={similarityThresholdField.onChange}
-                  step={0.01}
-                  value={similarityThresholdField.value}
-                />
-              </div>
-            </Field>
-            <Field className={styles.field} label={"結合方式"}>
-              <RadioGroup
-                layout="horizontal"
-                onChange={joiningMethodField.onChange}
-                value={joiningMethodField.value}
-              >
-                <Radio label={"交差結合"} value={"intersection"} />
-                <Radio label={"最近傍結合"} value={"nearest"} />
-              </RadioGroup>
-            </Field>
+          <DialogContent className={styles.dialogContent}>
+            <div className={styles.formSection}>
+              <h4>テキストマッチング</h4>
+              <Field className={styles.field} label={"N-gram Size"}>
+                <RadioGroup
+                  layout="horizontal"
+                  onChange={nGramSizeField.onChange}
+                  value={nGramSizeField.value.toString()}
+                >
+                  <Radio label={1} value={"1"} />
+                  <Radio label={2} value={"2"} />
+                  <Radio label={3} value={"3"} />
+                </RadioGroup>
+              </Field>
+              <Field className={styles.field} label={"Similarity Threshold"}>
+                <div className={styles.sliderWrapper}>
+                  <Input
+                    ref={similarityThresholdField.ref}
+                    max={1}
+                    min={0}
+                    onChange={similarityThresholdField.onChange}
+                    step={0.01}
+                    type="number"
+                    value={similarityThresholdField.value.toString()}
+                  />
+                  <Slider
+                    ref={similarityThresholdField.ref}
+                    className={styles.slider}
+                    max={1}
+                    min={0}
+                    onChange={similarityThresholdField.onChange}
+                    step={0.01}
+                    value={similarityThresholdField.value}
+                  />
+                </div>
+              </Field>
+            </div>
+            <div className={styles.formSection}>
+              <h4>空間結合</h4>
+              <Field className={styles.field} label={"結合方式"}>
+                <RadioGroup
+                  layout="horizontal"
+                  onChange={joiningMethodField.onChange}
+                  value={joiningMethodField.value}
+                >
+                  <Radio label={"交差結合"} value={"intersection"} />
+                  <Radio label={"最近傍結合"} value={"nearest"} />
+                </RadioGroup>
+              </Field>
+            </div>
           </DialogContent>
-          <DialogActions>
-            <Button onClick={setDefaultValue}>デフォルトに戻す</Button>
+          <DialogActions position="start">
+            <Button
+              appearance="transparent"
+              onClick={setDefaultValue}
+              size="medium"
+            >
+              デフォルトに戻す
+            </Button>
+          </DialogActions>
+          <DialogActions position="end">
             <DialogTrigger disableButtonEnhancement>
-              <Button onClick={onSubmit}>変更</Button>
+              <Button appearance="primary" onClick={onSubmit}>
+                変更
+              </Button>
             </DialogTrigger>
           </DialogActions>
         </DialogBody>

@@ -6,6 +6,7 @@ import {
   tokens,
 } from "@fluentui/react-components";
 import { forwardRef } from "react";
+import { THEME_COLORS } from "../../config/theme-colors";
 
 const useStyles = makeStyles({
   small: {
@@ -21,6 +22,16 @@ const useStyles = makeStyles({
   },
   primary: {
     border: "none",
+  },
+  text: {
+    padding: 0,
+    border: "none",
+    backgroundColor: "transparent",
+    color: THEME_COLORS.primary,
+    textDecoration: "underline",
+    minWidth: "auto",
+    fontWeight: tokens.fontWeightMedium,
+    lineHeight: "30px",
   },
   secondary: {
     backgroundColor: tokens.colorNeutralForeground2,
@@ -69,6 +80,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
           size === "medium" && styles.medium,
           appearance === "primary" && styles.primary,
           appearance === "secondary" && styles.secondary,
+          appearance === "transparent" && styles.text,
           // iconのみのButtonの場合にiconが綺麗に表示されるようにする
           icon != null &&
             children == null &&

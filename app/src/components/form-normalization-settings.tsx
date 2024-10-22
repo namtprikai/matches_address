@@ -3,6 +3,7 @@ import {
   makeStyles,
   Radio,
   RadioGroup,
+  tokens,
 } from "@fluentui/react-components";
 import { type NormalizationParameters } from "../@types/normalization";
 import { LanguageMap } from "../metadata";
@@ -15,6 +16,15 @@ const useStyles = makeStyles({
     display: "flex",
     alignItems: "center",
     gap: "24px",
+  },
+  cardSurface: {
+    padding: `${tokens.spacingHorizontalXL} ${tokens.spacingVerticalXL}`,
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "flex-start",
+  },
+  cardTitle: {
+    fontSize: tokens.fontSizeBase400,
   },
 });
 
@@ -30,8 +40,8 @@ export const FormNormalizationSettings = ({
   const styles = useStyles();
 
   return (
-    <Card>
-      <p>設定値の変更</p>
+    <Card className={styles.cardSurface}>
+      <h3 className={styles.cardTitle}>設定値の変更</h3>
       <div className={styles.basicFields}>
         <Field
           label={LanguageMap.NORMALIZATION_PARAMETER_LABEL["referenceDate"]}
