@@ -3,16 +3,15 @@ import { data_set_results, type SelectDataSetResult } from "../schema";
 import { db } from "../utils/db";
 import { type IpcMainListener } from ".";
 
-export const selectDataSetResults = (async (
+export const selectDataSetResult = (async (
   _: unknown,
-  dataSetResultId?: number,
-): Promise<SelectDataSetResult[]> => {
-  const all = await db
+  options?: { id: number },
+): Promise<SelectDataSetResult | undefined> => {
+  const data = await db
     .select()
     .from(data_set_results)
-    .where(
-      dataSetResultId ? eq(data_set_results.id, dataSetResultId) : undefined,
-    );
+    .where(options?.id ? eq(data_set_results.id, options.id) : undefined)
+    .get();
 
-  return all;
+  return data;
 }) satisfies IpcMainListener;

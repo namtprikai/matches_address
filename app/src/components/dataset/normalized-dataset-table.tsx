@@ -187,7 +187,11 @@ export function NormalizedDataSetTable({
               checked={selected}
             />
             <TableCell>
-              <DataPreviewDialog datasetName={item.file_name} />
+              <DataPreviewDialog
+                datasetName={item.file_name}
+                id={item.id}
+                type="normalized"
+              />
             </TableCell>
             <TableCell>{formatDate(item.updated_at, "YYYY/MM/DD")}</TableCell>
             <TableCell className={styles.actions}>
