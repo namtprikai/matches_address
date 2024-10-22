@@ -1,6 +1,10 @@
 /**
+ * WIP
+ * この型定義は検討途中のものであり、最終的な型定義ではないです
+ *
  * Parameterの命名については以下資料参照
- * https://www.notion.so/eukarya/10-16-MB-9807c808cea74b0cbbad3ed701ed38cb?pvs=4
+ * https://www.notion.so/eukarya/10-16-MB-9807c808cea74b0cbbad3
+ * ed701ed38cb?pvs=4
  *
  * TODO: 要件定義資料ないしは他の公開資料に上記資料を置き換える
  */
