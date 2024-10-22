@@ -1,6 +1,6 @@
 import { makeStyles, tokens } from "@fluentui/react-components";
 import { useFieldArray, useFormContext } from "react-hook-form";
-import { lazy, Suspense } from "react";
+import { Suspense } from "react";
 import { type EditResultViewFormType } from "../../@types/form-schema";
 import { TILE_VIEW_CONFIG } from "../../config/tile-view-config";
 import { type SelectResultView } from "../../schema";
