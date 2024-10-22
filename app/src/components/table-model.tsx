@@ -240,6 +240,7 @@ const TableRowItem = ({
           onSubmit={async (name) => {
             await editModelFileName(item.id, name);
             mutate();
+            editModelFileNameDialogState.setIsOpen(false);
           }}
         />
         <EditNoteDialog
@@ -248,6 +249,7 @@ const TableRowItem = ({
           onSubmit={async (note) => {
             await editModelNote(item.id, note);
             mutate();
+            editNoteDialogState.setIsOpen(false);
           }}
         />
         <DeleteMenuWithDialog
@@ -255,6 +257,7 @@ const TableRowItem = ({
           onDelete={async () => {
             await deleteModelFile(item.id);
             mutate();
+            deleteDialogState.setIsOpen(false);
           }}
         />
       </TableCell>
