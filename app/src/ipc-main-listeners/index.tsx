@@ -30,9 +30,13 @@ import { fetchAreaGroups } from "./fetch-area-groups";
 import { updateResultViewsLayoutIndex } from "./update-result-views-layout-index";
 import { selectRawDatasets } from "./select-raw-datasets";
 import { insertRawDatasets } from "./insert-raw-datasets";
-import { saveDatasetFile } from "./save-dataset-file";
+import { writeDatasetFile } from "./write-dataset-file";
 import { selectNormalizedDataSets } from "./select-normalized-datasets";
 import { insertNormalizedDatasets } from "./insert-normalized-datasets";
+import { selectRawDataset } from "./select-raw-dataset";
+import { selectNormalizedDataSet } from "./select-normalized-dataset";
+import { selectDataSetResult } from "./select-data-set-result";
+import { readDatasetFile } from "./read-dataset-file";
 import { selectModelFiles } from "./select-model-files";
 import { _debugInsertModelFiles } from "./_debug-insert-model-files";
 import { fetchJobLists } from "./fetch-job-lists";
@@ -67,9 +71,13 @@ export const ipcMainListeners = {
   updateResultViewsLayoutIndex,
   selectRawDatasets,
   insertRawDatasets,
-  saveDatasetFile,
+  writeDatasetFile,
   selectNormalizedDataSets,
   insertNormalizedDatasets,
+  selectRawDataset,
+  selectNormalizedDataSet,
+  selectDataSetResult,
+  readDatasetFile,
   selectModelFiles,
   _debugInsertModelFiles,
   fetchJobLists,

@@ -185,7 +185,11 @@ export function RawDataSetTable({ onSelectionChange }: Props): JSX.Element {
               checked={selected}
             />
             <TableCell>
-              <DataPreviewDialog datasetName={item.file_name} />
+              <DataPreviewDialog
+                datasetName={item.file_name}
+                id={item.id}
+                type="raw"
+              />
             </TableCell>
             <TableCell>{formatDate(item.updated_at, "YYYY/MM/DD")}</TableCell>
             <TableCell className={styles.actions}>
