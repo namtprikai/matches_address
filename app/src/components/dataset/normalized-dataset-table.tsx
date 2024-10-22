@@ -220,7 +220,7 @@ function RowMenu({
   const editNameDialogState = useDialogState(false);
   const deleteDialogState = useDialogState(false);
 
-  const handleEditMenuClick = async (
+  const handleEditName = async (
     id: SelectNormalizedDataSet["id"],
     newFileName: SelectNormalizedDataSet["file_name"],
   ): Promise<void> => {
@@ -235,8 +235,13 @@ function RowMenu({
     );
   };
 
-  const handleDeleteMenuClick = (id: SelectNormalizedDataSet["id"]): void => {
-    // TODO: バックエンド処理
+  const handleDelete = async (
+    id: SelectNormalizedDataSet["id"],
+  ): Promise<void> => {
+    await window.ipcRenderer.invoke("deleteNormalizedDataset", {
+      id,
+    });
+    void mutate((data) => data?.filter((d) => d.id !== id), false);
   };
 
   return (
@@ -272,11 +277,11 @@ function RowMenu({
       <EditNameDialog
         dialogState={editNameDialogState}
         initialName={item.file_name}
-        onSubmit={(newFileName) => handleEditMenuClick(item.id, newFileName)}
+        onSubmit={(newFileName) => handleEditName(item.id, newFileName)}
       />
       <DeleteRowDialog
         dialogState={deleteDialogState}
-        onDelete={() => handleDeleteMenuClick(item.id)}
+        onDelete={() => handleDelete(item.id)}
       />
     </>
   );
