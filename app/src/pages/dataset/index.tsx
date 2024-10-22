@@ -11,13 +11,14 @@ import { useTabs } from "../../hooks/use-tabs";
 import { DeleteRowsDialog } from "../../components/dataset/delete-rows-dialog";
 import { Button } from "../../components/ui/button";
 import { RawDataSetTable } from "../../components/dataset/raw-dataset-table";
-import {
-  NormalizedDataSetTable,
-  type Dataset,
-} from "../../components/dataset/normalized-dataset-table";
+import { NormalizedDataSetTable } from "../../components/dataset/normalized-dataset-table";
 import { ResultDataSetTable } from "../../components/dataset/result-dataset-table";
-import { type InsertRawDataSet } from "../../schema";
+import {
+  type InsertNormalizedDataSet,
+  type InsertRawDataSet,
+} from "../../schema";
 import { useFetchRawDatasets } from "../../hooks/use-fetch-raw-datasets";
+import { useFetchNormalizedDatasets } from "../../hooks/use-fetch-normalized-datasets";
 
 const useStyles = makeStyles({
   root: {
@@ -72,9 +73,8 @@ export function Dataset(): JSX.Element {
   const styles = useStyles();
   const initialTabValue: TabValue = "seed";
   const { onTabSelect, selectedValue } = useTabs<TabValue>(initialTabValue);
-  const [selectedItemIds, setSelectedItemIds] = useState<Dataset["id"][]>([]);
+  const [selectedItemIds, setSelectedItemIds] = useState<number[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const { mutate } = useFetchRawDatasets();
 
   const handleUploadButtonClick = (): void => {
     fileInputRef.current?.click();
@@ -111,23 +111,17 @@ export function Dataset(): JSX.Element {
     setSelectedItemIds([]);
   };
 
-  const handleEditItem = (
-    id: Dataset["id"],
-    newName: Dataset["name"],
-  ): void => {
-    // TODO: バックエンド処理
-  };
-
-  const handleDeleteItem = (id: Dataset["id"]): void => {
-    // TODO: バックエンド処理
-  };
-
+  const { mutate: mutateRaw } = useFetchRawDatasets();
+  const { mutate: mutateNormalized } = useFetchNormalizedDatasets();
   async function _handleAddDummyDataSets(): Promise<void> {
-    void Promise.all(
-      _dummyRawDataSets.map((seed) =>
-        window.ipcRenderer.invoke("insertRawDatasets", seed),
-      ),
-    ).then(() => mutate());
+    for (const seed of _dummyRawDataSets) {
+      await window.ipcRenderer.invoke("insertRawDatasets", seed);
+    }
+    for (const normalized of _dummyNormalizedDataSets) {
+      await window.ipcRenderer.invoke("insertNormalizedDatasets", normalized);
+    }
+    void mutateRaw();
+    void mutateNormalized();
   }
 
   return (
@@ -191,17 +185,11 @@ export function Dataset(): JSX.Element {
               seed: <RawDataSetTable onSelectionChange={setSelectedItemIds} />,
               normalization: (
                 <NormalizedDataSetTable
-                  onDelete={handleDeleteItem}
                   onSelectionChange={setSelectedItemIds}
-                  onSubmit={handleEditItem}
                 />
               ),
               result: (
-                <ResultDataSetTable
-                  onDelete={handleDeleteItem}
-                  onSelectionChange={setSelectedItemIds}
-                  onSubmit={handleEditItem}
-                />
+                <ResultDataSetTable onSelectionChange={setSelectedItemIds} />
               ),
             }[selectedValue]
           }
@@ -235,5 +223,38 @@ const _dummyRawDataSets: InsertRawDataSet[] = [
   {
     file_name: "水道メーター2.shp",
     file_path: "dummy-data.csv",
+  },
+];
+
+const _dummyNormalizedDataSets: InsertNormalizedDataSet[] = [
+  {
+    file_name: "正規化済みデータ",
+    file_path: "dummy-data.csv",
+    job_results_id: 1,
+  },
+  {
+    file_name: "水道メーター1.shp",
+    file_path: "dummy-data.csv",
+    job_results_id: 2,
+  },
+  {
+    file_name: "前処理住民台帳1.csv",
+    file_path: "dummy-data.csv",
+    job_results_id: 3,
+  },
+  {
+    file_name: "前処理住民台帳2.csv",
+    file_path: "dummy-data.csv",
+    job_results_id: 4,
+  },
+  {
+    file_name: "前処理住民台帳3.csv",
+    file_path: "dummy-data.csv",
+    job_results_id: 5,
+  },
+  {
+    file_name: "水道メーター2.shp",
+    file_path: "dummy-data.csv",
+    job_results_id: 6,
   },
 ];

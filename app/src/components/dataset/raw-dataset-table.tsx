@@ -26,13 +26,13 @@ import {
   type MouseEvent,
   type KeyboardEvent,
   useState,
-  useEffect,
   type Dispatch,
   type SetStateAction,
 } from "react";
 import { Button } from "../ui/button";
 import { type SelectRawDataSet } from "../../schema";
 import { useFetchRawDatasets } from "../../hooks/use-fetch-raw-datasets";
+import { formatDate } from "../../utils/format-date";
 import { useDialogState } from "../../hooks/use-dialog-state";
 import { DataPreviewDialog } from "./data-preview-dialog";
 import { EditNameDialog } from "./edit-name-dialog";
@@ -68,18 +68,11 @@ type Props = {
 export function RawDataSetTable({ onSelectionChange }: Props): JSX.Element {
   const styles = useStyles();
   const columns = [
-    createTableColumn<SelectRawDataSet>({ columnId: "file_name" }),
-    createTableColumn<SelectRawDataSet>({ columnId: "updated_at" }),
+    createTableColumn<SelectRawDataSet>({ columnId: "name" }),
+    createTableColumn<SelectRawDataSet>({ columnId: "date" }),
   ];
   const [selectedRows, setSelectedRows] = useState(new Set<TableRowId>());
   const { data } = useFetchRawDatasets();
-
-  useEffect(
-    function resetSelection() {
-      setSelectedRows(new Set());
-    },
-    [data],
-  );
 
   const {
     getRows,
@@ -194,7 +187,7 @@ export function RawDataSetTable({ onSelectionChange }: Props): JSX.Element {
             <TableCell>
               <DataPreviewDialog datasetName={item.file_name} />
             </TableCell>
-            <TableCell>{item.updated_at}</TableCell>
+            <TableCell>{formatDate(item.updated_at, "YYYY/MM/DD")}</TableCell>
             <TableCell className={styles.actions}>
               <Button
                 appearance="subtle"

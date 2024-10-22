@@ -22,7 +22,7 @@ const useStyles = makeStyles({
 });
 
 interface Props {
-  initialName: string;
+  initialName: string | null;
   onSubmit: (newName: string) => void;
   dialogState: ReturnUseDialogState;
 }
@@ -36,8 +36,13 @@ export function EditNameDialog({
   const styles = useStyles();
   const [newName, setNewName] = useState(initialName);
   const { isOpen, setIsOpen } = dialogState;
+  const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = (): void => {
+    if (!newName) {
+      setError("データ名を入力してください");
+      return;
+    }
     onSubmit(newName);
     setIsOpen(false);
   };
@@ -76,9 +81,13 @@ export function EditNameDialog({
           <DialogContent>
             <Input
               className={styles.input}
-              onChange={(e) => setNewName(e.target.value)}
-              value={newName}
+              onChange={(e) => {
+                setNewName(e.target.value);
+                setError(null);
+              }}
+              value={newName || ""}
             />
+            {error && <div>{error}</div>}
           </DialogContent>
           <DialogActions>
             <Button appearance="primary" onClick={handleSubmit} size="medium">

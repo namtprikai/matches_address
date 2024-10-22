@@ -69,7 +69,7 @@ const useStyles = makeStyles({
 type CSVRow = Record<string, string>;
 
 interface Props {
-  datasetName: string;
+  datasetName: string | null;
 }
 
 export function DataPreviewDialog({ datasetName }: Props): JSX.Element {

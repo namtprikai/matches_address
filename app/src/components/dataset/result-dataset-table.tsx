@@ -28,9 +28,11 @@ import {
   type MouseEvent,
   type KeyboardEvent,
   useState,
-  useEffect,
 } from "react";
 import { Button } from "../ui/button";
+import { useFetchDataSetResults } from "../../hooks/use-fetch-data-set-results";
+import { type SelectDataSetResult } from "../../schema";
+import { formatDate } from "../../utils/format-date";
 import { useDialogState } from "../../hooks/use-dialog-state";
 import { DataPreviewDialog } from "./data-preview-dialog";
 import { EditNameDialog } from "./edit-name-dialog";
@@ -59,37 +61,20 @@ const useStyles = makeStyles({
   },
 });
 
-export type Dataset = {
-  id: number;
-  name: string;
-  date: string;
-};
-
 export type DatasetListProps = {
-  onSelectionChange: Dispatch<SetStateAction<Dataset["id"][]>>;
-  onSubmit: (id: Dataset["id"], newName: string) => void;
-  onDelete: (id: Dataset["id"]) => void;
+  onSelectionChange: Dispatch<SetStateAction<SelectDataSetResult["id"][]>>;
 };
 
 export function ResultDataSetTable({
   onSelectionChange,
-  onSubmit,
-  onDelete,
 }: DatasetListProps): JSX.Element {
   const styles = useStyles();
   const columns = [
-    createTableColumn<Dataset>({ columnId: "name" }),
-    createTableColumn<Dataset>({ columnId: "date" }),
+    createTableColumn<SelectDataSetResult>({ columnId: "name" }),
+    createTableColumn<SelectDataSetResult>({ columnId: "date" }),
   ];
   const [selectedRows, setSelectedRows] = useState(new Set<TableRowId>());
-  const datasets: Dataset[] = _dummyDataSetResults;
-
-  useEffect(
-    function resetSelection() {
-      setSelectedRows(new Set());
-    },
-    [datasets],
-  );
+  const { data } = useFetchDataSetResults();
 
   const {
     getRows,
@@ -103,7 +88,7 @@ export function ResultDataSetTable({
   } = useTableFeatures(
     {
       columns,
-      items: datasets,
+      items: data || [],
     },
     [
       useTableSelection({
@@ -146,7 +131,7 @@ export function ResultDataSetTable({
   const handleToggleAll = (e: MouseEvent): void => {
     toggleAllRows(e);
     onSelectionChange(() =>
-      allRowsSelected ? [] : datasets.map((dataset) => dataset.id),
+      allRowsSelected ? [] : data?.map((dataset) => dataset.id) || [],
     );
   };
 
@@ -202,9 +187,9 @@ export function ResultDataSetTable({
               checked={selected}
             />
             <TableCell>
-              <DataPreviewDialog datasetName={item.name} />
+              <DataPreviewDialog datasetName={item.title} />
             </TableCell>
-            <TableCell>{item.date}</TableCell>
+            <TableCell>{formatDate(item.updated_at, "YYYY/MM/DD")}</TableCell>
             <TableCell className={styles.actions}>
               <Button
                 appearance="subtle"
@@ -221,18 +206,18 @@ export function ResultDataSetTable({
   );
 }
 
-function RowMenu({ item }: { item: Dataset }): JSX.Element {
+function RowMenu({ item }: { item: SelectDataSetResult }): JSX.Element {
   const editNameDialogState = useDialogState(false);
   const deleteDialogState = useDialogState(false);
 
   const handleEditMenuClick = (
-    id: Dataset["id"],
-    newName: Dataset["name"],
+    id: SelectDataSetResult["id"],
+    newName: SelectDataSetResult["title"],
   ): void => {
     // TODO: バックエンド処理
   };
 
-  const handleDeleteMenuClick = (id: Dataset["id"]): void => {
+  const handleDeleteMenuClick = (id: SelectDataSetResult["id"]): void => {
     // TODO: バックエンド処理
   };
 
@@ -268,7 +253,7 @@ function RowMenu({ item }: { item: Dataset }): JSX.Element {
       </Menu>
       <EditNameDialog
         dialogState={editNameDialogState}
-        initialName={item.name}
+        initialName={item.title}
         onSubmit={(newName) => handleEditMenuClick(item.id, newName)}
       />
       <DeleteRowDialog
@@ -278,12 +263,3 @@ function RowMenu({ item }: { item: Dataset }): JSX.Element {
     </>
   );
 }
-
-const _dummyDataSetResults: Dataset[] = [
-  { id: 1, name: "空き家判定結果データ", date: "2024/4/21" },
-  { id: 2, name: "水道メーター1.shp", date: "2024/4/21" },
-  { id: 3, name: "前処理住民台帳1.csv", date: "2024/4/21" },
-  { id: 4, name: "前処理住民台帳2.csv", date: "2024/4/21" },
-  { id: 5, name: "前処理住民台帳3.csv", date: "2024/4/21" },
-  { id: 6, name: "水道メーター2.shp", date: "2024/4/21" },
-];
