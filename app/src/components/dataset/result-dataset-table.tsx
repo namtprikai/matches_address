@@ -17,6 +17,11 @@ import {
   type TableRowId,
   createTableColumn,
   TableSelectionCell,
+  Dialog,
+  Field,
+  Radio,
+  RadioGroup,
+  DialogTrigger,
 } from "@fluentui/react-components";
 import {
   ArrowDownloadRegular,
@@ -27,6 +32,7 @@ import {
   type SetStateAction,
   type MouseEvent,
   useState,
+  type ReactElement,
 } from "react";
 import { type KeyedMutator } from "swr";
 import { Button } from "../ui/button";
@@ -34,8 +40,13 @@ import { useFetchDataSetResults } from "../../hooks/use-fetch-data-set-results";
 import { type SelectDataSetResult } from "../../schema";
 import { formatDate } from "../../utils/format-date";
 import { useDialogState } from "../../hooks/use-dialog-state";
-import { EditNameDialog } from "./edit-name-dialog";
+import { DialogBody } from "../ui/dialog-body";
+import { DialogTitle } from "../ui/dialog-title";
+import { DialogContent } from "../ui/dialog-content";
+import { DialogActions } from "../ui/dialog-actions";
+import { DialogSurface } from "../ui/dialog-surface";
 import { DeleteRowDialog } from "./delete-row-dialog";
+import { EditNameDialog } from "./edit-name-dialog";
 
 const useStyles = makeStyles({
   tableHeader: {
@@ -58,7 +69,13 @@ const useStyles = makeStyles({
   input: {
     width: "100%",
   },
+  radioGroup: {
+    marginTop: tokens.spacingVerticalM,
+    marginLeft: "-8px",
+  },
 });
+
+type Unit = "building" | "area";
 
 type Props = {
   onSelectionChange: Dispatch<SetStateAction<SelectDataSetResult["id"][]>>;
@@ -183,11 +200,17 @@ export function ResultDataSetTable({ onSelectionChange }: Props): JSX.Element {
             </TableCell>
             <TableCell>{formatDate(item.updated_at, "YYYY/MM/DD")}</TableCell>
             <TableCell className={styles.actions}>
-              <Button
-                appearance="subtle"
-                aria-label="ダウンロード"
-                icon={<ArrowDownloadRegular />}
-                onClick={handleDownload}
+              <SelectUnitDialog
+                buttonText="ダウンロード"
+                title="データのダウンロード"
+                triggerComponent={
+                  <Button
+                    appearance="subtle"
+                    aria-label="ダウンロード"
+                    icon={<ArrowDownloadRegular />}
+                    onClick={(e) => e.stopPropagation()}
+                  />
+                }
               />
               <RowMenu
                 item={item}
@@ -199,6 +222,59 @@ export function ResultDataSetTable({ onSelectionChange }: Props): JSX.Element {
         ))}
       </TableBody>
     </Table>
+  );
+}
+
+function SelectUnitDialog({
+  triggerComponent,
+  title,
+  buttonText,
+}: {
+  triggerComponent: ReactElement;
+  title: string;
+  buttonText: string;
+}): JSX.Element {
+  const styles = useStyles();
+  const [open, setOpen] = useState(false);
+  const [selectedType, setSelectedType] = useState<Unit>("building");
+
+  return (
+    <Dialog
+      onOpenChange={(e) => {
+        e.stopPropagation();
+        setOpen((prev) => !prev);
+      }}
+      open={open}
+    >
+      <DialogTrigger disableButtonEnhancement>{triggerComponent}</DialogTrigger>
+      <DialogSurface onClick={(e) => e.stopPropagation()}>
+        <DialogBody>
+          <DialogTitle>{title}</DialogTitle>
+          <DialogContent>
+            <p>
+              空き家判定結果データは以下の2つのデータが含まれます。
+              どちらか選択してください。
+            </p>
+            <Field className={styles.radioGroup}>
+              <RadioGroup
+                onChange={(_, data) =>
+                  setSelectedType(data.value as "building" | "area")
+                }
+                value={selectedType}
+              >
+                <Radio label="建物単位" value="building" />
+                <Radio label="地域単位" value="area" />
+              </RadioGroup>
+            </Field>
+          </DialogContent>
+          <DialogActions>
+            <Button appearance="primary" size="medium">
+              {buttonText}
+            </Button>
+          </DialogActions>
+        </DialogBody>
+      </DialogSurface>
+    </Dialog>
   );
 }
 
