@@ -15,6 +15,7 @@ import {
   Tooltip,
 } from "recharts";
 import { ArrowLeftRegular } from "@fluentui/react-icons";
+import { useState } from "react";
 import { DialogSaveWithName } from "../../../../components/dialog-save-with-name";
 
 const useStyles = makeStyles({
@@ -224,6 +225,12 @@ const useStyles = makeStyles({
 export function JobGraph(): JSX.Element {
   const styles = useStyles();
   const navigate = useNavigate();
+  // MEMO: ゲージメーターの表示を切り替えるためのフラグ 後でAPIから取得する
+  const [showGauge, setShowGauge] = useState(true);
+
+  const handleToggle = (): void => {
+    setShowGauge(!showGauge);
+  };
 
   const handleBack = (): void => {
     navigate(-1);
@@ -290,50 +297,55 @@ export function JobGraph(): JSX.Element {
           <div className={styles.buttonWrapper}>
             <DialogSaveWithName />
             <Button className={styles.button}>ダウンロード</Button>
+            <Button onClick={handleToggle}>
+              {showGauge ? "正解率が高い場合" : "正解率が低い場合"}
+            </Button>
           </div>
         </div>
 
         <div className={styles.graphWrapper}>
           {/* ゲージメーター */}
-          <div className={styles.accurateContainer}>
-            <div className={styles.columnTitle}>正解率</div>
-            <div className={styles.gaugeContainer}>
-              <div className={styles.gaugeWrapper}>
-                <svg
-                  className={styles.gaugeBackground}
-                  viewBox="0 0 220 210"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  {/* 背景の半円弧 */}
-                  <circle
-                    className={styles.gaugeCircle}
-                    cx="110"
-                    cy="110"
-                    r={radius}
-                    strokeDasharray={`${halfCircumference} ${circumference}`}
-                    strokeDashoffset="0"
-                  />
-                  {/* 値を表す半円弧 */}
-                  <circle
-                    className={styles.gaugeArc}
-                    cx="110"
-                    cy="110"
-                    r={radius}
-                    strokeDasharray={`${halfCircumference} ${circumference}`}
-                    strokeDashoffset={halfOffset}
-                  />
-                </svg>
-                {/* メーターの中央に値を表示 */}
-                <div className={styles.gaugeText}>{gaugeValue}%</div>
+          {showGauge && (
+            <div className={styles.accurateContainer}>
+              <div className={styles.columnTitle}>正解率</div>
+              <div className={styles.gaugeContainer}>
+                <div className={styles.gaugeWrapper}>
+                  <svg
+                    className={styles.gaugeBackground}
+                    viewBox="0 0 220 210"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    {/* 背景の半円弧 */}
+                    <circle
+                      className={styles.gaugeCircle}
+                      cx="110"
+                      cy="110"
+                      r={radius}
+                      strokeDasharray={`${halfCircumference} ${circumference}`}
+                      strokeDashoffset="0"
+                    />
+                    {/* 値を表す半円弧 */}
+                    <circle
+                      className={styles.gaugeArc}
+                      cx="110"
+                      cy="110"
+                      r={radius}
+                      strokeDasharray={`${halfCircumference} ${circumference}`}
+                      strokeDashoffset={halfOffset}
+                    />
+                  </svg>
+                  {/* メーターの中央に値を表示 */}
+                  <div className={styles.gaugeText}>{gaugeValue}%</div>
+                </div>
+                <div className={styles.gaugeLabelLeft}>0%</div>
+                <div className={styles.gaugeLabelRight}>100%</div>
               </div>
-              <div className={styles.gaugeLabelLeft}>0%</div>
-              <div className={styles.gaugeLabelRight}>100%</div>
+              <div className={styles.detail}>
+                学習データ量が少なすぎます。正答率を上げるためには、〇〇以上のデータに修正して再実行をしてください。
+              </div>
             </div>
-            <div className={styles.detail}>
-              学習データ量が少なすぎます。正答率を上げるためには、〇〇以上のデータに修正して再実行をしてください。
-            </div>
-          </div>
-
+          )}
+          {/* 棒グラフ */}
           <div className={styles.columnContainer}>
             <div className={styles.columnTitle}>重要度の高いカラム</div>
             <div className={styles.chartContainer}>
@@ -384,29 +396,31 @@ export function JobGraph(): JSX.Element {
           </div>
         </div>
         {/* RadarChart */}
-        <div className={styles.radarChartContainer}>
-          <div className={styles.radarChartTitle}>処理結果のパラメーター</div>
-          <RadarChart
-            cx={200}
-            cy={200}
-            data={radarData}
-            height={400}
-            outerRadius={150}
-            width={400}
-          >
-            <PolarGrid />
-            <PolarAngleAxis dataKey="subject" />
-            <PolarRadiusAxis angle={90} domain={[0, 100]} />
-            <Radar
-              dataKey="A"
-              fill="#8884d8"
-              fillOpacity={0.6}
-              name="指標"
-              stroke="#8884d8"
-            />
-            <Tooltip />
-          </RadarChart>
-        </div>
+        {!showGauge && (
+          <div className={styles.radarChartContainer}>
+            <div className={styles.radarChartTitle}>処理結果のパラメーター</div>
+            <RadarChart
+              cx={200}
+              cy={200}
+              data={radarData}
+              height={400}
+              outerRadius={150}
+              width={400}
+            >
+              <PolarGrid />
+              <PolarAngleAxis dataKey="subject" />
+              <PolarRadiusAxis angle={90} domain={[0, 100]} />
+              <Radar
+                dataKey="A"
+                fill="#8884d8"
+                fillOpacity={0.6}
+                name="指標"
+                stroke="#8884d8"
+              />
+              <Tooltip />
+            </RadarChart>
+          </div>
+        )}
       </div>
 
       <div className={styles.restartButtonWrapper}>
