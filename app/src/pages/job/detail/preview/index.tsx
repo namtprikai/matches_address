@@ -82,52 +82,35 @@ const columns: ColumnDefinition<PreviewData>[] = [
   {
     key: "address",
     name: "住所",
-    width: "200px",
   },
   {
     key: "waterNumber",
     name: "水道番号",
-    width: "120px",
   },
   {
     key: "meterNumber",
     name: "メーター番号",
-    width: "120px",
   },
   {
     key: "townArea",
     name: "町丁目",
-    width: "100px",
   },
   {
     key: "vacantHouseProbability",
     name: "空き家確率",
-    width: "120px",
     onRender: (item) => `${(item.vacantHouseProbability * 100).toFixed(2)}%`,
   },
   {
-    key: "vacantHouseProbability1",
-    name: "空き家確率",
-    width: "120px",
-    onRender: (item) => `${(item.vacantHouseProbability * 100).toFixed(2)}%`,
+    key: "address",
+    name: "アドレス",
   },
   {
-    key: "vacantHouseProbability2",
-    name: "空き家確率",
-    width: "120px",
-    onRender: (item) => `${(item.vacantHouseProbability * 100).toFixed(2)}%`,
+    key: "address",
+    name: "アドレス",
   },
   {
-    key: "vacantHouseProbability3",
-    name: "空き家確率",
-    width: "120px",
-    onRender: (item) => `${(item.vacantHouseProbability * 100).toFixed(2)}%`,
-  },
-  {
-    key: "vacantHouseProbability4",
-    name: "空き家確率",
-    width: "120px",
-    onRender: (item) => `${(item.vacantHouseProbability * 100).toFixed(2)}%`,
+    key: "address",
+    name: "アドレス",
   },
 ];
 

@@ -25,9 +25,8 @@ const useStyles = makeStyles({
 });
 
 export interface ColumnDefinition<T> {
-  key: string;
+  key: keyof T;
   name: string;
-  width?: string;
   className?: string;
   onRender?: (item: T) => React.ReactNode;
 }
@@ -49,9 +48,9 @@ export function CustomTable<T>({
         <TableRow className={styles.tableHeaderRow}>
           {columns.map((column) => (
             <TableHeaderCell
-              key={column.key}
+              key={String(column.key)}
               className={mergeClasses(styles.tableHeaderCell, column.className)}
-              style={{ width: column.width }}
+              style={{ width: "150px" }}
             >
               {column.name}
             </TableHeaderCell>
@@ -62,10 +61,10 @@ export function CustomTable<T>({
         {items.map((item, rowIndex) => (
           <TableRow key={rowIndex}>
             {columns.map((column) => (
-              <TableCell key={column.key}>
+              <TableCell key={String(column.key)}>
                 {column.onRender
                   ? column.onRender(item)
-                  : (item as any)[column.key]}
+                  : (item[column.key] as React.ReactNode)}
               </TableCell>
             ))}
           </TableRow>
