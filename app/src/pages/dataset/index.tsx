@@ -90,26 +90,8 @@ export function Dataset(): JSX.Element {
     e.target.value = ""; // ファイル選択をリセットする
   };
 
-  // TODO: バックエンド処理
-  const handleDownload = async (): Promise<void> => {
-    try {
-      const response = await fetch("/dummy-data.csv");
-      if (!response.ok) {
-        throw new Error("Network response was not ok");
-      }
-      const blob = await response.blob();
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = "dummy-data.csv";
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
-    } catch (error) {
-      console.error("Download failed:", error);
-      alert("ダウンロードに失敗しました。");
-    }
+  const handleDownloadSelectedItems = async (): Promise<void> => {
+    // TODO: バックエンド処理
   };
 
   const handleDeleteSelectedItems = (): void => {
@@ -186,7 +168,7 @@ export function Dataset(): JSX.Element {
               className={styles.iconButton}
               disabled={selectedItemIds.length === 0}
               icon={<ArrowDownloadRegular />}
-              onClick={handleDownload}
+              onClick={handleDownloadSelectedItems}
             />
             <DeleteRowsDialog
               disabled={selectedItemIds.length === 0}
