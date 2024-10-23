@@ -6,6 +6,15 @@ import {
   typographyStyles,
 } from "@fluentui/react-components";
 import { useNavigate } from "react-router-dom";
+import {
+  Radar,
+  RadarChart,
+  PolarGrid,
+  PolarAngleAxis,
+  PolarRadiusAxis,
+  Tooltip,
+} from "recharts";
+import { ArrowLeftRegular } from "@fluentui/react-icons";
 import { DialogSaveWithName } from "../../../../components/dialog-save-with-name";
 
 const useStyles = makeStyles({
@@ -20,11 +29,14 @@ const useStyles = makeStyles({
     justifyContent: "space-between",
   },
   heading: {
-    fontSize: tokens.fontSizeBase500,
-    lineHeight: tokens.lineHeightBase600,
+    display: "flex",
+    width: "fit-content",
+    alignItems: "center",
+    gap: tokens.spacingHorizontalS,
     ":hover": {
       cursor: "pointer",
     },
+    ...typographyStyles.subtitle1,
   },
   result: {
     display: "flex",
@@ -198,6 +210,15 @@ const useStyles = makeStyles({
     display: "flex",
     gap: tokens.spacingHorizontalM,
   },
+  radarChartContainer: {
+    backgroundColor: "#fff",
+    padding: tokens.spacingVerticalXXL,
+    width: "100%",
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+  },
+  radarChartTitle: typographyStyles.subtitle2,
 });
 
 export function JobGraph(): JSX.Element {
@@ -247,12 +268,22 @@ export function JobGraph(): JSX.Element {
 
   const xAxisLabels = Array.from({ length: 11 }, (_, i) => i * 10);
 
+  // RadarChart 用のデータ
+  const radarData = [
+    { subject: "正解率", A: 85 },
+    { subject: "精度", A: 80 },
+    { subject: "F値", A: 75 },
+    { subject: "再現率", A: 90 },
+    { subject: "特異率", A: 70 },
+  ];
+
   return (
     <div className={styles.pageContainer}>
       <div className={styles.root}>
-        <h2 className={styles.heading} onClick={handleBack}>
+        <div className={styles.heading} onClick={handleBack}>
+          <ArrowLeftRegular />
           処理結果
-        </h2>
+        </div>
 
         <div className={styles.result}>
           <span className={styles.message}>処理が完了しました。</span>
@@ -351,6 +382,30 @@ export function JobGraph(): JSX.Element {
               </div>
             </div>
           </div>
+        </div>
+        {/* RadarChart */}
+        <div className={styles.radarChartContainer}>
+          <div className={styles.radarChartTitle}>処理結果のパラメーター</div>
+          <RadarChart
+            cx={200}
+            cy={200}
+            data={radarData}
+            height={400}
+            outerRadius={150}
+            width={400}
+          >
+            <PolarGrid />
+            <PolarAngleAxis dataKey="subject" />
+            <PolarRadiusAxis angle={90} domain={[0, 100]} />
+            <Radar
+              dataKey="A"
+              fill="#8884d8"
+              fillOpacity={0.6}
+              name="指標"
+              stroke="#8884d8"
+            />
+            <Tooltip />
+          </RadarChart>
         </div>
       </div>
 
