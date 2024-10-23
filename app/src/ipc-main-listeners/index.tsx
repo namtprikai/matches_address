@@ -43,6 +43,7 @@ import { updateModelFiles } from "./update-model-files";
 import { deleteModelFiles } from "./delete-model-files";
 import { fetchJobLists } from "./fetch-job-lists";
 import { fetchJobTasks } from "./fetch-job-tasks";
+import { buildModel } from "./ml/build-model";
 
 export const ipcMainListeners = {
   helloFromPython,
@@ -86,6 +87,7 @@ export const ipcMainListeners = {
   deleteModelFiles,
   fetchJobLists,
   fetchJobTasks,
+  buildModel,
 };
 
 export const execFileAsync = promisify(execFile);

@@ -70,7 +70,13 @@ export const ModelCreate = (): JSX.Element => {
       </div>
 
       <div className={styles.footer}>
-        <Button appearance="primary" size="large">
+        <Button
+          appearance="primary"
+          onClick={async () => {
+            await window.ipcRenderer.invoke("buildModel", { foo: "bar" });
+          }}
+          size="large"
+        >
           モデル作成
         </Button>
       </div>
