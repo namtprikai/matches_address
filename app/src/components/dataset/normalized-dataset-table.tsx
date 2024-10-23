@@ -143,6 +143,22 @@ export function NormalizedDataSetTable({
     }
   };
 
+  const handleDelete = async (
+    id: SelectNormalizedDataSet["id"],
+  ): Promise<void> => {
+    await window.ipcRenderer
+      .invoke("deleteNormalizedDataset", {
+        id,
+      })
+      .then(() => {
+        void mutate((data) => data?.filter((d) => d.id !== id), false);
+        onSelectionChange((prev) =>
+          prev.filter((selectedId) => selectedId !== id),
+        );
+      })
+      .catch(console.error);
+  };
+
   return (
     <Table>
       <TableHeader className={styles.tableHeader}>
@@ -175,6 +191,9 @@ export function NormalizedDataSetTable({
               <DataPreviewDialog
                 datasetName={item.file_name}
                 id={item.id}
+                onDelete={async () => {
+                  await handleDelete(item.id);
+                }}
                 type="normalized"
               />
             </TableCell>

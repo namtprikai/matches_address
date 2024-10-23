@@ -139,6 +139,20 @@ export function RawDataSetTable({ onSelectionChange }: Props): JSX.Element {
     }
   };
 
+  const handleDelete = async (id: SelectRawDataSet["id"]): Promise<void> => {
+    await window.ipcRenderer
+      .invoke("deleteRawDataset", {
+        id,
+      })
+      .then(() => {
+        void mutate((data) => data?.filter((d) => d.id !== id), false);
+        onSelectionChange((prev) =>
+          prev.filter((selectedId) => selectedId !== id),
+        );
+      })
+      .catch(console.error);
+  };
+
   return (
     <Table>
       <TableHeader className={styles.tableHeader}>
@@ -171,6 +185,9 @@ export function RawDataSetTable({ onSelectionChange }: Props): JSX.Element {
               <DataPreviewDialog
                 datasetName={item.file_name}
                 id={item.id}
+                onDelete={async () => {
+                  await handleDelete(item.id);
+                }}
                 type="raw"
               />
             </TableCell>
