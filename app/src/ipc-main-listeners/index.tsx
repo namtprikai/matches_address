@@ -39,6 +39,8 @@ import { selectDataSetResult } from "./select-data-set-result";
 import { readDatasetFile } from "./read-dataset-file";
 import { selectModelFiles } from "./select-model-files";
 import { _debugInsertModelFiles } from "./_debug-insert-model-files";
+import { updateModelFiles } from "./update-model-files";
+import { deleteModelFiles } from "./delete-model-files";
 import { fetchJobLists } from "./fetch-job-lists";
 import { fetchJobTasks } from "./fetch-job-tasks";
 
@@ -80,6 +82,8 @@ export const ipcMainListeners = {
   readDatasetFile,
   selectModelFiles,
   _debugInsertModelFiles,
+  updateModelFiles,
+  deleteModelFiles,
   fetchJobLists,
   fetchJobTasks,
 };
