@@ -45,6 +45,7 @@ import { DialogTitle } from "../ui/dialog-title";
 import { DialogContent } from "../ui/dialog-content";
 import { DialogActions } from "../ui/dialog-actions";
 import { DialogSurface } from "../ui/dialog-surface";
+import { downloadObjectsAsCSV } from "../../utils/download-objects-as-csv";
 import { DeleteRowDialog } from "./delete-row-dialog";
 import { EditNameDialog } from "./edit-name-dialog";
 
@@ -139,25 +140,37 @@ export function ResultDataSetTable({ onSelectionChange }: Props): JSX.Element {
   };
 
   // TODO: バックエンド処理
-  const handleDownload = async (e: MouseEvent): Promise<void> => {
-    e.stopPropagation();
-    try {
-      const response = await fetch("/dummy-data.csv");
-      if (!response.ok) {
-        throw new Error("Network response was not ok");
+  const handleDownload = async (
+    unit: Unit,
+    id: SelectDataSetResult["id"],
+    fileName: string,
+  ): Promise<void> => {
+    switch (unit) {
+      case "building": {
+        const data = await window.ipcRenderer.invoke(
+          "fetchBuildingsInBatches",
+          {
+            dataSetResultId: id,
+            batchSize: 100,
+          },
+        );
+        if (!data) return;
+        void downloadObjectsAsCSV(data, fileName);
+        break;
       }
-      const blob = await response.blob();
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = "dummy-data.csv";
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
-    } catch (error) {
-      console.error("Download failed:", error);
-      alert("ダウンロードに失敗しました。");
+      case "area": {
+        const data = await window.ipcRenderer.invoke("fetchAreasInBatches", {
+          dataSetResultId: id,
+          batchSize: 100,
+        });
+        if (!data) return;
+        void downloadObjectsAsCSV(data, fileName);
+        break;
+      }
+      default: {
+        const exhaustiveCheck: never = unit;
+        throw new Error(`Unhandled unit: ${exhaustiveCheck}`);
+      }
     }
   };
 
@@ -202,6 +215,9 @@ export function ResultDataSetTable({ onSelectionChange }: Props): JSX.Element {
             <TableCell className={styles.actions}>
               <SelectUnitDialog
                 buttonText="ダウンロード"
+                onSubmit={(unit) =>
+                  handleDownload(unit, item.id, item.title || "")
+                }
                 title="データのダウンロード"
                 triggerComponent={
                   <Button
@@ -229,14 +245,16 @@ function SelectUnitDialog({
   triggerComponent,
   title,
   buttonText,
+  onSubmit,
 }: {
   triggerComponent: ReactElement;
   title: string;
   buttonText: string;
+  onSubmit: (unit: Unit) => void;
 }): JSX.Element {
   const styles = useStyles();
   const [open, setOpen] = useState(false);
-  const [selectedType, setSelectedType] = useState<Unit>("building");
+  const [selectedUnit, setSelectedUnit] = useState<Unit>("building");
 
   return (
     <Dialog
@@ -258,9 +276,9 @@ function SelectUnitDialog({
             <Field className={styles.radioGroup}>
               <RadioGroup
                 onChange={(_, data) =>
-                  setSelectedType(data.value as "building" | "area")
+                  setSelectedUnit(data.value as "building" | "area")
                 }
-                value={selectedType}
+                value={selectedUnit}
               >
                 <Radio label="建物単位" value="building" />
                 <Radio label="地域単位" value="area" />
@@ -268,7 +286,14 @@ function SelectUnitDialog({
             </Field>
           </DialogContent>
           <DialogActions>
-            <Button appearance="primary" size="medium">
+            <Button
+              appearance="primary"
+              onClick={() => {
+                onSubmit(selectedUnit);
+                setOpen(false);
+              }}
+              size="medium"
+            >
               {buttonText}
             </Button>
           </DialogActions>
