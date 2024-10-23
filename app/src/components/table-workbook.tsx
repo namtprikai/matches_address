@@ -43,14 +43,12 @@ export const TableWorkbook = (): JSX.Element => {
     {
       key: "created_at",
       name: "作成日",
-      width: "140px",
       className: styles.createdAtCell,
       onRender: (item) => formatDate(item.created_at),
     },
     {
       key: "updated_at",
       name: "更新日",
-      width: "140px",
       className: styles.updatedAtCell,
       onRender: (item) => formatDate(item.updated_at),
     },
