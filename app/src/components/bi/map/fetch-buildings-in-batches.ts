@@ -16,10 +16,10 @@ export const fetchBuildingsInBatches = ((
     areas,
   }: {
     dataSetResultId: number;
-    referenceDate: string | undefined;
     batchSize: number;
+    referenceDate?: string;
     lastId?: number;
-    areas: string[] | undefined;
+    areas?: string[];
   },
 ): SelectDataSetDetailBuilding[] | null => {
   try {
