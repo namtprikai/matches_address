@@ -15,12 +15,13 @@ import {
   DialogTrigger,
 } from "@fluentui/react-components";
 import { ArrowSortRegular, DismissFilled } from "@fluentui/react-icons";
-
 import { useState } from "react";
+import { useFetchRawDatasets } from "../hooks/use-fetch-data-set-for-dialog";
 
 import { Tab } from "../components/ui/tab";
 import { useFetchRawDatasets } from "../hooks/use-fetch-raw-datasets";
 import { type ReturnUseDialogState } from "../hooks/use-dialog-state";
+import { type SelectRawDataSet } from "../schema";
 import { Button } from "./ui/button";
 import { DialogSurface } from "./ui/dialog-surface";
 import { DialogBody } from "./ui/dialog-body";
@@ -127,29 +128,33 @@ const useStyles = makeStyles({
 
 type Props = {
   dialogState: ReturnUseDialogState;
+  onSelected?: (data: SelectRawDataSet) => void;
 };
 
-export const DialogImportDataset = ({ dialogState }: Props): JSX.Element => {
+export const DialogImportDataset = ({
+  dialogState,
+  onSelected,
+}: Props): JSX.Element => {
   const styles = useStyles();
   const [selectedTab, setSelectedTab] = useState(0);
-  const [selectedDatasetIndex, setSelectedDatasetIndex] = useState<
-    number | null
-  >(null);
+  const [selectedDataSet, setSelectedDataSet] =
+    useState<SelectRawDataSet | null>(null);
 
   const { isOpen: isDialogOpen, setIsOpen: setIsDialogOpen } = dialogState;
   const { data: fetchedDatasets } = useFetchRawDatasets();
   const datasets = fetchedDatasets ?? [];
 
   const handleClick = (): void => {
-    if (selectedDatasetIndex !== null) {
+    if (selectedDataSet !== null) {
       // const dataset = datasets[selectedDatasetIndex];
+      onSelected?.(selectedDataSet);
       setIsDialogOpen(false);
     }
   };
 
   const handleTabChange = (_: SelectTabEvent, data: SelectTabData): void => {
     setSelectedTab(data.value as number);
-    setSelectedDatasetIndex(null);
+    setSelectedDataSet(null);
   };
   return (
     <Dialog
@@ -220,16 +225,16 @@ export const DialogImportDataset = ({ dialogState }: Props): JSX.Element => {
                   </TableHeader>
                   {datasets.length > 0 ? (
                     <TableBody className={styles.tableBody}>
-                      {datasets.map((dataset, index) => (
+                      {datasets.map((dataset) => (
                         <TableRow
                           key={dataset.id}
                           className={mergeClasses(
                             styles.datasetTable,
-                            selectedDatasetIndex === index
+                            selectedDataSet?.id === dataset.id
                               ? styles.selectedDatasetTable
                               : styles.borderBottom,
                           )}
-                          onClick={() => setSelectedDatasetIndex(index)}
+                          onClick={() => setSelectedDataSet(dataset)}
                         >
                           <TableCell
                             className={mergeClasses(
@@ -271,11 +276,11 @@ export const DialogImportDataset = ({ dialogState }: Props): JSX.Element => {
             <Button
               appearance="primary"
               className={
-                selectedTab === 0 && selectedDatasetIndex === null
+                selectedTab === 0 && selectedDataSet === null
                   ? styles.disabledButton
                   : ""
               }
-              disabled={selectedTab === 0 && selectedDatasetIndex === null}
+              disabled={selectedTab === 0 && selectedDataSet === null}
               onClick={handleClick}
             >
               インポート

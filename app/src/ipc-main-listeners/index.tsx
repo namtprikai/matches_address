@@ -42,6 +42,8 @@ import { _debugInsertModelFiles } from "./_debug-insert-model-files";
 import { updateRawDataset } from "./update-raw-dataset";
 import { updateNormalizedDataset } from "./update-normalized-dataset";
 import { updateDataSetResult } from "./update-data-set-result";
+import { fetchJobLists } from "./fetch-job-lists";
+import { fetchJobTasks } from "./fetch-job-tasks";
 
 export const ipcMainListeners = {
   helloFromPython,
@@ -84,6 +86,8 @@ export const ipcMainListeners = {
   updateRawDataset,
   updateNormalizedDataset,
   updateDataSetResult,
+  fetchJobLists,
+  fetchJobTasks,
 };
 
 export const execFileAsync = promisify(execFile);
