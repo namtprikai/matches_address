@@ -17,6 +17,7 @@ const useStyles = makeStyles({
   navigationToNormalization: {
     textDecoration: "none",
     color: "inherit",
+    display: "block",
   },
 });
 
@@ -53,12 +54,13 @@ export const ButtonCreateModel = (): JSX.Element => {
                 正規化処理から始める
               </Link>
             </MenuItem>
-            <MenuItem
-              onClick={() => {
-                dialogState.setIsOpen(true);
-              }}
-            >
-              正規化処理済データから始める
+            <MenuItem>
+              <Link
+                className={styles.navigationToNormalization}
+                to={"/model/create"}
+              >
+                正規化処理済データから始める
+              </Link>
             </MenuItem>
           </MenuList>
         </MenuPopover>
