@@ -1,11 +1,19 @@
 import {
+  Body1,
   Card,
+  Dialog,
+  DialogTrigger,
   makeStyles,
   Subtitle2,
   tokens,
 } from "@fluentui/react-components";
 import { ArrowLeftFilled } from "@fluentui/react-icons";
 import { Button } from "../../../components/ui/button";
+import { DialogSurface } from "../../../components/ui/dialog-surface";
+import { DialogBody } from "../../../components/ui/dialog-body";
+import { DialogTitle } from "../../../components/ui/dialog-title";
+import { DialogContent } from "../../../components/ui/dialog-content";
+import { DialogActions } from "../../../components/ui/dialog-actions";
 
 const useStyles = makeStyles({
   root: {
@@ -37,6 +45,7 @@ const useStyles = makeStyles({
 
 export const ModelCreate = (): JSX.Element => {
   const styles = useStyles();
+
   return (
     <div className={styles.root}>
       <h2 className={styles.heading}>
@@ -70,15 +79,38 @@ export const ModelCreate = (): JSX.Element => {
       </div>
 
       <div className={styles.footer}>
-        <Button
-          appearance="primary"
-          onClick={async () => {
-            await window.ipcRenderer.invoke("buildModel", { foo: "bar" });
-          }}
-          size="large"
-        >
-          モデル作成
-        </Button>
+        <Dialog>
+          <DialogTrigger>
+            <Button
+              appearance="primary"
+              onClick={async () => {
+                await window.ipcRenderer.invoke("buildModel", {
+                  foo: "bar",
+                });
+              }}
+              size="large"
+            >
+              モデル作成
+            </Button>
+          </DialogTrigger>
+          <DialogSurface>
+            <DialogBody>
+              <DialogTitle>モデル作成処理を開始しました</DialogTitle>
+              <DialogContent>
+                <Body1>
+                  前処理が完了するまで一定の時間がかかります
+                  <br />
+                  ステータスは「非同期処理一覧画面」で確認できます。
+                </Body1>
+              </DialogContent>
+              <DialogActions>
+                <a href="#job">
+                  <Button appearance="primary">非同期処理一覧画面へ</Button>
+                </a>
+              </DialogActions>
+            </DialogBody>
+          </DialogSurface>
+        </Dialog>
       </div>
     </div>
   );
