@@ -1,104 +1,60 @@
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHeader,
-  TableHeaderCell,
-  TableRow,
-  Link as FUILink,
-  tokens,
-  makeStyles,
-  mergeClasses,
-} from "@fluentui/react-components";
 import { Link } from "react-router-dom";
+import { makeStyles } from "@fluentui/react-components";
 import useSWR from "swr";
 import { formatDate } from "../utils/format-date";
 import { type SelectWorkbook } from "../schema";
+import { CustomTable, type ColumnDefinition } from "./ui/table";
 
 const useStyles = makeStyles({
-  updatedAtHeaderCell: {
-    tableLayout: "fixed",
-    width: "140px",
-  },
-  updatedAtCell: {
-    fontSize: tokens.fontSizeBase200,
-  },
-  createdAtHeaderCell: {
-    tableLayout: "fixed",
-    width: "140px",
+  link: {
+    fontWeight: 600,
+    color: "#0050b3",
+    textDecoration: "none",
+    ":hover": {
+      textDecoration: "underline",
+    },
   },
   createdAtCell: {
-    fontSize: tokens.fontSizeBase200,
+    fontSize: "14px",
   },
-  tableHeader: {
-    backgroundColor: tokens.colorNeutralBackground3,
-  },
-  tableHeaderRow: {
-    border: "none",
-  },
-  tableHeaderCell: {
-    fontWeight: tokens.fontWeightSemibold,
+  updatedAtCell: {
+    fontSize: "14px",
   },
 });
 
 const fetcher = (): Promise<SelectWorkbook[]> => {
-  const result = window.ipcRenderer.invoke("selectWorkbooks");
-  return result;
+  return window.ipcRenderer.invoke("selectWorkbooks");
 };
 
 export const TableWorkbook = (): JSX.Element => {
   const { data } = useSWR("TableWorkbook-selectWorkbooks", fetcher);
   const styles = useStyles();
 
-  return (
-    <Table>
-      <TableHeader className={styles.tableHeader}>
-        <TableRow className={styles.tableHeaderRow}>
-          <TableHeaderCell className={styles.tableHeaderCell}>
-            名前
-          </TableHeaderCell>
-          <TableHeaderCell
-            className={mergeClasses(
-              styles.createdAtHeaderCell,
-              styles.tableHeaderCell,
-            )}
-          >
-            作成日
-          </TableHeaderCell>
-          <TableHeaderCell
-            className={mergeClasses(
-              styles.updatedAtHeaderCell,
-              styles.tableHeaderCell,
-            )}
-          >
-            更新日
-          </TableHeaderCell>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {data?.map((item) => (
-          <TableRow key={item.id}>
-            <TableCell>
-              <Link to={`/analysis/workbook/${item.id}`}>
-                <FUILink
-                  as="span"
-                  style={{
-                    fontWeight: 600,
-                  }}
-                >
-                  {item.title}
-                </FUILink>
-              </Link>
-            </TableCell>
-            <TableCell className={styles.createdAtCell}>
-              {formatDate(item.created_at)}
-            </TableCell>
-            <TableCell className={styles.updatedAtCell}>
-              {formatDate(item.updated_at)}
-            </TableCell>
-          </TableRow>
-        ))}
-      </TableBody>
-    </Table>
-  );
+  const columns: ColumnDefinition<SelectWorkbook>[] = [
+    {
+      key: "title",
+      name: "名前",
+      onRender: (item) => (
+        <Link className={styles.link} to={`/analysis/workbook/${item.id}`}>
+          {item.title}
+        </Link>
+      ),
+    },
+    {
+      key: "created_at",
+      name: "作成日",
+      width: "140px",
+      className: styles.createdAtCell,
+      onRender: (item) => formatDate(item.created_at),
+    },
+    {
+      key: "updated_at",
+      name: "更新日",
+      width: "140px",
+      className: styles.updatedAtCell,
+      onRender: (item) => formatDate(item.updated_at),
+    },
+  ];
+
+  return <CustomTable columns={columns} items={data || []} />;
 };

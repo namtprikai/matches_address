@@ -2,9 +2,15 @@ import {
   makeStyles,
   tokens,
   Button,
-  mergeClasses,
+  typographyStyles,
 } from "@fluentui/react-components";
 import { ArrowLeftRegular } from "@fluentui/react-icons";
+import { useState } from "react";
+import {
+  CustomTable,
+  type ColumnDefinition,
+} from "../../../../components/ui/table";
+import { Pagenation } from "../../../../components/ui/pagenation";
 
 const useStyles = makeStyles({
   root: {
@@ -21,7 +27,10 @@ const useStyles = makeStyles({
   previewWrapper: {
     display: "flex",
     flexDirection: "column",
+
     gap: tokens.spacingVerticalM,
+    backgroundColor: tokens.colorNeutralBackground1,
+    padding: tokens.spacingVerticalXXL,
   },
   heading: {
     fontSize: tokens.fontSizeBase500,
@@ -29,7 +38,7 @@ const useStyles = makeStyles({
   },
   preview: {
     display: "flex",
-    flexDirection: "column",
+    alignItems: "center",
     gap: tokens.spacingVerticalM,
   },
   button: {
@@ -41,83 +50,116 @@ const useStyles = makeStyles({
     overflowX: "auto",
     border: `1px solid ${tokens.colorNeutralStroke1}`,
     maxHeight: "500px",
-    maxWidth: "1070px",
+    maxWidth: "1032px",
   },
-  table: {
-    borderCollapse: "collapse",
-    width: "auto",
-    tableLayout: "fixed",
-  },
-  tableCell: {
-    border: `1px solid ${tokens.colorNeutralStroke1}`,
-    padding: 0,
-    textAlign: "center",
-    width: "40px",
-    height: "24px",
-  },
-  dataCell: {
-    backgroundColor: tokens.colorNeutralStrokeOnBrand2,
-  },
-  headerCell: {
-    backgroundColor: tokens.colorNeutralBackground3,
-    fontWeight: tokens.fontWeightSemibold,
-  },
-  rowHeaderCell: {
-    backgroundColor: tokens.colorNeutralBackground3,
-    fontWeight: tokens.fontWeightSemibold,
-    position: "sticky",
-    left: 0,
-    zIndex: 1,
-    width: "77px",
-    minWidth: "77px",
-    maxWidth: "77px",
-    height: "24px",
-  },
-  columnHeaderCell: {
-    position: "sticky",
-    top: 0,
-    zIndex: 2,
-    width: "40px",
-    minWidth: "40px",
-    maxWidth: "40px",
-    height: "24px",
-  },
-  blackCell: {
-    width: "77px",
-    minWidth: "77px",
-    maxWidth: "77px",
-    height: "24px",
+  text: typographyStyles.subtitle2,
+  pagenation: {
+    display: "flex",
+    justifyContent: "flex-start",
   },
 });
 
-function generateColumnLabels(columnCount: number): string[] {
-  const labels = [];
-  for (let i = 0; i < columnCount; i++) {
-    let label = "";
-    let n = i;
-    do {
-      label = String.fromCharCode((n % 26) + 65) + label;
-      n = Math.floor(n / 26) - 1;
-    } while (n >= 0);
-    labels.push(label);
-  }
-  return labels;
+// サンプルデータ
+const data: PreviewData[] = [
+  {
+    address: "東京都千代田区丸の内1-1",
+    waterNumber: "123456",
+    meterNumber: "654321",
+    townArea: "丸の内1丁目",
+    vacantHouseProbability: 0.2,
+  },
+  {
+    address: "東京都渋谷区渋谷2-2",
+    waterNumber: "789012",
+    meterNumber: "210987",
+    townArea: "渋谷2丁目",
+    vacantHouseProbability: 0.5,
+  },
+];
+
+// カラム定義
+const columns: ColumnDefinition<PreviewData>[] = [
+  {
+    key: "address",
+    name: "住所",
+    width: "200px",
+  },
+  {
+    key: "waterNumber",
+    name: "水道番号",
+    width: "120px",
+  },
+  {
+    key: "meterNumber",
+    name: "メーター番号",
+    width: "120px",
+  },
+  {
+    key: "townArea",
+    name: "町丁目",
+    width: "100px",
+  },
+  {
+    key: "vacantHouseProbability",
+    name: "空き家確率",
+    width: "120px",
+    onRender: (item) => `${(item.vacantHouseProbability * 100).toFixed(2)}%`,
+  },
+  {
+    key: "vacantHouseProbability1",
+    name: "空き家確率",
+    width: "120px",
+    onRender: (item) => `${(item.vacantHouseProbability * 100).toFixed(2)}%`,
+  },
+  {
+    key: "vacantHouseProbability2",
+    name: "空き家確率",
+    width: "120px",
+    onRender: (item) => `${(item.vacantHouseProbability * 100).toFixed(2)}%`,
+  },
+  {
+    key: "vacantHouseProbability3",
+    name: "空き家確率",
+    width: "120px",
+    onRender: (item) => `${(item.vacantHouseProbability * 100).toFixed(2)}%`,
+  },
+  {
+    key: "vacantHouseProbability4",
+    name: "空き家確率",
+    width: "120px",
+    onRender: (item) => `${(item.vacantHouseProbability * 100).toFixed(2)}%`,
+  },
+];
+
+interface PreviewData {
+  address: string;
+  waterNumber: string;
+  meterNumber: string;
+  townArea: string;
+  vacantHouseProbability: number;
 }
-
-const rowCount = 20; // 行数を調整
-const columnCount = 26; // 列数を調整
-const columnLabels = generateColumnLabels(columnCount);
-
-// サンプルデータの生成
-const data = Array.from({ length: rowCount }, () =>
-  Array.from({ length: columnCount }, () => ""),
-);
 
 export function JobPreview(): JSX.Element {
   const styles = useStyles();
   const handleBackToResultsClick = (): void => {
     window.history.back();
   };
+  const [page, setPage] = useState(1);
+  const [limitPerPage, setLimitPerPage] = useState(10);
+
+  const handlePageChange = (newPage: number): void => {
+    setPage(newPage);
+  };
+
+  const handleLimitPerPageChange = (newLimit: number): void => {
+    setLimitPerPage(newLimit);
+    setPage(1);
+  };
+
+  const paginatedData = data.slice(
+    (page - 1) * limitPerPage,
+    page * limitPerPage,
+  );
 
   return (
     <div className={styles.root}>
@@ -125,65 +167,26 @@ export function JobPreview(): JSX.Element {
         <ArrowLeftRegular />
         処理結果に戻る
       </div>
+      <h2 className={styles.heading}>ファイルのプレビュー</h2>
       <div className={styles.previewWrapper}>
-        <h2 className={styles.heading}>ファイルのプレビュー</h2>
-
         <div className={styles.preview}>
+          <div className={styles.text}>
+            モデル「{"#{モデル名}"}」, ファイル「{"#{ファイル名}"}
+            」を使っての空き家分析処理
+          </div>
           <Button className={styles.button}>ダウンロード</Button>
         </div>
 
         <div className={styles.tableContainer}>
-          <table className={styles.table}>
-            <thead>
-              <tr>
-                <th
-                  className={mergeClasses(
-                    styles.tableCell,
-                    styles.headerCell,
-                    styles.blackCell,
-                  )}
-                ></th>
-                {columnLabels.map((label, index) => (
-                  <th
-                    key={index}
-                    className={mergeClasses(
-                      styles.tableCell,
-                      styles.headerCell,
-                      styles.columnHeaderCell,
-                    )}
-                  >
-                    {label}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {data.map((rowData, rowIndex) => (
-                <tr key={rowIndex}>
-                  <td
-                    className={mergeClasses(
-                      styles.tableCell,
-                      styles.headerCell,
-                      styles.rowHeaderCell,
-                    )}
-                  >
-                    {rowIndex + 1}
-                  </td>
-                  {rowData.map((cellData, colIndex) => (
-                    <td
-                      key={colIndex}
-                      className={mergeClasses(
-                        styles.tableCell,
-                        styles.dataCell,
-                      )}
-                    >
-                      {cellData}
-                    </td>
-                  ))}
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <CustomTable columns={columns} items={paginatedData} />
+        </div>
+        <div className={styles.pagenation}>
+          <Pagenation
+            handleLimitPerPageChange={handleLimitPerPageChange}
+            handlePageChange={handlePageChange}
+            limitPerPage={limitPerPage}
+            page={page}
+          />
         </div>
       </div>
     </div>
