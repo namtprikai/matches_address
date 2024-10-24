@@ -88,7 +88,7 @@ export function DataPreviewDialog({
 }: Props): JSX.Element {
   const styles = useStyles();
   const [open, setOpen] = useState(false);
-  const dialogState = useDialogState(false);
+  const deleteDialogState = useDialogState(false);
 
   const handleDownload = async (): Promise<void> => {
     switch (type) {
@@ -129,7 +129,7 @@ export function DataPreviewDialog({
   };
 
   const handleOpenDeleteDialog = (): void => {
-    dialogState.setIsOpen(true);
+    deleteDialogState.setIsOpen(true);
   };
 
   return (
@@ -182,7 +182,7 @@ export function DataPreviewDialog({
           </DialogBody>
         </DialogSurface>
       </Dialog>
-      <DeleteRowDialog dialogState={dialogState} onDelete={onDelete} />
+      <DeleteRowDialog dialogState={deleteDialogState} onDelete={onDelete} />
     </>
   );
 }
