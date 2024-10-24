@@ -26,6 +26,8 @@ import {
   type DataSetType,
 } from "../../hooks/use-fetch-data-set-file";
 import { downloadDataSetFile } from "../../utils/download-data-set-file";
+import { useDialogState } from "../../hooks/use-dialog-state";
+import { DeleteRowDialog } from "./delete-row-dialog";
 
 const useStyles = makeStyles({
   dialogTitle: {
@@ -75,15 +77,18 @@ interface Props {
   type: DataSetType;
   id: number;
   datasetName: string | null;
+  onDelete: () => void;
 }
 
 export function DataPreviewDialog({
   type,
   id,
   datasetName,
+  onDelete,
 }: Props): JSX.Element {
   const styles = useStyles();
   const [open, setOpen] = useState(false);
+  const dialogState = useDialogState(false);
 
   const handleDownload = async (): Promise<void> => {
     switch (type) {
@@ -123,59 +128,66 @@ export function DataPreviewDialog({
     }
   };
 
-  const handleDelete = (): void => {
-    // TODO: 削除の処理を実装する
+  const handleOpenDeleteDialog = (): void => {
+    dialogState.setIsOpen(true);
   };
 
   return (
-    <Dialog
-      onOpenChange={(e) => {
-        e.stopPropagation();
-        setOpen((prev) => !prev);
-      }}
-      open={open}
-    >
-      <DialogTrigger disableButtonEnhancement>
-        <Button
-          appearance="transparent"
-          className={styles.datasetButton}
-          onClick={(e) => e.stopPropagation()}
-        >
-          {datasetName}
-        </Button>
-      </DialogTrigger>
-      <DialogSurface onClick={(e) => e.stopPropagation()}>
-        <DialogTitle className={styles.dialogTitle}>
-          <div className={styles.actions}>
-            <Button
-              appearance="transparent"
-              icon={<ArrowLeftRegular />}
-              onClick={() => setOpen(false)}
-            />
+    <>
+      <Dialog
+        onOpenChange={(e) => {
+          e.stopPropagation();
+          setOpen((prev) => !prev);
+        }}
+        open={open}
+      >
+        <DialogTrigger disableButtonEnhancement>
+          <Button
+            appearance="transparent"
+            className={styles.datasetButton}
+            onClick={(e) => e.stopPropagation()}
+          >
             {datasetName}
-          </div>
-          <div className={styles.actions}>
-            <Button
-              appearance="outline"
-              className={styles.iconButton}
-              icon={<ArrowDownloadRegular />}
-              onClick={handleDownload}
-            />
-            <Button
-              appearance="outline"
-              className={styles.iconButton}
-              icon={<DeleteRegular />}
-              onClick={handleDelete}
-            />
-          </div>
-        </DialogTitle>
-        <DialogBody>
-          <DialogContent className={styles.content}>
-            <DataPreview id={id} type={type} />
-          </DialogContent>
-        </DialogBody>
-      </DialogSurface>
-    </Dialog>
+          </Button>
+        </DialogTrigger>
+        <DialogSurface onClick={(e) => e.stopPropagation()}>
+          <DialogTitle className={styles.dialogTitle}>
+            <div className={styles.actions}>
+              <Button
+                appearance="transparent"
+                icon={<ArrowLeftRegular />}
+                onClick={() => setOpen(false)}
+              />
+              {datasetName}
+            </div>
+            <div className={styles.actions}>
+              <Button
+                appearance="outline"
+                className={styles.iconButton}
+                icon={<ArrowDownloadRegular />}
+                onClick={handleDownload}
+              />
+              <Button
+                appearance="outline"
+                className={styles.iconButton}
+                icon={<DeleteRegular />}
+                onClick={handleOpenDeleteDialog}
+              />
+            </div>
+          </DialogTitle>
+          <DialogBody>
+            <DialogContent className={styles.content}>
+              <DataPreview id={id} type={type} />
+            </DialogContent>
+          </DialogBody>
+        </DialogSurface>
+      </Dialog>
+      <DeleteRowDialog
+        dialogState={dialogState}
+        fileName={datasetName || ""}
+        onDelete={onDelete}
+      />
+    </>
   );
 }
 
