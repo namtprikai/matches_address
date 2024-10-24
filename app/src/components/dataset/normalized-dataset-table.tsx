@@ -26,7 +26,6 @@ import {
   type Dispatch,
   type SetStateAction,
   type MouseEvent,
-  type KeyboardEvent,
   useState,
 } from "react";
 import { type KeyedMutator } from "swr";
@@ -63,13 +62,13 @@ const useStyles = makeStyles({
   },
 });
 
-export type DatasetListProps = {
+type Props = {
   onSelectionChange: Dispatch<SetStateAction<SelectNormalizedDataSet["id"][]>>;
 };
 
 export function NormalizedDataSetTable({
   onSelectionChange,
-}: DatasetListProps): JSX.Element {
+}: Props): JSX.Element {
   const styles = useStyles();
   const columns = [
     createTableColumn<SelectNormalizedDataSet>({ columnId: "name" }),
@@ -102,28 +101,17 @@ export function NormalizedDataSetTable({
   );
 
   const rows = getRows((row) => {
-    const selected = isRowSelected(row.rowId);
+    const selected = isRowSelected(row.item.id);
 
     return {
       ...row,
       onClick: (e: MouseEvent) => {
-        toggleRow(e, row.rowId);
+        toggleRow(e, row.item.id);
         onSelectionChange((prev) =>
           selected
             ? prev.filter((id) => id !== row.item.id)
             : [...prev, row.item.id],
         );
-      },
-      onKeyDown: (e: KeyboardEvent) => {
-        if (e.key === " ") {
-          e.preventDefault();
-          toggleRow(e, row.rowId);
-          onSelectionChange((prev) =>
-            selected
-              ? prev.filter((id) => id !== row.item.id)
-              : [...prev, row.item.id],
-          );
-        }
       },
       selected,
       appearance: selected ? ("brand" as const) : ("none" as const),
@@ -201,7 +189,11 @@ export function NormalizedDataSetTable({
                   void handleDownload(item.id);
                 }}
               />
-              <RowMenu item={item} mutate={mutate} />
+              <RowMenu
+                item={item}
+                mutate={mutate}
+                onSelectionChange={onSelectionChange}
+              />
             </TableCell>
           </TableRow>
         ))}
@@ -213,14 +205,16 @@ export function NormalizedDataSetTable({
 function RowMenu({
   item,
   mutate,
+  onSelectionChange,
 }: {
   item: SelectNormalizedDataSet;
   mutate: KeyedMutator<SelectNormalizedDataSet[]>;
+  onSelectionChange: Props["onSelectionChange"];
 }): JSX.Element {
   const editNameDialogState = useDialogState(false);
   const deleteDialogState = useDialogState(false);
 
-  const handleEditMenuClick = async (
+  const handleEditName = async (
     id: SelectNormalizedDataSet["id"],
     newFileName: SelectNormalizedDataSet["file_name"],
   ): Promise<void> => {
@@ -231,8 +225,14 @@ function RowMenu({
     void mutate();
   };
 
-  const handleDeleteMenuClick = (id: SelectNormalizedDataSet["id"]): void => {
-    // TODO: バックエンド処理
+  const handleDelete = async (
+    id: SelectNormalizedDataSet["id"],
+  ): Promise<void> => {
+    await window.ipcRenderer.invoke("deleteNormalizedDataset", {
+      id,
+    });
+    void mutate((data) => data?.filter((d) => d.id !== id), false);
+    onSelectionChange((prev) => prev.filter((selectedId) => selectedId !== id));
   };
 
   return (
@@ -268,11 +268,12 @@ function RowMenu({
       <EditNameDialog
         dialogState={editNameDialogState}
         initialName={item.file_name}
-        onSubmit={(newFileName) => handleEditMenuClick(item.id, newFileName)}
+        onSubmit={(newFileName) => handleEditName(item.id, newFileName)}
       />
       <DeleteRowDialog
         dialogState={deleteDialogState}
-        onDelete={() => handleDeleteMenuClick(item.id)}
+        fileName={item.file_name || ""}
+        onDelete={() => handleDelete(item.id)}
       />
     </>
   );

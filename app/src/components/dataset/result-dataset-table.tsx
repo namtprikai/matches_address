@@ -26,7 +26,6 @@ import {
   type Dispatch,
   type SetStateAction,
   type MouseEvent,
-  type KeyboardEvent,
   useState,
 } from "react";
 import { type KeyedMutator } from "swr";
@@ -61,13 +60,11 @@ const useStyles = makeStyles({
   },
 });
 
-export type DatasetListProps = {
+type Props = {
   onSelectionChange: Dispatch<SetStateAction<SelectDataSetResult["id"][]>>;
 };
 
-export function ResultDataSetTable({
-  onSelectionChange,
-}: DatasetListProps): JSX.Element {
+export function ResultDataSetTable({ onSelectionChange }: Props): JSX.Element {
   const styles = useStyles();
   const columns = [
     createTableColumn<SelectDataSetResult>({ columnId: "name" }),
@@ -100,28 +97,17 @@ export function ResultDataSetTable({
   );
 
   const rows = getRows((row) => {
-    const selected = isRowSelected(row.rowId);
+    const selected = isRowSelected(row.item.id);
 
     return {
       ...row,
       onClick: (e: MouseEvent) => {
-        toggleRow(e, row.rowId);
+        toggleRow(e, row.item.id);
         onSelectionChange((prev) =>
           selected
             ? prev.filter((id) => id !== row.item.id)
             : [...prev, row.item.id],
         );
-      },
-      onKeyDown: (e: KeyboardEvent) => {
-        if (e.key === " ") {
-          e.preventDefault();
-          toggleRow(e, row.rowId);
-          onSelectionChange((prev) =>
-            selected
-              ? prev.filter((id) => id !== row.item.id)
-              : [...prev, row.item.id],
-          );
-        }
       },
       selected,
       appearance: selected ? ("brand" as const) : ("none" as const),
@@ -203,7 +189,11 @@ export function ResultDataSetTable({
                 icon={<ArrowDownloadRegular />}
                 onClick={handleDownload}
               />
-              <RowMenu item={item} mutate={mutate} />
+              <RowMenu
+                item={item}
+                mutate={mutate}
+                onSelectionChange={onSelectionChange}
+              />
             </TableCell>
           </TableRow>
         ))}
@@ -215,14 +205,16 @@ export function ResultDataSetTable({
 function RowMenu({
   item,
   mutate,
+  onSelectionChange,
 }: {
   item: SelectDataSetResult;
   mutate: KeyedMutator<SelectDataSetResult[]>;
+  onSelectionChange: Props["onSelectionChange"];
 }): JSX.Element {
   const editNameDialogState = useDialogState(false);
   const deleteDialogState = useDialogState(false);
 
-  const handleEditMenuClick = async (
+  const handleEditName = async (
     id: SelectDataSetResult["id"],
     newTitle: SelectDataSetResult["title"],
   ): Promise<void> => {
@@ -233,8 +225,12 @@ function RowMenu({
     void mutate();
   };
 
-  const handleDeleteMenuClick = (id: SelectDataSetResult["id"]): void => {
-    // TODO: バックエンド処理
+  const handleDelete = async (id: SelectDataSetResult["id"]): Promise<void> => {
+    await window.ipcRenderer.invoke("deleteDataSetResult", {
+      id,
+    });
+    void mutate((data) => data?.filter((d) => d.id !== id), false);
+    onSelectionChange((prev) => prev.filter((selectedId) => selectedId !== id));
   };
 
   return (
@@ -270,11 +266,12 @@ function RowMenu({
       <EditNameDialog
         dialogState={editNameDialogState}
         initialName={item.title}
-        onSubmit={(newName) => handleEditMenuClick(item.id, newName)}
+        onSubmit={(newName) => handleEditName(item.id, newName)}
       />
       <DeleteRowDialog
         dialogState={deleteDialogState}
-        onDelete={() => handleDeleteMenuClick(item.id)}
+        fileName={item.title || ""}
+        onDelete={() => handleDelete(item.id)}
       />
     </>
   );

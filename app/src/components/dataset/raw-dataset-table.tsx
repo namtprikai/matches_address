@@ -24,7 +24,6 @@ import {
 } from "@fluentui/react-icons";
 import {
   type MouseEvent,
-  type KeyboardEvent,
   useState,
   type Dispatch,
   type SetStateAction,
@@ -100,28 +99,17 @@ export function RawDataSetTable({ onSelectionChange }: Props): JSX.Element {
   );
 
   const rows = getRows((row) => {
-    const selected = isRowSelected(row.rowId);
+    const selected = isRowSelected(row.item.id);
 
     return {
       ...row,
       onClick: (e: MouseEvent) => {
-        toggleRow(e, row.rowId);
+        toggleRow(e, row.item.id);
         onSelectionChange((prev) =>
           selected
             ? prev.filter((id) => id !== row.item.id)
             : [...prev, row.item.id],
         );
-      },
-      onKeyDown: (e: KeyboardEvent) => {
-        if (e.key === " ") {
-          e.preventDefault();
-          toggleRow(e, row.rowId);
-          onSelectionChange((prev) =>
-            selected
-              ? prev.filter((id) => id !== row.item.id)
-              : [...prev, row.item.id],
-          );
-        }
       },
       selected,
       appearance: selected ? ("brand" as const) : ("none" as const),
@@ -197,7 +185,11 @@ export function RawDataSetTable({ onSelectionChange }: Props): JSX.Element {
                   void handleDownload(item.id);
                 }}
               />
-              <RowMenu item={item} mutate={mutate} />
+              <RowMenu
+                item={item}
+                mutate={mutate}
+                onSelectionChange={onSelectionChange}
+              />
             </TableCell>
           </TableRow>
         ))}
@@ -209,9 +201,11 @@ export function RawDataSetTable({ onSelectionChange }: Props): JSX.Element {
 function RowMenu({
   item,
   mutate,
+  onSelectionChange,
 }: {
   item: SelectRawDataSet;
   mutate: KeyedMutator<SelectRawDataSet[]>;
+  onSelectionChange: Props["onSelectionChange"];
 }): JSX.Element {
   const editNameDialogState = useDialogState(false);
   const deleteDialogState = useDialogState(false);
@@ -228,7 +222,7 @@ function RowMenu({
     return { name, ext };
   })();
 
-  const handleEditMenuClick = async (
+  const handleEditName = async (
     id: SelectRawDataSet["id"],
     newFileName: SelectRawDataSet["file_name"],
   ): Promise<void> => {
@@ -240,8 +234,12 @@ function RowMenu({
     void mutate();
   };
 
-  const handleDeleteMenuClick = (id: SelectRawDataSet["id"]): void => {
-    // TODO: バックエンド処理
+  const handleDelete = async (id: SelectRawDataSet["id"]): Promise<void> => {
+    await window.ipcRenderer.invoke("deleteRawDataset", {
+      id,
+    });
+    void mutate((data) => data?.filter((d) => d.id !== id), false);
+    onSelectionChange((prev) => prev.filter((selectedId) => selectedId !== id));
   };
 
   return (
@@ -277,11 +275,12 @@ function RowMenu({
       <EditNameDialog
         dialogState={editNameDialogState}
         initialName={name}
-        onSubmit={(newFileName) => handleEditMenuClick(item.id, newFileName)}
+        onSubmit={(newFileName) => handleEditName(item.id, newFileName)}
       />
       <DeleteRowDialog
         dialogState={deleteDialogState}
-        onDelete={() => handleDeleteMenuClick(item.id)}
+        fileName={item.file_name}
+        onDelete={() => handleDelete(item.id)}
       />
     </>
   );

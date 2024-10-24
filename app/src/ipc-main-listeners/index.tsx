@@ -42,6 +42,9 @@ import { _debugInsertModelFiles } from "./_debug-insert-model-files";
 import { updateRawDataset } from "./update-raw-dataset";
 import { updateNormalizedDataset } from "./update-normalized-dataset";
 import { updateDataSetResult } from "./update-data-set-result";
+import { deleteRawDataset } from "./delete-raw-dataset";
+import { deleteNormalizedDataset } from "./delete-normalized-dataset";
+import { deleteDataSetResult } from "./delete-data-set-result";
 import { updateModelFiles } from "./update-model-files";
 import { deleteModelFiles } from "./delete-model-files";
 import { fetchJobLists } from "./fetch-job-lists";
@@ -89,6 +92,9 @@ export const ipcMainListeners = {
   updateRawDataset,
   updateNormalizedDataset,
   updateDataSetResult,
+  deleteRawDataset,
+  deleteNormalizedDataset,
+  deleteDataSetResult,
   updateModelFiles,
   deleteModelFiles,
   fetchJobLists,
