@@ -10,6 +10,7 @@ import {
 import { useController, useForm } from "react-hook-form";
 import { type NormalizationParameters } from "../@types/normalization";
 import { useDialogState } from "../hooks/use-dialog-state";
+import { getDefaultNormalizationParameter } from "../utils/get-default-normalization-parameter";
 import { DialogSurface } from "./ui/dialog-surface";
 import { DialogBody } from "./ui/dialog-body";
 import { DialogTitle } from "./ui/dialog-title";
@@ -89,11 +90,7 @@ export const FormNormalizationAdvancedSettings = ({
   const styles = useStyles();
 
   const setDefaultValue = (): void => {
-    reset({
-      similarityThreshold: 0.95,
-      nGramSize: 2,
-      joiningMethod: "intersection",
-    });
+    reset(getDefaultNormalizationParameter().settings.advanced);
   };
 
   const onSubmit = handleSubmit((data) => {

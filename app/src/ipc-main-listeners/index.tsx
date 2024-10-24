@@ -39,8 +39,17 @@ import { selectDataSetResult } from "./select-data-set-result";
 import { readDatasetFile } from "./read-dataset-file";
 import { selectModelFiles } from "./select-model-files";
 import { _debugInsertModelFiles } from "./_debug-insert-model-files";
+import { updateRawDataset } from "./update-raw-dataset";
+import { updateNormalizedDataset } from "./update-normalized-dataset";
+import { updateDataSetResult } from "./update-data-set-result";
+import { deleteRawDataset } from "./delete-raw-dataset";
+import { deleteNormalizedDataset } from "./delete-normalized-dataset";
+import { deleteDataSetResult } from "./delete-data-set-result";
+import { updateModelFiles } from "./update-model-files";
+import { deleteModelFiles } from "./delete-model-files";
 import { fetchJobLists } from "./fetch-job-lists";
 import { fetchJobTasks } from "./fetch-job-tasks";
+import { buildModel } from "./ml/build-model";
 
 export const ipcMainListeners = {
   helloFromPython,
@@ -80,8 +89,17 @@ export const ipcMainListeners = {
   readDatasetFile,
   selectModelFiles,
   _debugInsertModelFiles,
+  updateRawDataset,
+  updateNormalizedDataset,
+  updateDataSetResult,
+  deleteRawDataset,
+  deleteNormalizedDataset,
+  deleteDataSetResult,
+  updateModelFiles,
+  deleteModelFiles,
   fetchJobLists,
   fetchJobTasks,
+  buildModel,
 };
 
 export const execFileAsync = promisify(execFile);

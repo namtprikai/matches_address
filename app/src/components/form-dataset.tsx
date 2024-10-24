@@ -151,7 +151,13 @@ const useStyles = makeStyles({
 export const FormDataset = <
   FORM_TYPE extends FieldValues,
   COLUMN_TYPE extends object,
->(props: {
+>({
+  value,
+  onChange,
+  dataSetName,
+  name,
+  appearance,
+}: {
   value: {
     columns?: COLUMN_TYPE;
     filePath?: string;
@@ -159,19 +165,22 @@ export const FormDataset = <
   name: Path<FORM_TYPE>;
   dataSetName: string;
   appearance?: "default" | "large";
-  onChange?: (value: typeof props.value) => void;
+  onChange?: (data: typeof value) => void;
 }): JSX.Element => {
-  const [value] = useState<typeof props.value>(props.value);
   const [dataSet, setDataSet] = useState<SelectRawDataSet | null>(null);
   const dialogState = useDialogState();
 
   const { setIsOpen } = dialogState;
 
-  const appearance = props.appearance || "default";
-
+  // ファイル選択時にファイルパスが保存されるための実装
   useEffect(() => {
-    props.onChange?.(value);
-  }, [value, props]);
+    if (onChange) {
+      onChange({
+        ...value,
+        filePath: dataSet?.file_path,
+      });
+    }
+  }, [dataSet, onChange, value]);
 
   // {}で囲んでif処理を書くのが可読性低いので別関数化
   const SelectorView = (): JSX.Element => {
@@ -211,7 +220,7 @@ export const FormDataset = <
 
   return (
     <Card>
-      <p>{props.dataSetName}</p>
+      <p>{dataSetName}</p>
       <div className={styles.fieldContainer}>
         <div
           className={styles.fileSelectorContainer}

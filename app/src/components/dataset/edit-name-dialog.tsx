@@ -39,6 +39,7 @@ export function EditNameDialog({
   const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = (): void => {
+    // TODO: バリデーションロジックを追加する（ドットが含まれていないかどうかとか）
     if (!newName) {
       setError("データ名を入力してください");
       return;

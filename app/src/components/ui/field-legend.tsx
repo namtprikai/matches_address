@@ -11,7 +11,7 @@ const useStyles = makeStyles({
 export const FieldLegend = forwardRef<
   HTMLLegendElement,
   ComponentPropsWithoutRef<"legend">
->(({ className, children, ...props }, ref) => {
+>(({ className: _, children, ...props }, ref) => {
   const styles = useStyles();
   return (
     <legend {...props} ref={ref} className={styles.fieldLegend}>

@@ -20,6 +20,7 @@ import {
 import { useFetchRawDatasets } from "../../hooks/use-fetch-raw-datasets";
 import { useFetchNormalizedDatasets } from "../../hooks/use-fetch-normalized-datasets";
 import { saveDataSetFile } from "../../utils/save-data-set-file";
+import { useFetchDataSetResults } from "../../hooks/use-fetch-data-set-results";
 
 const useStyles = makeStyles({
   root: {
@@ -76,6 +77,9 @@ export function Dataset(): JSX.Element {
   const { onTabSelect, selectedValue } = useTabs<TabValue>(initialTabValue);
   const [selectedItemIds, setSelectedItemIds] = useState<number[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const { mutate: mutateRaw } = useFetchRawDatasets();
+  const { mutate: mutateNormalized } = useFetchNormalizedDatasets();
+  const { mutate: mutateResult } = useFetchDataSetResults();
 
   const handleUploadButtonClick = (): void => {
     fileInputRef.current?.click();
@@ -90,35 +94,76 @@ export function Dataset(): JSX.Element {
     e.target.value = ""; // ファイル選択をリセットする
   };
 
-  // TODO: バックエンド処理
-  const handleDownload = async (): Promise<void> => {
-    try {
-      const response = await fetch("/dummy-data.csv");
-      if (!response.ok) {
-        throw new Error("Network response was not ok");
+  const handleDownloadSelectedItems = async (): Promise<void> => {
+    // TODO: バックエンド処理
+  };
+
+  const handleDeleteSelectedItems = async (): Promise<void> => {
+    switch (selectedValue) {
+      case "raw": {
+        await Promise.all(
+          selectedItemIds.map((id) =>
+            window.ipcRenderer.invoke("deleteRawDataset", {
+              id,
+            }),
+          ),
+        )
+          .then(() => {
+            void mutateRaw(
+              (prev) =>
+                prev?.filter((item) => !selectedItemIds.includes(item.id)),
+              false,
+            );
+            setSelectedItemIds([]);
+          })
+          .catch(console.error);
+        break;
       }
-      const blob = await response.blob();
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = "dummy-data.csv";
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
-    } catch (error) {
-      console.error("Download failed:", error);
-      alert("ダウンロードに失敗しました。");
+      case "normalization": {
+        await Promise.all(
+          selectedItemIds.map((id) =>
+            window.ipcRenderer.invoke("deleteNormalizedDataset", {
+              id,
+            }),
+          ),
+        )
+          .then(() => {
+            void mutateNormalized(
+              (prev) =>
+                prev?.filter((item) => !selectedItemIds.includes(item.id)),
+              false,
+            );
+            setSelectedItemIds([]);
+          })
+          .catch(console.error);
+        break;
+      }
+      case "result": {
+        await Promise.all(
+          selectedItemIds.map((id) =>
+            window.ipcRenderer.invoke("deleteDataSetResult", {
+              id,
+            }),
+          ),
+        )
+          .then(() => {
+            void mutateResult(
+              (prev) =>
+                prev?.filter((item) => !selectedItemIds.includes(item.id)),
+              false,
+            );
+            setSelectedItemIds([]);
+          })
+          .catch(console.error);
+        break;
+      }
+      default: {
+        const exhaustiveCheck: never = selectedValue;
+        throw new Error(`Unhandled type: ${exhaustiveCheck}`);
+      }
     }
   };
 
-  const handleDeleteSelectedItems = (): void => {
-    // TODO: バックエンド処理
-    setSelectedItemIds([]);
-  };
-
-  const { mutate: mutateRaw } = useFetchRawDatasets();
-  const { mutate: mutateNormalized } = useFetchNormalizedDatasets();
   async function _handleAddDummyDataSets(): Promise<void> {
     for (const seed of _dummyRawDataSets) {
       await window.ipcRenderer.invoke("insertRawDatasets", seed);
@@ -136,7 +181,10 @@ export function Dataset(): JSX.Element {
         <h2 className={styles.heading}>データセット管理</h2>
         <TabList
           defaultSelectedValue={initialTabValue}
-          onTabSelect={onTabSelect}
+          onTabSelect={(e, data) => {
+            onTabSelect(e, data);
+            setSelectedItemIds([]);
+          }}
         >
           {TAB_VALUES.map((value) => (
             <Tab key={value} value={value}>
@@ -183,7 +231,7 @@ export function Dataset(): JSX.Element {
               className={styles.iconButton}
               disabled={selectedItemIds.length === 0}
               icon={<ArrowDownloadRegular />}
-              onClick={handleDownload}
+              onClick={handleDownloadSelectedItems}
             />
             <DeleteRowsDialog
               disabled={selectedItemIds.length === 0}
