@@ -1,4 +1,8 @@
 import { makeStyles, tokens } from "@fluentui/react-components";
+import { useState } from "react";
+import { set } from "react-hook-form";
+import { FormNormalization } from "../../components/form-normalization";
+import { type NormalizationParameters } from "../../@types/normalization";
 
 const useStyles = makeStyles({
   root: {
@@ -17,11 +21,42 @@ const useStyles = makeStyles({
 
 export function Normalization(): JSX.Element {
   const styles = useStyles();
+  const [parameters, setParameters] = useState<NormalizationParameters | null>(
+    null,
+  );
 
   return (
     <div className={styles.root}>
       <h2 className={styles.heading}>データ正規化処理</h2>
-      <div></div>
+      <div>
+        <FormNormalization
+          onSave={(parameters) => {
+            setParameters(parameters);
+          }}
+          value={{
+            settings: {
+              referencedData: "waterSupply",
+              referenceDate: "2021-01-01",
+              advanced: {
+                similarityThreshold: 0.8,
+                nGramSize: 2,
+                joiningMethod: "intersection",
+              },
+            },
+            data: {
+              residentRegister: {
+                path: "path/to/residentRegister.csv",
+                columns: {
+                  householdCode: "",
+                  age: "",
+                  gender: "",
+                  address: "",
+                },
+              },
+            },
+          }}
+        />
+      </div>
     </div>
   );
 }

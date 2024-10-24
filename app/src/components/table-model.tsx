@@ -36,6 +36,7 @@ import { DialogTitle } from "./ui/dialog-title";
 import { DialogContent } from "./ui/dialog-content";
 import { DialogActions } from "./ui/dialog-actions";
 import { Input } from "./ui/input";
+import { SeeAll } from "./ui/see-all";
 
 const useStyles = makeStyles({
   updatedAtHeaderCell: {
@@ -66,6 +67,13 @@ const useStyles = makeStyles({
   alert100: {
     color: "#C4314B",
   },
+  fileName: {
+    width: "220px",
+  },
+  note: {
+    whiteSpace: "pre-wrap",
+    overflowWrap: "break-word",
+  },
   moreVerticalButton: {
     width: "44px",
   },
@@ -74,7 +82,7 @@ const useStyles = makeStyles({
 export const TableModel = (): JSX.Element => {
   const styles = useStyles();
 
-  const { data } = useFetchModelFiles();
+  const { data, mutate } = useFetchModelFiles();
 
   if (data === undefined) return <></>;
 
@@ -88,7 +96,9 @@ export const TableModel = (): JSX.Element => {
     <Table>
       <TableHeader className={styles.tableHeader}>
         <TableRow className={styles.tableHeaderRow}>
-          <TableHeaderCell className={styles.tableHeaderCell}>
+          <TableHeaderCell
+            className={mergeClasses(styles.tableHeaderCell, styles.fileName)}
+          >
             モデル名
           </TableHeaderCell>
           <TableHeaderCell className={styles.tableHeaderCell}>
@@ -117,17 +127,51 @@ export const TableModel = (): JSX.Element => {
       </TableHeader>
       <TableBody>
         {data.map((item) => (
-          <TableRowItem key={item.id} item={item} />
+          <TableRowItem key={item.id} item={item} mutate={mutate} />
         ))}
       </TableBody>
     </Table>
   );
 };
 
-/**
- * TableModelコンポーネントでのみ利用
- */
-const TableRowItem = ({ item }: { item: SelectModelFile }): JSX.Element => {
+/** TableRowItemコンポーネントでのみ利用 */
+const editModelFileName = async (
+  id: number,
+  fileName: string,
+): Promise<void> => {
+  await window.ipcRenderer.invoke("updateModelFiles", {
+    modelFileId: id,
+    value: {
+      file_name: fileName,
+    },
+  });
+};
+
+/** TableRowItemコンポーネントでのみ利用 */
+const editModelNote = async (id: number, note: string): Promise<void> => {
+  await window.ipcRenderer.invoke("updateModelFiles", {
+    modelFileId: id,
+    value: {
+      note,
+    },
+  });
+};
+
+/** TableRowItemコンポーネントでのみ利用 */
+const deleteModelFile = async (id: number): Promise<void> => {
+  await window.ipcRenderer.invoke("deleteModelFiles", {
+    modelFileId: id,
+  });
+};
+
+/** TableModelコンポーネントでのみ利用 */
+const TableRowItem = ({
+  item,
+  mutate,
+}: {
+  item: SelectModelFile;
+  mutate: () => void;
+}): JSX.Element => {
   const styles = useStyles();
 
   const editModelFileNameDialogState = useDialogState(false);
@@ -149,7 +193,11 @@ const TableRowItem = ({ item }: { item: SelectModelFile }): JSX.Element => {
         </Link>
       </TableCell>
       <TableCell>
-        <Caption1>{item.note}</Caption1>
+        {item.note && (
+          <Caption1 className={styles.note}>
+            <SeeAll content={item.note} />
+          </Caption1>
+        )}
       </TableCell>
       <TableCell>
         <Caption1>{formatDate(item.created_at)}</Caption1>
@@ -177,28 +225,40 @@ const TableRowItem = ({ item }: { item: SelectModelFile }): JSX.Element => {
               <MenuItem onClick={() => editNoteDialogState.setIsOpen(true)}>
                 モデル説明文の編集
               </MenuItem>
-              <MenuItem className={styles.alert100}>削除</MenuItem>
+              <MenuItem
+                className={styles.alert100}
+                onClick={() => deleteDialogState.setIsOpen(true)}
+              >
+                削除
+              </MenuItem>
             </MenuList>
           </MenuPopover>
         </Menu>
         <EditModelFileNameDialog
           dialogState={editModelFileNameDialogState}
-          initialFileName=""
-          onSubmit={() => {
-            /** @todo 編集処理 */
+          initialFileName={item.file_name || ""}
+          onSubmit={async (name) => {
+            await editModelFileName(item.id, name);
+            mutate();
+            editModelFileNameDialogState.setIsOpen(false);
           }}
         />
         <EditNoteDialog
           dialogState={editNoteDialogState}
-          initialNote=""
-          onSubmit={() => {
-            /** @todo 編集処理 */
+          initialNote={item.note || ""}
+          onSubmit={async (note) => {
+            await editModelNote(item.id, note);
+            mutate();
+            editNoteDialogState.setIsOpen(false);
           }}
         />
         <DeleteMenuWithDialog
           dialogState={deleteDialogState}
-          onDelete={() => {
-            /** @todo 削除処理 */
+          modelFileName={item.file_name}
+          onDelete={async () => {
+            await deleteModelFile(item.id);
+            mutate();
+            deleteDialogState.setIsOpen(false);
           }}
         />
       </TableCell>
@@ -206,9 +266,7 @@ const TableRowItem = ({ item }: { item: SelectModelFile }): JSX.Element => {
   );
 };
 
-/**
- * TableModelコンポーネントでのみ利用
- */
+/** TableModelコンポーネントでのみ利用 */
 const EditModelFileNameDialog = ({
   initialFileName,
   onSubmit,
@@ -244,9 +302,7 @@ const EditModelFileNameDialog = ({
   );
 };
 
-/**
- * TableModelコンポーネントでのみ利用
- */
+/** TableModelコンポーネントでのみ利用 */
 const EditNoteDialog = ({
   initialNote,
   onSubmit,
@@ -282,15 +338,15 @@ const EditNoteDialog = ({
   );
 };
 
-/**
- * TableModelコンポーネントでのみ利用
- */
+/** TableModelコンポーネントでのみ利用 */
 const DeleteMenuWithDialog = ({
   onDelete,
   dialogState,
+  modelFileName,
 }: {
   onDelete: () => void;
   dialogState: ReturnUseDialogState;
+  modelFileName: string | null;
 }): JSX.Element => {
   const { isOpen, setIsOpen } = dialogState;
 
@@ -298,7 +354,11 @@ const DeleteMenuWithDialog = ({
     <Dialog onOpenChange={(_, data) => setIsOpen(data.open)} open={isOpen}>
       <DialogSurface>
         <DialogBody>
-          <DialogTitle>このモデルを削除しますか？</DialogTitle>
+          <DialogTitle>
+            {modelFileName
+              ? `「${modelFileName}」を削除しますか？`
+              : "このモデルを削除しますか？"}
+          </DialogTitle>
           <DialogContent>
             削除したモデルを復元することはできません
           </DialogContent>

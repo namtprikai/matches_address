@@ -68,12 +68,12 @@ const useStyles = makeStyles({
   },
 });
 
-const TAB_VALUES = ["seed", "normalization", "result"] as const;
+const TAB_VALUES = ["raw", "normalization", "result"] as const;
 type TabValue = (typeof TAB_VALUES)[number];
 
 export function Dataset(): JSX.Element {
   const styles = useStyles();
-  const initialTabValue: TabValue = "seed";
+  const initialTabValue: TabValue = "raw";
   const { onTabSelect, selectedValue } = useTabs<TabValue>(initialTabValue);
   const [selectedItemIds, setSelectedItemIds] = useState<number[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -100,7 +100,7 @@ export function Dataset(): JSX.Element {
 
   const handleDeleteSelectedItems = async (): Promise<void> => {
     switch (selectedValue) {
-      case "seed": {
+      case "raw": {
         await Promise.all(
           selectedItemIds.map((id) =>
             window.ipcRenderer.invoke("deleteRawDataset", {
@@ -190,7 +190,7 @@ export function Dataset(): JSX.Element {
             <Tab key={value} value={value}>
               {
                 {
-                  seed: "シードデータ",
+                  raw: "シードデータ",
                   normalization: "正規化済データ",
                   result: "空き家判定結果データ",
                 }[value]
@@ -205,7 +205,7 @@ export function Dataset(): JSX.Element {
       <Card className={styles.content}>
         <div className={styles.actions}>
           <div>
-            {selectedValue === "seed" ? (
+            {selectedValue === "raw" ? (
               <>
                 <input
                   ref={fileInputRef}
@@ -242,7 +242,7 @@ export function Dataset(): JSX.Element {
         <div className={styles.datasetList}>
           {
             {
-              seed: <RawDataSetTable onSelectionChange={setSelectedItemIds} />,
+              raw: <RawDataSetTable onSelectionChange={setSelectedItemIds} />,
               normalization: (
                 <NormalizedDataSetTable
                   onSelectionChange={setSelectedItemIds}

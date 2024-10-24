@@ -248,11 +248,7 @@ function RowMenu({
       id,
       fileName: fullFileName,
     });
-    void mutate(
-      (data) =>
-        data?.map((d) => (d.id === id ? { ...d, file_name: fullFileName } : d)),
-      false, // すでにDBと同期が取れているので、再検証は不要（false）
-    );
+    void mutate();
   };
 
   const handleDelete = async (id: SelectRawDataSet["id"]): Promise<void> => {
@@ -300,6 +296,7 @@ function RowMenu({
       />
       <DeleteRowDialog
         dialogState={deleteDialogState}
+        fileName={item.file_name}
         onDelete={() => handleDelete(item.id)}
       />
     </>

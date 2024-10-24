@@ -17,6 +17,7 @@ import { LayoutWithoutPadding } from "./layoutWithoutPadding";
 import { Model } from "./model";
 import { Job } from "./job";
 import { JobDetail } from "./job/detail";
+import { ModelCreate } from "./model/create";
 
 // クライアントだけで動作するアプリケーションのため`createHashRouter`を使用する
 const router = createHashRouter([
@@ -65,6 +66,10 @@ const router = createHashRouter([
       {
         path: "debug",
         element: <Debug />,
+      },
+      {
+        path: "model/create",
+        element: <ModelCreate />,
       },
     ],
   },
