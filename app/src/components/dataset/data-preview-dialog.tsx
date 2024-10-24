@@ -76,8 +76,8 @@ const useStyles = makeStyles({
 interface Props {
   type: DataSetType;
   id: number;
-  datasetName: string | null;
-  onDelete: () => void;
+  datasetName?: string | null;
+  onDelete?: () => void;
 }
 
 export function DataPreviewDialog({
@@ -141,15 +141,19 @@ export function DataPreviewDialog({
         }}
         open={open}
       >
-        <DialogTrigger disableButtonEnhancement>
-          <Button
-            appearance="transparent"
-            className={styles.datasetButton}
-            onClick={(e) => e.stopPropagation()}
-          >
-            {datasetName}
-          </Button>
-        </DialogTrigger>
+        {datasetName ? (
+          <DialogTrigger disableButtonEnhancement>
+            <Button
+              appearance="transparent"
+              className={styles.datasetButton}
+              onClick={(e) => e.stopPropagation()}
+            >
+              {datasetName}
+            </Button>
+          </DialogTrigger>
+        ) : (
+          <></> // type errorを回避するためnullではなく<></>を返す
+        )}
         <DialogSurface onClick={(e) => e.stopPropagation()}>
           <DialogTitle className={styles.dialogTitle}>
             <div className={styles.actions}>

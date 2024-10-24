@@ -48,6 +48,7 @@ import { DialogSurface } from "../ui/dialog-surface";
 import { downloadObjectsAsCSV } from "../../utils/download-objects-as-csv";
 import { DeleteRowDialog } from "./delete-row-dialog";
 import { EditNameDialog } from "./edit-name-dialog";
+import { DataPreviewDialog } from "./data-preview-dialog";
 
 const useStyles = makeStyles({
   tableHeader: {
@@ -59,16 +60,14 @@ const useStyles = makeStyles({
     justifyContent: "flex-end",
     gap: tokens.spacingHorizontalM,
   },
-  checkboxTh: {
-    width: "44px",
-  },
-  menuItemButton: {
-    justifyContent: "flex-start",
+  datasetButton: {
     padding: 0,
-    fontWeight: "normal",
-  },
-  input: {
-    width: "100%",
+    justifyContent: "flex-start",
+    color: tokens.colorBrandForeground1,
+    textDecoration: "underline",
+    "&:hover": {
+      textDecoration: "none",
+    },
   },
   radioGroup: {
     marginTop: tokens.spacingVerticalM,
@@ -203,13 +202,24 @@ export function ResultDataSetTable({ onSelectionChange }: Props): JSX.Element {
               checked={selected}
             />
             <TableCell>
-              {/* TODO: 建物/地域を選択するダイアログを表示する */}
-              {/* <DataPreviewDialog
-                datasetName={item.title}
-                id={item.id}
-                type="result"
-              /> */}
-              {item.title}
+              <SelectUnitDialog
+                buttonText="プレビューを見る"
+                onSubmit={(unit) =>
+                  // handleDownload(unit, item.id, item.title || "")
+                  // eslint-disable-next-line no-console -- TODO: 後で消す
+                  console.log(unit, item.id, item.title)
+                }
+                title="データのプレビュー"
+                triggerComponent={
+                  <Button
+                    appearance="transparent"
+                    className={styles.datasetButton}
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    {item.title}
+                  </Button>
+                }
+              />
             </TableCell>
             <TableCell>{formatDate(item.updated_at, "YYYY/MM/DD")}</TableCell>
             <TableCell className={styles.actions}>
@@ -257,49 +267,54 @@ function SelectUnitDialog({
   const [selectedUnit, setSelectedUnit] = useState<Unit>("building");
 
   return (
-    <Dialog
-      onOpenChange={(e) => {
-        e.stopPropagation();
-        setOpen((prev) => !prev);
-      }}
-      open={open}
-    >
-      <DialogTrigger disableButtonEnhancement>{triggerComponent}</DialogTrigger>
-      <DialogSurface onClick={(e) => e.stopPropagation()}>
-        <DialogBody>
-          <DialogTitle>{title}</DialogTitle>
-          <DialogContent>
-            <p>
-              空き家判定結果データは以下の2つのデータが含まれます。
-              どちらか選択してください。
-            </p>
-            <Field className={styles.radioGroup}>
-              <RadioGroup
-                onChange={(_, data) =>
-                  setSelectedUnit(data.value as "building" | "area")
-                }
-                value={selectedUnit}
+    <>
+      <Dialog
+        onOpenChange={(e) => {
+          e.stopPropagation();
+          setOpen((prev) => !prev);
+        }}
+        open={open}
+      >
+        <DialogTrigger disableButtonEnhancement>
+          {triggerComponent}
+        </DialogTrigger>
+        <DialogSurface onClick={(e) => e.stopPropagation()}>
+          <DialogBody>
+            <DialogTitle>{title}</DialogTitle>
+            <DialogContent>
+              <p>
+                空き家判定結果データは以下の2つのデータが含まれます。
+                どちらか選択してください。
+              </p>
+              <Field className={styles.radioGroup}>
+                <RadioGroup
+                  onChange={(_, data) =>
+                    setSelectedUnit(data.value as "building" | "area")
+                  }
+                  value={selectedUnit}
+                >
+                  <Radio label="建物単位" value="building" />
+                  <Radio label="地域単位" value="area" />
+                </RadioGroup>
+              </Field>
+            </DialogContent>
+            <DialogActions>
+              <Button
+                appearance="primary"
+                onClick={() => {
+                  onSubmit(selectedUnit);
+                  setOpen(false);
+                }}
+                size="medium"
               >
-                <Radio label="建物単位" value="building" />
-                <Radio label="地域単位" value="area" />
-              </RadioGroup>
-            </Field>
-          </DialogContent>
-          <DialogActions>
-            <Button
-              appearance="primary"
-              onClick={() => {
-                onSubmit(selectedUnit);
-                setOpen(false);
-              }}
-              size="medium"
-            >
-              {buttonText}
-            </Button>
-          </DialogActions>
-        </DialogBody>
-      </DialogSurface>
-    </Dialog>
+                {buttonText}
+              </Button>
+            </DialogActions>
+          </DialogBody>
+        </DialogSurface>
+      </Dialog>
+      <DataPreviewDialog id={1} type="result" />
+    </>
   );
 }
 

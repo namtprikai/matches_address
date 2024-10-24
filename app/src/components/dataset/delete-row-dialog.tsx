@@ -8,7 +8,7 @@ import { Button } from "../ui/button";
 import { type ReturnUseDialogState } from "../../hooks/use-dialog-state";
 
 interface Props {
-  onDelete: () => void;
+  onDelete?: () => void;
   dialogState: ReturnUseDialogState;
 }
 
