@@ -100,7 +100,7 @@ export function Dataset(): JSX.Element {
 
   const handleDeleteSelectedItems = async (): Promise<void> => {
     switch (selectedValue) {
-      case "seed": {
+      case "raw": {
         await Promise.all(
           selectedItemIds.map((id) =>
             window.ipcRenderer.invoke("deleteRawDataset", {
