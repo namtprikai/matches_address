@@ -237,11 +237,7 @@ function RowMenu({
       id,
       fileName: fullFileName,
     });
-    void mutate(
-      (data) =>
-        data?.map((d) => (d.id === id ? { ...d, file_name: fullFileName } : d)),
-      false, // すでにDBと同期が取れているので、再検証は不要（false）
-    );
+    void mutate();
   };
 
   const handleDeleteMenuClick = (id: SelectRawDataSet["id"]): void => {
