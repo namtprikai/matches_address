@@ -25,6 +25,9 @@ import {
   useFetchDataSetFile,
   type DataSetType,
 } from "../../hooks/use-fetch-data-set-file";
+import { downloadDataSetFile } from "../../utils/download-data-set-file";
+import { useDialogState } from "../../hooks/use-dialog-state";
+import { DeleteRowDialog } from "./delete-row-dialog";
 
 const useStyles = makeStyles({
   dialogTitle: {
@@ -74,73 +77,117 @@ interface Props {
   type: DataSetType;
   id: number;
   datasetName: string | null;
+  onDelete: () => void;
 }
 
 export function DataPreviewDialog({
   type,
   id,
   datasetName,
+  onDelete,
 }: Props): JSX.Element {
   const styles = useStyles();
   const [open, setOpen] = useState(false);
+  const dialogState = useDialogState(false);
 
-  const handleDownload = (): void => {
-    // TODO: ダウンロードの処理を実装する
+  const handleDownload = async (): Promise<void> => {
+    switch (type) {
+      case "raw": {
+        const data = await window.ipcRenderer.invoke("selectRawDataset", {
+          id,
+        });
+        if (!data) return;
+        const buffer = await window.ipcRenderer.invoke("readDatasetFile", {
+          fileName: data.file_path,
+        });
+        void downloadDataSetFile(buffer, data.file_name);
+        break;
+      }
+      case "normalized": {
+        const data = await window.ipcRenderer.invoke(
+          "selectNormalizedDataSet",
+          {
+            id,
+          },
+        );
+        if (!data) return;
+        const buffer = await window.ipcRenderer.invoke("readDatasetFile", {
+          fileName: data.file_path,
+        });
+        void downloadDataSetFile(buffer, data.file_name || "");
+        break;
+      }
+      case "result": {
+        // TODO: 建物or地域のどちらのデータをダウンロードするか選択するダイアログを表示する
+        break;
+      }
+      default: {
+        const exhaustiveCheck: never = type;
+        throw new Error(`Unhandled type: ${exhaustiveCheck}`);
+      }
+    }
   };
 
-  const handleDelete = (): void => {
-    // TODO: 削除の処理を実装する
+  const handleOpenDeleteDialog = (): void => {
+    dialogState.setIsOpen(true);
   };
 
   return (
-    <Dialog
-      onOpenChange={(e) => {
-        e.stopPropagation();
-        setOpen((prev) => !prev);
-      }}
-      open={open}
-    >
-      <DialogTrigger disableButtonEnhancement>
-        <Button
-          appearance="transparent"
-          className={styles.datasetButton}
-          onClick={(e) => e.stopPropagation()}
-        >
-          {datasetName}
-        </Button>
-      </DialogTrigger>
-      <DialogSurface onClick={(e) => e.stopPropagation()}>
-        <DialogTitle className={styles.dialogTitle}>
-          <div className={styles.actions}>
-            <Button
-              appearance="transparent"
-              icon={<ArrowLeftRegular />}
-              onClick={() => setOpen(false)}
-            />
+    <>
+      <Dialog
+        onOpenChange={(e) => {
+          e.stopPropagation();
+          setOpen((prev) => !prev);
+        }}
+        open={open}
+      >
+        <DialogTrigger disableButtonEnhancement>
+          <Button
+            appearance="transparent"
+            className={styles.datasetButton}
+            onClick={(e) => e.stopPropagation()}
+          >
             {datasetName}
-          </div>
-          <div className={styles.actions}>
-            <Button
-              appearance="outline"
-              className={styles.iconButton}
-              icon={<ArrowDownloadRegular />}
-              onClick={handleDownload}
-            />
-            <Button
-              appearance="outline"
-              className={styles.iconButton}
-              icon={<DeleteRegular />}
-              onClick={handleDelete}
-            />
-          </div>
-        </DialogTitle>
-        <DialogBody>
-          <DialogContent className={styles.content}>
-            <DataPreview id={id} type={type} />
-          </DialogContent>
-        </DialogBody>
-      </DialogSurface>
-    </Dialog>
+          </Button>
+        </DialogTrigger>
+        <DialogSurface onClick={(e) => e.stopPropagation()}>
+          <DialogTitle className={styles.dialogTitle}>
+            <div className={styles.actions}>
+              <Button
+                appearance="transparent"
+                icon={<ArrowLeftRegular />}
+                onClick={() => setOpen(false)}
+              />
+              {datasetName}
+            </div>
+            <div className={styles.actions}>
+              <Button
+                appearance="outline"
+                className={styles.iconButton}
+                icon={<ArrowDownloadRegular />}
+                onClick={handleDownload}
+              />
+              <Button
+                appearance="outline"
+                className={styles.iconButton}
+                icon={<DeleteRegular />}
+                onClick={handleOpenDeleteDialog}
+              />
+            </div>
+          </DialogTitle>
+          <DialogBody>
+            <DialogContent className={styles.content}>
+              <DataPreview id={id} type={type} />
+            </DialogContent>
+          </DialogBody>
+        </DialogSurface>
+      </Dialog>
+      <DeleteRowDialog
+        dialogState={dialogState}
+        fileName={datasetName || ""}
+        onDelete={onDelete}
+      />
+    </>
   );
 }
 
