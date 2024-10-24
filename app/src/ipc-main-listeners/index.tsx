@@ -42,8 +42,11 @@ import { _debugInsertModelFiles } from "./_debug-insert-model-files";
 import { updateRawDataset } from "./update-raw-dataset";
 import { updateNormalizedDataset } from "./update-normalized-dataset";
 import { updateDataSetResult } from "./update-data-set-result";
+import { updateModelFiles } from "./update-model-files";
+import { deleteModelFiles } from "./delete-model-files";
 import { fetchJobLists } from "./fetch-job-lists";
 import { fetchJobTasks } from "./fetch-job-tasks";
+import { buildModel } from "./ml/build-model";
 
 export const ipcMainListeners = {
   helloFromPython,
@@ -86,8 +89,11 @@ export const ipcMainListeners = {
   updateRawDataset,
   updateNormalizedDataset,
   updateDataSetResult,
+  updateModelFiles,
+  deleteModelFiles,
   fetchJobLists,
   fetchJobTasks,
+  buildModel,
 };
 
 export const execFileAsync = promisify(execFile);
