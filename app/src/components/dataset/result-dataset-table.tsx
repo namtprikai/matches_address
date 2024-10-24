@@ -229,7 +229,7 @@ function RowMenu({
     await window.ipcRenderer.invoke("deleteDataSetResult", {
       id,
     });
-    void mutate((data) => data?.filter((d) => d.id !== id), false);
+    void mutate();
     onSelectionChange((prev) => prev.filter((selectedId) => selectedId !== id));
   };
 

@@ -145,7 +145,7 @@ export function RawDataSetTable({ onSelectionChange }: Props): JSX.Element {
         id,
       })
       .then(() => {
-        void mutate((data) => data?.filter((d) => d.id !== id), false);
+        void mutate();
         onSelectionChange((prev) =>
           prev.filter((selectedId) => selectedId !== id),
         );
@@ -255,7 +255,7 @@ function RowMenu({
     await window.ipcRenderer.invoke("deleteRawDataset", {
       id,
     });
-    void mutate((data) => data?.filter((d) => d.id !== id), false);
+    void mutate();
     onSelectionChange((prev) => prev.filter((selectedId) => selectedId !== id));
   };
 
