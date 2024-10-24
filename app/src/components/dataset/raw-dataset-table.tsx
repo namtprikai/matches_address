@@ -171,6 +171,7 @@ function Row({
   onSelectionChange,
 }: RowProps): JSX.Element {
   const styles = useStyles();
+  const dataPreviewDialogState = useDialogState(false);
 
   const handleDownload = async (id: SelectRawDataSet["id"]): Promise<void> => {
     try {
@@ -216,6 +217,7 @@ function Row({
       <TableCell>
         <DataPreviewDialog
           datasetName={item.file_name}
+          dialogState={dataPreviewDialogState}
           id={item.id}
           onDelete={async () => {
             await handleDelete(item.id);

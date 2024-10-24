@@ -26,7 +26,10 @@ import {
   type DataSetType,
 } from "../../hooks/use-fetch-data-set-file";
 import { downloadDataSetFile } from "../../utils/download-data-set-file";
-import { useDialogState } from "../../hooks/use-dialog-state";
+import {
+  type ReturnUseDialogState,
+  useDialogState,
+} from "../../hooks/use-dialog-state";
 import { DeleteRowDialog } from "./delete-row-dialog";
 
 const useStyles = makeStyles({
@@ -76,6 +79,7 @@ const useStyles = makeStyles({
 interface Props {
   type: DataSetType;
   id: number;
+  dialogState: ReturnUseDialogState;
   datasetName?: string | null;
   onDelete?: () => void;
 }
@@ -83,11 +87,12 @@ interface Props {
 export function DataPreviewDialog({
   type,
   id,
+  dialogState,
   datasetName,
   onDelete,
 }: Props): JSX.Element {
   const styles = useStyles();
-  const [open, setOpen] = useState(false);
+  const { isOpen, setIsOpen } = dialogState;
   const deleteDialogState = useDialogState(false);
 
   const handleDownload = async (): Promise<void> => {
@@ -137,9 +142,9 @@ export function DataPreviewDialog({
       <Dialog
         onOpenChange={(e) => {
           e.stopPropagation();
-          setOpen((prev) => !prev);
+          setIsOpen((prev) => !prev);
         }}
-        open={open}
+        open={isOpen}
       >
         {datasetName ? (
           <DialogTrigger disableButtonEnhancement>
@@ -160,7 +165,7 @@ export function DataPreviewDialog({
               <Button
                 appearance="transparent"
                 icon={<ArrowLeftRegular />}
-                onClick={() => setOpen(false)}
+                onClick={() => setIsOpen(false)}
               />
               {datasetName}
             </div>
