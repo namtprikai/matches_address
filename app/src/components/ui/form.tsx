@@ -1,4 +1,4 @@
-import { makeStyles, mergeClasses, tokens } from "@fluentui/react-components";
+import { makeStyles, mergeClasses } from "@fluentui/react-components";
 import { type ComponentPropsWithoutRef, forwardRef } from "react";
 
 const useStyles = makeStyles({

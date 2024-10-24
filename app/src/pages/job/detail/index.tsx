@@ -11,7 +11,10 @@ import {
   Button,
 } from "@fluentui/react-components";
 import { ErrorCircleFilled } from "@fluentui/react-icons";
+import { useParams, useNavigate } from "react-router-dom";
 import { DialogSaveWithName } from "../../../components/dialog-save-with-name";
+import { useFetchJobTasks } from "../../../hooks/use-fetch-job-tasks";
+import { type SelectJobTask } from "../../../schema";
 
 const useStyles = makeStyles({
   root: {
@@ -102,23 +105,20 @@ const useStyles = makeStyles({
     padding: `${tokens.spacingVerticalMNudge} ${tokens.spacingHorizontalL}`,
     height: "40px",
   },
+  noData: {
+    color: "#616161",
+    fontSize: tokens.fontSizeBase300,
+  },
 });
-
-const data = [
-  {
-    processType: "住居単位データ作成処理",
-    indexRate: "結合率",
-    successRate: "98%",
-  },
-  {
-    processType: "モデル作成",
-    indexRate: "緯度経度付与率",
-    successRate: "20%",
-  },
-];
 
 export function JobDetail(): JSX.Element {
   const styles = useStyles();
+  const navigate = useNavigate();
+  const { jobId } = useParams<{ jobId: string }>();
+
+  const { data } = useFetchJobTasks(Number(jobId));
+
+  const hasData = data && data.length > 0;
 
   return (
     <div className={styles.pageContainer}>
@@ -135,45 +135,62 @@ export function JobDetail(): JSX.Element {
         </div>
 
         <Card className={styles.content}>
-          {/* TODO: コンポーネントに切り出し */}
-          <Table className={styles.table}>
-            <TableHeader className={styles.tableHeader}>
-              <TableRow>
-                <TableHeaderCell className={styles.headerCell}>
-                  処理の種類
-                </TableHeaderCell>
-                <TableHeaderCell className={styles.headerCell}>
-                  指標
-                </TableHeaderCell>
-                <TableHeaderCell className={styles.headerCell}>
-                  成功率
-                </TableHeaderCell>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {data.map((item, index) => (
-                <TableRow key={index} className={styles.tableRow}>
-                  <TableCell className={styles.tableCell}>
-                    {item.processType}
-                  </TableCell>
-                  <TableCell className={styles.tableCell}>
-                    {item.indexRate}
-                  </TableCell>
-                  <TableCell className={styles.tableCell}>
-                    <div className={styles.successRateCell}>
-                      {item.successRate}
-                      <ErrorCircleFilled className={styles.errorIcon} />
-                    </div>
-                  </TableCell>
+          { hasData ? (
+            <Table className={styles.table}>
+              <TableHeader className={styles.tableHeader}>
+                <TableRow>
+                  <TableHeaderCell className={styles.headerCell}>
+                    処理の種類
+                  </TableHeaderCell>
+                  <TableHeaderCell className={styles.headerCell}>
+                    指標
+                  </TableHeaderCell>
+                  <TableHeaderCell className={styles.headerCell}>
+                    成功率
+                  </TableHeaderCell>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {data.map((item: SelectJobTask) => (
+                  <TableRow key={item.id} className={styles.tableRow}>
+                    <TableCell className={styles.tableCell}>
+                      {item.preprocess_type ?? "不明な処理"}
+                    </TableCell>
+                    <TableCell className={styles.tableCell}>
+                      {item.job_id}
+                    </TableCell>
+                    <TableCell className={styles.tableCell}>
+                      <div className={styles.successRateCell}>
+                      {getIndexRate(item)}
+                        {item.error_code && (
+                          <ErrorCircleFilled className={styles.errorIcon} />
+                        )}
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          ) : (
+            <div className={styles.noData}>
+              現在表示できる処理結果はありません
+            </div>
+          )}
         </Card>
       </div>
       <div className={styles.restartButtonWrapper}>
-        <Button className={styles.restartButton}>再実行へ</Button>
+        <Button
+          className={styles.restartButton}
+          onClick={() => navigate("/job/restart")}
+        >
+          再実行へ
+        </Button>
       </div>
     </div>
   );
+}
+
+// 成功率を取得する関数
+function getIndexRate(item: SelectJobTask): string {
+  return item.progress_percent ?? "N/A";
 }

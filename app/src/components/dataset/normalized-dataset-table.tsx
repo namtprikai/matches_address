@@ -222,11 +222,7 @@ function RowMenu({
       id,
       fileName: newFileName,
     });
-    void mutate(
-      (data) =>
-        data?.map((d) => (d.id === id ? { ...d, file_name: newFileName } : d)),
-      false, // すでにDBと同期が取れているので、再検証は不要（false）
-    );
+    void mutate();
   };
 
   const handleDelete = async (
