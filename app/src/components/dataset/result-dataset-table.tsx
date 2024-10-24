@@ -270,6 +270,7 @@ function RowMenu({
       />
       <DeleteRowDialog
         dialogState={deleteDialogState}
+        fileName={item.title || ""}
         onDelete={() => handleDelete(item.id)}
       />
     </>
