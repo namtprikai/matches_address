@@ -145,7 +145,7 @@ export function RawDataSetTable({ onSelectionChange }: Props): JSX.Element {
         id,
       })
       .then(() => {
-        void mutate((data) => data?.filter((d) => d.id !== id), false);
+        void mutate();
         onSelectionChange((prev) =>
           prev.filter((selectedId) => selectedId !== id),
         );
@@ -248,18 +248,14 @@ function RowMenu({
       id,
       fileName: fullFileName,
     });
-    void mutate(
-      (data) =>
-        data?.map((d) => (d.id === id ? { ...d, file_name: fullFileName } : d)),
-      false, // すでにDBと同期が取れているので、再検証は不要（false）
-    );
+    void mutate();
   };
 
   const handleDelete = async (id: SelectRawDataSet["id"]): Promise<void> => {
     await window.ipcRenderer.invoke("deleteRawDataset", {
       id,
     });
-    void mutate((data) => data?.filter((d) => d.id !== id), false);
+    void mutate();
     onSelectionChange((prev) => prev.filter((selectedId) => selectedId !== id));
   };
 
@@ -300,6 +296,7 @@ function RowMenu({
       />
       <DeleteRowDialog
         dialogState={deleteDialogState}
+        fileName={item.file_name}
         onDelete={() => handleDelete(item.id)}
       />
     </>

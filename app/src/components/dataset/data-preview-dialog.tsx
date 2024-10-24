@@ -186,7 +186,11 @@ export function DataPreviewDialog({
           </DialogBody>
         </DialogSurface>
       </Dialog>
-      <DeleteRowDialog dialogState={deleteDialogState} onDelete={onDelete} />
+      <DeleteRowDialog
+        dialogState={deleteDialogState}
+        fileName={datasetName || ""}
+        onDelete={onDelete}
+      />
     </>
   );
 }

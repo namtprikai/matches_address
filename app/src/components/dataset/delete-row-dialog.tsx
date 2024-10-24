@@ -8,11 +8,16 @@ import { Button } from "../ui/button";
 import { type ReturnUseDialogState } from "../../hooks/use-dialog-state";
 
 interface Props {
+  fileName: string;
   onDelete?: () => void;
   dialogState: ReturnUseDialogState;
 }
 
-export function DeleteRowDialog({ onDelete, dialogState }: Props): JSX.Element {
+export function DeleteRowDialog({
+  fileName,
+  onDelete,
+  dialogState,
+}: Props): JSX.Element {
   const { isOpen, setIsOpen } = dialogState;
 
   return (
@@ -25,7 +30,7 @@ export function DeleteRowDialog({ onDelete, dialogState }: Props): JSX.Element {
     >
       <DialogSurface onClick={(e) => e.stopPropagation()}>
         <DialogBody>
-          <DialogTitle>このデータを削除しますか？</DialogTitle>
+          <DialogTitle>「{fileName}」を削除しますか？</DialogTitle>
           <DialogContent>
             削除したデータを復元することはできません
           </DialogContent>

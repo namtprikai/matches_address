@@ -338,17 +338,14 @@ function RowMenu({
       id,
       title: newTitle,
     });
-    void mutate(
-      (data) => data?.map((d) => (d.id === id ? { ...d, title: newTitle } : d)),
-      false, // すでにDBと同期が取れているので、再検証は不要（false）
-    );
+    void mutate();
   };
 
   const handleDelete = async (id: SelectDataSetResult["id"]): Promise<void> => {
     await window.ipcRenderer.invoke("deleteDataSetResult", {
       id,
     });
-    void mutate((data) => data?.filter((d) => d.id !== id), false);
+    void mutate();
     onSelectionChange((prev) => prev.filter((selectedId) => selectedId !== id));
   };
 
@@ -389,6 +386,7 @@ function RowMenu({
       />
       <DeleteRowDialog
         dialogState={deleteDialogState}
+        fileName={item.title || ""}
         onDelete={() => handleDelete(item.id)}
       />
     </>

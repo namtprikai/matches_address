@@ -45,6 +45,11 @@ import { updateDataSetResult } from "./update-data-set-result";
 import { deleteRawDataset } from "./delete-raw-dataset";
 import { deleteNormalizedDataset } from "./delete-normalized-dataset";
 import { deleteDataSetResult } from "./delete-data-set-result";
+import { updateModelFiles } from "./update-model-files";
+import { deleteModelFiles } from "./delete-model-files";
+import { fetchJobLists } from "./fetch-job-lists";
+import { fetchJobTasks } from "./fetch-job-tasks";
+import { buildModel } from "./ml/build-model";
 
 export const ipcMainListeners = {
   helloFromPython,
@@ -90,6 +95,11 @@ export const ipcMainListeners = {
   deleteRawDataset,
   deleteNormalizedDataset,
   deleteDataSetResult,
+  updateModelFiles,
+  deleteModelFiles,
+  fetchJobLists,
+  fetchJobTasks,
+  buildModel,
 };
 
 export const execFileAsync = promisify(execFile);
