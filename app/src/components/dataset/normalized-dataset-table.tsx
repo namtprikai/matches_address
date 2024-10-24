@@ -125,6 +125,55 @@ export function NormalizedDataSetTable({
     );
   };
 
+  return (
+    <Table>
+      <TableHeader className={styles.tableHeader}>
+        <TableRow>
+          <TableSelectionCell
+            checkboxIndicator={{ "aria-label": "Select all rows" }}
+            checked={
+              allRowsSelected ? true : someRowsSelected ? "mixed" : false
+            }
+            onClick={handleToggleAll}
+          />
+          <TableHeaderCell>データセット名</TableHeaderCell>
+          <TableHeaderCell>アップロード日</TableHeaderCell>
+          <TableHeaderCell></TableHeaderCell>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {rows.map((row) => (
+          <Row
+            {...row}
+            key={row.item.id}
+            mutate={mutate}
+            onSelectionChange={onSelectionChange}
+          />
+        ))}
+      </TableBody>
+    </Table>
+  );
+}
+
+interface RowProps {
+  onClick: (e: MouseEvent) => void;
+  selected: boolean;
+  appearance: "brand" | "none";
+  item: SelectNormalizedDataSet;
+  mutate: KeyedMutator<SelectNormalizedDataSet[]>;
+  onSelectionChange: Props["onSelectionChange"];
+}
+
+function Row({
+  item,
+  selected,
+  onClick,
+  appearance,
+  mutate,
+  onSelectionChange,
+}: RowProps): JSX.Element {
+  const styles = useStyles();
+
   const handleDownload = async (
     id: SelectNormalizedDataSet["id"],
   ): Promise<void> => {
@@ -160,64 +209,44 @@ export function NormalizedDataSetTable({
   };
 
   return (
-    <Table>
-      <TableHeader className={styles.tableHeader}>
-        <TableRow>
-          <TableSelectionCell
-            checkboxIndicator={{ "aria-label": "Select all rows" }}
-            checked={
-              allRowsSelected ? true : someRowsSelected ? "mixed" : false
-            }
-            onClick={handleToggleAll}
-          />
-          <TableHeaderCell>データセット名</TableHeaderCell>
-          <TableHeaderCell>アップロード日</TableHeaderCell>
-          <TableHeaderCell></TableHeaderCell>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {rows.map(({ item, selected, onClick, appearance }) => (
-          <TableRow
-            key={item.id}
-            appearance={appearance}
-            aria-selected={selected}
-            onClick={onClick}
-          >
-            <TableSelectionCell
-              checkboxIndicator={{ "aria-label": "Select row" }}
-              checked={selected}
-            />
-            <TableCell>
-              <DataPreviewDialog
-                datasetName={item.file_name}
-                id={item.id}
-                onDelete={async () => {
-                  await handleDelete(item.id);
-                }}
-                type="normalized"
-              />
-            </TableCell>
-            <TableCell>{formatDate(item.updated_at, "YYYY/MM/DD")}</TableCell>
-            <TableCell className={styles.actions}>
-              <Button
-                appearance="subtle"
-                aria-label="ダウンロード"
-                icon={<ArrowDownloadRegular />}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  void handleDownload(item.id);
-                }}
-              />
-              <RowMenu
-                item={item}
-                mutate={mutate}
-                onSelectionChange={onSelectionChange}
-              />
-            </TableCell>
-          </TableRow>
-        ))}
-      </TableBody>
-    </Table>
+    <TableRow
+      key={item.id}
+      appearance={appearance}
+      aria-selected={selected}
+      onClick={onClick}
+    >
+      <TableSelectionCell
+        checkboxIndicator={{ "aria-label": "Select row" }}
+        checked={selected}
+      />
+      <TableCell>
+        <DataPreviewDialog
+          datasetName={item.file_name}
+          id={item.id}
+          onDelete={async () => {
+            await handleDelete(item.id);
+          }}
+          type="normalized"
+        />
+      </TableCell>
+      <TableCell>{formatDate(item.updated_at, "YYYY/MM/DD")}</TableCell>
+      <TableCell className={styles.actions}>
+        <Button
+          appearance="subtle"
+          aria-label="ダウンロード"
+          icon={<ArrowDownloadRegular />}
+          onClick={(e) => {
+            e.stopPropagation();
+            void handleDownload(item.id);
+          }}
+        />
+        <RowMenu
+          item={item}
+          mutate={mutate}
+          onSelectionChange={onSelectionChange}
+        />
+      </TableCell>
+    </TableRow>
   );
 }
 
