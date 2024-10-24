@@ -29,11 +29,13 @@ import {
   type KeyboardEvent,
   useState,
 } from "react";
+import { type KeyedMutator } from "swr";
 import { Button } from "../ui/button";
 import { type SelectNormalizedDataSet } from "../../schema";
 import { useFetchNormalizedDatasets } from "../../hooks/use-fetch-normalized-datasets";
 import { formatDate } from "../../utils/format-date";
 import { useDialogState } from "../../hooks/use-dialog-state";
+import { downloadDataSetFile } from "../../utils/download-data-set-file";
 import { DataPreviewDialog } from "./data-preview-dialog";
 import { EditNameDialog } from "./edit-name-dialog";
 import { DeleteRowDialog } from "./delete-row-dialog";
@@ -74,7 +76,7 @@ export function NormalizedDataSetTable({
     createTableColumn<SelectNormalizedDataSet>({ columnId: "date" }),
   ];
   const [selectedRows, setSelectedRows] = useState(new Set<TableRowId>());
-  const { data } = useFetchNormalizedDatasets();
+  const { data, mutate } = useFetchNormalizedDatasets();
 
   const {
     getRows,
@@ -135,23 +137,18 @@ export function NormalizedDataSetTable({
     );
   };
 
-  // TODO: バックエンド処理
-  const handleDownload = async (e: MouseEvent): Promise<void> => {
-    e.stopPropagation();
+  const handleDownload = async (
+    id: SelectNormalizedDataSet["id"],
+  ): Promise<void> => {
     try {
-      const response = await fetch("/dummy-data.csv");
-      if (!response.ok) {
-        throw new Error("Network response was not ok");
-      }
-      const blob = await response.blob();
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = "dummy-data.csv";
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
+      const data = await window.ipcRenderer.invoke("selectNormalizedDataSet", {
+        id,
+      });
+      if (!data) return;
+      const buffer = await window.ipcRenderer.invoke("readDatasetFile", {
+        fileName: data.file_path,
+      });
+      void downloadDataSetFile(buffer, data.file_name || "");
     } catch (error) {
       console.error("Download failed:", error);
       alert("ダウンロードに失敗しました。");
@@ -199,9 +196,12 @@ export function NormalizedDataSetTable({
                 appearance="subtle"
                 aria-label="ダウンロード"
                 icon={<ArrowDownloadRegular />}
-                onClick={handleDownload}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  void handleDownload(item.id);
+                }}
               />
-              <RowMenu item={item} />
+              <RowMenu item={item} mutate={mutate} />
             </TableCell>
           </TableRow>
         ))}
@@ -210,15 +210,25 @@ export function NormalizedDataSetTable({
   );
 }
 
-function RowMenu({ item }: { item: SelectNormalizedDataSet }): JSX.Element {
+function RowMenu({
+  item,
+  mutate,
+}: {
+  item: SelectNormalizedDataSet;
+  mutate: KeyedMutator<SelectNormalizedDataSet[]>;
+}): JSX.Element {
   const editNameDialogState = useDialogState(false);
   const deleteDialogState = useDialogState(false);
 
-  const handleEditMenuClick = (
+  const handleEditMenuClick = async (
     id: SelectNormalizedDataSet["id"],
-    newName: SelectNormalizedDataSet["file_name"],
-  ): void => {
-    // TODO: バックエンド処理
+    newFileName: SelectNormalizedDataSet["file_name"],
+  ): Promise<void> => {
+    await window.ipcRenderer.invoke("updateNormalizedDataset", {
+      id,
+      fileName: newFileName,
+    });
+    void mutate();
   };
 
   const handleDeleteMenuClick = (id: SelectNormalizedDataSet["id"]): void => {
@@ -258,7 +268,7 @@ function RowMenu({ item }: { item: SelectNormalizedDataSet }): JSX.Element {
       <EditNameDialog
         dialogState={editNameDialogState}
         initialName={item.file_name}
-        onSubmit={(newName) => handleEditMenuClick(item.id, newName)}
+        onSubmit={(newFileName) => handleEditMenuClick(item.id, newFileName)}
       />
       <DeleteRowDialog
         dialogState={deleteDialogState}

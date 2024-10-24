@@ -29,12 +29,12 @@ import {
   type KeyboardEvent,
   useState,
 } from "react";
+import { type KeyedMutator } from "swr";
 import { Button } from "../ui/button";
 import { useFetchDataSetResults } from "../../hooks/use-fetch-data-set-results";
 import { type SelectDataSetResult } from "../../schema";
 import { formatDate } from "../../utils/format-date";
 import { useDialogState } from "../../hooks/use-dialog-state";
-import { DataPreviewDialog } from "./data-preview-dialog";
 import { EditNameDialog } from "./edit-name-dialog";
 import { DeleteRowDialog } from "./delete-row-dialog";
 
@@ -74,7 +74,7 @@ export function ResultDataSetTable({
     createTableColumn<SelectDataSetResult>({ columnId: "date" }),
   ];
   const [selectedRows, setSelectedRows] = useState(new Set<TableRowId>());
-  const { data } = useFetchDataSetResults();
+  const { data, mutate } = useFetchDataSetResults();
 
   const {
     getRows,
@@ -193,6 +193,7 @@ export function ResultDataSetTable({
                 id={item.id}
                 type="result"
               /> */}
+              {item.title}
             </TableCell>
             <TableCell>{formatDate(item.updated_at, "YYYY/MM/DD")}</TableCell>
             <TableCell className={styles.actions}>
@@ -202,7 +203,7 @@ export function ResultDataSetTable({
                 icon={<ArrowDownloadRegular />}
                 onClick={handleDownload}
               />
-              <RowMenu item={item} />
+              <RowMenu item={item} mutate={mutate} />
             </TableCell>
           </TableRow>
         ))}
@@ -211,15 +212,25 @@ export function ResultDataSetTable({
   );
 }
 
-function RowMenu({ item }: { item: SelectDataSetResult }): JSX.Element {
+function RowMenu({
+  item,
+  mutate,
+}: {
+  item: SelectDataSetResult;
+  mutate: KeyedMutator<SelectDataSetResult[]>;
+}): JSX.Element {
   const editNameDialogState = useDialogState(false);
   const deleteDialogState = useDialogState(false);
 
-  const handleEditMenuClick = (
+  const handleEditMenuClick = async (
     id: SelectDataSetResult["id"],
-    newName: SelectDataSetResult["title"],
-  ): void => {
-    // TODO: バックエンド処理
+    newTitle: SelectDataSetResult["title"],
+  ): Promise<void> => {
+    await window.ipcRenderer.invoke("updateDataSetResult", {
+      id,
+      title: newTitle,
+    });
+    void mutate();
   };
 
   const handleDeleteMenuClick = (id: SelectDataSetResult["id"]): void => {

@@ -29,11 +29,13 @@ import {
   type Dispatch,
   type SetStateAction,
 } from "react";
+import { type KeyedMutator } from "swr";
 import { Button } from "../ui/button";
 import { type SelectRawDataSet } from "../../schema";
 import { useFetchRawDatasets } from "../../hooks/use-fetch-raw-datasets";
 import { formatDate } from "../../utils/format-date";
 import { useDialogState } from "../../hooks/use-dialog-state";
+import { downloadDataSetFile } from "../../utils/download-data-set-file";
 import { DataPreviewDialog } from "./data-preview-dialog";
 import { EditNameDialog } from "./edit-name-dialog";
 import { DeleteRowDialog } from "./delete-row-dialog";
@@ -72,7 +74,7 @@ export function RawDataSetTable({ onSelectionChange }: Props): JSX.Element {
     createTableColumn<SelectRawDataSet>({ columnId: "date" }),
   ];
   const [selectedRows, setSelectedRows] = useState(new Set<TableRowId>());
-  const { data } = useFetchRawDatasets();
+  const { data, mutate } = useFetchRawDatasets();
 
   const {
     getRows,
@@ -133,23 +135,16 @@ export function RawDataSetTable({ onSelectionChange }: Props): JSX.Element {
     );
   };
 
-  // TODO: バックエンド処理
-  const handleDownload = async (e: MouseEvent): Promise<void> => {
-    e.stopPropagation();
+  const handleDownload = async (id: SelectRawDataSet["id"]): Promise<void> => {
     try {
-      const response = await fetch("/dummy-data.csv");
-      if (!response.ok) {
-        throw new Error("Network response was not ok");
-      }
-      const blob = await response.blob();
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = "dummy-data.csv";
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
+      const data = await window.ipcRenderer.invoke("selectRawDataset", {
+        id,
+      });
+      if (!data) return;
+      const buffer = await window.ipcRenderer.invoke("readDatasetFile", {
+        fileName: data.file_path,
+      });
+      void downloadDataSetFile(buffer, data.file_name);
     } catch (error) {
       console.error("Download failed:", error);
       alert("ダウンロードに失敗しました。");
@@ -197,9 +192,12 @@ export function RawDataSetTable({ onSelectionChange }: Props): JSX.Element {
                 appearance="subtle"
                 aria-label="ダウンロード"
                 icon={<ArrowDownloadRegular />}
-                onClick={handleDownload}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  void handleDownload(item.id);
+                }}
               />
-              <RowMenu item={item} />
+              <RowMenu item={item} mutate={mutate} />
             </TableCell>
           </TableRow>
         ))}
@@ -208,15 +206,38 @@ export function RawDataSetTable({ onSelectionChange }: Props): JSX.Element {
   );
 }
 
-function RowMenu({ item }: { item: SelectRawDataSet }): JSX.Element {
+function RowMenu({
+  item,
+  mutate,
+}: {
+  item: SelectRawDataSet;
+  mutate: KeyedMutator<SelectRawDataSet[]>;
+}): JSX.Element {
   const editNameDialogState = useDialogState(false);
   const deleteDialogState = useDialogState(false);
+  // ファイル名と拡張子に分割
+  // 拡張子ファイルを扱うのはシードデータのみっぽいので、いったんここだけ対応する
+  const { name, ext } = (() => {
+    if (!item.file_name) {
+      return { name: "", ext: "" };
+    }
+    if (item.file_name.indexOf(".") === -1) {
+      return { name: item.file_name, ext: "" };
+    }
+    const [name, ext] = item.file_name.split(".");
+    return { name, ext };
+  })();
 
-  const handleEditMenuClick = (
+  const handleEditMenuClick = async (
     id: SelectRawDataSet["id"],
-    newName: SelectRawDataSet["file_name"],
-  ): void => {
-    // TODO: バックエンド処理
+    newFileName: SelectRawDataSet["file_name"],
+  ): Promise<void> => {
+    const fullFileName = newFileName + (ext ? `.${ext}` : "");
+    await window.ipcRenderer.invoke("updateRawDataset", {
+      id,
+      fileName: fullFileName,
+    });
+    void mutate();
   };
 
   const handleDeleteMenuClick = (id: SelectRawDataSet["id"]): void => {
@@ -255,8 +276,8 @@ function RowMenu({ item }: { item: SelectRawDataSet }): JSX.Element {
       </Menu>
       <EditNameDialog
         dialogState={editNameDialogState}
-        initialName={item.file_name}
-        onSubmit={(newName) => handleEditMenuClick(item.id, newName)}
+        initialName={name}
+        onSubmit={(newFileName) => handleEditMenuClick(item.id, newFileName)}
       />
       <DeleteRowDialog
         dialogState={deleteDialogState}
