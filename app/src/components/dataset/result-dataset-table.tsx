@@ -39,7 +39,10 @@ import { Button } from "../ui/button";
 import { useFetchDataSetResults } from "../../hooks/use-fetch-data-set-results";
 import { type SelectDataSetResult } from "../../schema";
 import { formatDate } from "../../utils/format-date";
-import { useDialogState } from "../../hooks/use-dialog-state";
+import {
+  type ReturnUseDialogState,
+  useDialogState,
+} from "../../hooks/use-dialog-state";
 import { DialogBody } from "../ui/dialog-body";
 import { DialogTitle } from "../ui/dialog-title";
 import { DialogContent } from "../ui/dialog-content";
@@ -138,6 +141,56 @@ export function ResultDataSetTable({ onSelectionChange }: Props): JSX.Element {
     );
   };
 
+  return (
+    <Table>
+      <TableHeader className={styles.tableHeader}>
+        <TableRow>
+          <TableSelectionCell
+            checkboxIndicator={{ "aria-label": "Select all rows" }}
+            checked={
+              allRowsSelected ? true : someRowsSelected ? "mixed" : false
+            }
+            onClick={handleToggleAll}
+          />
+          <TableHeaderCell>データセット名</TableHeaderCell>
+          <TableHeaderCell>アップロード日</TableHeaderCell>
+          <TableHeaderCell></TableHeaderCell>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {rows.map((row) => (
+          <Row
+            {...row}
+            key={row.item.id}
+            mutate={mutate}
+            onSelectionChange={onSelectionChange}
+          />
+        ))}
+      </TableBody>
+    </Table>
+  );
+}
+
+interface RowProps {
+  onClick: (e: MouseEvent) => void;
+  selected: boolean;
+  appearance: "brand" | "none";
+  item: SelectDataSetResult;
+  mutate: KeyedMutator<SelectDataSetResult[]>;
+  onSelectionChange: Props["onSelectionChange"];
+}
+
+function Row({
+  item,
+  selected,
+  onClick,
+  appearance,
+  mutate,
+  onSelectionChange,
+}: RowProps): JSX.Element {
+  const styles = useStyles();
+  const dataPreviewDialogState = useDialogState(false);
+
   // TODO: バックエンド処理
   const handleDownload = async (
     unit: Unit,
@@ -174,80 +227,65 @@ export function ResultDataSetTable({ onSelectionChange }: Props): JSX.Element {
   };
 
   return (
-    <Table>
-      <TableHeader className={styles.tableHeader}>
-        <TableRow>
-          <TableSelectionCell
-            checkboxIndicator={{ "aria-label": "Select all rows" }}
-            checked={
-              allRowsSelected ? true : someRowsSelected ? "mixed" : false
-            }
-            onClick={handleToggleAll}
-          />
-          <TableHeaderCell>データセット名</TableHeaderCell>
-          <TableHeaderCell>アップロード日</TableHeaderCell>
-          <TableHeaderCell></TableHeaderCell>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {rows.map(({ item, selected, onClick, appearance }) => (
-          <TableRow
-            key={item.id}
-            appearance={appearance}
-            aria-selected={selected}
-            onClick={onClick}
-          >
-            <TableSelectionCell
-              checkboxIndicator={{ "aria-label": "Select row" }}
-              checked={selected}
+    <TableRow
+      key={item.id}
+      appearance={appearance}
+      aria-selected={selected}
+      onClick={onClick}
+    >
+      <TableSelectionCell
+        checkboxIndicator={{ "aria-label": "Select row" }}
+        checked={selected}
+      />
+      <TableCell>
+        <SelectUnitDialog
+          buttonText="プレビューを見る"
+          dataPreviewProps={{
+            onSubmit: () => {
+              dataPreviewDialogState.setIsOpen(true);
+            },
+            id: item.id,
+            dataPreviewDialogState,
+            datasetName: item.title || "",
+          }}
+          title="データのプレビュー"
+          triggerComponent={
+            <Button
+              appearance="transparent"
+              className={styles.datasetButton}
+              onClick={(e) => e.stopPropagation()}
+            >
+              {item.title}
+            </Button>
+          }
+        />
+      </TableCell>
+      <TableCell>{formatDate(item.updated_at, "YYYY/MM/DD")}</TableCell>
+      <TableCell className={styles.actions}>
+        <SelectUnitDialog
+          buttonText="ダウンロード"
+          downloadProps={{
+            onSubmit: (unit) => {
+              void handleDownload(unit, item.id, item.title || "");
+            },
+          }}
+          title="データのダウンロード"
+          triggerComponent={
+            <Button
+              appearance="subtle"
+              aria-label="ダウンロード"
+              icon={<ArrowDownloadRegular />}
+              onClick={(e) => e.stopPropagation()}
             />
-            <TableCell>
-              <SelectUnitDialog
-                buttonText="プレビューを見る"
-                onSubmit={(unit) =>
-                  // handleDownload(unit, item.id, item.title || "")
-                  // eslint-disable-next-line no-console -- TODO: 後で消す
-                  console.log(unit, item.id, item.title)
-                }
-                title="データのプレビュー"
-                triggerComponent={
-                  <Button
-                    appearance="transparent"
-                    className={styles.datasetButton}
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    {item.title}
-                  </Button>
-                }
-              />
-            </TableCell>
-            <TableCell>{formatDate(item.updated_at, "YYYY/MM/DD")}</TableCell>
-            <TableCell className={styles.actions}>
-              <SelectUnitDialog
-                buttonText="ダウンロード"
-                onSubmit={(unit) =>
-                  handleDownload(unit, item.id, item.title || "")
-                }
-                title="データのダウンロード"
-                triggerComponent={
-                  <Button
-                    appearance="subtle"
-                    aria-label="ダウンロード"
-                    icon={<ArrowDownloadRegular />}
-                    onClick={(e) => e.stopPropagation()}
-                  />
-                }
-              />
-              <RowMenu
-                item={item}
-                mutate={mutate}
-                onSelectionChange={onSelectionChange}
-              />
-            </TableCell>
-          </TableRow>
-        ))}
-      </TableBody>
-    </Table>
+          }
+        />
+        <RowMenu
+          item={item}
+          mutate={mutate}
+          onSelectionChange={onSelectionChange}
+        />
+      </TableCell>
+    </TableRow>
   );
 }
 
@@ -255,12 +293,21 @@ function SelectUnitDialog({
   triggerComponent,
   title,
   buttonText,
-  onSubmit,
+  downloadProps,
+  dataPreviewProps,
 }: {
   triggerComponent: ReactElement;
   title: string;
   buttonText: string;
-  onSubmit: (unit: Unit) => void;
+  downloadProps?: {
+    onSubmit: (unit: Unit) => void;
+  };
+  dataPreviewProps?: {
+    onSubmit: (unit: Unit) => void;
+    id: number;
+    dataPreviewDialogState: ReturnUseDialogState;
+    datasetName: string;
+  };
 }): JSX.Element {
   const styles = useStyles();
   const [open, setOpen] = useState(false);
@@ -302,7 +349,8 @@ function SelectUnitDialog({
               <Button
                 appearance="primary"
                 onClick={() => {
-                  onSubmit(selectedUnit);
+                  downloadProps?.onSubmit(selectedUnit);
+                  dataPreviewProps?.onSubmit(selectedUnit);
                   setOpen(false);
                 }}
                 size="medium"
@@ -313,7 +361,15 @@ function SelectUnitDialog({
           </DialogBody>
         </DialogSurface>
       </Dialog>
-      <DataPreviewDialog id={1} type="result" />
+      {dataPreviewProps ? (
+        <DataPreviewDialog
+          datasetName={dataPreviewProps.datasetName}
+          dialogState={dataPreviewProps.dataPreviewDialogState}
+          hideTrigger
+          id={dataPreviewProps.id}
+          type={selectedUnit}
+        />
+      ) : null}
     </>
   );
 }

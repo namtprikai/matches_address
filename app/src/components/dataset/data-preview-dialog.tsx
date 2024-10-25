@@ -1,4 +1,3 @@
-import { useState, useEffect } from "react";
 import {
   Table,
   TableBody,
@@ -30,6 +29,7 @@ import {
   type ReturnUseDialogState,
   useDialogState,
 } from "../../hooks/use-dialog-state";
+import { downloadObjectsAsCSV } from "../../utils/download-objects-as-csv";
 import { DeleteRowDialog } from "./delete-row-dialog";
 
 const useStyles = makeStyles({
@@ -80,8 +80,9 @@ interface Props {
   type: DataSetType;
   id: number;
   dialogState: ReturnUseDialogState;
-  datasetName?: string | null;
+  datasetName: string | null;
   onDelete?: () => void;
+  hideTrigger?: boolean;
 }
 
 export function DataPreviewDialog({
@@ -90,6 +91,7 @@ export function DataPreviewDialog({
   dialogState,
   datasetName,
   onDelete,
+  hideTrigger,
 }: Props): JSX.Element {
   const styles = useStyles();
   const { isOpen, setIsOpen } = dialogState;
@@ -122,8 +124,27 @@ export function DataPreviewDialog({
         void downloadDataSetFile(buffer, data.file_name || "");
         break;
       }
-      case "result": {
-        // TODO: 建物or地域のどちらのデータをダウンロードするか選択するダイアログを表示する
+      case "building": {
+        // TODO: 全件取得する
+        const data = await window.ipcRenderer.invoke(
+          "fetchBuildingsInBatches",
+          {
+            dataSetResultId: id,
+            batchSize: 100,
+          },
+        );
+        if (!data) return;
+        void downloadObjectsAsCSV(data, datasetName || "");
+        break;
+      }
+      case "area": {
+        // TODO: 全件取得する
+        const data = await window.ipcRenderer.invoke("fetchAreasInBatches", {
+          dataSetResultId: id,
+          batchSize: 100,
+        });
+        if (!data) return;
+        void downloadObjectsAsCSV(data, datasetName || "");
         break;
       }
       default: {
@@ -146,7 +167,7 @@ export function DataPreviewDialog({
         }}
         open={isOpen}
       >
-        {datasetName ? (
+        {!hideTrigger ? (
           <DialogTrigger disableButtonEnhancement>
             <Button
               appearance="transparent"
