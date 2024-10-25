@@ -191,7 +191,6 @@ function Row({
   const styles = useStyles();
   const dataPreviewDialogState = useDialogState(false);
 
-  // TODO: バックエンド処理
   const handleDownload = async (
     unit: Unit,
     id: SelectDataSetResult["id"],
@@ -199,6 +198,7 @@ function Row({
   ): Promise<void> => {
     switch (unit) {
       case "building": {
+        // TODO: 全件取得する
         const data = await window.ipcRenderer.invoke(
           "fetchBuildingsInBatches",
           {
@@ -211,6 +211,7 @@ function Row({
         break;
       }
       case "area": {
+        // TODO: 全件取得する
         const data = await window.ipcRenderer.invoke("fetchAreasInBatches", {
           dataSetResultId: id,
           batchSize: 100,
