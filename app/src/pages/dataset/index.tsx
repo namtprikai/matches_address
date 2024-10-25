@@ -94,10 +94,6 @@ export function Dataset(): JSX.Element {
     e.target.value = ""; // ファイル選択をリセットする
   };
 
-  const handleDownloadSelectedItems = async (): Promise<void> => {
-    // TODO: バックエンド処理
-  };
-
   const handleDeleteSelectedItems = async (): Promise<void> => {
     switch (selectedValue) {
       case "raw": {
@@ -226,13 +222,6 @@ export function Dataset(): JSX.Element {
           </div>
           <div>
             <span>{selectedItemIds.length}件選択中</span>
-            <Button
-              appearance="outline"
-              className={styles.iconButton}
-              disabled={selectedItemIds.length === 0}
-              icon={<ArrowDownloadRegular />}
-              onClick={handleDownloadSelectedItems}
-            />
             <DeleteRowsDialog
               disabled={selectedItemIds.length === 0}
               onDelete={handleDeleteSelectedItems}
