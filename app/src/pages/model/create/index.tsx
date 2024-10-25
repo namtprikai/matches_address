@@ -1,5 +1,6 @@
 import {
   Body1,
+  Caption1,
   Card,
   Dialog,
   DialogTrigger,
@@ -8,12 +9,16 @@ import {
   tokens,
 } from "@fluentui/react-components";
 import { ArrowLeftFilled } from "@fluentui/react-icons";
+import { Fragment, useState } from "react";
 import { Button } from "../../../components/ui/button";
 import { DialogSurface } from "../../../components/ui/dialog-surface";
 import { DialogBody } from "../../../components/ui/dialog-body";
 import { DialogTitle } from "../../../components/ui/dialog-title";
 import { DialogContent } from "../../../components/ui/dialog-content";
 import { DialogActions } from "../../../components/ui/dialog-actions";
+import { useDialogState } from "../../../hooks/use-dialog-state";
+import { DialogImportNormalizedDataset } from "../../../components/dialog-import-normalized-dataset";
+import { type SelectNormalizedDataSet } from "../../../schema";
 
 const useStyles = makeStyles({
   root: {
@@ -46,6 +51,13 @@ const useStyles = makeStyles({
 export const ModelCreate = (): JSX.Element => {
   const styles = useStyles();
 
+  const importNormalizedDatasetDialogState = useDialogState();
+  const [normalizedDataSet, setNormalizedDataSet] =
+    useState<SelectNormalizedDataSet>();
+
+  // 仮
+  const [descColumns, setDescColumns] = useState<string[]>([]);
+
   return (
     <div className={styles.root}>
       <h2 className={styles.heading}>
@@ -58,14 +70,44 @@ export const ModelCreate = (): JSX.Element => {
       <div className={styles.contents}>
         <Card>
           <Subtitle2>① ファイルをインポート</Subtitle2>
-          <div>sample.csv</div>
+          <div>
+            {normalizedDataSet && <div>{normalizedDataSet.file_name}</div>}
+          </div>
+          <div>
+            <Button
+              appearance="primary"
+              onClick={() => importNormalizedDatasetDialogState.setIsOpen(true)}
+            >
+              インポート
+            </Button>
+          </div>
         </Card>
+        <DialogImportNormalizedDataset
+          dialogState={importNormalizedDatasetDialogState}
+          onSelected={(data) => {
+            setNormalizedDataSet(data);
+          }}
+        />
 
         <Card>
           <Subtitle2>② 説明変数に使うカラムの選択</Subtitle2>
-          <div>住所, ほげ, ほげ</div>
+          {descColumns.length > 0 && (
+            <div>
+              {descColumns.map((column, index) => (
+                <Fragment key={column}>
+                  <Caption1>{column}</Caption1>
+                  {index !== descColumns.length - 1 && <Caption1>,</Caption1>}
+                </Fragment>
+              ))}
+            </div>
+          )}
           <div>
-            <Button appearance="primary">カラムを変更</Button>
+            <Button
+              appearance="primary"
+              onClick={() => setDescColumns(["foo", "bar"])}
+            >
+              {descColumns.length > 0 ? "カラムを変更" : "インポート"}
+            </Button>
           </div>
         </Card>
 
