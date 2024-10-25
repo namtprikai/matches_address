@@ -1,6 +1,5 @@
 import {
   Dialog,
-  tokens,
   makeStyles,
   DialogTrigger,
   Checkbox,
@@ -26,75 +25,6 @@ const useStyles = makeStyles({
     height: "24px",
     ":hover": { cursor: "pointer" },
   },
-  noDatasetWrap: {
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    height: "293px",
-  },
-  uploadWrap: {
-    height: "325px",
-    padding: `${tokens.spacingVerticalNone} ${tokens.spacingVerticalS} ${
-      tokens.spacingHorizontalMNudge
-    }`,
-    borderBottom: `1px solid ${tokens.colorNeutralStroke2}`,
-  },
-  noDataset: {
-    display: "flex",
-    flexDirection: "column",
-    justifyContent: "center",
-    alignItems: "center",
-    color: tokens.colorNeutralForeground3,
-    fontSize: tokens.fontSizeBase200,
-  },
-  tab: {
-    padding: `${tokens.spacingVerticalMNudge} ${tokens.spacingHorizontalNone}`,
-  },
-  tabList: {
-    display: "flex",
-    gap: tokens.spacingVerticalXL,
-    padding: `${tokens.spacingVerticalNone} ${tokens.spacingHorizontalXXL}`,
-  },
-  tableHeader: {
-    display: "block",
-  },
-  tableBody: {
-    height: "293px",
-  },
-  datasetTable: {
-    display: "grid",
-    gridTemplateColumns: "1fr 1fr",
-    gap: tokens.spacingVerticalS,
-    ":hover": { cursor: "pointer" },
-  },
-  borderBottom: {
-    borderBottom: `1px solid ${tokens.colorNeutralStroke2}`,
-  },
-  selectedDatasetTable: {
-    border: "1px solid #6264A7",
-    backgroundColor: "#E9EAF6",
-  },
-  datasetCell: {
-    padding: `${tokens.spacingVerticalNone} ${tokens.spacingHorizontalXXL}`,
-    fontSize: tokens.fontSizeBase200,
-    display: "flex",
-    alignItems: "center",
-  },
-  datasetHeader: {
-    display: "flex",
-    alignItems: "center",
-    gap: tokens.spacingVerticalM,
-    color: tokens.colorNeutralForeground3,
-    ":hover": { cursor: "pointer" },
-  },
-  tableHeight: {
-    borderBottom: `1px solid ${tokens.colorNeutralStroke2}`,
-    borderTop: `1px solid ${tokens.colorNeutralStroke2}`,
-  },
-  dataName: {
-    color: "#6264A7",
-    textDecoration: "underline",
-  },
   disabledButton: {
     backgroundColor: "#EFF0F0",
     color: "#89949F",
@@ -102,12 +32,6 @@ const useStyles = makeStyles({
     ":hover": {
       backgroundColor: "#EFF0F0",
     },
-  },
-  menuItemButton: {
-    justifyContent: "flex-start",
-    padding: 0,
-    fontWeight: "normal",
-    width: "100%",
   },
 });
 
@@ -165,9 +89,9 @@ export const DialogImportExplanatoryVariables = ({
             }
             className={styles.dialogTitle}
           >
-            ファイルをインポート
+            説明変数に使うカラムの選択
           </DialogTitle>
-          <DialogContent padding={false}>
+          <DialogContent>
             {mockColumnOptions.map((column) => (
               <Checkbox
                 key={column}
@@ -198,7 +122,7 @@ export const DialogImportExplanatoryVariables = ({
               disabled={selectedExplanatoryVariable.length === 0}
               onClick={handleClick}
             >
-              インポート
+              保存
             </Button>
           </DialogActions>
         </DialogBody>
