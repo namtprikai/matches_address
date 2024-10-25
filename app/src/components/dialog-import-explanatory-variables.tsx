@@ -61,11 +61,8 @@ export const DialogImportExplanatoryVariables = ({
   ];
 
   const handleClick = (): void => {
-    // if (selectedDataSet !== null) {
-    // const dataset = datasets[selectedDatasetIndex];
     onSelected(selectedExplanatoryVariable);
     setIsDialogOpen(false);
-    // }
   };
 
   return (
