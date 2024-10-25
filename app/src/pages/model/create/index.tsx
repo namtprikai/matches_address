@@ -20,6 +20,7 @@ import { useDialogState } from "../../../hooks/use-dialog-state";
 import { DialogImportNormalizedDataset } from "../../../components/dialog-import-normalized-dataset";
 import { type SelectNormalizedDataSet } from "../../../schema";
 import { DialogExplanatoryVariables } from "../../../components/dialog-explanatory-variables";
+import { DialogModelAdvanced } from "../../../components/dialog-model-advanced";
 
 const useStyles = makeStyles({
   root: {
@@ -56,11 +57,14 @@ export const ModelCreate = (): JSX.Element => {
   const [normalizedDataSet, setNormalizedDataSet] =
     useState<SelectNormalizedDataSet>();
 
-  // 仮
   const explanatoryVariablesDialogState = useDialogState();
   const [explanatoryVariables, setExplanatoryVariables] = useState<string[]>(
     [],
   );
+
+  const modelAdvancedDialogState = useDialogState();
+  const [modelAdvanced, setModelAdvanced] =
+    useState<Record<string, string | number>>();
 
   return (
     <div className={styles.root}>
@@ -125,11 +129,31 @@ export const ModelCreate = (): JSX.Element => {
 
         <Card>
           <Subtitle2>③ パラメーターを変更</Subtitle2>
-          <div>項目</div>
+          {modelAdvanced && (
+            <div>
+              {Object.entries(modelAdvanced).map(([key, value]) => (
+                <div key={key}>
+                  <Caption1>{key}</Caption1>
+                  <Caption1>{value}</Caption1>
+                </div>
+              ))}
+            </div>
+          )}
           <div>
-            <Button appearance="transparent">高度な設定を変更</Button>
+            <Button
+              appearance="transparent"
+              onClick={() => modelAdvancedDialogState.setIsOpen(true)}
+            >
+              高度な設定を変更
+            </Button>
           </div>
         </Card>
+        <DialogModelAdvanced
+          dialogState={modelAdvancedDialogState}
+          onSelected={(data) => {
+            setModelAdvanced(data);
+          }}
+        />
       </div>
 
       <div className={styles.footer}>
