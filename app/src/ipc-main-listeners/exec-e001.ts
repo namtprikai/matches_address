@@ -13,10 +13,13 @@ export const execE001 = (async (
 ): Promise<true | false> => {
   try {
     // childProcessに入れてバックグラウンド実行
-    const cp = spawn(binaryPath("e001"), [
-      "--parameters",
-      JSON.stringify(JSON.stringify(parameters)),
-    ]);
+    const cp = spawn(
+      binaryPath("e001"),
+      ["--parameters", JSON.stringify(JSON.stringify(parameters))],
+      {
+        detached: true,
+      },
+    );
 
     return true;
   } catch (error) {
