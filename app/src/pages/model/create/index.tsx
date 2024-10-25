@@ -19,6 +19,7 @@ import { DialogActions } from "../../../components/ui/dialog-actions";
 import { useDialogState } from "../../../hooks/use-dialog-state";
 import { DialogImportNormalizedDataset } from "../../../components/dialog-import-normalized-dataset";
 import { type SelectNormalizedDataSet } from "../../../schema";
+import { DialogImportExplanatoryVariables } from "../../../components/dialog-import-explanatory-variables";
 
 const useStyles = makeStyles({
   root: {
@@ -56,7 +57,10 @@ export const ModelCreate = (): JSX.Element => {
     useState<SelectNormalizedDataSet>();
 
   // 仮
-  const [descColumns, setDescColumns] = useState<string[]>([]);
+  const importExplanatoryVariablesDialogState = useDialogState();
+  const [explanatoryVariables, setExplanatoryVariables] = useState<string[]>(
+    [],
+  );
 
   return (
     <div className={styles.root}>
@@ -91,12 +95,14 @@ export const ModelCreate = (): JSX.Element => {
 
         <Card>
           <Subtitle2>② 説明変数に使うカラムの選択</Subtitle2>
-          {descColumns.length > 0 && (
+          {explanatoryVariables.length > 0 && (
             <div>
-              {descColumns.map((column, index) => (
+              {explanatoryVariables.map((column, index) => (
                 <Fragment key={column}>
                   <Caption1>{column}</Caption1>
-                  {index !== descColumns.length - 1 && <Caption1>,</Caption1>}
+                  {index !== explanatoryVariables.length - 1 && (
+                    <Caption1>,</Caption1>
+                  )}
                 </Fragment>
               ))}
             </div>
@@ -104,12 +110,20 @@ export const ModelCreate = (): JSX.Element => {
           <div>
             <Button
               appearance="primary"
-              onClick={() => setDescColumns(["foo", "bar"])}
+              onClick={() =>
+                importExplanatoryVariablesDialogState.setIsOpen(true)
+              }
             >
-              {descColumns.length > 0 ? "カラムを変更" : "インポート"}
+              {explanatoryVariables.length > 0 ? "カラムを変更" : "インポート"}
             </Button>
           </div>
         </Card>
+        <DialogImportExplanatoryVariables
+          dialogState={importExplanatoryVariablesDialogState}
+          onSelected={(data) => {
+            setExplanatoryVariables(data);
+          }}
+        />
 
         <Card>
           <Subtitle2>③ パラメーターを変更</Subtitle2>
