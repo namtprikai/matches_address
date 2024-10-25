@@ -43,7 +43,7 @@ type Props = {
   onSelected: (data: ExplanatoryVariable[]) => void;
 };
 
-export const DialogImportExplanatoryVariables = ({
+export const DialogExplanatoryVariables = ({
   dialogState,
   onSelected,
 }: Props): JSX.Element => {

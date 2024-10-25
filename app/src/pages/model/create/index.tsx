@@ -19,7 +19,7 @@ import { DialogActions } from "../../../components/ui/dialog-actions";
 import { useDialogState } from "../../../hooks/use-dialog-state";
 import { DialogImportNormalizedDataset } from "../../../components/dialog-import-normalized-dataset";
 import { type SelectNormalizedDataSet } from "../../../schema";
-import { DialogImportExplanatoryVariables } from "../../../components/dialog-import-explanatory-variables";
+import { DialogExplanatoryVariables } from "../../../components/dialog-explanatory-variables";
 
 const useStyles = makeStyles({
   root: {
@@ -57,7 +57,7 @@ export const ModelCreate = (): JSX.Element => {
     useState<SelectNormalizedDataSet>();
 
   // 仮
-  const importExplanatoryVariablesDialogState = useDialogState();
+  const explanatoryVariablesDialogState = useDialogState();
   const [explanatoryVariables, setExplanatoryVariables] = useState<string[]>(
     [],
   );
@@ -110,16 +110,14 @@ export const ModelCreate = (): JSX.Element => {
           <div>
             <Button
               appearance="primary"
-              onClick={() =>
-                importExplanatoryVariablesDialogState.setIsOpen(true)
-              }
+              onClick={() => explanatoryVariablesDialogState.setIsOpen(true)}
             >
               {explanatoryVariables.length > 0 ? "カラムを変更" : "インポート"}
             </Button>
           </div>
         </Card>
-        <DialogImportExplanatoryVariables
-          dialogState={importExplanatoryVariablesDialogState}
+        <DialogExplanatoryVariables
+          dialogState={explanatoryVariablesDialogState}
           onSelected={(data) => {
             setExplanatoryVariables(data);
           }}
