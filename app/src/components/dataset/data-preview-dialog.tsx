@@ -97,6 +97,7 @@ export function DataPreviewDialog({
   const { isOpen, setIsOpen } = dialogState;
   const deleteDialogState = useDialogState(false);
 
+  // TODO: typeでswitchするよりonDownload propsなんかで処理したい
   const handleDownload = async (): Promise<void> => {
     switch (type) {
       case "raw": {
