@@ -3,11 +3,11 @@ type ObjectType = Record<string, string | number | boolean | null>;
 /**
  * オブジェクトの配列をCSVファイルとしてダウンロードする
  * @param objects 変換対象のオブジェクトの配列
- * @param filename ダウンロードするファイル名（.csvは自動で付加）
+ * @param fileName ダウンロードするファイル名（.csvは自動で付加）
  */
 export function downloadObjectsAsCSV(
   objects: ObjectType[],
-  filename: string,
+  fileName: string,
 ): void {
   // CSVデータの生成
   const csvContent = objectsToCSV(objects);
@@ -19,7 +19,7 @@ export function downloadObjectsAsCSV(
   // ダウンロードリンクの作成
   const link = document.createElement("a");
   link.href = URL.createObjectURL(blob);
-  link.download = filename.endsWith(".csv") ? filename : `${filename}.csv`;
+  link.download = fileName.endsWith(".csv") ? fileName : `${fileName}.csv`;
 
   // ダウンロードの実行
   document.body.appendChild(link);
