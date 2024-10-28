@@ -248,7 +248,7 @@ def split_data(df, params):
 # - 出力：「D014　学習済みモデル【pkl】」
 
 @profile
-def train_lgb_with_optuna(train_df, params, progress, citycode_value, targetyear_value):
+def train_lgb_with_optuna(train_df, params, progress, citycode_value, targetyear_value, output_path):
     """
     K-Fold交差検証とOptunaによるハイパーパラメータチューニングを用いてLightGBMモデルを学習する
    
@@ -416,7 +416,7 @@ def train_lgb_with_optuna(train_df, params, progress, citycode_value, targetyear
     feature_importances_dict_train = mean_feature_importances.to_dict(orient='records')
 
     # モデルを保存するディレクトリ
-    output_file_path = f'./data/{citycode_value}/E021/outputs/mdoels'
+    output_file_path = f'{output_path}/data/{citycode_value}/E021/outputs/models'
     os.makedirs(output_file_path, exist_ok=True)
     # 各学習済みモデルをファイルに保存
     for i, model in enumerate(lgbm_models):
@@ -424,7 +424,7 @@ def train_lgb_with_optuna(train_df, params, progress, citycode_value, targetyear
         with open(model_file, 'wb') as f:
             pickle.dump(model, f)
         # モデルフォルダを ZIP 圧縮
-        model_zip_file_path = f'./data/{citycode_value}/E021/outputs/models.zip'
+        model_zip_file_path = f'{output_path}/data/{citycode_value}/E021/outputs/models.zip'
         with zipfile.ZipFile(model_zip_file_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
             for root, dirs, files in os.walk(output_file_path):
                 for file in files:
@@ -597,7 +597,7 @@ def merge_and_save_results(df, pred, output_file):
     print(f"ファイル {output_file} をいずれのエンコーディングでも保存できませんでした。")
     return merged_df
 
-def save_metrics_and_importances(score_dict, feature_importances_dict_train, citycode_value, targetyear_value):
+def save_metrics_and_importances(score_dict, feature_importances_dict_train, citycode_value, targetyear_value, output_path):
     """
     評価指標と特徴量重要度をJSONファイルに保存する
 
@@ -615,7 +615,7 @@ def save_metrics_and_importances(score_dict, feature_importances_dict_train, cit
     data_zip_file_path : str
         作成したZIPファイルのパス
     """
-    output_dir = f'./data/{citycode_value}/E021/outputs/'
+    output_dir = f'{output_path}/data/{citycode_value}/E021/outputs/'
     os.makedirs(output_dir, exist_ok=True)
 
     # 評価指標と特徴量重要度を一つの辞書にまとめてJSONファイルに保存
@@ -646,7 +646,7 @@ def save_metrics_and_importances(score_dict, feature_importances_dict_train, cit
 
 
 def train_and_evaluate(job_id, input_file, test_size, n_splits, undersample, undersample_ratio, threshold, hyperparameter_flag, n_trials, 
-                       lambda_l1, lambda_l2, num_leaves, feature_fraction, bagging_fraction, bagging_freq, min_data_in_leaf, citycode_value, targetyear_value, progress=gr.Progress()):
+                       lambda_l1, lambda_l2, num_leaves, feature_fraction, bagging_fraction, bagging_freq, min_data_in_leaf, citycode_value, targetyear_value, output_path, progress=gr.Progress()):
     """
     モデルを学習し評価する主要関数
 
@@ -732,7 +732,7 @@ def train_and_evaluate(job_id, input_file, test_size, n_splits, undersample, und
     
     progress(0.3, desc="Training model...")
     create_or_update_job_task(job_id, progress_percent="30%", preprocess_type="Training model...", error_code=None, result=None, id= task_id)
-    models, oof_pred, feature_importances_dict_train, model_zip_file_path = train_lgb_with_optuna(train_df, params, progress, citycode_value, targetyear_value)
+    models, oof_pred, feature_importances_dict_train, model_zip_file_path = train_lgb_with_optuna(train_df, params, progress, citycode_value, targetyear_value, output_path)
     
     progress(0.8, desc="Evaluating model...")
     create_or_update_job_task(job_id, progress_percent="80%", preprocess_type="Evaluating model...", error_code=None, result=None, id= task_id)
@@ -740,13 +740,13 @@ def train_and_evaluate(job_id, input_file, test_size, n_splits, undersample, und
     
     progress(0.9, desc="Saving results...")
     create_or_update_job_task(job_id, progress_percent="90%", preprocess_type="Saving results...", error_code=None, result=None, id= task_id)
-    output_file = f'./data/{citycode_value}/E021/outputs/D902.csv'
+    output_file = f'{output_path}/data/{citycode_value}/E021/outputs/D902.csv'
     updated_df = merge_and_save_results(df, pred, output_file)
-    feature_importance_plot = f'./data/{citycode_value}/E021/outputs/{feature_importance_plot}'
+    feature_importance_plot = f'{output_path}/data/{citycode_value}/E021/outputs/{feature_importance_plot}'
     plt.savefig(feature_importance_plot)
 
     # Save evaluation metrics and feature importances
-    data_zip_file_path = save_metrics_and_importances(score_dict, feature_importances_dict_train, citycode_value, targetyear_value)
+    data_zip_file_path = save_metrics_and_importances(score_dict, feature_importances_dict_train, citycode_value, targetyear_value, output_path)
     # data_zip_file_path = f'./data/{citycode_value}/E021/outputs/data_files.zip'
     progress(0.95, desc="Print results...")
     create_or_update_job_task(job_id, progress_percent="95%", preprocess_type="Print results...", error_code=None, result=None, id= task_id)
