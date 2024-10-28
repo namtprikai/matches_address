@@ -1,6 +1,7 @@
 import { jobs, job_tasks } from "../../schema";
 import { db } from "../../utils/db";
 import { type IpcMainListener } from "../";
+import { type DeepPartial } from "../../@types/global";
 
 interface IPost {
   path: string;
@@ -25,7 +26,7 @@ interface IPost {
   };
 }
 
-type Params = Partial<IPost>;
+type Params = DeepPartial<IPost>;
 
 export const buildModel = (async (
   _: unknown,
