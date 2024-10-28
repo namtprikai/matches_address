@@ -27,6 +27,7 @@ const useStyles = makeStyles({
     gap: tokens.spacingVerticalM,
     backgroundColor: tokens.colorNeutralBackground1,
     padding: tokens.spacingVerticalXXL,
+    maxWidth: "1382px",
   },
   heading: {
     fontSize: tokens.fontSizeBase500,
@@ -45,7 +46,7 @@ const useStyles = makeStyles({
   tableContainer: {
     overflowX: "auto",
     maxHeight: "500px",
-    maxWidth: "1062px",
+    width: "100%",
   },
   text: typographyStyles.subtitle2,
   pagenation: {
@@ -94,6 +95,18 @@ const columns: ColumnDefinition<PreviewData>[] = [
     key: "vacantHouseProbability",
     name: "空き家確率",
     onRender: (item) => `${(item.vacantHouseProbability * 100).toFixed(2)}%`,
+  },
+  {
+    key: "address",
+    name: "アドレス",
+  },
+  {
+    key: "address",
+    name: "アドレス",
+  },
+  {
+    key: "address",
+    name: "アドレス",
   },
   {
     key: "address",
