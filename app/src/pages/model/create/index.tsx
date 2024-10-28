@@ -56,11 +56,13 @@ export const ModelCreate = (): JSX.Element => {
 
   const modelMessageDialogState = useDialogState();
 
+  const form = useFormModelCreate();
   const {
     handleSubmit,
     setValue,
     formState: { errors },
-  } = useFormModelCreate();
+    watch,
+  } = form;
 
   const onSubmit = handleSubmit(async (data: FormType) => {
     await window.ipcRenderer.invoke("buildModel", data);
@@ -77,8 +79,7 @@ export const ModelCreate = (): JSX.Element => {
   );
 
   const modelAdvancedDialogState = useDialogState();
-  const [modelAdvanced, setModelAdvanced] =
-    useState<Record<string, string | number>>();
+  const modelAdvanced = watch("settings.advanced");
 
   return (
     <form className={styles.root} onSubmit={onSubmit}>
@@ -175,9 +176,7 @@ export const ModelCreate = (): JSX.Element => {
         </Card>
         <DialogModelAdvanced
           dialogState={modelAdvancedDialogState}
-          onSelected={(data) => {
-            setModelAdvanced(data);
-          }}
+          formState={form}
         />
       </div>
 
