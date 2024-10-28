@@ -3,6 +3,7 @@ import { makeStyles, tokens } from "@fluentui/react-components";
 import { type NormalizationParameters } from "../@types/normalization";
 import { LanguageMap } from "../metadata";
 import { FormDataset } from "./form-dataset";
+import { FormNormalizationSettings } from "./form-normalization-settings";
 
 const useStyles = makeStyles({
   root: {
@@ -73,6 +74,12 @@ export const FormNormalization = ({ value, onSave }: Props): JSX.Element => {
           value={getValues().data.landRegistry}
         />
       </div>
+      <FormNormalizationSettings
+        onChange={(value) => {
+          setValue("settings", value);
+        }}
+        value={getValues().settings}
+      />
     </form>
   );
 };
