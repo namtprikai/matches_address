@@ -10,6 +10,7 @@ import {
 } from "@fluentui/react-components";
 import { ArrowLeftFilled } from "@fluentui/react-icons";
 import { Fragment, useState } from "react";
+import { type z } from "zod";
 import { Button } from "../../../components/ui/button";
 import { DialogSurface } from "../../../components/ui/dialog-surface";
 import { DialogBody } from "../../../components/ui/dialog-body";
@@ -21,6 +22,10 @@ import { DialogImportNormalizedDataset } from "../../../components/dialog-import
 import { type SelectNormalizedDataSet } from "../../../schema";
 import { DialogExplanatoryVariables } from "../../../components/dialog-explanatory-variables";
 import { DialogModelAdvanced } from "../../../components/dialog-model-advanced";
+import {
+  type schema,
+  useFormModelCreate,
+} from "../../../hooks/use-form-model-create";
 
 const useStyles = makeStyles({
   root: {
@@ -50,8 +55,16 @@ const useStyles = makeStyles({
   },
 });
 
+type FormType = z.infer<typeof schema>;
+
 export const ModelCreate = (): JSX.Element => {
   const styles = useStyles();
+
+  const { handleSubmit } = useFormModelCreate();
+
+  const onSubmit = handleSubmit(async (data: FormType) => {
+    await window.ipcRenderer.invoke("buildModel", data);
+  });
 
   const importNormalizedDatasetDialogState = useDialogState();
   const [normalizedDataSet, setNormalizedDataSet] =
@@ -67,7 +80,7 @@ export const ModelCreate = (): JSX.Element => {
     useState<Record<string, string | number>>();
 
   return (
-    <div className={styles.root}>
+    <form className={styles.root} onSubmit={onSubmit}>
       <h2 className={styles.heading}>
         <a href="#model">
           <ArrowLeftFilled />
@@ -159,13 +172,7 @@ export const ModelCreate = (): JSX.Element => {
       <div className={styles.footer}>
         <Dialog>
           <DialogTrigger>
-            <Button
-              appearance="primary"
-              onClick={async () => {
-                await window.ipcRenderer.invoke("buildModel", {});
-              }}
-              size="large"
-            >
+            <Button appearance="primary" size="large" type="submit">
               モデル作成
             </Button>
           </DialogTrigger>
@@ -188,6 +195,6 @@ export const ModelCreate = (): JSX.Element => {
           </DialogSurface>
         </Dialog>
       </div>
-    </div>
+    </form>
   );
 };
