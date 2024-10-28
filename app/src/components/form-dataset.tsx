@@ -255,7 +255,6 @@ export const FormDataset = <
       <DialogImportDataset
         dialogState={dialogState}
         onSelected={(data) => {
-          console.log(data);
           setDataSet(data);
           if (onChange) {
             onChange({
