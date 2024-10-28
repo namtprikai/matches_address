@@ -114,9 +114,8 @@ const useStyles = makeStyles({
 export function JobDetail(): JSX.Element {
   const styles = useStyles();
   const navigate = useNavigate();
-  const { jobId } = useParams<{ jobId: string }>();
-
-  const { data } = useFetchJobTasks(Number(jobId));
+  const { id } = useParams<{ id: string }>();
+  const { data } = useFetchJobTasks(Number(id));
 
   const hasData = data && data.length > 0;
 
@@ -124,7 +123,7 @@ export function JobDetail(): JSX.Element {
     navigate("/job/preview");
   };
   const handleNavigateToJobGraph = (): void => {
-    navigate(`/job/graph/${jobId}`);
+    navigate(`/job/detail/${id}/graph`);
   };
 
   return (

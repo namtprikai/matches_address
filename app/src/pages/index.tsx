@@ -52,13 +52,20 @@ const router = createHashRouter([
       {
         path: "job/detail/:id",
         element: <JobDetail />,
+        children: [
+          {
+            path: "graph",
+            element: <JobGraph />,
+          },
+        ],
       },
+      // TODO: 開発用リンク あとで削除
       {
         path: "job/preview",
         element: <JobPreview />,
       },
       {
-        path: "job/graph/:id",
+        path: "graph",
         element: <JobGraph />,
       },
       {
