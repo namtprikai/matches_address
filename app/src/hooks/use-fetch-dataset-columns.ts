@@ -1,30 +1,25 @@
 import useSWR, { type SWRResponse } from "swr";
+import { type readDatasetColumnsArgs } from "../ipc-main-listeners/read-dataset-columns";
 
-const fetcher = ([{ datasetPath, fileType }]: [
-  {
-    datasetPath: string;
-    fileType: "csv" | "citygml" | "shapefile";
-  },
+const fetcher = ([{ dataSet, fileType }]: [
+  readDatasetColumnsArgs,
   string,
 ]): Promise<string[] | undefined> => {
   const result = window.ipcRenderer.invoke("readDatasetColumns", {
-    datasetPath,
+    dataSet,
     fileType,
   });
   return result;
 };
 
 export const useFetchDatasetColumns = ({
-  datasetPath,
+  dataSet,
   fileType,
-}: {
-  datasetPath: string;
-  fileType: "csv" | "citygml" | "shapefile";
-}): SWRResponse<string[] | undefined> => {
+}: readDatasetColumnsArgs): SWRResponse<string[] | undefined> => {
   const swr = useSWR(
     [
       {
-        datasetPath,
+        dataSet,
         fileType,
       },
       "useFetchDatasetColumns",

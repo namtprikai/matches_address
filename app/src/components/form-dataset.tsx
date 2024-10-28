@@ -2,15 +2,17 @@ import {
   Card,
   makeStyles,
   mergeClasses,
+  Option,
   tokens,
 } from "@fluentui/react-components";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { type FieldValues, type Path } from "react-hook-form";
 import { Delete16Regular } from "@fluentui/react-icons";
 import { THEME_COLORS } from "../config/theme-colors";
 import { type SelectRawDataSet } from "../schema";
 import { LanguageMap } from "../metadata";
 import { useDialogState } from "../hooks/use-dialog-state";
+import { useFetchDatasetColumns } from "../hooks/use-fetch-dataset-columns";
 import { Dropdown } from "./ui/dropdown";
 import { Field } from "./ui/field";
 import { DialogImportDataset } from "./dialog-import-dataset";
@@ -166,8 +168,15 @@ export const FormDataset = <
   appearance?: "default" | "large";
   onChange?: (data: typeof value) => void;
 }): JSX.Element => {
-  const [dataSet, setDataSet] = useState<SelectRawDataSet | null>(null);
+  const [dataSet, setDataSet] = useState<SelectRawDataSet | undefined>(
+    undefined,
+  );
   const dialogState = useDialogState();
+
+  const { data: dataSetColumns } = useFetchDatasetColumns({
+    dataSet,
+    fileType: "csv",
+  });
 
   const { setIsOpen } = dialogState;
 
@@ -178,7 +187,7 @@ export const FormDataset = <
         <SelectedDataSetView
           dataSet={dataSet}
           onDelete={() => {
-            setDataSet(null);
+            setDataSet(undefined);
             if (onChange) {
               onChange({
                 ...value,
@@ -195,6 +204,15 @@ export const FormDataset = <
 
   const styles = useStyles();
   const columns = value.columns ? Object.entries(value.columns) : [];
+
+  const dataSetColumnsToOptions = dataSetColumns?.map((column) => {
+    return (
+      <Option key={column} value={column}>
+        {column}
+      </Option>
+    );
+  });
+
   const columnsToDropDowns = columns.map(([key]) => {
     return (
       <Field
@@ -207,7 +225,7 @@ export const FormDataset = <
         }
       >
         <Dropdown className={styles.dropdown}>
-          <option value="test">Test</option>
+          {dataSetColumnsToOptions}
         </Dropdown>
       </Field>
     );
@@ -237,6 +255,7 @@ export const FormDataset = <
       <DialogImportDataset
         dialogState={dialogState}
         onSelected={(data) => {
+          console.log(data);
           setDataSet(data);
           if (onChange) {
             onChange({
