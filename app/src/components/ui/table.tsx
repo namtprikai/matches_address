@@ -1,5 +1,5 @@
 import {
-  Table,
+  Table as FUITable,
   TableBody,
   TableCell,
   TableHeader,
@@ -18,6 +18,9 @@ const useStyles = makeStyles({
   },
   tableHeaderCell: {
     fontWeight: "600",
+    width: "150px",
+    minWidth: "150px",
+    maxWidth: "150px",
   },
   tableBody: {
     backgroundColor: "#fff",
@@ -31,26 +34,22 @@ export interface ColumnDefinition<T> {
   onRender?: (item: T) => React.ReactNode;
 }
 
-interface CustomTableProps<T> {
+interface TableProps<T> {
   columns: ColumnDefinition<T>[];
   items: T[];
 }
 
-export function CustomTable<T>({
-  columns,
-  items,
-}: CustomTableProps<T>): JSX.Element {
+export function Table<T>({ columns, items }: TableProps<T>): JSX.Element {
   const styles = useStyles();
 
   return (
-    <Table>
+    <FUITable>
       <TableHeader className={styles.tableHeader}>
         <TableRow className={styles.tableHeaderRow}>
           {columns.map((column) => (
             <TableHeaderCell
               key={String(column.key)}
               className={mergeClasses(styles.tableHeaderCell, column.className)}
-              style={{ width: "150px" }}
             >
               {column.name}
             </TableHeaderCell>
@@ -70,6 +69,6 @@ export function CustomTable<T>({
           </TableRow>
         ))}
       </TableBody>
-    </Table>
+    </FUITable>
   );
 }

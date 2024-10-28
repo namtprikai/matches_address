@@ -6,10 +6,7 @@ import {
 } from "@fluentui/react-components";
 import { ArrowLeftRegular } from "@fluentui/react-icons";
 import { useState } from "react";
-import {
-  CustomTable,
-  type ColumnDefinition,
-} from "../../../../components/ui/table";
+import { Table, type ColumnDefinition } from "../../../../components/ui/table";
 import { Pagenation } from "../../../../components/ui/pagenation";
 
 const useStyles = makeStyles({
@@ -159,7 +156,7 @@ export function JobPreview(): JSX.Element {
         </div>
 
         <div className={styles.tableContainer}>
-          <CustomTable columns={columns} items={paginatedData} />
+          <Table columns={columns} items={paginatedData} />
         </div>
         <div className={styles.pagenation}>
           <Pagenation

@@ -3,7 +3,7 @@ import { makeStyles } from "@fluentui/react-components";
 import useSWR from "swr";
 import { formatDate } from "../utils/format-date";
 import { type SelectWorkbook } from "../schema";
-import { CustomTable, type ColumnDefinition } from "./ui/table";
+import { Table, type ColumnDefinition } from "./ui/table";
 
 const useStyles = makeStyles({
   link: {
@@ -54,5 +54,5 @@ export const TableWorkbook = (): JSX.Element => {
     },
   ];
 
-  return <CustomTable columns={columns} items={data || []} />;
+  return <Table columns={columns} items={data || []} />;
 };
