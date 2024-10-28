@@ -190,6 +190,7 @@ function Row({
 }: RowProps): JSX.Element {
   const styles = useStyles();
   const dataPreviewDialogState = useDialogState(false);
+  const [selectedUnit, setSelectedUnit] = useState<Unit>("building");
 
   const handleDownload = async (
     unit: Unit,
@@ -227,151 +228,146 @@ function Row({
     }
   };
 
+  const handleDelete = async (id: SelectDataSetResult["id"]): Promise<void> => {
+    await window.ipcRenderer.invoke("deleteDataSetResult", {
+      id,
+    });
+    void mutate();
+    onSelectionChange((prev) => prev.filter((selectedId) => selectedId !== id));
+  };
+
   return (
-    <TableRow
-      key={item.id}
-      appearance={appearance}
-      aria-selected={selected}
-      onClick={onClick}
-    >
-      <TableSelectionCell
-        checkboxIndicator={{ "aria-label": "Select row" }}
-        checked={selected}
-      />
-      <TableCell>
-        <SelectUnitDialog
-          buttonText="プレビューを見る"
-          dataPreviewProps={{
-            onSubmit: () => {
+    <>
+      <TableRow
+        key={item.id}
+        appearance={appearance}
+        aria-selected={selected}
+        onClick={onClick}
+      >
+        <TableSelectionCell
+          checkboxIndicator={{ "aria-label": "Select row" }}
+          checked={selected}
+        />
+        <TableCell>
+          <SelectUnitDialog
+            buttonText="プレビューを見る"
+            dialogTriggerChildren={
+              <Button
+                appearance="transparent"
+                className={styles.datasetButton}
+                onClick={(e) => e.stopPropagation()}
+              >
+                {item.title}
+              </Button>
+            }
+            onChange={(unit) => setSelectedUnit(unit)}
+            onSubmit={() => {
               dataPreviewDialogState.setIsOpen(true);
-            },
-            id: item.id,
-            dataPreviewDialogState,
-            datasetName: item.title || "",
-          }}
-          title="データのプレビュー"
-          triggerComponent={
-            <Button
-              appearance="transparent"
-              className={styles.datasetButton}
-              onClick={(e) => e.stopPropagation()}
-            >
-              {item.title}
-            </Button>
-          }
-        />
-      </TableCell>
-      <TableCell>{formatDate(item.updated_at, "YYYY/MM/DD")}</TableCell>
-      <TableCell className={styles.actions}>
-        <SelectUnitDialog
-          buttonText="ダウンロード"
-          downloadProps={{
-            onSubmit: (unit) => {
-              void handleDownload(unit, item.id, item.title || "");
-            },
-          }}
-          title="データのダウンロード"
-          triggerComponent={
-            <Button
-              appearance="subtle"
-              aria-label="ダウンロード"
-              icon={<ArrowDownloadRegular />}
-              onClick={(e) => e.stopPropagation()}
-            />
-          }
-        />
-        <RowMenu
-          item={item}
-          mutate={mutate}
-          onSelectionChange={onSelectionChange}
-        />
-      </TableCell>
-    </TableRow>
+            }}
+            title="データのプレビュー"
+          />
+          <DataPreviewDialog
+            datasetName={item.title}
+            dialogState={dataPreviewDialogState}
+            hideTrigger
+            id={item.id}
+            onDelete={async () => {
+              await handleDelete(item.id);
+            }}
+            type={selectedUnit}
+          />
+        </TableCell>
+        <TableCell>{formatDate(item.updated_at, "YYYY/MM/DD")}</TableCell>
+        <TableCell className={styles.actions}>
+          <SelectUnitDialog
+            buttonText="ダウンロード"
+            dialogTriggerChildren={
+              <Button
+                appearance="subtle"
+                aria-label="ダウンロード"
+                icon={<ArrowDownloadRegular />}
+                onClick={(e) => e.stopPropagation()}
+              />
+            }
+            onChange={(unit) => setSelectedUnit(unit)}
+            onSubmit={() => {
+              void handleDownload(selectedUnit, item.id, item.title || "");
+            }}
+            title="データのダウンロード"
+          />
+          <RowMenu
+            item={item}
+            mutate={mutate}
+            onSelectionChange={onSelectionChange}
+          />
+        </TableCell>
+      </TableRow>
+    </>
   );
 }
 
 function SelectUnitDialog({
-  triggerComponent,
   title,
   buttonText,
-  downloadProps,
-  dataPreviewProps,
+  onChange,
+  onSubmit,
+  dialogTriggerChildren,
 }: {
-  triggerComponent: ReactElement;
   title: string;
   buttonText: string;
-  downloadProps?: {
-    onSubmit: (unit: Unit) => void;
-  };
-  dataPreviewProps?: {
-    onSubmit: (unit: Unit) => void;
-    id: number;
-    dataPreviewDialogState: ReturnUseDialogState;
-    datasetName: string;
-  };
+  onChange: (unit: Unit) => void;
+  onSubmit: () => void;
+  dialogTriggerChildren: ReactElement;
 }): JSX.Element {
   const styles = useStyles();
   const [open, setOpen] = useState(false);
-  const [selectedUnit, setSelectedUnit] = useState<Unit>("building");
 
   return (
-    <>
-      <Dialog
-        onOpenChange={(e) => {
-          e.stopPropagation();
-          setOpen((prev) => !prev);
-        }}
-        open={open}
-      >
-        <DialogTrigger disableButtonEnhancement>
-          {triggerComponent}
-        </DialogTrigger>
-        <DialogSurface onClick={(e) => e.stopPropagation()}>
-          <DialogBody>
-            <DialogTitle>{title}</DialogTitle>
-            <DialogContent>
-              <p>
-                空き家判定結果データは以下の2つのデータが含まれます。
-                どちらか選択してください。
-              </p>
-              <Field className={styles.radioGroup}>
-                <RadioGroup
-                  onChange={(_, data) =>
-                    setSelectedUnit(data.value as "building" | "area")
-                  }
-                  value={selectedUnit}
-                >
-                  <Radio label="建物単位" value="building" />
-                  <Radio label="地域単位" value="area" />
-                </RadioGroup>
-              </Field>
-            </DialogContent>
-            <DialogActions>
-              <Button
-                appearance="primary"
-                onClick={() => {
-                  downloadProps?.onSubmit(selectedUnit);
-                  dataPreviewProps?.onSubmit(selectedUnit);
-                  setOpen(false);
-                }}
-                size="medium"
+    <Dialog
+      onOpenChange={(e) => {
+        e.stopPropagation();
+        setOpen((prev) => !prev);
+      }}
+      open={open}
+    >
+      <DialogTrigger disableButtonEnhancement>
+        {dialogTriggerChildren}
+      </DialogTrigger>
+      <DialogSurface onClick={(e) => e.stopPropagation()}>
+        <DialogBody>
+          <DialogTitle>{title}</DialogTitle>
+          <DialogContent>
+            <p>
+              空き家判定結果データは以下の2つのデータが含まれます。
+              どちらか選択してください。
+            </p>
+            <Field className={styles.radioGroup}>
+              <RadioGroup
+                defaultValue="building"
+                onChange={(_, data) =>
+                  onChange(data.value as "building" | "area")
+                }
               >
-                {buttonText}
-              </Button>
-            </DialogActions>
-          </DialogBody>
-        </DialogSurface>
-      </Dialog>
-      {dataPreviewProps ? (
-        <DataPreviewDialog
-          datasetName={dataPreviewProps.datasetName}
-          dialogState={dataPreviewProps.dataPreviewDialogState}
-          hideTrigger
-          id={dataPreviewProps.id}
-          type={selectedUnit}
-        />
-      ) : null}
-    </>
+                <Radio label="建物単位" value="building" />
+                <Radio label="地域単位" value="area" />
+              </RadioGroup>
+            </Field>
+          </DialogContent>
+          <DialogActions>
+            <Button
+              appearance="primary"
+              onClick={() => {
+                onSubmit();
+                setOpen(false);
+              }}
+              size="medium"
+            >
+              {buttonText}
+            </Button>
+          </DialogActions>
+        </DialogBody>
+      </DialogSurface>
+    </Dialog>
   );
 }
 

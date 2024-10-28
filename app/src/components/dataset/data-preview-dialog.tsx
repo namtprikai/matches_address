@@ -81,7 +81,7 @@ interface Props {
   id: number;
   dialogState: ReturnUseDialogState;
   datasetName: string | null;
-  onDelete?: () => void;
+  onDelete: () => void;
   hideTrigger?: boolean;
 }
 
