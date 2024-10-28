@@ -50,6 +50,7 @@ import { deleteModelFiles } from "./delete-model-files";
 import { fetchJobLists } from "./fetch-job-lists";
 import { fetchJobTasks } from "./fetch-job-tasks";
 import { buildModel } from "./ml/build-model";
+import { readDatasetColumns } from "./read-dataset-columns";
 
 export const ipcMainListeners = {
   helloFromPython,
@@ -67,6 +68,7 @@ export const ipcMainListeners = {
   insertResultViews,
   updateResultViews,
   readResultViews,
+  readDatasetColumns,
   selectResultView,
   deleteResultView,
   filterDataSetForChart,
