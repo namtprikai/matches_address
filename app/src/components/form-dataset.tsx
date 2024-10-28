@@ -155,7 +155,6 @@ export const FormDataset = <
   value,
   onChange,
   dataSetName,
-  name,
   appearance,
 }: {
   value: {
