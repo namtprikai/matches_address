@@ -27,7 +27,6 @@ const useStyles = makeStyles({
   previewWrapper: {
     display: "flex",
     flexDirection: "column",
-
     gap: tokens.spacingVerticalM,
     backgroundColor: tokens.colorNeutralBackground1,
     padding: tokens.spacingVerticalXXL,
@@ -48,9 +47,8 @@ const useStyles = makeStyles({
   },
   tableContainer: {
     overflowX: "auto",
-    border: `1px solid ${tokens.colorNeutralStroke1}`,
     maxHeight: "500px",
-    maxWidth: "1032px",
+    maxWidth: "1062px",
   },
   text: typographyStyles.subtitle2,
   pagenation: {

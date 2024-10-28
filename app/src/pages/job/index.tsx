@@ -9,7 +9,7 @@ import {
   TableRow,
   TableCell,
 } from "@fluentui/react-components";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { ErrorCircleFilled } from "@fluentui/react-icons";
 import { useFetchJobLists } from "../../hooks/use-fetch-job-lists";
 import { type SelectJob } from "../../schema";
@@ -146,6 +146,8 @@ export function Job(): JSX.Element {
         ) : (
           <div className={styles.noData}>
             現在表示できる非同期処理はありません
+            {/* TODO: 後で消す */}
+            <Link to={"/job/preview"}>開発用: プレビュー</Link>
           </div>
         )}
       </Card>
