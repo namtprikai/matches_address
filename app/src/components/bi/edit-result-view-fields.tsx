@@ -2,7 +2,7 @@ import { useFieldArray, useFormContext } from "react-hook-form";
 import { Fragment } from "react/jsx-runtime";
 import { makeStyles } from "@fluentui/react-components";
 import { result_views, type SelectResultView } from "../../schema";
-import { LanguageMap } from "../../lang";
+import { LanguageMap } from "../../metadata";
 import { TILE_VIEW_CONFIG } from "../../config/tile-view-config";
 import { getResultViewFieldOption } from "../../utils/get-view-field-option";
 import { type EditResultViewFormType } from "../../@types/form-schema";

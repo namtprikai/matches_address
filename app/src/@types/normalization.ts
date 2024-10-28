@@ -1,22 +1,86 @@
+/**
+ * WIP
+ * この型定義は検討途中のものであり、最終的な型定義ではないです
+ *
+ * Parameterの命名については以下資料参照
+ * https://www.notion.so/eukarya/10-16-MB-9807c808cea74b0cbbad3
+ * ed701ed38cb?pvs=4
+ *
+ * TODO: 要件定義資料ないしは他の公開資料に上記資料を置き換える
+ */
+
 export type NormalizationParameters = {
   settings: {
-    referencedData: "waterSupply" | "residentRegister";
+    referenceData: "waterStatus" | "residentRegistry";
     referenceDate: string;
     advanced: {
-      similarityThreshold: number;
-      nGramSize: 1 | 2 | 3;
-      joiningMethod: "intersection" | "nearest";
+      similarityThreshold: number; // Default 0.95
+      nGramSize: 1 | 2 | 3; // Default 2
+      joiningMethod: "intersection" | "nearest"; // Default intersection
     };
   };
   data: {
-    residentRegister: {
-      columns: {
-        householdCode: string;
-        age: string;
-        gender: string;
-        address: string;
+    residentRegistry: {
+      filePath?: string;
+      columns?: {
+        householdCode?: string;
+        gender?: string;
+        address?: string;
+        birthDate?: string;
+        residentDate?: string;
       };
-      path: string;
+    };
+    waterStatus: {
+      filePath?: string;
+      columns?: {
+        waterSupplyNumber?: string;
+        waterDisconnectionDate?: string;
+        waterConnectionDate?: string;
+        waterDisconnectionFlag?: string;
+        address?: string;
+      };
+    };
+    waterUsage: {
+      filePath?: string;
+      columns?: {
+        waterSupplyNumber?: string;
+        waterUsage?: string;
+        waterRecordedDate?: string;
+      };
+    };
+    landRegistry: {
+      filePath?: string;
+      columns?: {
+        address?: string;
+        structureName?: string;
+        registrationDate?: string;
+      };
+    };
+    vacantHouse: {
+      filePath?: string;
+      columns?: {
+        vacantHouseId?: string;
+        address?: string;
+        latitude?: string;
+        longitude?: string;
+      };
+    };
+    geocoding: {
+      filePath?: string;
+      columns?: {
+        address?: string;
+        latitude?: string;
+        longitude?: string;
+      };
+    };
+    buildingPolygon: {
+      filePath?: string;
+      columns?: {
+        buildingId?: string;
+      };
+    };
+    urbanPlanning: {
+      filePath?: string;
     };
   };
 };

@@ -1,11 +1,20 @@
-import { Card, makeStyles, tokens } from "@fluentui/react-components";
+import {
+  Card,
+  makeStyles,
+  mergeClasses,
+  tokens,
+} from "@fluentui/react-components";
 import { useEffect, useState } from "react";
 import { type FieldValues, type Path } from "react-hook-form";
 import { Delete16Regular } from "@fluentui/react-icons";
 import { THEME_COLORS } from "../config/theme-colors";
 import { type SelectRawDataSet } from "../schema";
+import { LanguageMap } from "../metadata";
 import { useDialogState } from "../hooks/use-dialog-state";
+import { Dropdown } from "./ui/dropdown";
+import { Field } from "./ui/field";
 import { DialogImportDataset } from "./dialog-import-dataset";
+
 /**
  * データセットインポートのアイコンや文字部分をスタイリングするためにスタイルを別定義
  */
@@ -119,29 +128,48 @@ const useStyles = makeStyles({
     backgroundColor: tokens.colorNeutralBackground3,
     gap: `${tokens.spacingVerticalS} 0`,
   },
+  fieldContainer: {
+    display: "flex",
+    gap: "16px",
+  },
+  dropdownContainer: {
+    display: "grid",
+    gridTemplateColumns: "1fr 1fr 1fr",
+    gridAutoRows: "60px",
+    gap: `${tokens.spacingVerticalS} ${tokens.spacingHorizontalM}`,
+  },
+  dropdown: {
+    height: "36px",
+  },
+  field: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "2px",
+  },
 });
 
 export const FormDataset = <
   FORM_TYPE extends FieldValues,
   COLUMN_TYPE extends object,
->(props: {
+>({
+  value,
+  onChange,
+  dataSetName,
+  appearance,
+}: {
   value: {
-    columns: COLUMN_TYPE;
-    path: string;
+    columns?: COLUMN_TYPE;
+    filePath?: string;
   };
   name: Path<FORM_TYPE>;
   dataSetName: string;
-  onChange?: (value: typeof props.value) => void;
+  appearance?: "default" | "large";
+  onChange?: (data: typeof value) => void;
 }): JSX.Element => {
-  const [value, setValue] = useState<typeof props.value>(props.value);
   const [dataSet, setDataSet] = useState<SelectRawDataSet | null>(null);
   const dialogState = useDialogState();
 
   const { setIsOpen } = dialogState;
-
-  useEffect(() => {
-    props.onChange?.(value);
-  }, [value, props]);
 
   // {}で囲んでif処理を書くのが可読性低いので別関数化
   const SelectorView = (): JSX.Element => {
@@ -151,6 +179,12 @@ export const FormDataset = <
           dataSet={dataSet}
           onDelete={() => {
             setDataSet(null);
+            if (onChange) {
+              onChange({
+                ...value,
+                filePath: undefined,
+              });
+            }
           }}
         />
       );
@@ -160,22 +194,56 @@ export const FormDataset = <
   };
 
   const styles = useStyles();
+  const columns = value.columns ? Object.entries(value.columns) : [];
+  const columnsToDropDowns = columns.map(([key]) => {
+    return (
+      <Field
+        key={key}
+        className={styles.field}
+        label={
+          LanguageMap.NORMALIZATION_PARAMETER_LABEL[
+            key as keyof typeof LanguageMap.NORMALIZATION_PARAMETER_LABEL
+          ] + "カラム"
+        }
+      >
+        <Dropdown className={styles.dropdown}>
+          <option value="test">Test</option>
+        </Dropdown>
+      </Field>
+    );
+  });
 
   return (
     <Card>
-      <div
-        className={styles.fileSelectorContainer}
-        onClick={() => {
-          setIsOpen(true);
-        }}
-        role="button"
-      >
-        <SelectorView />
+      <p>{dataSetName}</p>
+      <div className={styles.fieldContainer}>
+        <div
+          className={styles.fileSelectorContainer}
+          onClick={() => {
+            setIsOpen(true);
+          }}
+          role="button"
+        >
+          <SelectorView />
+        </div>
+        <div
+          className={mergeClasses(
+            appearance === "large" && styles.dropdownContainer,
+          )}
+        >
+          {columnsToDropDowns}
+        </div>
       </div>
       <DialogImportDataset
         dialogState={dialogState}
         onSelected={(data) => {
           setDataSet(data);
+          if (onChange) {
+            onChange({
+              ...value,
+              filePath: data?.file_path,
+            });
+          }
         }}
       />
     </Card>
