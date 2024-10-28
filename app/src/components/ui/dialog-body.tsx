@@ -7,7 +7,9 @@ import {
 import { forwardRef } from "react";
 
 const useStyles = makeStyles({
-  dialogBody: {},
+  dialogBody: {
+    gap: "12px",
+  },
 });
 
 export const DialogBody = forwardRef<HTMLDivElement, DialogBodyProps>(

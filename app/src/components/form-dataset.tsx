@@ -155,7 +155,6 @@ export const FormDataset = <
   value,
   onChange,
   dataSetName,
-  name,
   appearance,
 }: {
   value: {
@@ -172,16 +171,6 @@ export const FormDataset = <
 
   const { setIsOpen } = dialogState;
 
-  // ファイル選択時にファイルパスが保存されるための実装
-  useEffect(() => {
-    if (onChange) {
-      onChange({
-        ...value,
-        filePath: dataSet?.file_path,
-      });
-    }
-  }, [dataSet, onChange, value]);
-
   // {}で囲んでif処理を書くのが可読性低いので別関数化
   const SelectorView = (): JSX.Element => {
     if (dataSet) {
@@ -190,6 +179,12 @@ export const FormDataset = <
           dataSet={dataSet}
           onDelete={() => {
             setDataSet(null);
+            if (onChange) {
+              onChange({
+                ...value,
+                filePath: undefined,
+              });
+            }
           }}
         />
       );
@@ -243,6 +238,12 @@ export const FormDataset = <
         dialogState={dialogState}
         onSelected={(data) => {
           setDataSet(data);
+          if (onChange) {
+            onChange({
+              ...value,
+              filePath: data?.file_path,
+            });
+          }
         }}
       />
     </Card>

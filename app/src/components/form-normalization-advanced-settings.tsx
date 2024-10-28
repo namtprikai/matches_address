@@ -8,6 +8,7 @@ import {
   tokens,
 } from "@fluentui/react-components";
 import { useController, useForm } from "react-hook-form";
+import { Dismiss24Regular } from "@fluentui/react-icons";
 import { type NormalizationParameters } from "../@types/normalization";
 import { useDialogState } from "../hooks/use-dialog-state";
 import { getDefaultNormalizationParameter } from "../utils/get-default-normalization-parameter";
@@ -110,7 +111,24 @@ export const FormNormalizationAdvancedSettings = ({
       </DialogTrigger>
       <DialogSurface>
         <DialogBody>
-          <DialogTitle>高度な設定の変更</DialogTitle>
+          <DialogTitle
+            action={
+              <DialogTrigger action="close">
+                <Button
+                  appearance="subtle"
+                  aria-label="close"
+                  icon={
+                    <Dismiss24Regular
+                      color={tokens.colorNeutralForeground1}
+                      strokeWidth={2}
+                    />
+                  }
+                />
+              </DialogTrigger>
+            }
+          >
+            高度な設定の変更
+          </DialogTitle>
           <DialogContent className={styles.dialogContent}>
             <div className={styles.formSection}>
               <h4>テキストマッチング</h4>
