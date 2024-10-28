@@ -1,22 +1,15 @@
 import {
-  Body1,
   Caption1,
   Card,
-  Dialog,
-  DialogTrigger,
   makeStyles,
   Subtitle2,
+  Text,
   tokens,
 } from "@fluentui/react-components";
 import { ArrowLeftFilled } from "@fluentui/react-icons";
 import { Fragment, useState } from "react";
 import { type z } from "zod";
 import { Button } from "../../../components/ui/button";
-import { DialogSurface } from "../../../components/ui/dialog-surface";
-import { DialogBody } from "../../../components/ui/dialog-body";
-import { DialogTitle } from "../../../components/ui/dialog-title";
-import { DialogContent } from "../../../components/ui/dialog-content";
-import { DialogActions } from "../../../components/ui/dialog-actions";
 import { useDialogState } from "../../../hooks/use-dialog-state";
 import { DialogImportNormalizedDataset } from "../../../components/dialog-import-normalized-dataset";
 import { type SelectNormalizedDataSet } from "../../../schema";
@@ -26,6 +19,7 @@ import {
   type schema,
   useFormModelCreate,
 } from "../../../hooks/use-form-model-create";
+import { DialogModelMessage } from "../../../components/dialog-model-message";
 
 const useStyles = makeStyles({
   root: {
@@ -60,10 +54,17 @@ type FormType = z.infer<typeof schema>;
 export const ModelCreate = (): JSX.Element => {
   const styles = useStyles();
 
-  const { handleSubmit } = useFormModelCreate();
+  const modelMessageDialogState = useDialogState();
+
+  const {
+    handleSubmit,
+    setValue,
+    formState: { errors },
+  } = useFormModelCreate();
 
   const onSubmit = handleSubmit(async (data: FormType) => {
     await window.ipcRenderer.invoke("buildModel", data);
+    modelMessageDialogState.setIsOpen(true);
   });
 
   const importNormalizedDatasetDialogState = useDialogState();
@@ -101,12 +102,16 @@ export const ModelCreate = (): JSX.Element => {
             >
               インポート
             </Button>
+            <div>
+              <Text>{errors.path?.message}</Text>
+            </div>
           </div>
         </Card>
         <DialogImportNormalizedDataset
           dialogState={importNormalizedDatasetDialogState}
           onSelected={(data) => {
             setNormalizedDataSet(data);
+            setValue("path", data.file_path);
           }}
         />
 
@@ -132,11 +137,15 @@ export const ModelCreate = (): JSX.Element => {
               {explanatoryVariables.length > 0 ? "カラムを変更" : "インポート"}
             </Button>
           </div>
+          <div>
+            <Text>{errors.settings?.explanatory_variables?.message}</Text>
+          </div>
         </Card>
         <DialogExplanatoryVariables
           dialogState={explanatoryVariablesDialogState}
           onSelected={(data) => {
             setExplanatoryVariables(data);
+            setValue("settings.explanatory_variables", data);
           }}
         />
 
@@ -160,6 +169,9 @@ export const ModelCreate = (): JSX.Element => {
               高度な設定を変更
             </Button>
           </div>
+          <div>
+            <Text>{errors.settings?.advanced?.message}</Text>
+          </div>
         </Card>
         <DialogModelAdvanced
           dialogState={modelAdvancedDialogState}
@@ -170,31 +182,11 @@ export const ModelCreate = (): JSX.Element => {
       </div>
 
       <div className={styles.footer}>
-        <Dialog>
-          <DialogTrigger>
-            <Button appearance="primary" size="large" type="submit">
-              モデル作成
-            </Button>
-          </DialogTrigger>
-          <DialogSurface>
-            <DialogBody>
-              <DialogTitle>モデル作成処理を開始しました</DialogTitle>
-              <DialogContent>
-                <Body1>
-                  前処理が完了するまで一定の時間がかかります
-                  <br />
-                  ステータスは「非同期処理一覧画面」で確認できます。
-                </Body1>
-              </DialogContent>
-              <DialogActions>
-                <a href="#job">
-                  <Button appearance="primary">非同期処理一覧画面へ</Button>
-                </a>
-              </DialogActions>
-            </DialogBody>
-          </DialogSurface>
-        </Dialog>
+        <Button appearance="primary" size="large" type="submit">
+          モデル作成
+        </Button>
       </div>
+      <DialogModelMessage dialogState={modelMessageDialogState} />
     </form>
   );
 };

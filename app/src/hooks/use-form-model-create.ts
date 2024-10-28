@@ -5,7 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 export const schema = z.object({
   path: z.string(),
   settings: z.object({
-    explanatory_variables: z.array(z.string()),
+    explanatory_variables: z.array(z.string()).min(1),
     advanced: z.object({
       test_size: z.number().optional(),
       n_splits: z.number().optional(),
@@ -28,6 +28,12 @@ type FormType = z.infer<typeof schema>;
 
 export const useFormModelCreate = (): UseFormReturn<FormType> => {
   return useForm<FormType>({
+    defaultValues: {
+      settings: {
+        explanatory_variables: [],
+        advanced: {},
+      },
+    },
     resolver: zodResolver(schema),
   });
 };

@@ -84,6 +84,6 @@ export const buildModel = (async (
     };
 
     // モデル構築処理をPythonに投げる
-    alert(JSON.stringify(post));
+    JSON.stringify(post);
   });
 }) satisfies IpcMainListener;
