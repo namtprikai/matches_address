@@ -61,7 +61,7 @@
     "react-hook-form": "^7.52.1",
     "react-router-dom": "^6.24.1",
     "recharts": "^2.13.0-alpha.4",
-    "shpjs": "^6.1.0",
+    "shpjs": "^4.0.1",
     "swr": "^2.2.5",
     "ts-node": "^10.0.0",
     "tsx": "^4.16.2",
