@@ -162,9 +162,7 @@ export const ModelCreate = (): JSX.Element => {
             <Button
               appearance="primary"
               onClick={async () => {
-                await window.ipcRenderer.invoke("buildModel", {
-                  foo: "bar",
-                });
+                await window.ipcRenderer.invoke("buildModel", {});
               }}
               size="large"
             >
