@@ -9,7 +9,7 @@ import { type ReturnUseDialogState } from "../../hooks/use-dialog-state";
 
 interface Props {
   fileName: string;
-  onDelete: () => void;
+  onDelete?: () => void;
   dialogState: ReturnUseDialogState;
 }
 

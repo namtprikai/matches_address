@@ -32,7 +32,6 @@ export function EditNameDialog({
   onSubmit,
   dialogState,
 }: Props): JSX.Element {
-  // TODO: 仮の動作確認のためのロジックなのでDBスキーマが決まりしだい修正する
   const styles = useStyles();
   const [newName, setNewName] = useState(initialName);
   const { isOpen, setIsOpen } = dialogState;

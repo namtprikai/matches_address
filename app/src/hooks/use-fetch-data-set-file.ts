@@ -1,6 +1,6 @@
 import useSWR, { type SWRResponse } from "swr";
 
-export type DataSetType = "raw" | "normalized" | "result";
+export type DataSetType = "raw" | "normalized" | "building" | "area";
 
 type Params = {
   type: DataSetType;
@@ -40,11 +40,23 @@ const fetcher = async ([type, id]: [
       const records = getCsvRecords(file);
       return records;
     }
-    case "result": {
+    case "building": {
       const result = await window.ipcRenderer.invoke(
-        "selectDataSetResults",
-        id,
+        "fetchBuildingsInBatches",
+        {
+          dataSetResultId: id,
+          batchSize: 100,
+        },
       );
+      if (!result) return undefined;
+      return result;
+    }
+    case "area": {
+      const result = await window.ipcRenderer.invoke("fetchAreasInBatches", {
+        dataSetResultId: id,
+        batchSize: 100,
+      });
+      if (!result) return undefined;
       return result;
     }
     default: {
