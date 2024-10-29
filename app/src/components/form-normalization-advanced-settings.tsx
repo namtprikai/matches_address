@@ -181,6 +181,7 @@ export const FormNormalizationAdvancedSettings = ({
             </div>
           </DialogContent>
           <DialogActions position="start">
+            {/* 以下ボタンを押下しても, stateは更新されず見た目のみで初期値が変わる. Form全体に反映させるのためには「変更」ボタンの押下が必要です */}
             <Button
               appearance="transparent"
               onClick={setDefaultValue}
