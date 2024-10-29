@@ -3,9 +3,12 @@
 判定用データをインプットとして建物単位で空き家を確率的に判定するための分類用機械学習アルゴリズムにてトレーニングモデルを作成し、分類精度を表示する機能。
 """ 
 
+import ast
+from datetime import datetime
 import os
 import pickle
 import time
+import uuid
 import warnings
 import json
 
@@ -148,7 +151,7 @@ def generate_file_paths(citycode_value, targetyear_value):
     df = f'./data/{citycode_value}/E021/inputs/D901.csv'
     return df
 
-def prepare_learning_data(df):
+def prepare_learning_data(df, explanatory_variables):
     """
     学習データを準備する
     
@@ -173,7 +176,17 @@ def prepare_learning_data(df):
     df["gml_id"] = df.index 
     # 特定の列を選択し、行をフィルタリングして学習データを準備
     learning_data = df.copy()
-    learning_data = learning_data[CONSTANTS['explanatory_variables']]
+
+    if len(explanatory_variables) > 0:
+        if isinstance(explanatory_variables, str):
+            try:
+                explanatory_variables = ast.literal_eval(explanatory_variables)
+            except (ValueError, SyntaxError) as e:
+                print(f"Error parsing data: {e}")
+        learning_data = learning_data[explanatory_variables]
+    else:
+        learning_data = learning_data[CONSTANTS['explanatory_variables']]
+
     learning_data = learning_data[learning_data['juki_suido_touki_akiya_flag'] == 1]
     learning_data.drop(columns=['juki_suido_touki_akiya_flag'], inplace=True)
     learning_data.reset_index(drop=True, inplace=True)
@@ -248,7 +261,7 @@ def split_data(df, params):
 # - 出力：「D014　学習済みモデル【pkl】」
 
 @profile
-def train_lgb_with_optuna(train_df, params, progress, citycode_value, targetyear_value, output_path):
+def train_lgb_with_optuna(train_df, params, progress, citycode_value, targetyear_value, output_path, model_name):
     """
     K-Fold交差検証とOptunaによるハイパーパラメータチューニングを用いてLightGBMモデルを学習する
    
@@ -416,15 +429,24 @@ def train_lgb_with_optuna(train_df, params, progress, citycode_value, targetyear
     feature_importances_dict_train = mean_feature_importances.to_dict(orient='records')
 
     # モデルを保存するディレクトリ
-    output_file_path = f'{output_path}/data/{citycode_value}/E021/outputs/models'
+    if citycode_value is not None:
+        output_file_path = f'{output_path}/data/{citycode_value}/E021/outputs/{model_name}'
+        model_zip_file_path = f'{output_path}/data/{citycode_value}/E021/outputs/{model_name}.zip'
+    else:
+        output_file_path = f'{output_path}/{model_name}'
+        model_zip_file_path = f'{output_path}/{model_name}.zip'
     os.makedirs(output_file_path, exist_ok=True)
     # 各学習済みモデルをファイルに保存
     for i, model in enumerate(lgbm_models):
-        model_file = os.path.join(output_file_path, f'{CONSTANTS["model_name"]}_model_fold_{i+1}_{targetyear_value}.pkl')
+        if targetyear_value is not None:
+            model_file = os.path.join(output_file_path, f'{CONSTANTS["model_name"]}_model_fold_{i+1}_{targetyear_value}.pkl')
+        else:
+            model_file = os.path.join(output_file_path, f'{str(uuid.uuid4())}.pkl')
+
         with open(model_file, 'wb') as f:
             pickle.dump(model, f)
         # モデルフォルダを ZIP 圧縮
-        model_zip_file_path = f'{output_path}/data/{citycode_value}/E021/outputs/models.zip'
+
         with zipfile.ZipFile(model_zip_file_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
             for root, dirs, files in os.walk(output_file_path):
                 for file in files:
@@ -615,7 +637,10 @@ def save_metrics_and_importances(score_dict, feature_importances_dict_train, cit
     data_zip_file_path : str
         作成したZIPファイルのパス
     """
-    output_dir = f'{output_path}/data/{citycode_value}/E021/outputs/'
+    if citycode_value is not None:
+        output_dir = f'{output_path}/data/{citycode_value}/E021/outputs/'
+    else:
+        output_dir = f'{output_path}'
     os.makedirs(output_dir, exist_ok=True)
 
     # 評価指標と特徴量重要度を一つの辞書にまとめてJSONファイルに保存
@@ -623,8 +648,13 @@ def save_metrics_and_importances(score_dict, feature_importances_dict_train, cit
         'score_dict': {k: int(v) if isinstance(v, np.int64) else v for k, v in score_dict.items()},
         'feature_importances_dict_train': feature_importances_dict_train
     }
+
+    if targetyear_value is not None:
+        output_metrics = f'{output_dir}/metrics_and_importances_{targetyear_value}.json'
+    else:
+        output_metrics = f'{output_dir}/metrics_and_importances.json'
     
-    with open(f'{output_dir}/metrics_and_importances_{targetyear_value}.json', 'w') as f:
+    with open(output_metrics, 'w') as f:
         json.dump(combined_data, f)
     
     # ディレクトリ内のファイルをZIPファイルに圧縮
@@ -645,8 +675,8 @@ def save_metrics_and_importances(score_dict, feature_importances_dict_train, cit
     return data_zip_file_path
 
 
-def train_and_evaluate(job_id, input_file, test_size, n_splits, undersample, undersample_ratio, threshold, hyperparameter_flag, n_trials, 
-                       lambda_l1, lambda_l2, num_leaves, feature_fraction, bagging_fraction, bagging_freq, min_data_in_leaf, citycode_value, targetyear_value, output_path, progress=gr.Progress()):
+def train_and_evaluate(job_id, input_file, output_path, explanatory_variables, test_size, n_splits, undersample, undersample_ratio, threshold, hyperparameter_flag, n_trials, 
+                       lambda_l1, lambda_l2, num_leaves, feature_fraction, bagging_fraction, bagging_freq, min_data_in_leaf, citycode_value, targetyear_value, progress=gr.Progress()):
     """
     モデルを学習し評価する主要関数
 
@@ -658,6 +688,8 @@ def train_and_evaluate(job_id, input_file, test_size, n_splits, undersample, und
         入力CSVファイル
     test_size : float
         テストデータの割合
+    explanatory_variables : list[str]
+        説明変数
     n_splits : int
         交差検証の分割数
     undersample : bool
@@ -697,74 +729,111 @@ def train_and_evaluate(job_id, input_file, test_size, n_splits, undersample, und
         出力CSVファイルのパス
     """
     
-    # setup_directory()
-    progress(0, desc="Loading data...")
-    task_id = create_or_update_job_task(job_id, progress_percent="0%", preprocess_type="Loading data...", error_code=None, result=None)
-    file_path = input_file
-    df = read_csv(file_path, low_memory=False)
-    if df is None:
-        raise ValueError(f"ファイル {file_path} の読み込みに失敗しました。")
-    
-    progress(0.1, desc="Preparing learning data...")
-    create_or_update_job_task(job_id, progress_percent="10%", preprocess_type="Preparing learning data...", error_code=None, result=None, id= task_id)
-    learning_data = prepare_learning_data(df)
-    
-    params = {
-        'test_size': float(test_size),
-        'n_splits': int(n_splits),
-        'undersample': undersample,
-        'undersample_ratio': float(undersample_ratio),
-        'threshold': float(threshold),
-        'hyperparameter_flag': hyperparameter_flag,
-        'n_trials': int(n_trials),
-        'lambda_l1': int(lambda_l1),
-        'lambda_l2': int(lambda_l2),
-        'num_leaves': int(num_leaves),
-        'feature_fraction': float(feature_fraction),
-        'bagging_fraction': float(bagging_fraction),
-        'bagging_freq': int(bagging_freq),
-        'min_data_in_leaf': int(min_data_in_leaf),
-    }
-    
-    progress(0.2, desc="Splitting data...")
-    create_or_update_job_task(job_id, progress_percent="20%", preprocess_type="Splitting data...", error_code=None, result=None, id= task_id)
-    train_df, test_df = split_data(learning_data, params)
-    
-    progress(0.3, desc="Training model...")
-    create_or_update_job_task(job_id, progress_percent="30%", preprocess_type="Training model...", error_code=None, result=None, id= task_id)
-    models, oof_pred, feature_importances_dict_train, model_zip_file_path = train_lgb_with_optuna(train_df, params, progress, citycode_value, targetyear_value, output_path)
-    
-    progress(0.8, desc="Evaluating model...")
-    create_or_update_job_task(job_id, progress_percent="80%", preprocess_type="Evaluating model...", error_code=None, result=None, id= task_id)
-    pred, score_dict, feature_importances_dict_test, feature_importance_plot = evaluate_models_on_test(test_df, models, params)
-    
-    progress(0.9, desc="Saving results...")
-    create_or_update_job_task(job_id, progress_percent="90%", preprocess_type="Saving results...", error_code=None, result=None, id= task_id)
-    output_file = f'{output_path}/data/{citycode_value}/E021/outputs/D902.csv'
-    updated_df = merge_and_save_results(df, pred, output_file)
-    feature_importance_plot = f'{output_path}/data/{citycode_value}/E021/outputs/{feature_importance_plot}'
-    plt.savefig(feature_importance_plot)
+    try:
+        # setup_directory()
+        progress(0, desc="Loading data...")
+        task_id = create_or_update_job_task(job_id, progress_percent="0%", preprocess_type="E021_モデル構築", error_code=None, result=None)
+        create_or_update_job(job_id , "0")
+        file_path = input_file
+        df = read_csv(file_path, low_memory=False)
+        if df is None:
+            raise ValueError(f"ファイル {file_path} の読み込みに失敗しました。")
+        
+        progress(0.1, desc="Preparing learning data...")
+        create_or_update_job_task(job_id, progress_percent="10%", preprocess_type="E021_モデル構築", error_code=None, result=None, id= task_id)
+        create_or_update_job(job_id , "10")
+        learning_data = prepare_learning_data(df, explanatory_variables)
+        
+        params = {
+            'test_size': float(test_size),
+            'n_splits': int(n_splits),
+            'undersample': undersample,
+            'undersample_ratio': float(undersample_ratio),
+            'threshold': float(threshold),
+            'hyperparameter_flag': hyperparameter_flag,
+            'n_trials': int(n_trials),
+            'lambda_l1': float(lambda_l1),
+            'lambda_l2': float(lambda_l2),
+            'num_leaves': int(num_leaves),
+            'feature_fraction': float(feature_fraction),
+            'bagging_fraction': float(bagging_fraction),
+            'bagging_freq': int(bagging_freq),
+            'min_data_in_leaf': int(min_data_in_leaf),
+        }
+        
+        progress(0.2, desc="Splitting data...")
+        create_or_update_job_task(job_id, progress_percent="20%", preprocess_type="E021_モデル構築", error_code=None, result=None, id= task_id)
+        create_or_update_job(job_id , "20")
+        train_df, test_df = split_data(learning_data, params)
+        
+        progress(0.3, desc="Training model...")
+        model_name = str(uuid.uuid4())
+        create_or_update_job_task(job_id, progress_percent="30%", preprocess_type="E021_モデル構築", error_code=None, result=None, id= task_id)
+        create_or_update_job(job_id , "30")
+        models, oof_pred, feature_importances_dict_train, model_zip_file_path = train_lgb_with_optuna(train_df, params, progress, citycode_value, targetyear_value, output_path, model_name)
+        
+        progress(0.8, desc="Evaluating model...")
+        create_or_update_job_task(job_id, progress_percent="80%", preprocess_type="E021_モデル構築", error_code=None, result=None, id= task_id)
+        create_or_update_job(job_id , "80")
+        pred, score_dict, feature_importances_dict_test, feature_importance_plot = evaluate_models_on_test(test_df, models, params)
+        
+        progress(0.9, desc="Saving results...")
+        create_or_update_job_task(job_id, progress_percent="90%", preprocess_type="E021_モデル構築", error_code=None, result=None, id= task_id)
+        create_or_update_job(job_id , "90")
+        if citycode_value is not None:
+            output_file = f'{output_path}/data/{citycode_value}/E021/outputs/D902.csv'
+            feature_importance_plot = f'{output_path}/data/{citycode_value}/E021/outputs/{feature_importance_plot}'
+        else:
+            output_file = f'{output_path}/D902.csv'
+            feature_importance_plot = f'{output_path}/{feature_importance_plot}'
+        
+        updated_df = merge_and_save_results(df, pred, output_file)
+        plt.savefig(feature_importance_plot)
 
-    # Save evaluation metrics and feature importances
-    data_zip_file_path = save_metrics_and_importances(score_dict, feature_importances_dict_train, citycode_value, targetyear_value, output_path)
-    # data_zip_file_path = f'./data/{citycode_value}/E021/outputs/data_files.zip'
-    progress(0.95, desc="Print results...")
-    create_or_update_job_task(job_id, progress_percent="95%", preprocess_type="Print results...", error_code=None, result=None, id= task_id)
-    # Create a string with the evaluation results
-    result_str = (
-        #f"Feature Importance: {feature_importances_dict_test}\n" 
-        f"Confusion Matrix: {score_dict['cm']}\n"
-        f"Accuracy: {score_dict['accuracy']:.4f}\n"
-        f"Precision: {score_dict['precision']:.4f}\n"
-        f"Recall: {score_dict['recall']:.4f}\n"
-        f"F1 Score: {score_dict['f1']:.4f}\n"
-        f"Specificity: {score_dict['specificity']:.4f}\n"
-        )
-    
-    # Update progress to complete
-    progress(1.0, desc="Completed!")
-    create_or_update_job_task(job_id, progress_percent="100%", preprocess_type="Completed!", error_code=None, result=None, id= task_id)
-    return result_str, feature_importance_plot, output_file, model_zip_file_path, data_zip_file_path
+        # Save evaluation metrics and feature importances
+        data_zip_file_path = save_metrics_and_importances(score_dict, feature_importances_dict_train, citycode_value, targetyear_value, output_path)
+        # data_zip_file_path = f'./data/{citycode_value}/E021/outputs/data_files.zip'
+        progress(0.95, desc="Print results...")
+        create_or_update_job_task(job_id, progress_percent="95%", preprocess_type="E021_モデル構築", error_code=None, result=None, id= task_id)
+        create_or_update_job(job_id , "95")
+        # Create a string with the evaluation results
+        result_str = (
+            #f"Feature Importance: {feature_importances_dict_test}\n" 
+            f"Confusion Matrix: {score_dict['cm']}\n"
+            f"Accuracy: {score_dict['accuracy']:.4f}\n"
+            f"Precision: {score_dict['precision']:.4f}\n"
+            f"Recall: {score_dict['recall']:.4f}\n"
+            f"F1 Score: {score_dict['f1']:.4f}\n"
+            f"Specificity: {score_dict['specificity']:.4f}\n"
+            )
+        
+        converted_data = [
+            {"column": item["feature"], "value": item["importance"]}
+            for item in feature_importances_dict_train
+        ]
+        
+        result = {
+            'accuracy': score_dict['accuracy'] * 100,
+            'f1Score': score_dict['f1'] * 100,
+            'specificity': score_dict['specificity'] * 100,
+            'precision': score_dict['precision'] * 100,
+            'recall': score_dict['recall'] * 100,
+            'important_columns': converted_data,
+        }
+        
+        # Update progress to complete
+        progress(1.0, desc="Completed!")
+
+        create_or_update_job_task(job_id, progress_percent="100%", preprocess_type="E021_モデル構築", error_code=None, result=json.dumps(result), id= task_id, is_finish=True)
+        create_or_update_job(job_id , "complete")
+        create_job_results(job_id, model_name)
+
+        return result_str, feature_importance_plot, output_file, model_zip_file_path, data_zip_file_path
+    except Exception as e:
+        print("Error: ", e)
+        if task_id is not None:
+            create_or_update_job_task(job_id, progress_percent="", preprocess_type="E021_モデル構築", error_code="e001", result=json.dumps({}), id= task_id, is_finish=True)
+            create_or_update_job(job_id , "error")
 
 def connect_sqllite(db_path: str):
     global CONNECTION
@@ -794,7 +863,19 @@ def create_table_if_not_exist():
         preprocess_type TEXT,
         error_code TEXT CHECK(error_code IN ('undefined_error')),
         result BLOB,
-        finished_at TEXT DEFAULT (CURRENT_TIMESTAMP),
+        finished_at TEXT DEFAULT NULL,
+        created_at TEXT DEFAULT (CURRENT_TIMESTAMP) NOT NULL,
+        updated_at TEXT DEFAULT (CURRENT_TIMESTAMP) NOT NULL,
+        
+        FOREIGN KEY (job_id) REFERENCES jobs(id)
+    )
+    """)
+
+    CURSOR.execute("""
+    create table if not exists job_results (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        job_id INTEGER NOT NULL,
+        file_path TEXT NOT NULL,
         created_at TEXT DEFAULT (CURRENT_TIMESTAMP) NOT NULL,
         updated_at TEXT DEFAULT (CURRENT_TIMESTAMP) NOT NULL,
         
@@ -803,13 +884,32 @@ def create_table_if_not_exist():
     """)
     CONNECTION.commit()
 
-def create_job(status: str, type:str, parameters:str) -> int:
+def create_job_results(job_id: int, file_path: str):
     try:
+        file_path = f"{file_path}.zip"
         CURSOR.execute("""
-            INSERT INTO jobs (status, type, parameters) 
-                VALUES (?, ?, ?)
-                    """, (status, type, parameters))
-        job_id = CURSOR.lastrowid
+                    INSERT INTO job_results (job_id, file_path) 
+                        VALUES (?, ?)
+                            """, (job_id, file_path))
+        CONNECTION.commit()
+    except sqlite3.Error as e:
+        print(f"An error occurred: {e}")
+        CONNECTION.rollback()
+
+def create_or_update_job(job_id: int, status: str, type: str = "", parameters: str = "") -> int:
+    try:
+        if job_id is None:
+            CURSOR.execute("""
+                INSERT INTO jobs (status, type, parameters) 
+                    VALUES (?, ?, ?)
+                        """, (status, type, parameters))
+            job_id = CURSOR.lastrowid
+        else:
+            CURSOR.execute("""
+                UPDATE jobs SET status = ? WHERE id = ?
+                        """, (status, job_id))
+            job_id = CURSOR.lastrowid
+            
         CONNECTION.commit()
         return job_id
     except sqlite3.Error as e:
@@ -817,8 +917,11 @@ def create_job(status: str, type:str, parameters:str) -> int:
         CONNECTION.rollback()
         return None
     
-def create_or_update_job_task(job_id: int, progress_percent: str, preprocess_type: str, error_code: str, result, id: int = None) -> int:
+def create_or_update_job_task(job_id: int, progress_percent: str, preprocess_type: str, error_code: str, result, id: int = None, is_finish: bool = False) -> int:
     try:
+        finished_at = None
+        if is_finish:
+            finished_at = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         if id is None:
             CURSOR.execute("""
             INSERT INTO job_tasks(job_id, progress_percent, preprocess_type, error_code, result)
@@ -826,9 +929,14 @@ def create_or_update_job_task(job_id: int, progress_percent: str, preprocess_typ
             """, (job_id, progress_percent, preprocess_type, error_code, result))
             id = CURSOR.lastrowid
         else:
-            CURSOR.execute("""
-            UPDATE job_tasks SET progress_percent = ?, preprocess_type = ?, error_code = ?, result = ? WHERE id = ?
-            """, (progress_percent, preprocess_type, error_code, result, id))
+            if progress_percent:
+                CURSOR.execute("""
+                UPDATE job_tasks SET progress_percent = ?, preprocess_type = ?, error_code = ?, result = ?, finished_at = ? WHERE id = ?
+                """, (progress_percent, preprocess_type, error_code, result, finished_at, id))
+            else:
+                CURSOR.execute("""
+                UPDATE job_tasks SET preprocess_type = ?, error_code = ?, result = ?, finished_at = ? WHERE id = ?
+                """, (preprocess_type, error_code, result, finished_at, id))
         CONNECTION.commit()
         return id
     except Exception as e:
@@ -842,14 +950,36 @@ def main():
     args = parser.parse_args()
  
     json_dict = json.loads(args.parameters)
-    db_path = json_dict.get("db_path")
-    json_dict.pop('db_path', None)
+    db_path = json_dict.get("database_path", None)
+
+    params = {
+        'input_path': json_dict.get('input_path', None),
+        'output_path': json_dict.get('output_directory', '.'),
+        'explanatory_variables': json_dict.get('settings', {}).get('explanatory_variables', []),
+        'test_size': json_dict.get('settings', {}).get('advanced', {}).get('test_size', 0.3),
+        'n_splits': json_dict.get('settings', {}).get('advanced', {}).get('n_splits', 3),
+        'undersample': json_dict.get('settings', {}).get('advanced', {}).get('undersample', 1),
+        'undersample_ratio': json_dict.get('settings', {}).get('advanced', {}).get('undersample_ratio', 3.0),
+        'threshold': json_dict.get('settings', {}).get('advanced', {}).get('threshold', 0.3),
+        'hyperparameter_flag': json_dict.get('settings', {}).get('advanced', {}).get('hyperparameter_flag', 1),
+        'n_trials': json_dict.get('settings', {}).get('advanced', {}).get('n_trials', 100),
+        'lambda_l1': json_dict.get('settings', {}).get('advanced', {}).get('lambda_l1', 0),
+        'lambda_l2': json_dict.get('settings', {}).get('advanced', {}).get('lambda_l2', 0),
+        'num_leavs': json_dict.get('settings', {}).get('advanced', {}).get('num_leavs', 31),
+        'feature_fraction': json_dict.get('settings', {}).get('advanced', {}).get('feature_fraction', 1.0),
+        'bagging_fraction': json_dict.get('settings', {}).get('advanced', {}).get('bagging_fraction', 1.0),
+        'bagging_freq': json_dict.get('settings', {}).get('advanced', {}).get('bagging_freq', 0),
+        'min_data_in_leaf': json_dict.get('settings', {}).get('advanced', {}).get('min_data_in_leaf', 20),
+        'citycode_value': json_dict.get('citycode_value', None),
+        'targetyear_value': json_dict.get('targetyear_value', None)
+    }
+
 
     try:
         connect_sqllite(db_path)
-        job_id = create_job("", "ml", args.parameters)
+        job_id = create_or_update_job(None ,"", "ml", args.parameters)
         if job_id is not None:
-            result_str, feature_importance_plot, output_file, model_zip_file_path, data_zip_file_path  = train_and_evaluate(job_id, *json_dict.values())
+            result_str, feature_importance_plot, output_file, model_zip_file_path, data_zip_file_path  = train_and_evaluate(job_id, *params.values())
             
             print(result_str)
             print(f"Feature importance plot saved as: {feature_importance_plot}")
