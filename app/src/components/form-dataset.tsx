@@ -174,8 +174,7 @@ export const FormDataset = <
   const dialogState = useDialogState();
 
   const { data: dataSetColumns } = useFetchDatasetColumns({
-    dataSet,
-    fileType: "csv",
+    filename: dataSet?.file_path,
   });
 
   const { setIsOpen } = dialogState;
