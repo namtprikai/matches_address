@@ -21,6 +21,7 @@ const useStyles = makeStyles({
   },
   tableBody: {
     backgroundColor: "#fff",
+    fontSize: "12px",
   },
 });
 
