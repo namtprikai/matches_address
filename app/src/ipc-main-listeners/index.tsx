@@ -50,6 +50,8 @@ import { deleteModelFiles } from "./delete-model-files";
 import { fetchJobLists } from "./fetch-job-lists";
 import { fetchJobTasks } from "./fetch-job-tasks";
 import { buildModel } from "./ml/build-model";
+import { selectBuildingsWithPagination } from "./select-buildings-with-pagination";
+import { selectAreasWithPagination } from "./select-areas-with-pagination";
 
 export const ipcMainListeners = {
   helloFromPython,
@@ -100,6 +102,8 @@ export const ipcMainListeners = {
   fetchJobLists,
   fetchJobTasks,
   buildModel,
+  selectBuildingsWithPagination,
+  selectAreasWithPagination,
 };
 
 export const execFileAsync = promisify(execFile);
