@@ -65,6 +65,8 @@ const useStyles = makeStyles({
     justifyContent: "flex-start",
     color: tokens.colorBrandForeground1,
     textDecoration: "underline",
+    borderRadius: 0,
+    textAlign: "left",
     "&:hover": {
       textDecoration: "none",
     },
