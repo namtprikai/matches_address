@@ -146,11 +146,11 @@ export function Job(): JSX.Element {
         ) : (
           <div className={styles.noData}>
             現在表示できる非同期処理はありません
-            {/* TODO: 後で消す */}
-            <Link to={"/job/preview"}>開発用: プレビュー</Link>
           </div>
         )}
       </Card>
+      {/* TODO: 後で消す */}
+      <Link to={"/job/preview"}>開発用: プレビュー</Link>
     </div>
   );
 }

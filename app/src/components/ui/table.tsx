@@ -18,9 +18,6 @@ const useStyles = makeStyles({
   },
   tableHeaderCell: {
     fontWeight: "600",
-    width: "150px",
-    minWidth: "150px",
-    maxWidth: "150px",
   },
   tableBody: {
     backgroundColor: "#fff",
@@ -30,13 +27,14 @@ const useStyles = makeStyles({
 export interface ColumnDefinition<T> {
   key: keyof T;
   name: string;
-  className?: string;
+  style?: React.CSSProperties;
   onRender?: (item: T) => React.ReactNode;
 }
 
 interface TableProps<T> {
   columns: ColumnDefinition<T>[];
   items: T[];
+  style?: React.CSSProperties;
 }
 
 export function Table<T>({ columns, items }: TableProps<T>): JSX.Element {
@@ -49,7 +47,8 @@ export function Table<T>({ columns, items }: TableProps<T>): JSX.Element {
           {columns.map((column) => (
             <TableHeaderCell
               key={String(column.key)}
-              className={mergeClasses(styles.tableHeaderCell, column.className)}
+              className={mergeClasses(styles.tableHeaderCell)}
+              style={column.style}
             >
               {column.name}
             </TableHeaderCell>
