@@ -6,7 +6,7 @@ import {
   TabList,
   tokens,
 } from "@fluentui/react-components";
-import { ArrowDownloadRegular, AddRegular } from "@fluentui/react-icons";
+import { AddRegular } from "@fluentui/react-icons";
 import { useTabs } from "../../hooks/use-tabs";
 import { DeleteRowsDialog } from "../../components/dataset/delete-rows-dialog";
 import { Button } from "../../components/ui/button";

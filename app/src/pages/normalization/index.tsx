@@ -1,6 +1,5 @@
 import { makeStyles, tokens } from "@fluentui/react-components";
 import { useState } from "react";
-import { set } from "react-hook-form";
 import { FormNormalization } from "../../components/form-normalization";
 import { type NormalizationParameters } from "../../@types/normalization";
 

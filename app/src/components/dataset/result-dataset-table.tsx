@@ -39,10 +39,7 @@ import { Button } from "../ui/button";
 import { useFetchDataSetResults } from "../../hooks/use-fetch-data-set-results";
 import { type SelectDataSetResult } from "../../schema";
 import { formatDate } from "../../utils/format-date";
-import {
-  type ReturnUseDialogState,
-  useDialogState,
-} from "../../hooks/use-dialog-state";
+import { useDialogState } from "../../hooks/use-dialog-state";
 import { DialogBody } from "../ui/dialog-body";
 import { DialogTitle } from "../ui/dialog-title";
 import { DialogContent } from "../ui/dialog-content";
