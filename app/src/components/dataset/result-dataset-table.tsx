@@ -17,6 +17,11 @@ import {
   type TableRowId,
   createTableColumn,
   TableSelectionCell,
+  Dialog,
+  Field,
+  Radio,
+  RadioGroup,
+  DialogTrigger,
 } from "@fluentui/react-components";
 import {
   ArrowDownloadRegular,
@@ -27,6 +32,7 @@ import {
   type SetStateAction,
   type MouseEvent,
   useState,
+  type ReactElement,
 } from "react";
 import { type KeyedMutator } from "swr";
 import { Button } from "../ui/button";
@@ -34,8 +40,15 @@ import { useFetchDataSetResults } from "../../hooks/use-fetch-data-set-results";
 import { type SelectDataSetResult } from "../../schema";
 import { formatDate } from "../../utils/format-date";
 import { useDialogState } from "../../hooks/use-dialog-state";
-import { EditNameDialog } from "./edit-name-dialog";
+import { DialogBody } from "../ui/dialog-body";
+import { DialogTitle } from "../ui/dialog-title";
+import { DialogContent } from "../ui/dialog-content";
+import { DialogActions } from "../ui/dialog-actions";
+import { DialogSurface } from "../ui/dialog-surface";
+import { downloadObjectsAsCSV } from "../../utils/download-objects-as-csv";
 import { DeleteRowDialog } from "./delete-row-dialog";
+import { EditNameDialog } from "./edit-name-dialog";
+import { DataPreviewDialog } from "./data-preview-dialog";
 
 const useStyles = makeStyles({
   tableHeader: {
@@ -47,18 +60,24 @@ const useStyles = makeStyles({
     justifyContent: "flex-end",
     gap: tokens.spacingHorizontalM,
   },
-  checkboxTh: {
-    width: "44px",
-  },
-  menuItemButton: {
-    justifyContent: "flex-start",
+  datasetButton: {
     padding: 0,
-    fontWeight: "normal",
+    justifyContent: "flex-start",
+    color: tokens.colorBrandForeground1,
+    textDecoration: "underline",
+    borderRadius: 0,
+    textAlign: "left",
+    "&:hover": {
+      textDecoration: "none",
+    },
   },
-  input: {
-    width: "100%",
+  radioGroup: {
+    marginTop: tokens.spacingVerticalM,
+    marginLeft: "-8px",
   },
 });
+
+type Unit = "building" | "area";
 
 type Props = {
   onSelectionChange: Dispatch<SetStateAction<SelectDataSetResult["id"][]>>;
@@ -121,29 +140,6 @@ export function ResultDataSetTable({ onSelectionChange }: Props): JSX.Element {
     );
   };
 
-  // TODO: バックエンド処理
-  const handleDownload = async (e: MouseEvent): Promise<void> => {
-    e.stopPropagation();
-    try {
-      const response = await fetch("/dummy-data.csv");
-      if (!response.ok) {
-        throw new Error("Network response was not ok");
-      }
-      const blob = await response.blob();
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = "dummy-data.csv";
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
-    } catch (error) {
-      console.error("Download failed:", error);
-      alert("ダウンロードに失敗しました。");
-    }
-  };
-
   return (
     <Table>
       <TableHeader className={styles.tableHeader}>
@@ -161,44 +157,216 @@ export function ResultDataSetTable({ onSelectionChange }: Props): JSX.Element {
         </TableRow>
       </TableHeader>
       <TableBody>
-        {rows.map(({ item, selected, onClick, appearance }) => (
-          <TableRow
-            key={item.id}
-            appearance={appearance}
-            aria-selected={selected}
-            onClick={onClick}
-          >
-            <TableSelectionCell
-              checkboxIndicator={{ "aria-label": "Select row" }}
-              checked={selected}
-            />
-            <TableCell>
-              {/* TODO: 建物/地域を選択するダイアログを表示する */}
-              {/* <DataPreviewDialog
-                datasetName={item.title}
-                id={item.id}
-                type="result"
-              /> */}
-              {item.title}
-            </TableCell>
-            <TableCell>{formatDate(item.updated_at, "YYYY/MM/DD")}</TableCell>
-            <TableCell className={styles.actions}>
+        {rows.map((row) => (
+          <Row
+            {...row}
+            key={row.item.id}
+            mutate={mutate}
+            onSelectionChange={onSelectionChange}
+          />
+        ))}
+      </TableBody>
+    </Table>
+  );
+}
+
+interface RowProps {
+  onClick: (e: MouseEvent) => void;
+  selected: boolean;
+  appearance: "brand" | "none";
+  item: SelectDataSetResult;
+  mutate: KeyedMutator<SelectDataSetResult[]>;
+  onSelectionChange: Props["onSelectionChange"];
+}
+
+function Row({
+  item,
+  selected,
+  onClick,
+  appearance,
+  mutate,
+  onSelectionChange,
+}: RowProps): JSX.Element {
+  const styles = useStyles();
+  const dataPreviewDialogState = useDialogState(false);
+  const [selectedUnit, setSelectedUnit] = useState<Unit>("building");
+
+  const handleDownload = async (
+    unit: Unit,
+    id: SelectDataSetResult["id"],
+    fileName: string,
+  ): Promise<void> => {
+    switch (unit) {
+      case "building": {
+        // TODO: 全件取得する
+        const data = await window.ipcRenderer.invoke(
+          "fetchBuildingsInBatches",
+          {
+            dataSetResultId: id,
+            batchSize: 100,
+          },
+        );
+        if (!data) return;
+        void downloadObjectsAsCSV(data, fileName);
+        break;
+      }
+      case "area": {
+        // TODO: 全件取得する
+        const data = await window.ipcRenderer.invoke("fetchAreasInBatches", {
+          dataSetResultId: id,
+          batchSize: 100,
+        });
+        if (!data) return;
+        void downloadObjectsAsCSV(data, fileName);
+        break;
+      }
+      default: {
+        const exhaustiveCheck: never = unit;
+        throw new Error(`Unhandled unit: ${exhaustiveCheck}`);
+      }
+    }
+  };
+
+  const handleDelete = async (id: SelectDataSetResult["id"]): Promise<void> => {
+    await window.ipcRenderer.invoke("deleteDataSetResult", {
+      id,
+    });
+    void mutate();
+    onSelectionChange((prev) => prev.filter((selectedId) => selectedId !== id));
+  };
+
+  return (
+    <>
+      <TableRow
+        key={item.id}
+        appearance={appearance}
+        aria-selected={selected}
+        onClick={onClick}
+      >
+        <TableSelectionCell
+          checkboxIndicator={{ "aria-label": "Select row" }}
+          checked={selected}
+        />
+        <TableCell>
+          <SelectUnitDialog
+            buttonText="プレビューを見る"
+            dialogTriggerChildren={
+              <Button
+                appearance="transparent"
+                className={styles.datasetButton}
+                onClick={(e) => e.stopPropagation()}
+              >
+                {item.title}
+              </Button>
+            }
+            onChange={(unit) => setSelectedUnit(unit)}
+            onSubmit={() => {
+              dataPreviewDialogState.setIsOpen(true);
+            }}
+            title="データのプレビュー"
+          />
+          <DataPreviewDialog
+            datasetName={item.title}
+            dialogState={dataPreviewDialogState}
+            hideTrigger
+            id={item.id}
+            onDelete={async () => {
+              await handleDelete(item.id);
+            }}
+            type={selectedUnit}
+          />
+        </TableCell>
+        <TableCell>{formatDate(item.updated_at, "YYYY/MM/DD")}</TableCell>
+        <TableCell className={styles.actions}>
+          <SelectUnitDialog
+            buttonText="ダウンロード"
+            dialogTriggerChildren={
               <Button
                 appearance="subtle"
                 aria-label="ダウンロード"
                 icon={<ArrowDownloadRegular />}
-                onClick={handleDownload}
+                onClick={(e) => e.stopPropagation()}
               />
-              <RowMenu
-                item={item}
-                mutate={mutate}
-                onSelectionChange={onSelectionChange}
-              />
-            </TableCell>
-          </TableRow>
-        ))}
-      </TableBody>
-    </Table>
+            }
+            onChange={(unit) => setSelectedUnit(unit)}
+            onSubmit={() => {
+              void handleDownload(selectedUnit, item.id, item.title || "");
+            }}
+            title="データのダウンロード"
+          />
+          <RowMenu
+            item={item}
+            mutate={mutate}
+            onSelectionChange={onSelectionChange}
+          />
+        </TableCell>
+      </TableRow>
+    </>
+  );
+}
+
+function SelectUnitDialog({
+  title,
+  buttonText,
+  onChange,
+  onSubmit,
+  dialogTriggerChildren,
+}: {
+  title: string;
+  buttonText: string;
+  onChange: (unit: Unit) => void;
+  onSubmit: () => void;
+  dialogTriggerChildren: ReactElement;
+}): JSX.Element {
+  const styles = useStyles();
+  const [open, setOpen] = useState(false);
+
+  return (
+    <Dialog
+      onOpenChange={(e) => {
+        e.stopPropagation();
+        setOpen((prev) => !prev);
+      }}
+      open={open}
+    >
+      <DialogTrigger disableButtonEnhancement>
+        {dialogTriggerChildren}
+      </DialogTrigger>
+      <DialogSurface onClick={(e) => e.stopPropagation()}>
+        <DialogBody>
+          <DialogTitle>{title}</DialogTitle>
+          <DialogContent>
+            <p>
+              空き家判定結果データは以下の2つのデータが含まれます。
+              どちらか選択してください。
+            </p>
+            <Field className={styles.radioGroup}>
+              <RadioGroup
+                defaultValue="building"
+                onChange={(_, data) =>
+                  onChange(data.value as "building" | "area")
+                }
+              >
+                <Radio label="建物単位" value="building" />
+                <Radio label="地域単位" value="area" />
+              </RadioGroup>
+            </Field>
+          </DialogContent>
+          <DialogActions>
+            <Button
+              appearance="primary"
+              onClick={() => {
+                onSubmit();
+                setOpen(false);
+              }}
+              size="medium"
+            >
+              {buttonText}
+            </Button>
+          </DialogActions>
+        </DialogBody>
+      </DialogSurface>
+    </Dialog>
   );
 }
 

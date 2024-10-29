@@ -6,7 +6,7 @@ import {
   TabList,
   tokens,
 } from "@fluentui/react-components";
-import { ArrowDownloadRegular, AddRegular } from "@fluentui/react-icons";
+import { AddRegular } from "@fluentui/react-icons";
 import { useTabs } from "../../hooks/use-tabs";
 import { DeleteRowsDialog } from "../../components/dataset/delete-rows-dialog";
 import { Button } from "../../components/ui/button";
@@ -92,10 +92,6 @@ export function Dataset(): JSX.Element {
     void saveDataSetFile(file);
     void mutateRaw();
     e.target.value = ""; // ファイル選択をリセットする
-  };
-
-  const handleDownloadSelectedItems = async (): Promise<void> => {
-    // TODO: バックエンド処理
   };
 
   const handleDeleteSelectedItems = async (): Promise<void> => {
@@ -226,13 +222,6 @@ export function Dataset(): JSX.Element {
           </div>
           <div>
             <span>{selectedItemIds.length}件選択中</span>
-            <Button
-              appearance="outline"
-              className={styles.iconButton}
-              disabled={selectedItemIds.length === 0}
-              icon={<ArrowDownloadRegular />}
-              onClick={handleDownloadSelectedItems}
-            />
             <DeleteRowsDialog
               disabled={selectedItemIds.length === 0}
               onDelete={handleDeleteSelectedItems}

@@ -1,4 +1,3 @@
-import { useState, useEffect } from "react";
 import {
   Table,
   TableBody,
@@ -26,7 +25,11 @@ import {
   type DataSetType,
 } from "../../hooks/use-fetch-data-set-file";
 import { downloadDataSetFile } from "../../utils/download-data-set-file";
-import { useDialogState } from "../../hooks/use-dialog-state";
+import {
+  type ReturnUseDialogState,
+  useDialogState,
+} from "../../hooks/use-dialog-state";
+import { downloadObjectsAsCSV } from "../../utils/download-objects-as-csv";
 import { DeleteRowDialog } from "./delete-row-dialog";
 
 const useStyles = makeStyles({
@@ -48,6 +51,8 @@ const useStyles = makeStyles({
     justifyContent: "flex-start",
     color: tokens.colorBrandForeground1,
     textDecoration: "underline",
+    borderRadius: 0,
+    textAlign: "left",
     "&:hover": {
       textDecoration: "none",
     },
@@ -76,20 +81,25 @@ const useStyles = makeStyles({
 interface Props {
   type: DataSetType;
   id: number;
+  dialogState: ReturnUseDialogState;
   datasetName: string | null;
   onDelete: () => void;
+  hideTrigger?: boolean;
 }
 
 export function DataPreviewDialog({
   type,
   id,
+  dialogState,
   datasetName,
   onDelete,
+  hideTrigger,
 }: Props): JSX.Element {
   const styles = useStyles();
-  const [open, setOpen] = useState(false);
-  const dialogState = useDialogState(false);
+  const { isOpen, setIsOpen } = dialogState;
+  const deleteDialogState = useDialogState(false);
 
+  // TODO: typeでswitchするよりonDownload propsなんかで処理したい
   const handleDownload = async (): Promise<void> => {
     switch (type) {
       case "raw": {
@@ -117,8 +127,27 @@ export function DataPreviewDialog({
         void downloadDataSetFile(buffer, data.file_name || "");
         break;
       }
-      case "result": {
-        // TODO: 建物or地域のどちらのデータをダウンロードするか選択するダイアログを表示する
+      case "building": {
+        // TODO: 全件取得する
+        const data = await window.ipcRenderer.invoke(
+          "fetchBuildingsInBatches",
+          {
+            dataSetResultId: id,
+            batchSize: 100,
+          },
+        );
+        if (!data) return;
+        void downloadObjectsAsCSV(data, datasetName || "");
+        break;
+      }
+      case "area": {
+        // TODO: 全件取得する
+        const data = await window.ipcRenderer.invoke("fetchAreasInBatches", {
+          dataSetResultId: id,
+          batchSize: 100,
+        });
+        if (!data) return;
+        void downloadObjectsAsCSV(data, datasetName || "");
         break;
       }
       default: {
@@ -129,7 +158,7 @@ export function DataPreviewDialog({
   };
 
   const handleOpenDeleteDialog = (): void => {
-    dialogState.setIsOpen(true);
+    deleteDialogState.setIsOpen(true);
   };
 
   return (
@@ -137,26 +166,30 @@ export function DataPreviewDialog({
       <Dialog
         onOpenChange={(e) => {
           e.stopPropagation();
-          setOpen((prev) => !prev);
+          setIsOpen((prev) => !prev);
         }}
-        open={open}
+        open={isOpen}
       >
-        <DialogTrigger disableButtonEnhancement>
-          <Button
-            appearance="transparent"
-            className={styles.datasetButton}
-            onClick={(e) => e.stopPropagation()}
-          >
-            {datasetName}
-          </Button>
-        </DialogTrigger>
+        {!hideTrigger ? (
+          <DialogTrigger disableButtonEnhancement>
+            <Button
+              appearance="transparent"
+              className={styles.datasetButton}
+              onClick={(e) => e.stopPropagation()}
+            >
+              {datasetName}
+            </Button>
+          </DialogTrigger>
+        ) : (
+          <></> // type errorを回避するためnullではなく<></>を返す
+        )}
         <DialogSurface onClick={(e) => e.stopPropagation()}>
           <DialogTitle className={styles.dialogTitle}>
             <div className={styles.actions}>
               <Button
                 appearance="transparent"
                 icon={<ArrowLeftRegular />}
-                onClick={() => setOpen(false)}
+                onClick={() => setIsOpen(false)}
               />
               {datasetName}
             </div>
@@ -183,7 +216,7 @@ export function DataPreviewDialog({
         </DialogSurface>
       </Dialog>
       <DeleteRowDialog
-        dialogState={dialogState}
+        dialogState={deleteDialogState}
         fileName={datasetName || ""}
         onDelete={onDelete}
       />
