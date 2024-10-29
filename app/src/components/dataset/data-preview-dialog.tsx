@@ -130,7 +130,7 @@ export function DataPreviewDialog({
       case "building": {
         // TODO: 全件取得する
         const data = await window.ipcRenderer.invoke(
-          "fetchBuildingsInBatches",
+          "selectBuildingsInBatches",
           {
             dataSetResultId: id,
             batchSize: 100,
@@ -142,7 +142,7 @@ export function DataPreviewDialog({
       }
       case "area": {
         // TODO: 全件取得する
-        const data = await window.ipcRenderer.invoke("fetchAreasInBatches", {
+        const data = await window.ipcRenderer.invoke("selectAreasInBatches", {
           dataSetResultId: id,
           batchSize: 100,
         });

@@ -2,8 +2,8 @@ import { type ipcMain } from "electron";
 import { execFile } from "child_process";
 import path from "path";
 import { promisify } from "util";
-import { fetchBuildingsInBatches } from "../components/bi/map/fetch-buildings-in-batches";
-import { fetchAreasInBatches } from "../components/bi/map/fetch-areas";
+import { selectBuildingsInBatches } from "./select-buildings-in-batches";
+import { selectAreasInBatches } from "./select-areas-in-batches";
 import { fetchReferenceDates } from "./fetch-reference-dates";
 import { helloFromPython } from "./hello-from-python";
 import { saveNameFromPython } from "./save-name-from-python";
@@ -71,11 +71,11 @@ export const ipcMainListeners = {
   deleteResultView,
   filterDataSetForChart,
   filterDataSetForTable,
-  fetchBuildingsInBatches,
+  selectBuildingsInBatches,
   fetchReferenceDates,
   fetchAreaGroups,
   createDummyDataSetResults,
-  fetchAreasInBatches,
+  selectAreasInBatches,
   deleteWorkbook,
   updateResultViewsLayoutIndex,
   selectRawDatasets,
