@@ -1,7 +1,14 @@
-import { Dialog, makeStyles, DialogTrigger } from "@fluentui/react-components";
+import {
+  Dialog,
+  makeStyles,
+  DialogTrigger,
+  Checkbox,
+} from "@fluentui/react-components";
 import { DismissFilled } from "@fluentui/react-icons";
-import { useState } from "react";
+import { type FieldPath, type UseFormReturn } from "react-hook-form";
+import { type z } from "zod";
 import { type ReturnUseDialogState } from "../hooks/use-dialog-state";
+import { type schema as formModelCreateSchema } from "../hooks/use-form-model-create";
 import { Button } from "./ui/button";
 import { DialogSurface } from "./ui/dialog-surface";
 import { DialogBody } from "./ui/dialog-body";
@@ -37,27 +44,125 @@ const useStyles = makeStyles({
   },
 });
 
-/** 仮: もっと具体的に書けそうなら書く・書けなかったら普通にstringとして書く */
-type DataType = Record<string, string | number>;
+type FormType = z.infer<typeof formModelCreateSchema>;
 
 type Props = {
   dialogState: ReturnUseDialogState;
-  onSelected: (data: DataType) => void;
+  formState: UseFormReturn<FormType>;
 };
+
+/**
+ * ラベル名は仮: @todo 変数の置き場所考えたい
+ */
+type AdvancedField = {
+  key: FieldPath<FormType>;
+  label: string;
+  placeholder: string;
+  step?: string;
+  type: "number" | "checkbox";
+};
+const Fields: AdvancedField[] = [
+  {
+    key: "settings.advanced.test_size",
+    label: "Test Size",
+    placeholder: "0.0",
+    step: "0.1",
+    type: "number",
+  },
+  {
+    key: "settings.advanced.n_splits",
+    label: "N Splits",
+    placeholder: "0",
+    step: "1",
+    type: "number",
+  },
+  {
+    key: "settings.advanced.undersample",
+    label: "Undersample",
+    placeholder: "false",
+    step: "1",
+    type: "checkbox",
+  },
+  {
+    key: "settings.advanced.undersample_ratio",
+    label: "Undersample Ratio",
+    placeholder: "0.0",
+    step: "0.1",
+    type: "number",
+  },
+  {
+    key: "settings.advanced.threshold",
+    label: "Threshold",
+    placeholder: "0.0",
+    step: "0.1",
+    type: "number",
+  },
+  {
+    key: "settings.advanced.hyperparameter_flag",
+    label: "Hyperparameter Flag",
+    placeholder: "false",
+    step: "1",
+    type: "checkbox",
+  },
+  {
+    key: "settings.advanced.n_trials",
+    label: "N Trials",
+    placeholder: "0",
+    step: "1",
+    type: "number",
+  },
+  {
+    key: "settings.advanced.lambda_l1",
+    label: "Lambda L1",
+    placeholder: "0.0",
+    step: "0.1",
+    type: "number",
+  },
+  {
+    key: "settings.advanced.lambda_l2",
+    label: "Lambda L2",
+    placeholder: "0.0",
+    step: "0.1",
+    type: "number",
+  },
+  {
+    key: "settings.advanced.num_leavs",
+    label: "Num Leavs",
+    placeholder: "0",
+    step: "1",
+    type: "number",
+  },
+  {
+    key: "settings.advanced.feature_fraction",
+    label: "Feature Fraction",
+    placeholder: "0.0",
+    step: "0.1",
+    type: "number",
+  },
+  {
+    key: "settings.advanced.bagging_fraction",
+    label: "Bagging Fraction",
+    placeholder: "0.0",
+    step: "0.1",
+    type: "number",
+  },
+  {
+    key: "settings.advanced.bagging_freq",
+    label: "Bagging Freq",
+    placeholder: "0",
+    step: "1",
+    type: "number",
+  },
+];
 
 export const DialogModelAdvanced = ({
   dialogState,
-  onSelected,
+  formState,
 }: Props): JSX.Element => {
   const styles = useStyles();
-  const [selectedData, setSelectedData] = useState<DataType>({});
 
   const { isOpen: isDialogOpen, setIsOpen: setIsDialogOpen } = dialogState;
-
-  const handleClick = (): void => {
-    onSelected(selectedData);
-    setIsDialogOpen(false);
-  };
+  const { register } = formState;
 
   // 仮
   const disabled = false;
@@ -86,29 +191,25 @@ export const DialogModelAdvanced = ({
             高度な設定を変更
           </DialogTitle>
           <DialogContent className={styles.formContents}>
-            <Field label="Test Size">
-              <Input
-                onChange={() => {
-                  // 仮
-                  setSelectedData({ testSize: 0.2 });
-                }}
-              />
-            </Field>
-            <Field label="L1 Regularization">
-              <Input
-                onChange={() => {
-                  // 仮
-                  setSelectedData({ l1Regularization: 0.1 });
-                }}
-              />
-            </Field>
+            {Fields.map(({ key, label, placeholder, step, type }) => (
+              <Field key={key} label={label}>
+                {type === "number" && (
+                  <Input
+                    {...register(key)}
+                    placeholder={placeholder}
+                    step={step}
+                    type="number"
+                  />
+                )}
+                {type === "checkbox" && <Checkbox {...register(key)} />}
+              </Field>
+            ))}
           </DialogContent>
           <DialogActions>
             <Button
               appearance="primary"
               className={disabled ? styles.disabledButton : ""}
               disabled={disabled}
-              onClick={handleClick}
             >
               保存
             </Button>
