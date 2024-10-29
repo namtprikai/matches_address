@@ -1,7 +1,8 @@
+import { type z } from "zod";
 import { jobs, job_tasks } from "../../schema";
 import { db } from "../../utils/db";
 import { type IpcMainListener } from "../";
-import { type DeepPartial } from "../../@types/global";
+import { type schema } from "../../hooks/use-form-model-create";
 
 interface IPost {
   path: string;
@@ -26,12 +27,16 @@ interface IPost {
   };
 }
 
-type Params = DeepPartial<IPost>;
+type Params = {
+  data: z.infer<typeof schema>;
+};
 
 export const buildModel = (async (
   _: unknown,
   params: Params,
 ): Promise<void> => {
+  const { data } = params;
+
   /**
    * モデル構築の流れをモックする処理
    * 実際は、Pythonによるモデルの構築処理を呼び出すのみ
@@ -60,25 +65,25 @@ export const buildModel = (async (
 
     /** デフォルト値を設定 */
     const post: IPost = {
-      path: params.path || "",
+      path: data.path,
       settings: {
-        explanatory_variables: params.settings?.explanatory_variables || [],
+        explanatory_variables: data.settings.explanatory_variables,
         advanced: {
-          test_size: params.settings?.advanced?.test_size || 0,
-          n_splits: params.settings?.advanced?.n_splits || 0,
-          undersample: params.settings?.advanced?.undersample || false,
-          undersample_ratio: params.settings?.advanced?.undersample_ratio || 0,
-          threshold: params.settings?.advanced?.threshold || 0,
+          test_size: data.settings?.advanced?.test_size || 0,
+          n_splits: data.settings?.advanced?.n_splits || 0,
+          undersample: data.settings?.advanced?.undersample || false,
+          undersample_ratio: data.settings?.advanced?.undersample_ratio || 0,
+          threshold: data.settings?.advanced?.threshold || 0,
           hyperparameter_flag:
-            params.settings?.advanced?.hyperparameter_flag || false,
-          n_trials: params.settings?.advanced?.n_trials || 0,
-          lambda_l1: params.settings?.advanced?.lambda_l1 || 0,
-          lambda_l2: params.settings?.advanced?.lambda_l2 || 0,
-          num_leavs: params.settings?.advanced?.num_leavs || 0,
-          feature_fraction: params.settings?.advanced?.feature_fraction || 0,
-          bagging_fraction: params.settings?.advanced?.bagging_fraction || 0,
-          bagging_freq: params.settings?.advanced?.bagging_freq || 0,
-          min_data_in_leaf: params.settings?.advanced?.min_data_in_leaf || 0,
+            data.settings?.advanced?.hyperparameter_flag || false,
+          n_trials: data.settings?.advanced?.n_trials || 0,
+          lambda_l1: data.settings?.advanced?.lambda_l1 || 0,
+          lambda_l2: data.settings?.advanced?.lambda_l2 || 0,
+          num_leavs: data.settings?.advanced?.num_leavs || 0,
+          feature_fraction: data.settings?.advanced?.feature_fraction || 0,
+          bagging_fraction: data.settings?.advanced?.bagging_fraction || 0,
+          bagging_freq: data.settings?.advanced?.bagging_freq || 0,
+          min_data_in_leaf: data.settings?.advanced?.min_data_in_leaf || 0,
         },
       },
     };
