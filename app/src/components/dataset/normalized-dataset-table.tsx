@@ -296,7 +296,7 @@ function RowMenu({
       <EditNameDialog
         dialogState={editNameDialogState}
         initialName={item.file_name}
-        onSubmit={(newFileName) => handleEditName(newFileName)}
+        onSubmit={handleEditName}
       />
       <DeleteRowDialog
         dialogState={deleteDialogState}

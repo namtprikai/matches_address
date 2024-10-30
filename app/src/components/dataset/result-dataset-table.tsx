@@ -273,6 +273,8 @@ function Row({
             }
             onChange={(unit) => setSelectedUnit(unit)}
             onSubmit={() => {
+              pagination.handlePageChange(1);
+              pagination.handleLimitPerPageChange(50);
               dataPreviewDialogState.setIsOpen(true);
             }}
             title="データのプレビュー"
@@ -440,7 +442,7 @@ function RowMenu({
       <EditNameDialog
         dialogState={editNameDialogState}
         initialName={item.title}
-        onSubmit={(newName) => handleEditName(newName)}
+        onSubmit={handleEditName}
       />
       <DeleteRowDialog
         dialogState={deleteDialogState}
