@@ -329,6 +329,7 @@ function SelectUnitDialog({
       onOpenChange={(e) => {
         e.stopPropagation();
         setOpen((prev) => !prev);
+        onChange("building");
       }}
       open={open}
     >
