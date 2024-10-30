@@ -24,12 +24,10 @@ import {
   useFetchDataSetFile,
   type DataSetType,
 } from "../../hooks/use-fetch-data-set-file";
-import { downloadDataSetFile } from "../../utils/download-data-set-file";
 import {
   type ReturnUseDialogState,
   useDialogState,
 } from "../../hooks/use-dialog-state";
-import { downloadObjectsAsCSV } from "../../utils/download-objects-as-csv";
 import { DeleteRowDialog } from "./delete-row-dialog";
 
 const useStyles = makeStyles({
@@ -83,6 +81,7 @@ interface Props {
   id: number;
   dialogState: ReturnUseDialogState;
   datasetName: string | null;
+  onDownload: () => void;
   onDelete: () => void;
   hideTrigger?: boolean;
 }
@@ -92,70 +91,13 @@ export function DataPreviewDialog({
   id,
   dialogState,
   datasetName,
+  onDownload,
   onDelete,
   hideTrigger,
 }: Props): JSX.Element {
   const styles = useStyles();
   const { isOpen, setIsOpen } = dialogState;
   const deleteDialogState = useDialogState(false);
-
-  // TODO: typeでswitchするよりonDownload propsなんかで処理したい
-  const handleDownload = async (): Promise<void> => {
-    switch (type) {
-      case "raw": {
-        const data = await window.ipcRenderer.invoke("selectRawDataset", {
-          id,
-        });
-        if (!data) return;
-        const buffer = await window.ipcRenderer.invoke("readDatasetFile", {
-          fileName: data.file_path,
-        });
-        void downloadDataSetFile(buffer, data.file_name);
-        break;
-      }
-      case "normalized": {
-        const data = await window.ipcRenderer.invoke(
-          "selectNormalizedDataSet",
-          {
-            id,
-          },
-        );
-        if (!data) return;
-        const buffer = await window.ipcRenderer.invoke("readDatasetFile", {
-          fileName: data.file_path,
-        });
-        void downloadDataSetFile(buffer, data.file_name || "");
-        break;
-      }
-      case "building": {
-        // TODO: 全件取得する
-        const data = await window.ipcRenderer.invoke(
-          "selectBuildingsInBatches",
-          {
-            dataSetResultId: id,
-            batchSize: 100,
-          },
-        );
-        if (!data) return;
-        void downloadObjectsAsCSV(data, datasetName || "");
-        break;
-      }
-      case "area": {
-        // TODO: 全件取得する
-        const data = await window.ipcRenderer.invoke("selectAreasInBatches", {
-          dataSetResultId: id,
-          batchSize: 100,
-        });
-        if (!data) return;
-        void downloadObjectsAsCSV(data, datasetName || "");
-        break;
-      }
-      default: {
-        const exhaustiveCheck: never = type;
-        throw new Error(`Unhandled type: ${exhaustiveCheck}`);
-      }
-    }
-  };
 
   const handleOpenDeleteDialog = (): void => {
     deleteDialogState.setIsOpen(true);
@@ -198,7 +140,7 @@ export function DataPreviewDialog({
                 appearance="outline"
                 className={styles.iconButton}
                 icon={<ArrowDownloadRegular />}
-                onClick={handleDownload}
+                onClick={onDownload}
               />
               <Button
                 appearance="outline"

@@ -173,10 +173,10 @@ function Row({
   const styles = useStyles();
   const dataPreviewDialogState = useDialogState(false);
 
-  const handleDownload = async (id: SelectRawDataSet["id"]): Promise<void> => {
+  const handleDownload = async (): Promise<void> => {
     try {
       const data = await window.ipcRenderer.invoke("selectRawDataset", {
-        id,
+        id: item.id,
       });
       if (!data) return;
       const buffer = await window.ipcRenderer.invoke("readDatasetFile", {
@@ -189,15 +189,15 @@ function Row({
     }
   };
 
-  const handleDelete = async (id: SelectRawDataSet["id"]): Promise<void> => {
+  const handleDelete = async (): Promise<void> => {
     await window.ipcRenderer
       .invoke("deleteRawDataset", {
-        id,
+        id: item.id,
       })
       .then(() => {
         void mutate();
         onSelectionChange((prev) =>
-          prev.filter((selectedId) => selectedId !== id),
+          prev.filter((selectedId) => selectedId !== item.id),
         );
       })
       .catch(console.error);
@@ -220,7 +220,10 @@ function Row({
           dialogState={dataPreviewDialogState}
           id={item.id}
           onDelete={async () => {
-            await handleDelete(item.id);
+            await handleDelete();
+          }}
+          onDownload={async () => {
+            await handleDownload();
           }}
           type="raw"
         />
@@ -233,7 +236,7 @@ function Row({
           icon={<ArrowDownloadRegular />}
           onClick={(e) => {
             e.stopPropagation();
-            void handleDownload(item.id);
+            void handleDownload();
           }}
         />
         <RowMenu

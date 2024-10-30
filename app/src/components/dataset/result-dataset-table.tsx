@@ -191,48 +191,46 @@ function Row({
   const dataPreviewDialogState = useDialogState(false);
   const [selectedUnit, setSelectedUnit] = useState<Unit>("building");
 
-  const handleDownload = async (
-    unit: Unit,
-    id: SelectDataSetResult["id"],
-    fileName: string,
-  ): Promise<void> => {
-    switch (unit) {
+  const handleDownload = async (): Promise<void> => {
+    switch (selectedUnit) {
       case "building": {
         // TODO: 全件取得する
         const data = await window.ipcRenderer.invoke(
           "selectBuildingsInBatches",
           {
-            dataSetResultId: id,
+            dataSetResultId: item.id,
             batchSize: 100,
           },
         );
         if (!data) return;
-        void downloadObjectsAsCSV(data, fileName);
+        void downloadObjectsAsCSV(data, item.title || "");
         break;
       }
       case "area": {
         // TODO: 全件取得する
         const data = await window.ipcRenderer.invoke("selectAreasInBatches", {
-          dataSetResultId: id,
+          dataSetResultId: item.id,
           batchSize: 100,
         });
         if (!data) return;
-        void downloadObjectsAsCSV(data, fileName);
+        void downloadObjectsAsCSV(data, item.title || "");
         break;
       }
       default: {
-        const exhaustiveCheck: never = unit;
+        const exhaustiveCheck: never = selectedUnit;
         throw new Error(`Unhandled unit: ${exhaustiveCheck}`);
       }
     }
   };
 
-  const handleDelete = async (id: SelectDataSetResult["id"]): Promise<void> => {
+  const handleDelete = async (): Promise<void> => {
     await window.ipcRenderer.invoke("deleteDataSetResult", {
-      id,
+      id: item.id,
     });
     void mutate();
-    onSelectionChange((prev) => prev.filter((selectedId) => selectedId !== id));
+    onSelectionChange((prev) =>
+      prev.filter((selectedId) => selectedId !== item.id),
+    );
   };
 
   return (
@@ -271,7 +269,10 @@ function Row({
             hideTrigger
             id={item.id}
             onDelete={async () => {
-              await handleDelete(item.id);
+              await handleDelete();
+            }}
+            onDownload={async () => {
+              await handleDownload();
             }}
             type={selectedUnit}
           />
@@ -290,7 +291,7 @@ function Row({
             }
             onChange={(unit) => setSelectedUnit(unit)}
             onSubmit={() => {
-              void handleDownload(selectedUnit, item.id, item.title || "");
+              void handleDownload();
             }}
             title="データのダウンロード"
           />
