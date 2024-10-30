@@ -99,3 +99,7 @@ chubu.pmtiles
 .playwright/
 test-results/
 playwright-report/
+
+# 個人情報が入ったデータが含まれないようにignore
+assets/*.csv
+assets/*.zip

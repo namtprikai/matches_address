@@ -52,6 +52,7 @@ import { fetchJobTasks } from "./fetch-job-tasks";
 import { buildModel } from "./ml/build-model";
 import { selectBuildingsWithPagination } from "./select-buildings-with-pagination";
 import { selectAreasWithPagination } from "./select-areas-with-pagination";
+import { readDatasetColumns } from "./read-dataset-columns";
 
 export const ipcMainListeners = {
   helloFromPython,
@@ -69,6 +70,7 @@ export const ipcMainListeners = {
   insertResultViews,
   updateResultViews,
   readResultViews,
+  readDatasetColumns,
   selectResultView,
   deleteResultView,
   filterDataSetForChart,
