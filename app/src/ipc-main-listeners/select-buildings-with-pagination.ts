@@ -1,4 +1,4 @@
-import { count, eq } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import {
   data_set_detail_buildings,
   type SelectDataSetDetailBuilding,
@@ -6,42 +6,27 @@ import {
 import { db } from "../utils/db";
 import { type IpcMainListener } from ".";
 
-export type SelectBuildingsWithPaginationReturnType = ReturnType<
-  typeof selectBuildingsWithPagination
->;
-
 export const selectBuildingsWithPagination = (async (
   _: unknown,
   {
-    id,
+    dataSetResultId,
     page,
     limitPerPage,
   }: {
-    id: SelectDataSetDetailBuilding["id"];
+    dataSetResultId: SelectDataSetDetailBuilding["data_set_result_id"];
     page: number;
     limitPerPage: number;
   },
-): Promise<{
-  items: SelectDataSetDetailBuilding[];
-  total: number;
-  totalPages: number;
-}> => {
-  const totalCountResult = await db
-    .select({ count: count() })
-    .from(data_set_detail_buildings);
-  const total = totalCountResult[0].count;
-  const offset = (page - 1) * limitPerPage;
+): Promise<SelectDataSetDetailBuilding[]> => {
+  if (!dataSetResultId) return [];
 
-  const items = await db
+  const offset = (page - 1) * limitPerPage;
+  const result = await db
     .select()
     .from(data_set_detail_buildings)
-    .where(eq(data_set_detail_buildings.id, id))
+    .where(eq(data_set_detail_buildings.data_set_result_id, dataSetResultId))
     .limit(limitPerPage)
     .offset(offset);
 
-  return {
-    items,
-    total,
-    totalPages: Math.ceil(total / limitPerPage),
-  };
+  return result;
 }) satisfies IpcMainListener;

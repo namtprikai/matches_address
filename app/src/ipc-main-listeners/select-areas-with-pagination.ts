@@ -1,44 +1,29 @@
-import { count, eq } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { data_set_detail_areas, type SelectDataSetDetailArea } from "../schema";
 import { db } from "../utils/db";
 import { type IpcMainListener } from ".";
 
-export type SelectAreasWithPaginationReturnType = ReturnType<
-  typeof selectAreasWithPagination
->;
-
 export const selectAreasWithPagination = (async (
   _: unknown,
   {
-    id,
+    dataSetResultId,
     page,
     limitPerPage,
   }: {
-    id: SelectDataSetDetailArea["id"];
+    dataSetResultId: SelectDataSetDetailArea["data_set_result_id"];
     page: number;
     limitPerPage: number;
   },
-): Promise<{
-  items: SelectDataSetDetailArea[];
-  total: number;
-  totalPages: number;
-}> => {
-  const totalCountResult = await db
-    .select({ count: count() })
-    .from(data_set_detail_areas);
-  const total = totalCountResult[0].count;
+): Promise<SelectDataSetDetailArea[]> => {
+  if (!dataSetResultId) return [];
   const offset = (page - 1) * limitPerPage;
 
-  const items = await db
+  const result = await db
     .select()
     .from(data_set_detail_areas)
-    .where(eq(data_set_detail_areas.id, id))
+    .where(eq(data_set_detail_areas.data_set_result_id, dataSetResultId))
     .limit(limitPerPage)
     .offset(offset);
 
-  return {
-    items,
-    total,
-    totalPages: Math.ceil(total / limitPerPage),
-  };
+  return result;
 }) satisfies IpcMainListener;
