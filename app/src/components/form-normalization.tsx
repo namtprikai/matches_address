@@ -25,7 +25,7 @@ type Props = {
 };
 
 export const FormNormalization = ({ value, onSave }: Props): JSX.Element => {
-  const { handleSubmit, watch, control } = useForm<NormalizationParameters>({
+  const { handleSubmit, control } = useForm<NormalizationParameters>({
     defaultValues: value,
   });
 
@@ -46,12 +46,12 @@ export const FormNormalization = ({ value, onSave }: Props): JSX.Element => {
     <form className={styles.root} onSubmit={onSubmit}>
       <Controller
         control={control}
-        name={"data.residentRegistry"}
+        name={"data.resident_registry"}
         render={({ field: { value, onChange } }) => (
           <FormDataset
             appearance="large"
             dataSetName={LanguageMap.NORMALIZATION_DATA_LABEL.residentRegistry}
-            name={"data.residentRegistry"}
+            name={"data.resident_registry"}
             onChange={onChange}
             value={value}
           />
@@ -59,12 +59,12 @@ export const FormNormalization = ({ value, onSave }: Props): JSX.Element => {
       />
       <Controller
         control={control}
-        name="data.waterStatus"
+        name="data.water_status"
         render={({ field: { value, onChange } }) => (
           <FormDataset
             appearance="large"
             dataSetName={LanguageMap.NORMALIZATION_DATA_LABEL.waterStatus}
-            name={"data.waterStatus"}
+            name={"data.water_status"}
             onChange={onChange}
             value={value}
           />
@@ -73,11 +73,11 @@ export const FormNormalization = ({ value, onSave }: Props): JSX.Element => {
       <div className={styles.formGrid}>
         <Controller
           control={control}
-          name="data.waterUsage"
+          name="data.water_usage"
           render={({ field: { value, onChange } }) => (
             <FormDataset
               dataSetName={LanguageMap.NORMALIZATION_DATA_LABEL.waterUsage}
-              name={"data.waterUsage"}
+              name={"data.water_usage"}
               onChange={onChange}
               value={value}
             />
@@ -85,11 +85,11 @@ export const FormNormalization = ({ value, onSave }: Props): JSX.Element => {
         />
         <Controller
           control={control}
-          name="data.landRegistry"
+          name="data.land_registry"
           render={({ field: { value, onChange } }) => (
             <FormDataset
               dataSetName={LanguageMap.NORMALIZATION_DATA_LABEL.landRegistry}
-              name={"data.landRegistry"}
+              name={"data.land_registry"}
               onChange={onChange}
               value={value}
             />

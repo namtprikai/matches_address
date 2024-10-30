@@ -1,7 +1,11 @@
 import { spawn } from "child_process";
 import { type NormalizationParameters } from "../@types/normalization";
 import { getErrorMessage } from "../utils/get-error-message";
+import { getFilePathInAssets } from "../utils/get-file-path-in-assets";
+import { dbPath } from "../utils/db";
 import { binaryPath, type IpcMainListener } from ".";
+
+export type ExecE001Args = NormalizationParameters;
 
 export const execE001 = (async (
   _: unknown,
@@ -12,10 +16,22 @@ export const execE001 = (async (
   },
 ): Promise<true | false> => {
   try {
+    const output_path = getFilePathInAssets();
+    const database_path = dbPath;
+
     // childProcessに入れてバックグラウンド実行
     const cp = spawn(
       binaryPath("e001"),
-      ["--parameters", JSON.stringify(JSON.stringify(parameters))],
+      [
+        "--parameters",
+        JSON.stringify(
+          JSON.stringify({
+            ...parameters,
+            output_path,
+            database_path,
+          }),
+        ),
+      ],
       {
         detached: true,
       },
