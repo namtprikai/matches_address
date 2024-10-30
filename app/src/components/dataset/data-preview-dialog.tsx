@@ -1,10 +1,4 @@
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableRow,
-  TableHeader,
-  TableHeaderCell,
   Dialog,
   DialogTrigger,
   makeStyles,
@@ -15,21 +9,17 @@ import {
   ArrowDownloadRegular,
   DeleteRegular,
 } from "@fluentui/react-icons";
+import { type ReactElement } from "react";
 import { DialogSurface } from "../ui/dialog-surface";
 import { DialogBody } from "../ui/dialog-body";
 import { DialogTitle } from "../ui/dialog-title";
 import { DialogContent } from "../ui/dialog-content";
 import { Button } from "../ui/button";
 import {
-  useFetchDataSetFile,
-  type DataSetType,
-} from "../../hooks/use-fetch-data-set-file";
-import {
   type ReturnUseDialogState,
   useDialogState,
 } from "../../hooks/use-dialog-state";
 import { DeleteRowDialog } from "./delete-row-dialog";
-import { DataPreviewTable } from "./data-preview-table";
 
 const useStyles = makeStyles({
   dialogTitle: {
@@ -78,8 +68,7 @@ const useStyles = makeStyles({
 });
 
 interface Props {
-  type: DataSetType;
-  id: number;
+  content: ReactElement;
   dialogState: ReturnUseDialogState;
   datasetName: string | null;
   onDownload: () => void;
@@ -88,8 +77,7 @@ interface Props {
 }
 
 export function DataPreviewDialog({
-  type,
-  id,
+  content,
   dialogState,
   datasetName,
   onDownload,
@@ -99,7 +87,6 @@ export function DataPreviewDialog({
   const styles = useStyles();
   const { isOpen, setIsOpen } = dialogState;
   const deleteDialogState = useDialogState(false);
-  const { data } = useFetchDataSetFile({ type, id });
 
   const handleOpenDeleteDialog = (): void => {
     deleteDialogState.setIsOpen(true);
@@ -153,9 +140,7 @@ export function DataPreviewDialog({
             </div>
           </DialogTitle>
           <DialogBody>
-            <DialogContent className={styles.content}>
-              <DataPreviewTable data={data} />
-            </DialogContent>
+            <DialogContent className={styles.content}>{content}</DialogContent>
           </DialogBody>
         </DialogSurface>
       </Dialog>

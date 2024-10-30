@@ -35,9 +35,11 @@ import { useFetchRawDatasets } from "../../hooks/use-fetch-raw-datasets";
 import { formatDate } from "../../utils/format-date";
 import { useDialogState } from "../../hooks/use-dialog-state";
 import { downloadDataSetFile } from "../../utils/download-data-set-file";
+import { useFetchDataSetFile } from "../../hooks/use-fetch-data-set-file";
 import { DataPreviewDialog } from "./data-preview-dialog";
 import { EditNameDialog } from "./edit-name-dialog";
 import { DeleteRowDialog } from "./delete-row-dialog";
+import { DataPreviewTable } from "./data-preview-table";
 
 const useStyles = makeStyles({
   tableHeader: {
@@ -172,6 +174,7 @@ function Row({
 }: RowProps): JSX.Element {
   const styles = useStyles();
   const dataPreviewDialogState = useDialogState(false);
+  const { data } = useFetchDataSetFile({ type: "raw", id: item.id });
 
   const handleDownload = async (): Promise<void> => {
     try {
@@ -216,16 +219,15 @@ function Row({
       />
       <TableCell>
         <DataPreviewDialog
+          content={<DataPreviewTable data={data} />}
           datasetName={item.file_name}
           dialogState={dataPreviewDialogState}
-          id={item.id}
           onDelete={async () => {
             await handleDelete();
           }}
           onDownload={async () => {
             await handleDownload();
           }}
-          type="raw"
         />
       </TableCell>
       <TableCell>{formatDate(item.updated_at, "YYYY/MM/DD")}</TableCell>

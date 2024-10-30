@@ -46,9 +46,11 @@ import { DialogContent } from "../ui/dialog-content";
 import { DialogActions } from "../ui/dialog-actions";
 import { DialogSurface } from "../ui/dialog-surface";
 import { downloadObjectsAsCSV } from "../../utils/download-objects-as-csv";
+import { useFetchDataSetFile } from "../../hooks/use-fetch-data-set-file";
 import { DeleteRowDialog } from "./delete-row-dialog";
 import { EditNameDialog } from "./edit-name-dialog";
 import { DataPreviewDialog } from "./data-preview-dialog";
+import { DataPreviewTable } from "./data-preview-table";
 
 const useStyles = makeStyles({
   tableHeader: {
@@ -190,6 +192,7 @@ function Row({
   const styles = useStyles();
   const dataPreviewDialogState = useDialogState(false);
   const [selectedUnit, setSelectedUnit] = useState<Unit>("building");
+  const { data } = useFetchDataSetFile({ type: selectedUnit, id: item.id });
 
   const handleDownload = async (): Promise<void> => {
     switch (selectedUnit) {
@@ -264,17 +267,16 @@ function Row({
             title="データのプレビュー"
           />
           <DataPreviewDialog
+            content={<DataPreviewTable data={data} />}
             datasetName={item.title}
             dialogState={dataPreviewDialogState}
             hideTrigger
-            id={item.id}
             onDelete={async () => {
               await handleDelete();
             }}
             onDownload={async () => {
               await handleDownload();
             }}
-            type={selectedUnit}
           />
         </TableCell>
         <TableCell>{formatDate(item.updated_at, "YYYY/MM/DD")}</TableCell>
