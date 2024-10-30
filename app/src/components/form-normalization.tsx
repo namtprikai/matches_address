@@ -1,4 +1,4 @@
-import { useForm } from "react-hook-form";
+import { Controller, useController, useForm } from "react-hook-form";
 import { makeStyles, tokens } from "@fluentui/react-components";
 import { type NormalizationParameters } from "../@types/normalization";
 import { LanguageMap } from "../metadata";
@@ -25,10 +25,9 @@ type Props = {
 };
 
 export const FormNormalization = ({ value, onSave }: Props): JSX.Element => {
-  const { handleSubmit, setValue, getValues } =
-    useForm<NormalizationParameters>({
-      defaultValues: value,
-    });
+  const { handleSubmit, watch, control } = useForm<NormalizationParameters>({
+    defaultValues: value,
+  });
 
   const onSubmit = handleSubmit((data) => {
     onSave(data);
@@ -36,49 +35,70 @@ export const FormNormalization = ({ value, onSave }: Props): JSX.Element => {
 
   const styles = useStyles();
 
+  const {
+    field: { value: settingsValue, onChange: settingsOnChange },
+  } = useController({
+    name: "settings",
+    control,
+  });
+
   return (
     <form className={styles.root} onSubmit={onSubmit}>
-      <FormDataset
-        appearance="large"
-        dataSetName={LanguageMap.NORMALIZATION_DATA_LABEL.residentRegistry}
+      <Controller
+        control={control}
         name={"data.residentRegistry"}
-        onChange={(value) => {
-          setValue("data.residentRegistry", value);
-        }}
-        value={getValues().data.residentRegistry}
+        render={({ field: { value, onChange } }) => (
+          <FormDataset
+            appearance="large"
+            dataSetName={LanguageMap.NORMALIZATION_DATA_LABEL.residentRegistry}
+            name={"data.residentRegistry"}
+            onChange={onChange}
+            value={value}
+          />
+        )}
       />
-      <FormDataset
-        appearance="large"
-        dataSetName={LanguageMap.NORMALIZATION_DATA_LABEL.waterStatus}
-        name={"data.waterStatus"}
-        onChange={(value) => {
-          setValue("data.waterStatus", value);
-        }}
-        value={getValues().data.waterStatus}
+      <Controller
+        control={control}
+        name="data.waterStatus"
+        render={({ field: { value, onChange } }) => (
+          <FormDataset
+            appearance="large"
+            dataSetName={LanguageMap.NORMALIZATION_DATA_LABEL.waterStatus}
+            name={"data.waterStatus"}
+            onChange={onChange}
+            value={value}
+          />
+        )}
       />
       <div className={styles.formGrid}>
-        <FormDataset
-          dataSetName={LanguageMap.NORMALIZATION_DATA_LABEL.waterUsage}
-          name={"data.waterUsage"}
-          onChange={(value) => {
-            setValue("data.waterUsage", value);
-          }}
-          value={getValues().data.waterUsage}
+        <Controller
+          control={control}
+          name="data.waterUsage"
+          render={({ field: { value, onChange } }) => (
+            <FormDataset
+              dataSetName={LanguageMap.NORMALIZATION_DATA_LABEL.waterUsage}
+              name={"data.waterUsage"}
+              onChange={onChange}
+              value={value}
+            />
+          )}
         />
-        <FormDataset
-          dataSetName={LanguageMap.NORMALIZATION_DATA_LABEL.landRegistry}
-          name={"data.landRegistry"}
-          onChange={(value) => {
-            setValue("data.landRegistry", value);
-          }}
-          value={getValues().data.landRegistry}
+        <Controller
+          control={control}
+          name="data.landRegistry"
+          render={({ field: { value, onChange } }) => (
+            <FormDataset
+              dataSetName={LanguageMap.NORMALIZATION_DATA_LABEL.landRegistry}
+              name={"data.landRegistry"}
+              onChange={onChange}
+              value={value}
+            />
+          )}
         />
       </div>
       <FormNormalizationSettings
-        onChange={(value) => {
-          setValue("settings", value);
-        }}
-        value={getValues().settings}
+        onChange={settingsOnChange}
+        value={settingsValue}
       />
     </form>
   );
