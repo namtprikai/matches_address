@@ -1,10 +1,4 @@
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableRow,
-  TableHeader,
-  TableHeaderCell,
   Dialog,
   DialogTrigger,
   makeStyles,
@@ -15,21 +9,16 @@ import {
   ArrowDownloadRegular,
   DeleteRegular,
 } from "@fluentui/react-icons";
+import { type ReactElement } from "react";
 import { DialogSurface } from "../ui/dialog-surface";
 import { DialogBody } from "../ui/dialog-body";
 import { DialogTitle } from "../ui/dialog-title";
 import { DialogContent } from "../ui/dialog-content";
 import { Button } from "../ui/button";
 import {
-  useFetchDataSetFile,
-  type DataSetType,
-} from "../../hooks/use-fetch-data-set-file";
-import { downloadDataSetFile } from "../../utils/download-data-set-file";
-import {
   type ReturnUseDialogState,
   useDialogState,
 } from "../../hooks/use-dialog-state";
-import { downloadObjectsAsCSV } from "../../utils/download-objects-as-csv";
 import { DeleteRowDialog } from "./delete-row-dialog";
 
 const useStyles = makeStyles({
@@ -79,83 +68,25 @@ const useStyles = makeStyles({
 });
 
 interface Props {
-  type: DataSetType;
-  id: number;
+  content: ReactElement;
   dialogState: ReturnUseDialogState;
   datasetName: string | null;
+  onDownload: () => void;
   onDelete: () => void;
   hideTrigger?: boolean;
 }
 
 export function DataPreviewDialog({
-  type,
-  id,
+  content,
   dialogState,
   datasetName,
+  onDownload,
   onDelete,
   hideTrigger,
 }: Props): JSX.Element {
   const styles = useStyles();
   const { isOpen, setIsOpen } = dialogState;
   const deleteDialogState = useDialogState(false);
-
-  // TODO: typeでswitchするよりonDownload propsなんかで処理したい
-  const handleDownload = async (): Promise<void> => {
-    switch (type) {
-      case "raw": {
-        const data = await window.ipcRenderer.invoke("selectRawDataset", {
-          id,
-        });
-        if (!data) return;
-        const buffer = await window.ipcRenderer.invoke("readDatasetFile", {
-          fileName: data.file_path,
-        });
-        void downloadDataSetFile(buffer, data.file_name);
-        break;
-      }
-      case "normalized": {
-        const data = await window.ipcRenderer.invoke(
-          "selectNormalizedDataSet",
-          {
-            id,
-          },
-        );
-        if (!data) return;
-        const buffer = await window.ipcRenderer.invoke("readDatasetFile", {
-          fileName: data.file_path,
-        });
-        void downloadDataSetFile(buffer, data.file_name || "");
-        break;
-      }
-      case "building": {
-        // TODO: 全件取得する
-        const data = await window.ipcRenderer.invoke(
-          "fetchBuildingsInBatches",
-          {
-            dataSetResultId: id,
-            batchSize: 100,
-          },
-        );
-        if (!data) return;
-        void downloadObjectsAsCSV(data, datasetName || "");
-        break;
-      }
-      case "area": {
-        // TODO: 全件取得する
-        const data = await window.ipcRenderer.invoke("fetchAreasInBatches", {
-          dataSetResultId: id,
-          batchSize: 100,
-        });
-        if (!data) return;
-        void downloadObjectsAsCSV(data, datasetName || "");
-        break;
-      }
-      default: {
-        const exhaustiveCheck: never = type;
-        throw new Error(`Unhandled type: ${exhaustiveCheck}`);
-      }
-    }
-  };
 
   const handleOpenDeleteDialog = (): void => {
     deleteDialogState.setIsOpen(true);
@@ -198,7 +129,7 @@ export function DataPreviewDialog({
                 appearance="outline"
                 className={styles.iconButton}
                 icon={<ArrowDownloadRegular />}
-                onClick={handleDownload}
+                onClick={onDownload}
               />
               <Button
                 appearance="outline"
@@ -209,9 +140,7 @@ export function DataPreviewDialog({
             </div>
           </DialogTitle>
           <DialogBody>
-            <DialogContent className={styles.content}>
-              <DataPreview id={id} type={type} />
-            </DialogContent>
+            <DialogContent className={styles.content}>{content}</DialogContent>
           </DialogBody>
         </DialogSurface>
       </Dialog>
@@ -221,41 +150,5 @@ export function DataPreviewDialog({
         onDelete={onDelete}
       />
     </>
-  );
-}
-
-interface DataPreviewProps {
-  type: DataSetType;
-  id: number;
-}
-
-function DataPreview({ type, id }: DataPreviewProps): JSX.Element {
-  const styles = useStyles();
-  const { data } = useFetchDataSetFile({ type, id });
-  const headers = data && data.length > 0 ? Object.keys(data[0]) : [];
-
-  return (
-    <div className={styles.tableContainer}>
-      <Table aria-label="CSV Data Table" className={styles.table}>
-        <TableHeader className={styles.th}>
-          <TableRow>
-            {headers.map((header) => (
-              <TableHeaderCell key={header}>{header}</TableHeaderCell>
-            ))}
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {data?.map((row, rowIndex) => (
-            <TableRow key={rowIndex}>
-              {headers.map((header) => (
-                <TableCell key={`${rowIndex}-${header}`} className={styles.td}>
-                  {row[header]}
-                </TableCell>
-              ))}
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </div>
   );
 }

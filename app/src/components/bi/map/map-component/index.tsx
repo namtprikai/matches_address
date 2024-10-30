@@ -81,7 +81,7 @@ export function MapComponent({
           {
             const setBuildingMapCenter = async (): Promise<void> => {
               const result = await window.ipcRenderer.invoke(
-                "fetchBuildingsInBatches",
+                "selectBuildingsInBatches",
                 {
                   dataSetResultId,
                   referenceDate: selectedDate,
@@ -113,7 +113,7 @@ export function MapComponent({
                   if (ignore) break;
 
                   const batch = await window.ipcRenderer.invoke(
-                    "fetchBuildingsInBatches",
+                    "selectBuildingsInBatches",
                     {
                       dataSetResultId,
                       referenceDate: selectedDate,
@@ -171,7 +171,7 @@ export function MapComponent({
           {
             const setAreaMapCenter = async (): Promise<void> => {
               const result = await window.ipcRenderer.invoke(
-                "fetchAreasInBatches",
+                "selectAreasInBatches",
                 {
                   dataSetResultId,
                   referenceDate: selectedDate,
@@ -203,7 +203,7 @@ export function MapComponent({
                   if (ignore) break;
 
                   const batch = await window.ipcRenderer.invoke(
-                    "fetchAreasInBatches",
+                    "selectAreasInBatches",
                     {
                       dataSetResultId,
                       referenceDate: selectedDate,

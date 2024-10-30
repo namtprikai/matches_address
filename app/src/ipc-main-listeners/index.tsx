@@ -2,8 +2,8 @@ import { type ipcMain } from "electron";
 import { execFile } from "child_process";
 import path from "path";
 import { promisify } from "util";
-import { fetchBuildingsInBatches } from "../components/bi/map/fetch-buildings-in-batches";
-import { fetchAreasInBatches } from "../components/bi/map/fetch-areas";
+import { selectBuildingsInBatches } from "./select-buildings-in-batches";
+import { selectAreasInBatches } from "./select-areas-in-batches";
 import { fetchReferenceDates } from "./fetch-reference-dates";
 import { helloFromPython } from "./hello-from-python";
 import { saveNameFromPython } from "./save-name-from-python";
@@ -50,6 +50,8 @@ import { deleteModelFiles } from "./delete-model-files";
 import { fetchJobLists } from "./fetch-job-lists";
 import { fetchJobTasks } from "./fetch-job-tasks";
 import { buildModel } from "./ml/build-model";
+import { selectBuildingsWithPagination } from "./select-buildings-with-pagination";
+import { selectAreasWithPagination } from "./select-areas-with-pagination";
 import { readDatasetColumns } from "./read-dataset-columns";
 
 export const ipcMainListeners = {
@@ -73,11 +75,11 @@ export const ipcMainListeners = {
   deleteResultView,
   filterDataSetForChart,
   filterDataSetForTable,
-  fetchBuildingsInBatches,
+  selectBuildingsInBatches,
   fetchReferenceDates,
   fetchAreaGroups,
   createDummyDataSetResults,
-  fetchAreasInBatches,
+  selectAreasInBatches,
   deleteWorkbook,
   updateResultViewsLayoutIndex,
   selectRawDatasets,
@@ -102,6 +104,8 @@ export const ipcMainListeners = {
   fetchJobLists,
   fetchJobTasks,
   buildModel,
+  selectBuildingsWithPagination,
+  selectAreasWithPagination,
 };
 
 export const execFileAsync = promisify(execFile);

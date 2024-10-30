@@ -42,7 +42,7 @@ const fetcher = async ([type, id]: [
     }
     case "building": {
       const result = await window.ipcRenderer.invoke(
-        "fetchBuildingsInBatches",
+        "selectBuildingsInBatches",
         {
           dataSetResultId: id,
           batchSize: 100,
@@ -52,7 +52,7 @@ const fetcher = async ([type, id]: [
       return result;
     }
     case "area": {
-      const result = await window.ipcRenderer.invoke("fetchAreasInBatches", {
+      const result = await window.ipcRenderer.invoke("selectAreasInBatches", {
         dataSetResultId: id,
         batchSize: 100,
       });

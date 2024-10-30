@@ -34,7 +34,6 @@ import {
   useState,
   type ReactElement,
 } from "react";
-import { type KeyedMutator } from "swr";
 import { Button } from "../ui/button";
 import { useFetchDataSetResults } from "../../hooks/use-fetch-data-set-results";
 import { type SelectDataSetResult } from "../../schema";
@@ -46,9 +45,13 @@ import { DialogContent } from "../ui/dialog-content";
 import { DialogActions } from "../ui/dialog-actions";
 import { DialogSurface } from "../ui/dialog-surface";
 import { downloadObjectsAsCSV } from "../../utils/download-objects-as-csv";
+import { useFetchResultDataSetsWithPagination } from "../../hooks/use-fetch-result-data-sets-with-pagination";
+import { usePagenation } from "../../hooks/use-pagenation";
+import { Pagenation } from "../ui/pagenation";
 import { DeleteRowDialog } from "./delete-row-dialog";
 import { EditNameDialog } from "./edit-name-dialog";
 import { DataPreviewDialog } from "./data-preview-dialog";
+import { DataPreviewTable } from "./data-preview-table";
 
 const useStyles = makeStyles({
   tableHeader: {
@@ -71,13 +74,16 @@ const useStyles = makeStyles({
       textDecoration: "none",
     },
   },
+  dataPreviewTableContainer: {
+    marginTop: tokens.spacingVerticalS,
+  },
   radioGroup: {
     marginTop: tokens.spacingVerticalM,
     marginLeft: "-8px",
   },
 });
 
-type Unit = "building" | "area";
+export type ResultDataSetUnit = "building" | "area";
 
 type Props = {
   onSelectionChange: Dispatch<SetStateAction<SelectDataSetResult["id"][]>>;
@@ -116,12 +122,12 @@ export function ResultDataSetTable({ onSelectionChange }: Props): JSX.Element {
   );
 
   const rows = getRows((row) => {
-    const selected = isRowSelected(row.item.id);
+    const selected = isRowSelected(row.rowId);
 
     return {
       ...row,
       onClick: (e: MouseEvent) => {
-        toggleRow(e, row.item.id);
+        toggleRow(e, row.rowId);
         onSelectionChange((prev) =>
           selected
             ? prev.filter((id) => id !== row.item.id)
@@ -138,6 +144,19 @@ export function ResultDataSetTable({ onSelectionChange }: Props): JSX.Element {
     onSelectionChange(() =>
       allRowsSelected ? [] : data?.map((dataset) => dataset.id) || [],
     );
+  };
+
+  const handleDelete = (id: SelectDataSetResult["id"]): void => {
+    window.ipcRenderer
+      .invoke("deleteDataSetResult", {
+        id,
+      })
+      .then(() => {
+        void mutate();
+        setSelectedRows(new Set());
+        onSelectionChange([]);
+      })
+      .catch(console.error);
   };
 
   return (
@@ -161,8 +180,7 @@ export function ResultDataSetTable({ onSelectionChange }: Props): JSX.Element {
           <Row
             {...row}
             key={row.item.id}
-            mutate={mutate}
-            onSelectionChange={onSelectionChange}
+            onDelete={() => handleDelete(row.item.id)}
           />
         ))}
       </TableBody>
@@ -171,68 +189,62 @@ export function ResultDataSetTable({ onSelectionChange }: Props): JSX.Element {
 }
 
 interface RowProps {
-  onClick: (e: MouseEvent) => void;
+  item: SelectDataSetResult;
   selected: boolean;
   appearance: "brand" | "none";
-  item: SelectDataSetResult;
-  mutate: KeyedMutator<SelectDataSetResult[]>;
-  onSelectionChange: Props["onSelectionChange"];
+  onClick: (e: MouseEvent) => void;
+  onDelete: () => void;
 }
 
 function Row({
   item,
   selected,
-  onClick,
   appearance,
-  mutate,
-  onSelectionChange,
+  onClick,
+  onDelete,
 }: RowProps): JSX.Element {
   const styles = useStyles();
   const dataPreviewDialogState = useDialogState(false);
-  const [selectedUnit, setSelectedUnit] = useState<Unit>("building");
+  const [selectedUnit, setSelectedUnit] =
+    useState<ResultDataSetUnit>("building");
+  const pagination = usePagenation(50);
+  const { data } = useFetchResultDataSetsWithPagination({
+    dataSetResultId: item.id,
+    type: selectedUnit,
+    page: pagination.page,
+    limitPerPage: pagination.limitPerPage,
+  });
 
-  const handleDownload = async (
-    unit: Unit,
-    id: SelectDataSetResult["id"],
-    fileName: string,
-  ): Promise<void> => {
-    switch (unit) {
+  const handleDownload = async (): Promise<void> => {
+    switch (selectedUnit) {
       case "building": {
         // TODO: 全件取得する
         const data = await window.ipcRenderer.invoke(
-          "fetchBuildingsInBatches",
+          "selectBuildingsInBatches",
           {
-            dataSetResultId: id,
+            dataSetResultId: item.id,
             batchSize: 100,
           },
         );
         if (!data) return;
-        void downloadObjectsAsCSV(data, fileName);
+        void downloadObjectsAsCSV(data, item.title || "");
         break;
       }
       case "area": {
         // TODO: 全件取得する
-        const data = await window.ipcRenderer.invoke("fetchAreasInBatches", {
-          dataSetResultId: id,
+        const data = await window.ipcRenderer.invoke("selectAreasInBatches", {
+          dataSetResultId: item.id,
           batchSize: 100,
         });
         if (!data) return;
-        void downloadObjectsAsCSV(data, fileName);
+        void downloadObjectsAsCSV(data, item.title || "");
         break;
       }
       default: {
-        const exhaustiveCheck: never = unit;
+        const exhaustiveCheck: never = selectedUnit;
         throw new Error(`Unhandled unit: ${exhaustiveCheck}`);
       }
     }
-  };
-
-  const handleDelete = async (id: SelectDataSetResult["id"]): Promise<void> => {
-    await window.ipcRenderer.invoke("deleteDataSetResult", {
-      id,
-    });
-    void mutate();
-    onSelectionChange((prev) => prev.filter((selectedId) => selectedId !== id));
   };
 
   return (
@@ -261,19 +273,28 @@ function Row({
             }
             onChange={(unit) => setSelectedUnit(unit)}
             onSubmit={() => {
+              pagination.handlePageChange(1);
+              pagination.handleLimitPerPageChange(50);
               dataPreviewDialogState.setIsOpen(true);
             }}
             title="データのプレビュー"
           />
           <DataPreviewDialog
+            content={
+              <div>
+                <Pagenation {...pagination} />
+                <div className={styles.dataPreviewTableContainer}>
+                  <DataPreviewTable data={data} />
+                </div>
+              </div>
+            }
             datasetName={item.title}
             dialogState={dataPreviewDialogState}
             hideTrigger
-            id={item.id}
-            onDelete={async () => {
-              await handleDelete(item.id);
+            onDelete={onDelete}
+            onDownload={async () => {
+              await handleDownload();
             }}
-            type={selectedUnit}
           />
         </TableCell>
         <TableCell>{formatDate(item.updated_at, "YYYY/MM/DD")}</TableCell>
@@ -290,15 +311,11 @@ function Row({
             }
             onChange={(unit) => setSelectedUnit(unit)}
             onSubmit={() => {
-              void handleDownload(selectedUnit, item.id, item.title || "");
+              void handleDownload();
             }}
             title="データのダウンロード"
           />
-          <RowMenu
-            item={item}
-            mutate={mutate}
-            onSelectionChange={onSelectionChange}
-          />
+          <RowMenu item={item} onDelete={onDelete} />
         </TableCell>
       </TableRow>
     </>
@@ -314,7 +331,7 @@ function SelectUnitDialog({
 }: {
   title: string;
   buttonText: string;
-  onChange: (unit: Unit) => void;
+  onChange: (unit: ResultDataSetUnit) => void;
   onSubmit: () => void;
   dialogTriggerChildren: ReactElement;
 }): JSX.Element {
@@ -326,6 +343,7 @@ function SelectUnitDialog({
       onOpenChange={(e) => {
         e.stopPropagation();
         setOpen((prev) => !prev);
+        onChange("building");
       }}
       open={open}
     >
@@ -372,33 +390,23 @@ function SelectUnitDialog({
 
 function RowMenu({
   item,
-  mutate,
-  onSelectionChange,
+  onDelete,
 }: {
   item: SelectDataSetResult;
-  mutate: KeyedMutator<SelectDataSetResult[]>;
-  onSelectionChange: Props["onSelectionChange"];
+  onDelete: () => void;
 }): JSX.Element {
   const editNameDialogState = useDialogState(false);
   const deleteDialogState = useDialogState(false);
+  const { mutate } = useFetchDataSetResults();
 
   const handleEditName = async (
-    id: SelectDataSetResult["id"],
     newTitle: SelectDataSetResult["title"],
   ): Promise<void> => {
     await window.ipcRenderer.invoke("updateDataSetResult", {
-      id,
+      id: item.id,
       title: newTitle,
     });
     void mutate();
-  };
-
-  const handleDelete = async (id: SelectDataSetResult["id"]): Promise<void> => {
-    await window.ipcRenderer.invoke("deleteDataSetResult", {
-      id,
-    });
-    void mutate();
-    onSelectionChange((prev) => prev.filter((selectedId) => selectedId !== id));
   };
 
   return (
@@ -434,12 +442,12 @@ function RowMenu({
       <EditNameDialog
         dialogState={editNameDialogState}
         initialName={item.title}
-        onSubmit={(newName) => handleEditName(item.id, newName)}
+        onSubmit={handleEditName}
       />
       <DeleteRowDialog
         dialogState={deleteDialogState}
         fileName={item.title || ""}
-        onDelete={() => handleDelete(item.id)}
+        onDelete={onDelete}
       />
     </>
   );

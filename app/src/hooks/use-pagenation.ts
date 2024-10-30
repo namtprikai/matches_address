@@ -23,6 +23,7 @@ export const usePagenation = (
 
   const handleLimitPerPageChange = (newLimitPerPage: number): void => {
     setLimitPerPage(newLimitPerPage);
+    setPage(1);
   };
 
   return {
