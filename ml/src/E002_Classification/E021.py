@@ -732,7 +732,7 @@ def train_and_evaluate(job_id, input_file, output_path, explanatory_variables, t
     try:
         # setup_directory()
         progress(0, desc="Loading data...")
-        task_id = create_or_update_job_task(job_id, progress_percent="0%", preprocess_type="E021_モデル構築", error_code=None, result=None)
+        task_id = create_or_update_job_task(job_id, progress_percent="0", preprocess_type="E021_モデル構築", error_code=None, result=None)
         create_or_update_job(job_id , "0")
         file_path = input_file
         df = read_csv(file_path, low_memory=False)
@@ -740,7 +740,7 @@ def train_and_evaluate(job_id, input_file, output_path, explanatory_variables, t
             raise ValueError(f"ファイル {file_path} の読み込みに失敗しました。")
         
         progress(0.1, desc="Preparing learning data...")
-        create_or_update_job_task(job_id, progress_percent="10%", preprocess_type="E021_モデル構築", error_code=None, result=None, id= task_id)
+        create_or_update_job_task(job_id, progress_percent="10", preprocess_type="E021_モデル構築", error_code=None, result=None, id= task_id)
         create_or_update_job(job_id , "10")
         learning_data = prepare_learning_data(df, explanatory_variables)
         
@@ -762,23 +762,23 @@ def train_and_evaluate(job_id, input_file, output_path, explanatory_variables, t
         }
         
         progress(0.2, desc="Splitting data...")
-        create_or_update_job_task(job_id, progress_percent="20%", preprocess_type="E021_モデル構築", error_code=None, result=None, id= task_id)
+        create_or_update_job_task(job_id, progress_percent="20", preprocess_type="E021_モデル構築", error_code=None, result=None, id= task_id)
         create_or_update_job(job_id , "20")
         train_df, test_df = split_data(learning_data, params)
         
         progress(0.3, desc="Training model...")
         model_name = str(uuid.uuid4())
-        create_or_update_job_task(job_id, progress_percent="30%", preprocess_type="E021_モデル構築", error_code=None, result=None, id= task_id)
+        create_or_update_job_task(job_id, progress_percent="30", preprocess_type="E021_モデル構築", error_code=None, result=None, id= task_id)
         create_or_update_job(job_id , "30")
         models, oof_pred, feature_importances_dict_train, model_zip_file_path = train_lgb_with_optuna(train_df, params, progress, citycode_value, targetyear_value, output_path, model_name)
         
         progress(0.8, desc="Evaluating model...")
-        create_or_update_job_task(job_id, progress_percent="80%", preprocess_type="E021_モデル構築", error_code=None, result=None, id= task_id)
+        create_or_update_job_task(job_id, progress_percent="80", preprocess_type="E021_モデル構築", error_code=None, result=None, id= task_id)
         create_or_update_job(job_id , "80")
         pred, score_dict, feature_importances_dict_test, feature_importance_plot = evaluate_models_on_test(test_df, models, params)
         
         progress(0.9, desc="Saving results...")
-        create_or_update_job_task(job_id, progress_percent="90%", preprocess_type="E021_モデル構築", error_code=None, result=None, id= task_id)
+        create_or_update_job_task(job_id, progress_percent="90", preprocess_type="E021_モデル構築", error_code=None, result=None, id= task_id)
         create_or_update_job(job_id , "90")
         if citycode_value is not None:
             output_file = f'{output_path}/data/{citycode_value}/E021/outputs/D902.csv'
@@ -794,7 +794,7 @@ def train_and_evaluate(job_id, input_file, output_path, explanatory_variables, t
         data_zip_file_path = save_metrics_and_importances(score_dict, feature_importances_dict_train, citycode_value, targetyear_value, output_path)
         # data_zip_file_path = f'./data/{citycode_value}/E021/outputs/data_files.zip'
         progress(0.95, desc="Print results...")
-        create_or_update_job_task(job_id, progress_percent="95%", preprocess_type="E021_モデル構築", error_code=None, result=None, id= task_id)
+        create_or_update_job_task(job_id, progress_percent="95", preprocess_type="E021_モデル構築", error_code=None, result=None, id= task_id)
         create_or_update_job(job_id , "95")
         # Create a string with the evaluation results
         result_str = (
@@ -824,7 +824,7 @@ def train_and_evaluate(job_id, input_file, output_path, explanatory_variables, t
         # Update progress to complete
         progress(1.0, desc="Completed!")
 
-        create_or_update_job_task(job_id, progress_percent="100%", preprocess_type="E021_モデル構築", error_code=None, result=json.dumps(result), id= task_id, is_finish=True)
+        create_or_update_job_task(job_id, progress_percent="100", preprocess_type="E021_モデル構築", error_code=None, result=json.dumps(result), id= task_id, is_finish=True)
         create_or_update_job(job_id , "complete")
         create_job_results(job_id, model_name)
 
