@@ -1,14 +1,20 @@
-import { count } from "drizzle-orm";
+import { count, eq } from "drizzle-orm";
 import { data_set_detail_areas, type SelectDataSetDetailArea } from "../schema";
 import { db } from "../utils/db";
 import { type IpcMainListener } from ".";
 
+export type SelectAreasWithPaginationReturnType = ReturnType<
+  typeof selectAreasWithPagination
+>;
+
 export const selectAreasWithPagination = (async (
   _: unknown,
   {
+    id,
     page,
     limitPerPage,
   }: {
+    id: SelectDataSetDetailArea["id"];
     page: number;
     limitPerPage: number;
   },
@@ -26,6 +32,7 @@ export const selectAreasWithPagination = (async (
   const items = await db
     .select()
     .from(data_set_detail_areas)
+    .where(eq(data_set_detail_areas.id, id))
     .limit(limitPerPage)
     .offset(offset);
 

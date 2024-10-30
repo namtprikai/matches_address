@@ -1,4 +1,4 @@
-import { count } from "drizzle-orm";
+import { count, eq } from "drizzle-orm";
 import {
   data_set_detail_buildings,
   type SelectDataSetDetailBuilding,
@@ -6,12 +6,18 @@ import {
 import { db } from "../utils/db";
 import { type IpcMainListener } from ".";
 
+export type SelectBuildingsWithPaginationReturnType = ReturnType<
+  typeof selectBuildingsWithPagination
+>;
+
 export const selectBuildingsWithPagination = (async (
   _: unknown,
   {
+    id,
     page,
     limitPerPage,
   }: {
+    id: SelectDataSetDetailBuilding["id"];
     page: number;
     limitPerPage: number;
   },
@@ -29,6 +35,7 @@ export const selectBuildingsWithPagination = (async (
   const items = await db
     .select()
     .from(data_set_detail_buildings)
+    .where(eq(data_set_detail_buildings.id, id))
     .limit(limitPerPage)
     .offset(offset);
 
