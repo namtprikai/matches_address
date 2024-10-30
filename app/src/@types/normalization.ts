@@ -21,7 +21,7 @@ export type NormalizationParameters = {
   };
   data: {
     residentRegistry: {
-      filePath?: string;
+      path?: string;
       columns?: {
         householdCode?: string;
         gender?: string;
@@ -31,7 +31,7 @@ export type NormalizationParameters = {
       };
     };
     waterStatus: {
-      filePath?: string;
+      path?: string;
       columns?: {
         waterSupplyNumber?: string;
         waterDisconnectionDate?: string;
@@ -41,7 +41,7 @@ export type NormalizationParameters = {
       };
     };
     waterUsage: {
-      filePath?: string;
+      path?: string;
       columns?: {
         waterSupplyNumber?: string;
         waterUsage?: string;
@@ -49,7 +49,7 @@ export type NormalizationParameters = {
       };
     };
     landRegistry: {
-      filePath?: string;
+      path?: string;
       columns?: {
         address?: string;
         structureName?: string;
@@ -57,7 +57,7 @@ export type NormalizationParameters = {
       };
     };
     vacantHouse: {
-      filePath?: string;
+      path?: string;
       columns?: {
         vacantHouseId?: string;
         address?: string;
@@ -66,7 +66,7 @@ export type NormalizationParameters = {
       };
     };
     geocoding: {
-      filePath?: string;
+      path?: string;
       columns?: {
         address?: string;
         latitude?: string;
@@ -74,13 +74,13 @@ export type NormalizationParameters = {
       };
     };
     buildingPolygon: {
-      filePath?: string;
+      path?: string;
       columns?: {
         buildingId?: string;
       };
     };
     urbanPlanning: {
-      filePath?: string;
+      path?: string;
     };
   };
 };

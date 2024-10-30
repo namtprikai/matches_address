@@ -144,7 +144,6 @@ export const DialogImportDataset = ({
 
   const handleClick = (): void => {
     if (selectedDataSet !== null) {
-      // const dataset = datasets[selectedDatasetIndex];
       onSelected?.(selectedDataSet);
       setIsDialogOpen(false);
     }
@@ -262,7 +261,7 @@ export const DialogImportDataset = ({
             {selectedTab === 1 && (
               <div className={styles.uploadWrap}>
                 <FileUploader
-                  onChange={() => {
+                  onChange={(data) => {
                     return;
                   }}
                   value={null}
