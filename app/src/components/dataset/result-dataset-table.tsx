@@ -45,7 +45,9 @@ import { DialogContent } from "../ui/dialog-content";
 import { DialogActions } from "../ui/dialog-actions";
 import { DialogSurface } from "../ui/dialog-surface";
 import { downloadObjectsAsCSV } from "../../utils/download-objects-as-csv";
-import { useFetchDataSetFile } from "../../hooks/use-fetch-data-set-file";
+import { useFetchResultDataSetsWithPagination } from "../../hooks/use-fetch-result-data-sets-with-pagination";
+import { usePagenation } from "../../hooks/use-pagenation";
+import { Pagenation } from "../ui/pagenation";
 import { DeleteRowDialog } from "./delete-row-dialog";
 import { EditNameDialog } from "./edit-name-dialog";
 import { DataPreviewDialog } from "./data-preview-dialog";
@@ -72,13 +74,16 @@ const useStyles = makeStyles({
       textDecoration: "none",
     },
   },
+  dataPreviewTableContainer: {
+    marginTop: tokens.spacingVerticalS,
+  },
   radioGroup: {
     marginTop: tokens.spacingVerticalM,
     marginLeft: "-8px",
   },
 });
 
-type Unit = "building" | "area";
+export type ResultDataSetUnit = "building" | "area";
 
 type Props = {
   onSelectionChange: Dispatch<SetStateAction<SelectDataSetResult["id"][]>>;
@@ -200,8 +205,15 @@ function Row({
 }: RowProps): JSX.Element {
   const styles = useStyles();
   const dataPreviewDialogState = useDialogState(false);
-  const [selectedUnit, setSelectedUnit] = useState<Unit>("building");
-  const { data } = useFetchDataSetFile({ type: selectedUnit, id: item.id });
+  const [selectedUnit, setSelectedUnit] =
+    useState<ResultDataSetUnit>("building");
+  const pagination = usePagenation(100);
+  const { data } = useFetchResultDataSetsWithPagination({
+    dataSetResultId: item.id,
+    type: selectedUnit,
+    page: pagination.page,
+    limitPerPage: pagination.limitPerPage,
+  });
 
   const handleDownload = async (): Promise<void> => {
     switch (selectedUnit) {
@@ -266,7 +278,14 @@ function Row({
             title="データのプレビュー"
           />
           <DataPreviewDialog
-            content={<DataPreviewTable data={data} />}
+            content={
+              <div>
+                <Pagenation {...pagination} />
+                <div className={styles.dataPreviewTableContainer}>
+                  <DataPreviewTable data={data} />
+                </div>
+              </div>
+            }
             datasetName={item.title}
             dialogState={dataPreviewDialogState}
             hideTrigger
@@ -310,7 +329,7 @@ function SelectUnitDialog({
 }: {
   title: string;
   buttonText: string;
-  onChange: (unit: Unit) => void;
+  onChange: (unit: ResultDataSetUnit) => void;
   onSubmit: () => void;
   dialogTriggerChildren: ReactElement;
 }): JSX.Element {
