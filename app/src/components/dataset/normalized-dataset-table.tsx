@@ -28,7 +28,6 @@ import {
   type MouseEvent,
   useState,
 } from "react";
-import { type KeyedMutator } from "swr";
 import { Button } from "../ui/button";
 import { type SelectNormalizedDataSet } from "../../schema";
 import { useFetchNormalizedDatasets } from "../../hooks/use-fetch-normalized-datasets";
@@ -103,12 +102,12 @@ export function NormalizedDataSetTable({
   );
 
   const rows = getRows((row) => {
-    const selected = isRowSelected(row.item.id);
+    const selected = isRowSelected(row.rowId);
 
     return {
       ...row,
       onClick: (e: MouseEvent) => {
-        toggleRow(e, row.item.id);
+        toggleRow(e, row.rowId);
         onSelectionChange((prev) =>
           selected
             ? prev.filter((id) => id !== row.item.id)
@@ -125,6 +124,19 @@ export function NormalizedDataSetTable({
     onSelectionChange(() =>
       allRowsSelected ? [] : data?.map((dataset) => dataset.id) || [],
     );
+  };
+
+  const handleDelete = (id: SelectNormalizedDataSet["id"]): void => {
+    window.ipcRenderer
+      .invoke("deleteNormalizedDataset", {
+        id,
+      })
+      .then(() => {
+        void mutate();
+        setSelectedRows(new Set());
+        onSelectionChange([]);
+      })
+      .catch(console.error);
   };
 
   return (
@@ -148,8 +160,7 @@ export function NormalizedDataSetTable({
           <Row
             {...row}
             key={row.item.id}
-            mutate={mutate}
-            onSelectionChange={onSelectionChange}
+            onDelete={() => handleDelete(row.item.id)}
           />
         ))}
       </TableBody>
@@ -158,21 +169,19 @@ export function NormalizedDataSetTable({
 }
 
 interface RowProps {
-  onClick: (e: MouseEvent) => void;
+  item: SelectNormalizedDataSet;
   selected: boolean;
   appearance: "brand" | "none";
-  item: SelectNormalizedDataSet;
-  mutate: KeyedMutator<SelectNormalizedDataSet[]>;
-  onSelectionChange: Props["onSelectionChange"];
+  onClick: (e: MouseEvent) => void;
+  onDelete: () => void;
 }
 
 function Row({
   item,
   selected,
-  onClick,
   appearance,
-  mutate,
-  onSelectionChange,
+  onClick,
+  onDelete,
 }: RowProps): JSX.Element {
   const styles = useStyles();
   const dataPreviewDialogState = useDialogState(false);
@@ -194,20 +203,6 @@ function Row({
     }
   };
 
-  const handleDelete = async (): Promise<void> => {
-    await window.ipcRenderer
-      .invoke("deleteNormalizedDataset", {
-        id: item.id,
-      })
-      .then(() => {
-        void mutate();
-        onSelectionChange((prev) =>
-          prev.filter((selectedId) => selectedId !== item.id),
-        );
-      })
-      .catch(console.error);
-  };
-
   return (
     <TableRow
       key={item.id}
@@ -224,9 +219,7 @@ function Row({
           content={<DataPreviewTable data={data} />}
           datasetName={item.file_name}
           dialogState={dataPreviewDialogState}
-          onDelete={async () => {
-            await handleDelete();
-          }}
+          onDelete={onDelete}
           onDownload={async () => {
             await handleDownload();
           }}
@@ -243,13 +236,7 @@ function Row({
             void handleDownload();
           }}
         />
-        <RowMenu
-          item={item}
-          mutate={mutate}
-          onDelete={async () => {
-            await handleDelete();
-          }}
-        />
+        <RowMenu item={item} onDelete={onDelete} />
       </TableCell>
     </TableRow>
   );
@@ -257,15 +244,14 @@ function Row({
 
 function RowMenu({
   item,
-  mutate,
   onDelete,
 }: {
   item: SelectNormalizedDataSet;
-  mutate: KeyedMutator<SelectNormalizedDataSet[]>;
   onDelete: () => void;
 }): JSX.Element {
   const editNameDialogState = useDialogState(false);
   const deleteDialogState = useDialogState(false);
+  const { mutate } = useFetchNormalizedDatasets();
 
   const handleEditName = async (
     newFileName: SelectNormalizedDataSet["file_name"],

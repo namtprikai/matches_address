@@ -34,7 +34,6 @@ import {
   useState,
   type ReactElement,
 } from "react";
-import { type KeyedMutator } from "swr";
 import { Button } from "../ui/button";
 import { useFetchDataSetResults } from "../../hooks/use-fetch-data-set-results";
 import { type SelectDataSetResult } from "../../schema";
@@ -118,12 +117,12 @@ export function ResultDataSetTable({ onSelectionChange }: Props): JSX.Element {
   );
 
   const rows = getRows((row) => {
-    const selected = isRowSelected(row.item.id);
+    const selected = isRowSelected(row.rowId);
 
     return {
       ...row,
       onClick: (e: MouseEvent) => {
-        toggleRow(e, row.item.id);
+        toggleRow(e, row.rowId);
         onSelectionChange((prev) =>
           selected
             ? prev.filter((id) => id !== row.item.id)
@@ -140,6 +139,19 @@ export function ResultDataSetTable({ onSelectionChange }: Props): JSX.Element {
     onSelectionChange(() =>
       allRowsSelected ? [] : data?.map((dataset) => dataset.id) || [],
     );
+  };
+
+  const handleDelete = (id: SelectDataSetResult["id"]): void => {
+    window.ipcRenderer
+      .invoke("deleteDataSetResult", {
+        id,
+      })
+      .then(() => {
+        void mutate();
+        setSelectedRows(new Set());
+        onSelectionChange([]);
+      })
+      .catch(console.error);
   };
 
   return (
@@ -163,8 +175,7 @@ export function ResultDataSetTable({ onSelectionChange }: Props): JSX.Element {
           <Row
             {...row}
             key={row.item.id}
-            mutate={mutate}
-            onSelectionChange={onSelectionChange}
+            onDelete={() => handleDelete(row.item.id)}
           />
         ))}
       </TableBody>
@@ -173,21 +184,19 @@ export function ResultDataSetTable({ onSelectionChange }: Props): JSX.Element {
 }
 
 interface RowProps {
-  onClick: (e: MouseEvent) => void;
+  item: SelectDataSetResult;
   selected: boolean;
   appearance: "brand" | "none";
-  item: SelectDataSetResult;
-  mutate: KeyedMutator<SelectDataSetResult[]>;
-  onSelectionChange: Props["onSelectionChange"];
+  onClick: (e: MouseEvent) => void;
+  onDelete: () => void;
 }
 
 function Row({
   item,
   selected,
-  onClick,
   appearance,
-  mutate,
-  onSelectionChange,
+  onClick,
+  onDelete,
 }: RowProps): JSX.Element {
   const styles = useStyles();
   const dataPreviewDialogState = useDialogState(false);
@@ -226,16 +235,6 @@ function Row({
     }
   };
 
-  const handleDelete = async (): Promise<void> => {
-    await window.ipcRenderer.invoke("deleteDataSetResult", {
-      id: item.id,
-    });
-    void mutate();
-    onSelectionChange((prev) =>
-      prev.filter((selectedId) => selectedId !== item.id),
-    );
-  };
-
   return (
     <>
       <TableRow
@@ -271,9 +270,7 @@ function Row({
             datasetName={item.title}
             dialogState={dataPreviewDialogState}
             hideTrigger
-            onDelete={async () => {
-              await handleDelete();
-            }}
+            onDelete={onDelete}
             onDownload={async () => {
               await handleDownload();
             }}
@@ -297,13 +294,7 @@ function Row({
             }}
             title="データのダウンロード"
           />
-          <RowMenu
-            item={item}
-            mutate={mutate}
-            onDelete={async () => {
-              await handleDelete();
-            }}
-          />
+          <RowMenu item={item} onDelete={onDelete} />
         </TableCell>
       </TableRow>
     </>
@@ -378,15 +369,14 @@ function SelectUnitDialog({
 
 function RowMenu({
   item,
-  mutate,
   onDelete,
 }: {
   item: SelectDataSetResult;
-  mutate: KeyedMutator<SelectDataSetResult[]>;
   onDelete: () => void;
 }): JSX.Element {
   const editNameDialogState = useDialogState(false);
   const deleteDialogState = useDialogState(false);
+  const { mutate } = useFetchDataSetResults();
 
   const handleEditName = async (
     newTitle: SelectDataSetResult["title"],
