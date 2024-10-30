@@ -244,7 +244,9 @@ function Row({
         <RowMenu
           item={item}
           mutate={mutate}
-          onSelectionChange={onSelectionChange}
+          onDelete={async () => {
+            await handleDelete();
+          }}
         />
       </TableCell>
     </TableRow>
@@ -254,11 +256,11 @@ function Row({
 function RowMenu({
   item,
   mutate,
-  onSelectionChange,
+  onDelete,
 }: {
   item: SelectRawDataSet;
   mutate: KeyedMutator<SelectRawDataSet[]>;
-  onSelectionChange: Props["onSelectionChange"];
+  onDelete: () => void;
 }): JSX.Element {
   const editNameDialogState = useDialogState(false);
   const deleteDialogState = useDialogState(false);
@@ -284,16 +286,6 @@ function RowMenu({
       fileName: fullFileName,
     });
     void mutate();
-  };
-
-  const handleDelete = async (): Promise<void> => {
-    await window.ipcRenderer.invoke("deleteRawDataset", {
-      id: item.id,
-    });
-    void mutate();
-    onSelectionChange((prev) =>
-      prev.filter((selectedId) => selectedId !== item.id),
-    );
   };
 
   return (
@@ -334,7 +326,7 @@ function RowMenu({
       <DeleteRowDialog
         dialogState={deleteDialogState}
         fileName={item.file_name}
-        onDelete={() => handleDelete()}
+        onDelete={onDelete}
       />
     </>
   );

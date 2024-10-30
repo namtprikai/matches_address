@@ -300,7 +300,9 @@ function Row({
           <RowMenu
             item={item}
             mutate={mutate}
-            onSelectionChange={onSelectionChange}
+            onDelete={async () => {
+              await handleDelete();
+            }}
           />
         </TableCell>
       </TableRow>
@@ -377,11 +379,11 @@ function SelectUnitDialog({
 function RowMenu({
   item,
   mutate,
-  onSelectionChange,
+  onDelete,
 }: {
   item: SelectDataSetResult;
   mutate: KeyedMutator<SelectDataSetResult[]>;
-  onSelectionChange: Props["onSelectionChange"];
+  onDelete: () => void;
 }): JSX.Element {
   const editNameDialogState = useDialogState(false);
   const deleteDialogState = useDialogState(false);
@@ -394,16 +396,6 @@ function RowMenu({
       title: newTitle,
     });
     void mutate();
-  };
-
-  const handleDelete = async (): Promise<void> => {
-    await window.ipcRenderer.invoke("deleteDataSetResult", {
-      id: item.id,
-    });
-    void mutate();
-    onSelectionChange((prev) =>
-      prev.filter((selectedId) => selectedId !== item.id),
-    );
   };
 
   return (
@@ -444,7 +436,7 @@ function RowMenu({
       <DeleteRowDialog
         dialogState={deleteDialogState}
         fileName={item.title || ""}
-        onDelete={() => handleDelete()}
+        onDelete={onDelete}
       />
     </>
   );
