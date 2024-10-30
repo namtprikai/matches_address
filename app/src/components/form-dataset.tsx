@@ -161,7 +161,7 @@ export const FormDataset = <
 }: {
   value: {
     columns?: COLUMN_TYPE;
-    filePath?: string;
+    path?: string;
   };
   name: Path<FORM_TYPE>;
   dataSetName: string;
@@ -190,7 +190,7 @@ export const FormDataset = <
             if (onChange) {
               onChange({
                 ...value,
-                filePath: undefined,
+                path: undefined,
               });
             }
           }}
@@ -262,7 +262,7 @@ export const FormDataset = <
           if (onChange) {
             onChange({
               ...value,
-              filePath: data?.file_path,
+              path: data?.file_path,
             });
           }
         }}

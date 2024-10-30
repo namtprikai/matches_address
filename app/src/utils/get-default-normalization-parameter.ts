@@ -19,7 +19,7 @@ export const getDefaultNormalizationParameter = (): NormalizationParameters => {
     },
     data: {
       residentRegistry: {
-        filePath: undefined,
+        path: undefined,
         columns: {
           householdCode: undefined,
           address: undefined,
@@ -29,7 +29,7 @@ export const getDefaultNormalizationParameter = (): NormalizationParameters => {
         },
       },
       waterStatus: {
-        filePath: undefined,
+        path: undefined,
         columns: {
           waterSupplyNumber: undefined,
           waterDisconnectionDate: undefined,
@@ -39,7 +39,7 @@ export const getDefaultNormalizationParameter = (): NormalizationParameters => {
         },
       },
       waterUsage: {
-        filePath: undefined,
+        path: undefined,
         columns: {
           waterSupplyNumber: undefined,
           waterUsage: undefined,
@@ -47,7 +47,7 @@ export const getDefaultNormalizationParameter = (): NormalizationParameters => {
         },
       },
       landRegistry: {
-        filePath: undefined,
+        path: undefined,
         columns: {
           address: undefined,
           structureName: undefined,
@@ -55,7 +55,7 @@ export const getDefaultNormalizationParameter = (): NormalizationParameters => {
         },
       },
       vacantHouse: {
-        filePath: undefined,
+        path: undefined,
         columns: {
           vacantHouseId: undefined,
           address: undefined,
@@ -64,7 +64,7 @@ export const getDefaultNormalizationParameter = (): NormalizationParameters => {
         },
       },
       geocoding: {
-        filePath: undefined,
+        path: undefined,
         columns: {
           address: undefined,
           latitude: undefined,
@@ -72,13 +72,13 @@ export const getDefaultNormalizationParameter = (): NormalizationParameters => {
         },
       },
       buildingPolygon: {
-        filePath: undefined,
+        path: undefined,
         columns: {
           buildingId: undefined,
         },
       },
       urbanPlanning: {
-        filePath: undefined,
+        path: undefined,
       },
     },
   };
