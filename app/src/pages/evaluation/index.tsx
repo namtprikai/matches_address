@@ -4,8 +4,22 @@ import {
   Subtitle2,
   tokens,
   typographyStyles,
+  Dialog,
+  DialogTrigger,
 } from "@fluentui/react-components";
-import { DeleteRegular, AddRegular } from "@fluentui/react-icons";
+import {
+  DeleteRegular,
+  AddRegular,
+  Dismiss24Regular,
+} from "@fluentui/react-icons";
+import { useNavigate } from "react-router-dom";
+import { useRef, useState } from "react";
+import { DialogSurface } from "../../components/ui/dialog-surface";
+import { DialogBody } from "../../components/ui/dialog-body";
+import { DialogTitle } from "../../components/ui/dialog-title";
+import { DialogContent } from "../../components/ui/dialog-content";
+import { DialogActions } from "../../components/ui/dialog-actions";
+import { useDialogState } from "../../hooks/use-dialog-state";
 import { Button } from "../../components/ui/button";
 
 const useStyles = makeStyles({
@@ -62,10 +76,40 @@ const useStyles = makeStyles({
     width: "130px",
   },
   text: typographyStyles.caption1Strong,
+  dialogSurface: {
+    width: "449px",
+  },
+  fileName: {
+    color: "#6264A7",
+    textDecoration: "underline",
+  },
 });
 
 export const JobEvaluation = (): JSX.Element => {
   const styles = useStyles();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const { isOpen, setIsOpen } = useDialogState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const navigate = useNavigate();
+
+  const handleUploadButtonClick = (): void => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ): void => {
+    if (event.target.files && event.target.files.length > 0) {
+      setSelectedFile(event.target.files[0]);
+    }
+  };
+
+  const handleRemoveFile = (): void => {
+    setSelectedFile(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
 
   return (
     <div className={styles.root}>
@@ -75,7 +119,7 @@ export const JobEvaluation = (): JSX.Element => {
         <Card>
           <Subtitle2>① ファイルをインポート</Subtitle2>
           <div className={styles.file}>
-            <a href="">sample.csv</a>
+            <span className={styles.fileName}>sample.csv</span>
             <span className={styles.deleteIconWrapper}>
               <DeleteRegular fontSize={16} />
             </span>
@@ -85,15 +129,31 @@ export const JobEvaluation = (): JSX.Element => {
         <Card>
           <Subtitle2>② 分析対象のデータを選択</Subtitle2>
           <div className={styles.file}>
-            <a href="">sample.csv</a>
-            <span className={styles.deleteIconWrapper}>
-              <DeleteRegular fontSize={16} />
-            </span>
+            {selectedFile ? (
+              <>
+                <span className={styles.fileName}>{selectedFile.name}</span>
+                <span
+                  className={styles.deleteIconWrapper}
+                  onClick={handleRemoveFile}
+                >
+                  <DeleteRegular fontSize={16} />
+                </span>
+              </>
+            ) : (
+              <div>ファイルが選択されていません</div>
+            )}
           </div>
+          <input
+            ref={fileInputRef}
+            onChange={handleFileChange}
+            style={{ display: "none" }}
+            type="file"
+          />
           <Button
             appearance="outline"
             className={styles.button}
             icon={<AddRegular />}
+            onClick={handleUploadButtonClick}
           >
             <span className={styles.text}>データを追加</span>
           </Button>
@@ -101,7 +161,63 @@ export const JobEvaluation = (): JSX.Element => {
       </div>
 
       <div className={styles.footer}>
-        <Button className={styles.restartButton}>分析開始</Button>
+        <Dialog
+          onOpenChange={(event, data) => setIsOpen(data.open)}
+          open={isOpen}
+        >
+          <DialogTrigger disableButtonEnhancement>
+            <Button
+              className={styles.restartButton}
+              disabled={!selectedFile}
+              onClick={() => setIsOpen(true)}
+            >
+              分析開始
+            </Button>
+          </DialogTrigger>
+          <DialogSurface className={styles.dialogSurface}>
+            <DialogBody>
+              <DialogTitle
+                action={
+                  <DialogTrigger action="close">
+                    <Button
+                      appearance="subtle"
+                      aria-label="close"
+                      icon={
+                        <Dismiss24Regular
+                          color={tokens.colorNeutralForeground1}
+                          strokeWidth={2}
+                        />
+                      }
+                      onClick={() => setIsOpen(false)}
+                    />
+                  </DialogTrigger>
+                }
+              >
+                分析を開始しました
+              </DialogTitle>
+              <DialogContent>
+                <div>
+                  処理が完了するまで一定の時間がかかります
+                  ステータスは「非同期処理一覧画面」で確認できます。
+                </div>
+              </DialogContent>
+              <DialogActions>
+                <Button
+                  appearance="primary"
+                  form="create-workbook"
+                  onClick={() => {
+                    setIsOpen(false);
+                    navigate("/job");
+                  }}
+                  size="medium"
+                  type="submit"
+                >
+                  非同期処理一覧画面へ
+                </Button>
+              </DialogActions>
+            </DialogBody>
+          </DialogSurface>
+        </Dialog>
       </div>
     </div>
   );
