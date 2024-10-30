@@ -223,7 +223,10 @@ export const FormDataset = <
           ] + "カラム"
         }
       >
-        <Dropdown className={styles.dropdown}>
+        <Dropdown
+          className={styles.dropdown}
+          disabled={dataSetColumns === undefined || dataSetColumns.length === 0}
+        >
           {dataSetColumnsToOptions}
         </Dropdown>
       </Field>
@@ -244,6 +247,7 @@ export const FormDataset = <
           <SelectorView />
         </div>
         <div
+          // FormDatasetが横長の場合のスタイルだしわけ
           className={mergeClasses(
             appearance === "large" && styles.dropdownContainer,
           )}
