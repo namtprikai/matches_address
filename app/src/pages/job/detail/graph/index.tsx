@@ -14,6 +14,7 @@ import {
   PolarRadiusAxis,
   Tooltip,
 } from "recharts";
+import { useState } from "react";
 import { ArrowLeftRegular } from "@fluentui/react-icons";
 import { DialogSaveWithName } from "../../../../components/dialog-save-with-name";
 
@@ -81,6 +82,7 @@ const useStyles = makeStyles({
     backgroundColor: "#fff",
     padding: tokens.spacingVerticalXXL,
     width: "100%",
+    height: "fit-content",
   },
   columnTitle: typographyStyles.subtitle2,
   chartContainer: {
@@ -165,6 +167,13 @@ const useStyles = makeStyles({
 export function JobGraph(): JSX.Element {
   const styles = useStyles();
   const navigate = useNavigate();
+  const [radarColor, setRadarColor] = useState("#8884d8");
+
+  const toggleRadarColor = (): void => {
+    setRadarColor((prevColor) =>
+      prevColor === "#8884d8" ? "#C4314B" : "#8884d8",
+    );
+  };
 
   const handleBack = (): void => {
     navigate(-1);
@@ -221,6 +230,10 @@ export function JobGraph(): JSX.Element {
           <div className={styles.buttonWrapper}>
             <DialogSaveWithName />
             <Button className={styles.button}>ダウンロード</Button>
+            {/* TODO: 開発用 後で消す */}
+            <Button className={styles.button} onClick={toggleRadarColor}>
+              色を変更
+            </Button>
           </div>
         </div>
 
@@ -245,16 +258,18 @@ export function JobGraph(): JSX.Element {
               <PolarRadiusAxis angle={90} domain={[0, 100]} />
               <Radar
                 dataKey="A"
-                fill="#8884d8"
+                fill={radarColor}
                 fillOpacity={0.6}
                 name="指標"
-                stroke="#8884d8"
+                stroke={radarColor}
               />
               <Tooltip />
             </RadarChart>
-            <div className={styles.detail}>
-              学習データ量が少なすぎます。正答率を上げるためには、〇〇以上のデータに修正して再実行をしてください。
-            </div>
+            {radarColor !== "#8884d8" && (
+              <div className={styles.detail}>
+                学習データ量が少なすぎます。正答率を上げるためには、〇〇以上のデータに修正して再実行をしてください。
+              </div>
+            )}
           </div>
           {/* 棒グラフ */}
           <div className={styles.columnContainer}>
