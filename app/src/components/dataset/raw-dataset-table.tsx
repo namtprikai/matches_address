@@ -276,23 +276,24 @@ function RowMenu({
   })();
 
   const handleEditName = async (
-    id: SelectRawDataSet["id"],
     newFileName: SelectRawDataSet["file_name"],
   ): Promise<void> => {
     const fullFileName = newFileName + (ext ? `.${ext}` : "");
     await window.ipcRenderer.invoke("updateRawDataset", {
-      id,
+      id: item.id,
       fileName: fullFileName,
     });
     void mutate();
   };
 
-  const handleDelete = async (id: SelectRawDataSet["id"]): Promise<void> => {
+  const handleDelete = async (): Promise<void> => {
     await window.ipcRenderer.invoke("deleteRawDataset", {
-      id,
+      id: item.id,
     });
     void mutate();
-    onSelectionChange((prev) => prev.filter((selectedId) => selectedId !== id));
+    onSelectionChange((prev) =>
+      prev.filter((selectedId) => selectedId !== item.id),
+    );
   };
 
   return (
@@ -328,12 +329,12 @@ function RowMenu({
       <EditNameDialog
         dialogState={editNameDialogState}
         initialName={name}
-        onSubmit={(newFileName) => handleEditName(item.id, newFileName)}
+        onSubmit={(newFileName) => handleEditName(newFileName)}
       />
       <DeleteRowDialog
         dialogState={deleteDialogState}
         fileName={item.file_name}
-        onDelete={() => handleDelete(item.id)}
+        onDelete={() => handleDelete()}
       />
     </>
   );
