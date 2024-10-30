@@ -207,7 +207,7 @@ function Row({
   const dataPreviewDialogState = useDialogState(false);
   const [selectedUnit, setSelectedUnit] =
     useState<ResultDataSetUnit>("building");
-  const pagination = usePagenation(100);
+  const pagination = usePagenation(50);
   const { data } = useFetchResultDataSetsWithPagination({
     dataSetResultId: item.id,
     type: selectedUnit,
