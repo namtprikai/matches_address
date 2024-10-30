@@ -29,6 +29,7 @@ import {
   useDialogState,
 } from "../../hooks/use-dialog-state";
 import { DeleteRowDialog } from "./delete-row-dialog";
+import { DataPreviewTable } from "./data-preview-table";
 
 const useStyles = makeStyles({
   dialogTitle: {
@@ -98,6 +99,7 @@ export function DataPreviewDialog({
   const styles = useStyles();
   const { isOpen, setIsOpen } = dialogState;
   const deleteDialogState = useDialogState(false);
+  const { data } = useFetchDataSetFile({ type, id });
 
   const handleOpenDeleteDialog = (): void => {
     deleteDialogState.setIsOpen(true);
@@ -152,7 +154,7 @@ export function DataPreviewDialog({
           </DialogTitle>
           <DialogBody>
             <DialogContent className={styles.content}>
-              <DataPreview id={id} type={type} />
+              <DataPreviewTable data={data} />
             </DialogContent>
           </DialogBody>
         </DialogSurface>
@@ -163,41 +165,5 @@ export function DataPreviewDialog({
         onDelete={onDelete}
       />
     </>
-  );
-}
-
-interface DataPreviewProps {
-  type: DataSetType;
-  id: number;
-}
-
-function DataPreview({ type, id }: DataPreviewProps): JSX.Element {
-  const styles = useStyles();
-  const { data } = useFetchDataSetFile({ type, id });
-  const headers = data && data.length > 0 ? Object.keys(data[0]) : [];
-
-  return (
-    <div className={styles.tableContainer}>
-      <Table aria-label="CSV Data Table" className={styles.table}>
-        <TableHeader className={styles.th}>
-          <TableRow>
-            {headers.map((header) => (
-              <TableHeaderCell key={header}>{header}</TableHeaderCell>
-            ))}
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {data?.map((row, rowIndex) => (
-            <TableRow key={rowIndex}>
-              {headers.map((header) => (
-                <TableCell key={`${rowIndex}-${header}`} className={styles.td}>
-                  {row[header]}
-                </TableCell>
-              ))}
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </div>
   );
 }
