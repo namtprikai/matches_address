@@ -34,7 +34,7 @@ import { useFetchNormalizedDatasets } from "../../hooks/use-fetch-normalized-dat
 import { formatDate } from "../../utils/format-date";
 import { useDialogState } from "../../hooks/use-dialog-state";
 import { downloadDataSetFile } from "../../utils/download-data-set-file";
-import { useFetchRawOrNormalizedDataSetFile } from "../../hooks/use-fetch-raw-data-set-file";
+import { useFetchRawOrNormalizedDataSetFile } from "../../hooks/use-fetch-raw-or-normalized-data-set-file";
 import { usePagination } from "../../hooks/use-pagination";
 import { Pagination } from "../ui/pagination";
 import { DataPreviewDialog } from "./data-preview-dialog";
