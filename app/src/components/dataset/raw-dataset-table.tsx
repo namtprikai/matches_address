@@ -34,7 +34,9 @@ import { useFetchRawDatasets } from "../../hooks/use-fetch-raw-datasets";
 import { formatDate } from "../../utils/format-date";
 import { useDialogState } from "../../hooks/use-dialog-state";
 import { downloadDataSetFile } from "../../utils/download-data-set-file";
-import { useFetchDataSetFile } from "../../hooks/use-fetch-data-set-file";
+import { usePagination } from "../../hooks/use-pagination";
+import { useFetchRawOrNormalizedDataSetFile } from "../../hooks/use-fetch-raw-data-set-file";
+import { Pagination } from "../ui/pagination";
 import { DataPreviewDialog } from "./data-preview-dialog";
 import { EditNameDialog } from "./edit-name-dialog";
 import { DeleteRowDialog } from "./delete-row-dialog";
@@ -60,6 +62,9 @@ const useStyles = makeStyles({
   },
   input: {
     width: "100%",
+  },
+  dataPreviewTableContainer: {
+    marginTop: tokens.spacingVerticalS,
   },
 });
 
@@ -183,7 +188,13 @@ function Row({
 }: RowProps): JSX.Element {
   const styles = useStyles();
   const dataPreviewDialogState = useDialogState(false);
-  const { data } = useFetchDataSetFile({ type: "raw", id: item.id });
+  const pagination = usePagination(50);
+  const { data } = useFetchRawOrNormalizedDataSetFile({
+    id: item.id,
+    type: "raw",
+    page: pagination.page,
+    limitPerPage: pagination.limitPerPage,
+  });
 
   const handleDownload = async (): Promise<void> => {
     try {
@@ -214,7 +225,14 @@ function Row({
       />
       <TableCell>
         <DataPreviewDialog
-          content={<DataPreviewTable data={data} />}
+          content={
+            <div>
+              <Pagination {...pagination} />
+              <div className={styles.dataPreviewTableContainer}>
+                <DataPreviewTable data={data} />
+              </div>
+            </div>
+          }
           datasetName={item.file_name}
           dialogState={dataPreviewDialogState}
           onDelete={onDelete}
