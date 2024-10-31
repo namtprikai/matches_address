@@ -1,12 +1,12 @@
 import { useCallback, useEffect, useState } from "react";
 import { type TableProps } from "../@types/charts";
 import { type FilterDataSetForTableArgs } from "../ipc-main-listeners/filter-data-set-for-table";
-import { usePagenation, type UsePagenationReturnType } from "./use-pagenation";
+import { usePagination, type UsePaginationReturnType } from "./use-pagination";
 
 type ReturnType = {
   tableProps: TableProps;
   refetch: () => Promise<void>;
-  pagenation: UsePagenationReturnType;
+  pagination: UsePaginationReturnType;
 };
 
 export const useFetchFilterDataSetForTable = (
@@ -17,18 +17,18 @@ export const useFetchFilterDataSetForTable = (
     data: [],
   });
 
-  const pagenation = usePagenation(100);
+  const pagination = usePagination(100);
 
   const fetchFilteredDataSetDetailForTable =
     useCallback(async (): Promise<void> => {
       // @ts-expect-error -- props.typeのunion discriminationがspread構文を利用すると効かないため関数そのものリファククタも含め検討
       const result = await window.ipcRenderer.invoke("filterDataSetForTable", {
         ...props,
-        limit: pagenation.limitPerPage,
-        offset: pagenation.limitPerPage * (pagenation.page - 1),
+        limit: pagination.limitPerPage,
+        offset: pagination.limitPerPage * (pagination.page - 1),
       });
       setTableProps(result);
-    }, [pagenation.limitPerPage, pagenation.page, props]);
+    }, [pagination.limitPerPage, pagination.page, props]);
 
   useEffect(() => {
     fetchFilteredDataSetDetailForTable().catch(console.error);
@@ -39,6 +39,6 @@ export const useFetchFilterDataSetForTable = (
     refetch: async () => {
       return;
     },
-    pagenation,
+    pagination,
   };
 };
