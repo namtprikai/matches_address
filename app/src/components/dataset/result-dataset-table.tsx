@@ -45,9 +45,13 @@ import { DialogContent } from "../ui/dialog-content";
 import { DialogActions } from "../ui/dialog-actions";
 import { DialogSurface } from "../ui/dialog-surface";
 import { downloadObjectsAsCSV } from "../../utils/download-objects-as-csv";
-import { useFetchResultDataSetsWithPagination } from "../../hooks/use-fetch-result-data-sets-with-pagination";
+import {
+  type ResultDataSetsResponse,
+  useFetchResultDataSetsWithPagination,
+} from "../../hooks/use-fetch-result-data-sets-with-pagination";
 import { usePagenation } from "../../hooks/use-pagenation";
 import { Pagenation } from "../ui/pagenation";
+import { ALL_DATASET_COLUMN_METADATA } from "../../config/column-metadata";
 import { DeleteRowDialog } from "./delete-row-dialog";
 import { EditNameDialog } from "./edit-name-dialog";
 import { DataPreviewDialog } from "./data-preview-dialog";
@@ -284,7 +288,7 @@ function Row({
               <div>
                 <Pagenation {...pagination} />
                 <div className={styles.dataPreviewTableContainer}>
-                  <DataPreviewTable data={data} />
+                  <DataPreviewTable data={parseResultDataSets(data)} />
                 </div>
               </div>
             }
@@ -451,4 +455,63 @@ function RowMenu({
       />
     </>
   );
+}
+
+/**
+ * 判定結果データのカラム名を日本語名に変換したり値に単位を付与したりする。`ALL_DATASET_COLUMN_METADATA`に含まれているキーのみ変換し含まれていない場合は除外する（`id`など）
+ * @param {any} data:ResultDataSetsResponse
+ * @returns {any}
+ */
+function parseResultDataSets(
+  data: ResultDataSetsResponse,
+): ResultDataSetsResponse {
+  if (!data) return data;
+
+  const keys = Object.keys(ALL_DATASET_COLUMN_METADATA);
+
+  const parsedData = data.map((row) => {
+    const newRow: NonNullable<ResultDataSetsResponse>[number] = {};
+
+    for (const enKey in row) {
+      if (!keys.includes(enKey)) continue;
+      type MetadataKey = keyof typeof ALL_DATASET_COLUMN_METADATA;
+      const {
+        label: jpKey,
+        type,
+        unit,
+      } = ALL_DATASET_COLUMN_METADATA[enKey as MetadataKey];
+      const value = row[enKey];
+      switch (type) {
+        case "integer":
+          newRow[jpKey] = `${value}${unit}`;
+          break;
+        case "text":
+          newRow[jpKey] = value;
+          break;
+        case "date":
+          newRow[jpKey] = value;
+          break;
+        case "float": {
+          if (typeof value === "string" || value === null) {
+            newRow[jpKey] = value;
+            break;
+          }
+          const integerPart = Math.floor(value);
+          newRow[jpKey] = `${integerPart}${unit}`;
+          break;
+        }
+        case "boolean":
+          newRow[jpKey] = value;
+          break;
+        default: {
+          const exhaustiveCheck: never = type;
+          throw new Error(`Unhandled type: ${exhaustiveCheck}`);
+        }
+      }
+    }
+
+    return newRow;
+  });
+
+  return parsedData;
 }
