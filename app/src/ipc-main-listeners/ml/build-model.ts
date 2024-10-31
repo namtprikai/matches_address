@@ -71,7 +71,7 @@ export const buildModel = (async (
 
     // childProcessに入れてバックグラウンド実行
     // ※pidはここで受け取れるはず
-    spawn(
+    const cp = spawn(
       binaryPath("E021"),
       [
         "--parameters",
@@ -87,6 +87,17 @@ export const buildModel = (async (
         detached: true,
       },
     );
+
+    cp.stdout.on("data", (data) => {
+      // eslint-disable-next-line no-console -- /** @todo for debug  */
+      console.log("stdout" + data);
+      resolve(data);
+    });
+    cp.stderr.on("data", (data) => {
+      // eslint-disable-next-line no-console -- /** @todo for debug  */
+      console.log("stderr" + data);
+      // reject(data);
+    });
 
     return true;
   } catch (error) {
