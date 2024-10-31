@@ -10,7 +10,7 @@ import {
 } from "@fluentui/react-components";
 import { useFetchFilterDataSetForTable } from "../../hooks/use-fetch-filtered-data-set-for-table";
 import { type FilterDataSetForTableArgs } from "../../ipc-main-listeners/filter-data-set-for-table";
-import { Pagenation } from "../ui/pagenation";
+import { Pagination } from "../ui/pagination";
 
 const useStyles = makeStyles({
   root: {
@@ -41,13 +41,13 @@ type TableViewProps = FilterDataSetForTableArgs;
 export const TableView = (
   props: Omit<TableViewProps, "limit" | "offset">,
 ): JSX.Element => {
-  const { tableProps, pagenation } = useFetchFilterDataSetForTable(props);
+  const { tableProps, pagination } = useFetchFilterDataSetForTable(props);
 
   const styles = useStyles();
 
   return (
     <div className={styles.root}>
-      <Pagenation {...pagenation} />
+      <Pagination {...pagination} />
       <div className={styles.tableContainer}>
         <Table className={styles.table}>
           <TableHeader className={styles.tableHeader}>
