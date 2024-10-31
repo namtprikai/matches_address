@@ -27,7 +27,7 @@ const useStyles = makeStyles({
     gap: tokens.spacingVerticalM,
     backgroundColor: tokens.colorNeutralBackground1,
     padding: tokens.spacingVerticalXXL,
-    maxWidth: "1382px",
+    maxWidth: "calc(100vw - 132px)",
   },
   heading: {
     fontSize: tokens.fontSizeBase500,
@@ -133,6 +133,16 @@ export function JobPreview(): JSX.Element {
       name: "空き家確率",
       className: useStyles().headerColumn,
       onRender: (item) => `${(item.vacantHouseProbability * 100).toFixed(2)}%`,
+    },
+    {
+      key: "address",
+      name: "アドレス",
+      className: useStyles().headerColumn,
+    },
+    {
+      key: "address",
+      name: "アドレス",
+      className: useStyles().headerColumn,
     },
     {
       key: "address",
