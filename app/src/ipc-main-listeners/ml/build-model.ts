@@ -71,7 +71,8 @@ export const buildModel = (async (
     const database_path = dbPath;
 
     // childProcessに入れてバックグラウンド実行
-    const cp = spawn(
+    // ※pidはここで受け取れるはず
+    spawn(
       binaryPath("E021"),
       [
         "--parameters",
