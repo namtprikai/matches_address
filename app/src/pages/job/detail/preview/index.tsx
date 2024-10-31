@@ -53,6 +53,9 @@ const useStyles = makeStyles({
     display: "flex",
     justifyContent: "flex-start",
   },
+  headerColumn: {
+    width: "150px",
+  },
 });
 
 // サンプルデータ
@@ -70,46 +73,6 @@ const data: PreviewData[] = [
     meterNumber: "210987",
     townArea: "渋谷2丁目",
     vacantHouseProbability: 0.5,
-  },
-];
-
-// カラム定義
-const columns: ColumnDefinition<PreviewData>[] = [
-  {
-    key: "address",
-    name: "住所",
-    style: { width: "150px" },
-  },
-  {
-    key: "waterNumber",
-    name: "水道番号",
-    style: { width: "150px" },
-  },
-  {
-    key: "meterNumber",
-    name: "メーター番号",
-    style: { width: "150px" },
-  },
-  {
-    key: "townArea",
-    name: "町丁目",
-    style: { width: "150px" },
-  },
-  {
-    key: "vacantHouseProbability",
-    name: "空き家確率",
-    style: { width: "150px" },
-    onRender: (item) => `${(item.vacantHouseProbability * 100).toFixed(2)}%`,
-  },
-  {
-    key: "address",
-    name: "アドレス",
-    style: { width: "150px" },
-  },
-  {
-    key: "address",
-    name: "アドレス",
-    style: { width: "150px" },
   },
 ];
 
@@ -142,6 +105,46 @@ export function JobPreview(): JSX.Element {
     (page - 1) * limitPerPage,
     page * limitPerPage,
   );
+
+  // カラム定義
+  const columns: ColumnDefinition<PreviewData>[] = [
+    {
+      key: "address",
+      name: "住所",
+      className: useStyles().headerColumn,
+    },
+    {
+      key: "waterNumber",
+      name: "水道番号",
+      className: useStyles().headerColumn,
+    },
+    {
+      key: "meterNumber",
+      name: "メーター番号",
+      className: useStyles().headerColumn,
+    },
+    {
+      key: "townArea",
+      name: "町丁目",
+      className: useStyles().headerColumn,
+    },
+    {
+      key: "vacantHouseProbability",
+      name: "空き家確率",
+      className: useStyles().headerColumn,
+      onRender: (item) => `${(item.vacantHouseProbability * 100).toFixed(2)}%`,
+    },
+    {
+      key: "address",
+      name: "アドレス",
+      className: useStyles().headerColumn,
+    },
+    {
+      key: "address",
+      name: "アドレス",
+      className: useStyles().headerColumn,
+    },
+  ];
 
   return (
     <div className={styles.root}>

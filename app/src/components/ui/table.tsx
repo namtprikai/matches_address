@@ -28,7 +28,7 @@ const useStyles = makeStyles({
 export interface ColumnDefinition<T> {
   key: keyof T;
   name: string;
-  style?: React.CSSProperties;
+  className?: string;
   onRender?: (item: T) => React.ReactNode;
 }
 
@@ -48,8 +48,7 @@ export function Table<T>({ columns, items }: TableProps<T>): JSX.Element {
           {columns.map((column) => (
             <TableHeaderCell
               key={String(column.key)}
-              className={mergeClasses(styles.tableHeaderCell)}
-              style={column.style}
+              className={mergeClasses(styles.tableHeaderCell, column.className)}
             >
               {column.name}
             </TableHeaderCell>
