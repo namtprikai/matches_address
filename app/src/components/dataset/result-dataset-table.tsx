@@ -467,14 +467,14 @@ function parseResultDataSets(
 ): ResultDataSetsResponse {
   if (!data) return data;
 
-  const keys = Object.keys(ALL_DATASET_COLUMN_METADATA);
+  const metadataKeys = Object.keys(ALL_DATASET_COLUMN_METADATA);
 
   const parsedData = data.map((row) => {
     const newRow: NonNullable<ResultDataSetsResponse>[number] = {};
 
     for (const enKey in row) {
       const value = row[enKey];
-      if (!keys.includes(enKey)) {
+      if (!metadataKeys.includes(enKey)) {
         newRow[enKey] = value;
         continue;
       }
