@@ -1,9 +1,9 @@
 import { spawn } from "child_process";
-import { type NormalizationParameters } from "../@types/normalization";
-import { getErrorMessage } from "../utils/get-error-message";
-import { getFilePathInAssets } from "../utils/get-file-path-in-assets";
-import { dbPath } from "../utils/db";
-import { binaryPath, type IpcMainListener } from ".";
+import { type NormalizationParameters } from "../../@types/normalization";
+import { getErrorMessage } from "../../utils/get-error-message";
+import { getFilePathInAssets } from "../../utils/get-file-path-in-assets";
+import { dbPath } from "../../utils/db";
+import { binaryPath, type IpcMainListener } from "..";
 
 export type ExecE001Args = NormalizationParameters;
 
