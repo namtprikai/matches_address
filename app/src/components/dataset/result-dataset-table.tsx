@@ -473,14 +473,17 @@ function parseResultDataSets(
     const newRow: NonNullable<ResultDataSetsResponse>[number] = {};
 
     for (const enKey in row) {
-      if (!keys.includes(enKey)) continue;
+      const value = row[enKey];
+      if (!keys.includes(enKey)) {
+        newRow[enKey] = value;
+        continue;
+      }
       type MetadataKey = keyof typeof ALL_DATASET_COLUMN_METADATA;
       const {
         label: jpKey,
         type,
         unit,
       } = ALL_DATASET_COLUMN_METADATA[enKey as MetadataKey];
-      const value = row[enKey];
       switch (type) {
         case "integer":
           newRow[jpKey] = `${value}${unit}`;
