@@ -15,8 +15,8 @@ type Response = Record<string, string>[] | undefined;
 const fetcher = async ([id, type, page, limitPerPage]: [
   Params["id"],
   Params["type"],
-  number,
-  number,
+  Params["page"],
+  Params["limitPerPage"],
   string,
 ]): Promise<Response> => {
   let dataSet: SelectRawDataSet | SelectNormalizedDataSet | undefined;
@@ -39,7 +39,7 @@ const fetcher = async ([id, type, page, limitPerPage]: [
     }
   }
 
-  if (!dataSet) return undefined;
+  if (!dataSet || !page || !limitPerPage) return undefined;
 
   const file = await window.ipcRenderer.invoke("readDatasetFile", {
     fileName: dataSet.file_path,
