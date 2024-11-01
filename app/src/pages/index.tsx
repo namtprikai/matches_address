@@ -60,10 +60,6 @@ const router = createHashRouter([
         element: <Dataset />,
       },
       {
-        path: "normalization",
-        element: <Normalization />,
-      },
-      {
         path: "debug",
         element: <Debug />,
       },
@@ -81,6 +77,10 @@ const router = createHashRouter([
       {
         path: "analysis/workbook/:id/edit",
         element: <EditWorkbook />,
+      },
+      {
+        path: "normalization",
+        element: <Normalization />,
       },
     ],
   },
