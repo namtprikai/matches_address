@@ -68,7 +68,7 @@ export function Normalization(): JSX.Element {
       </div>
       <div className={styles.footerActions}>
         <Button appearance="primary" onClick={execE001} size="medium">
-          実行
+          開始する
         </Button>
       </div>
     </div>
