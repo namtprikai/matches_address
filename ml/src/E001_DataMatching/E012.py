@@ -3,13 +3,17 @@
 * アップロードされた住所カラムに該当するすべての列の名寄せ（住所の正規化）をする機能
 """
 
+import copy
+import json
 import os
 import re
+import sys
 import unicodedata
 import argparse
 import chardet
-import gradio as gr
 import pandas as pd
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../')))
+from async_tasks.utils import *
 
 # 入力する各データのカラムを定義
 INPUT_COLUMNS = {
@@ -55,15 +59,15 @@ OUTPUT_COLUMNS = {
     "suido_status": {
         "suido_number": "水道番号",
         "usage_status": "開閉栓区分",
-        "suido_address": "設置場所",
+        "suido_status_address": "設置場所",
         "usage_start_date": "使用開始日",
         "usage_end_date": "使用中止日",
         "convert_suido_address": "正規化住所"
     },
     "suido_use": {
         "suido_number": "水道番号",
-        "meter_reading_date": "水道検針日",
-        "suido_usage": "水道使用量"
+        "meter_reading_date": "検針年月日",
+        "suido_usage": "使用水量",
     },
     "juki": {
         "setai_code": "世帯コード",
@@ -81,15 +85,15 @@ OUTPUT_COLUMNS = {
     },
     "akiya_result": {
         "akiya_result_ID": "ID",
-        "akiya_result__address": "住所",
-        "akiya_result_lat": "緯度",
-        "akiya_result_lon": "経度",
+        "akiya_result_address": "住所",
+        "akiya_result_lat": "経度",
+        "akiya_result_lon": "緯度",
         "convert_akiya_address": "正規化住所"
     },
     "geocoding": {
         "geocoding_address": "住所",
         "geocoding_lat": "lat",
-        "geocoding_lon": "lon",
+        "geocofing_lon": "long",
         "convert_geo_address": "正規化住所"
     }
 }
@@ -415,6 +419,15 @@ class EachFileProcessor(DataProcessor):
             # 処理結果をCSVファイルとして保存
             self.save_csv(df, self.OUTPUT_PATHS[file_key])
 
+def set_output_column():
+    global OUTPUT_COLUMNS 
+    OUTPUT = copy.deepcopy(INPUT_COLUMNS)
+    OUTPUT["suido_status"]["convert_suido_address"] = "正規化住所"
+    OUTPUT["juki"]["convert_juki_address"] = "正規化住所"
+    OUTPUT["touki"]["convert_touki_address"] = "正規化住所"
+    OUTPUT["akiya_result"]["convert_akiya_address"] = "正規化住所"
+    OUTPUT["geocoding"]["convert_geo_address"] = "正規化住所"
+    OUTPUT_COLUMNS = OUTPUT
 
 
 def set_columns(
@@ -436,7 +449,7 @@ def set_columns(
     INPUT_COLUMNS["suido_status"]["usage_end_date"] = usage_end_date
     
     # suido_use
-    INPUT_COLUMNS["suido_use"]["suido_number2"] = suido_number2
+    INPUT_COLUMNS["suido_use"]["suido_number"] = suido_number2
     INPUT_COLUMNS["suido_use"]["meter_reading_date"] = meter_reading_date
     INPUT_COLUMNS["suido_use"]["suido_usage"] = suido_usage
 
@@ -628,7 +641,7 @@ def generate_dummy_data(main_df, main_address_col, DATA_COLUMNS):
 
 
 
-def process_data(input_files):
+def process_data(input_files, output_directory, job_id, columns):
     """
     すべてのデータファイルを処理する
 
@@ -654,35 +667,58 @@ def process_data(input_files):
     """  
     # 入力ファイルのパスを設定
     # 各ファイルオブジェクトから名前（パス）を取得し、辞書形式で保存
-    input_paths = input_files
-    
-    # 出力ファイルのパスを設定
-    # 処理後のファイルの保存先パスを辞書形式で定義
-    output_paths = {
-        "suido_status": "suido_status_cleaned.csv",
-        "suido_use": "suido_use_cleaned.csv",
-        "juki": "juki_cleaned.csv",
-        "touki": "touki_cleaned.csv",
-        "akiya_result": "akiya_result_cleaned.csv",
-        "geocoding": "geocoding_cleaned.csv"
-    }
-    
-    # EachFileProcessorインスタンスを作成
-    # 入力パスと出力パスを引数として、ファイル処理用のオブジェクトを生成
-    processor = EachFileProcessor(input_paths, output_paths)
-    
-    # 各データファイルを順番に処理
-    for file_key in input_paths.keys():
-        # 処理中のファイル名を表示
-        print(f"{file_key}データを処理中...")
-        # EachFileProcessorのprocess_fileメソッドを呼び出して各ファイルを処理
-        processor.process_file(file_key)
+    try:
+        task_id = None
+        progress_percent = 0
+        if job_id:
+            task_id = create_or_update_job_task(job_id, progress_percent="0", preprocess_type="e012", error_code=None, result=None)
+        input_paths = input_files
 
-    print("すべての処理が完了しました!")
+        if output_directory is None:
+            output_directory = './E012/outputs'
+        
+        os.makedirs(output_directory, exist_ok=True)
+        # 出力ファイルのパスを設定
+        # 処理後のファイルの保存先パスを辞書形式で定義
+        output_paths = {
+            "suido_status": f"{output_directory}/suido_status_cleaned.csv",
+            "suido_use": f"{output_directory}/suido_use_cleaned.csv",
+            "juki": f"{output_directory}/juki_cleaned.csv",
+            "touki": f"{output_directory}/touki_cleaned.csv",
+            "akiya_result": f"{output_directory}/akiya_result_cleaned.csv",
+            "geocoding": f"{output_directory}/geocoding_cleaned.csv"
+        }
 
-    # 処理済みファイルのパスリストを返す
-    # 出力パスのうち、実際にファイルが生成されたもののみをリストにして返す
-    return [path for path in output_paths.values() if os.path.exists(path)]
+        if columns:
+            columns = json.loads(columns)
+            all_values = [value for sub_dict in columns.values() for value in sub_dict.values()]
+            set_columns(*all_values)
+            set_output_column()
+        
+        # EachFileProcessorインスタンスを作成
+        # 入力パスと出力パスを引数として、ファイル処理用のオブジェクトを生成
+        processor = EachFileProcessor(input_paths, output_paths)
+        
+        # 各データファイルを順番に処理
+        for file_key in input_paths.keys():
+            progress_percent += 16
+            # 処理中のファイル名を表示
+            print(f"{file_key}データを処理中...")
+            # EachFileProcessorのprocess_fileメソッドを呼び出して各ファイルを処理
+            processor.process_file(file_key)
+            if job_id:
+                create_or_update_job_task(job_id, progress_percent=str(progress_percent), preprocess_type="e012", error_code=None, result=None, id= task_id)
+
+        print("すべての処理が完了しました!")
+        if job_id:
+            create_or_update_job_task(job_id, progress_percent="100", preprocess_type="e012", error_code=None, result=json.dumps({}), id= task_id, is_finish=True)
+        # 処理済みファイルのパスリストを返す
+        # 出力パスのうち、実際にファイルが生成されたもののみをリストにして返す
+        return [path for path in output_paths.values() if os.path.exists(path)]
+    except:
+        if task_id is not None:
+            create_or_update_job_task(job_id, progress_percent="", preprocess_type="012", error_code="e001", result=json.dumps({}), id= task_id, is_finish=True)
+
 
 def main():
     parser = argparse.ArgumentParser(description="E012 - データクレンジング機能")
@@ -692,6 +728,10 @@ def main():
     parser.add_argument("--touki", required=True, help="登記データファイルのパス")
     parser.add_argument("--akiya_result", required=True, help="空き家結果データファイルのパス")
     parser.add_argument("--geocoding", required=True, help="ジオコーディングデータファイルのパス")
+    parser.add_argument("--output_directory", help="出力ファイルのパス", default=None)
+    parser.add_argument("--job_id", default=None)
+    parser.add_argument("--db_path", default=None)
+    parser.add_argument("--columns", default=None)
     
     args = parser.parse_args()
 
@@ -704,7 +744,10 @@ def main():
         "geocoding": args.geocoding
     }
 
-    processed_files = process_data(input_files)
+    if args.db_path:
+        connect_sqllite(args.db_path)
+
+    processed_files = process_data(input_files, args.output_directory, args.job_id, args.columns)
     
     print("処理済みファイル:")
     for file in processed_files:

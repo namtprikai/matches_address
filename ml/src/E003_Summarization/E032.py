@@ -4,6 +4,8 @@
 * 空き家判定データとユーザーがアップロードした地域ポリゴンデータを結合し、地域単位で集計し、新規アセットとして保存する機能を提供する。この際、ポリゴンとポリゴンの交差判定を行い、複数のポリゴンにまたがる場合には建物ポリゴンと交差する面積の割合が多いポリゴンへ集計されることとする。
 """
 
+import json
+import sys
 import numpy
 import pandas as pd
 import geopandas as gpd
@@ -15,8 +17,12 @@ import sqlite3
 import zipfile 
 from shapely.geometry import MultiPolygon, Polygon
 from shapely.wkt import loads as load_wkt
+from shapely import wkt
 from datetime import datetime
 import argparse
+import chardet
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../')))
+from async_tasks.utils import *
 
 class Summarization:
     def __init__(self, input_paths, output_path, key_column):
@@ -127,7 +133,7 @@ class Summarization:
         空間インデックスを利用し、residence_gdfのジオメトリの重心（centroid）で空間結合を行います。
         """
 
-        residence_gdf = residence_gdf[["世帯コード","正規化住所","世帯人数","15歳未満人数","15歳未満構成比","15歳以上64歳以下人数","15歳以上64歳以下構成比","65歳以上人数","65歳以上構成比","最大年齢","最小年齢","男女比","住定期間","geometry","pred"]]
+        residence_gdf = residence_gdf[["世帯コード","正規化住所","世帯人数","15歳未満人数","15歳未満構成比","15歳以上64歳以下人数","15歳以上64歳以下構成比","65歳以上人数","65歳以上構成比","男女比","住定期間","geometry","pred"]]
         
         # 重心（centroid）を計算する前に、投影座標系（EPSG:4326）に変換
         residence_gdf_projected = residence_gdf.to_crs(epsg=4326)
@@ -209,11 +215,23 @@ class Summarization:
 
             if conn:
                 conn.close()
-
+    
     def process(self):
         # データを読み込む
-        residence_gdf = gpd.read_file(self.INPUT_PATHS["akiya_pred"])
-
+        print('空き家データの読み込み')
+        
+        # detected_encoding = detect_encoding(self.INPUT_PATHS["akiya_pred"])
+        print(f'{self.INPUT_PATHS["akiya_pred"]}を{detect_encoding}で読み込みます')
+        residence_gdf = pd.read_csv(self.INPUT_PATHS["akiya_pred"], encoding='cp932')
+        print('csvを読み込みました')
+        # 'geometry'列をWKT形式からジオメトリに変換
+        residence_gdf['geometry'] = residence_gdf['geometry'].apply(wkt.loads)
+        # GeoDataFrameに変換
+        print('gdfに変換します')
+        residence_gdf = gpd.GeoDataFrame(residence_gdf, geometry='geometry')
+        print('読み込み完了')
+        # 投影法の指定 (必要に応じてEPSGコードを指定)
+        residence_gdf.set_crs(epsg=4326, inplace=True)
         # city_block のファイル形式に応じて読み込み
         if "shp" in self.INPUT_PATHS["city_block"]:
             print("Reading shapefile...")
@@ -266,7 +284,27 @@ class Summarization:
         #self.insert_sqlite(summerized_df)
 
 
+@staticmethod
+def detect_encoding(file_path):
+    """
+    ファイルのエンコーディングを検出する
 
+    Parameters
+    ----------
+    file_path : str
+        検出対象のファイルパス
+
+    Returns
+    -------
+    encoding : str
+        検出されたエンコーディング
+    """
+    # ファイルの内容を読み込む
+    with open(file_path, 'rb') as file:
+        raw_data = file.read()
+    # エンコーディングを検出して返す
+    result = chardet.detect(raw_data)
+    return result['encoding']
 
 def move_uploaded_file(file, save_dir):
     # 保存先のディレクトリを作成
@@ -274,71 +312,18 @@ def move_uploaded_file(file, save_dir):
         os.makedirs(save_dir)
 
     # ファイルを一時ディレクトリに移動
-    file_name = os.path.basename(file.name)
-    file_path = os.path.join(save_dir, file_name)
-    shutil.move(file.name, file_path)
-
-    return file_path
-
-
-def process_summarization(akiya_pred_file, spatial_file, key_column):
-    # 一時ディレクトリを作成
-    temp_dir = os.path.join(os.getcwd(), "temp_files")
-    os.makedirs(temp_dir, exist_ok=True)
-
-    # 空き家判定ファイルを移動
-    akiya_pred_path = move_uploaded_file(akiya_pred_file, temp_dir)
-
-    # ファイル拡張子を取得
-    file_ext = os.path.splitext(spatial_file.name)[1].lower()
-
-    if file_ext == ".zip":
-        # zipファイルを解凍
-        extracted_files = extract_zip(spatial_file, temp_dir)
-        input_paths = {
-            "akiya_pred": akiya_pred_path,
-            "city_block": extracted_files  # 解凍されたファイルを渡す
-        }
-
-    elif file_ext == ".gpkg":
-        # GeoPackageファイルをそのまま使用
-        gpkg_path = move_uploaded_file(spatial_file, temp_dir)
-        input_paths = {
-            "akiya_pred": akiya_pred_path,
-            "city_block": {
-                "gpkg": gpkg_path
-            }
-        }
-
-    elif file_ext == ".geojson":
-        # GeoJSONファイルをそのまま使用
-        geojson_path = move_uploaded_file(spatial_file, temp_dir)
-        input_paths = {
-            "akiya_pred": akiya_pred_path,
-            "city_block": {
-                "geojson": geojson_path
-            }
-        }
-
-    elif file_ext == ".csv":
-        # CSVファイルをそのまま使用（WKTフォーマット）
-        csv_path = move_uploaded_file(spatial_file, temp_dir)
-        input_paths = {
-            "akiya_pred": akiya_pred_path,
-            "city_block": {
-                "csv": csv_path
-            }
-        }
-
+    if isinstance(file, str):
+        file_name = os.path.basename(file)  
+        file_path = file 
     else:
-        raise ValueError(f"Unsupported file format: {file_ext}")
+        file_name = os.path.basename(file.name)  
+        file_path = file.name
 
-    # 出力ファイルのパスを設定
-    output_path = os.path.join(temp_dir, "D903.csv")
+    destination_path = os.path.join(save_dir, file_name)
+    shutil.copy2(file_path, destination_path)
+    
+    return destination_path
 
-    Summarization(input_paths, output_path, key_column).process()
-
-    return output_path
 
 
 
@@ -354,65 +339,83 @@ def extract_zip(zip_file, extract_to):
 
 
 
-def process_summarization(akiya_pred_file, spatial_file, output_dir, key_column):
-    # 一時ディレクトリを作成
-    temp_dir = os.path.join(os.getcwd(), "temp_files")
-    os.makedirs(temp_dir, exist_ok=True)
+def process_summarization(akiya_pred_file, spatial_file, output_dir, key_column, job_id=None):
+    try:
+        task_id = None
+        if job_id:
+            task_id = create_or_update_job_task(job_id, progress_percent="0", preprocess_type="e032", error_code=None, result=None)
 
-    # 空き家判定ファイルを移動
-    akiya_pred_path = move_uploaded_file(akiya_pred_file, temp_dir)
+        # 一時ディレクトリを作成
+        if output_dir and len(output_dir) > 2:
+            temp_dir = os.path.join(os.getcwd(), output_dir)
+            parts = output_dir.split('/')
+            file_name = parts[-1]
+            joined_data = '/'.join(parts[:-1])
+            output_path = f"{joined_data}/{file_name}.csv"
+            akiya_pred_path = akiya_pred_file
 
-    # ファイル拡張子を取得
-    file_ext = os.path.splitext(spatial_file)[1].lower()
+        else:
+            temp_dir = os.path.join(os.getcwd(), "temp_files/E032")
+            output_path = os.path.join(temp_dir, "D903.csv")
+            os.makedirs(temp_dir, exist_ok=True)
+            # 空き家判定ファイルを移動
+            akiya_pred_path = move_uploaded_file(akiya_pred_file, temp_dir)
 
-    if file_ext == ".zip":
-        # zipファイルを解凍
-        extracted_files = extract_zip(spatial_file, temp_dir)
-        input_paths = {
-            "akiya_pred": akiya_pred_path,
-            "city_block": extracted_files  # 解凍されたファイルを渡す
-        }
-
-    elif file_ext == ".gpkg":
-        # GeoPackageファイルをそのまま使用
-        gpkg_path = move_uploaded_file(spatial_file, temp_dir)
-        input_paths = {
-            "akiya_pred": akiya_pred_path,
-            "city_block": {
-                "gpkg": gpkg_path
+        if job_id:
+            create_or_update_job_task(job_id, progress_percent="20", preprocess_type="e032", error_code=None, result=None, id= task_id)
+        # ファイル拡張子を取得
+        file_ext = os.path.splitext(spatial_file)[1].lower()
+     
+        if file_ext == ".zip":
+            # zipファイルを解凍
+            extracted_files = extract_zip(spatial_file, temp_dir)
+            input_paths = {
+                "akiya_pred": akiya_pred_path,
+                "city_block": extracted_files  # 解凍されたファイルを渡す
             }
-        }
 
-    elif file_ext == ".geojson":
-        # GeoJSONファイルをそのまま使用
-        geojson_path = move_uploaded_file(spatial_file, temp_dir)
-        input_paths = {
-            "akiya_pred": akiya_pred_path,
-            "city_block": {
-                "geojson": geojson_path
+        elif file_ext == ".gpkg":
+
+            # GeoPackageファイルをそのまま使用
+            gpkg_path = move_uploaded_file(spatial_file, temp_dir)
+            input_paths = {
+                "akiya_pred": akiya_pred_path,
+                "city_block": gpkg_path
             }
-        }
 
-    elif file_ext == ".csv":
-        # CSVファイルをそのまま使用（WKTフォーマット）
-        csv_path = move_uploaded_file(spatial_file, temp_dir)
-        input_paths = {
-            "akiya_pred": akiya_pred_path,
-            "city_block": {
-                "csv": csv_path
+        elif file_ext == ".geojson":
+            # GeoJSONファイルをそのまま使用
+            geojson_path = move_uploaded_file(spatial_file, temp_dir)
+            input_paths = {
+                "akiya_pred": akiya_pred_path,
+                "city_block": geojson_path
             }
-        }
 
-    else:
-        raise ValueError(f"Unsupported file format: {file_ext}")
+        elif file_ext == ".csv":
+            # CSVファイルをそのまま使用（WKTフォーマット）
+            csv_path = move_uploaded_file(spatial_file, temp_dir)
+            input_paths = {
+                "akiya_pred": akiya_pred_path,
+                "city_block": csv_path
+            }
 
-    # 出力ファイルのパスを設定
-    output_path = os.path.join(temp_dir, "D903.csv")
+        else:
+            raise ValueError(f"Unsupported file format: {file_ext}")
+        
+        if job_id:
+            create_or_update_job_task(job_id, progress_percent="40", preprocess_type="e032", error_code=None, result=None, id= task_id)
 
-    # 集計に使用するカラム名も引数として渡す
-    Summarization(input_paths, output_path, key_column).process()
 
-    return output_path
+        # 集計に使用するカラム名も引数として渡す
+        Summarization(input_paths, output_path, key_column).process()
+        if job_id:
+            create_or_update_job_task(job_id, progress_percent="100", preprocess_type="e032", error_code=None, result=json.dumps({}), id= task_id, is_finish=True)
+
+        return output_path
+    except Exception as e:
+        print("excaption", e)
+        if task_id is not None:
+            create_or_update_job_task(job_id, progress_percent="", preprocess_type="e032", error_code="e001", result=json.dumps({}), id= task_id, is_finish=True)
 
 
 
@@ -421,6 +424,9 @@ def main():
     
     # 空き家判定ファイルのパスを指定
     parser.add_argument("akiya_pred_file", help="【D902】空き家判定結果データのファイルパス")
+
+    parser.add_argument("--job_id", default=None)
+    parser.add_argument("--db_path", default=None)
     
     # 小地域データとして、gpkg か zip のどちらかを指定
     parser.add_argument(
@@ -449,13 +455,17 @@ def main():
 
     if spatial_file_ext not in [".zip", ".gpkg"]:
         raise ValueError("読み込めるファイル形式は .zip または .gpkg のみです。")
+    
+    if args.db_path:
+        connect_sqllite(args.db_path)
 
     # process_summarization関数を呼び出して処理を実行
     output_path = process_summarization(
         args.akiya_pred_file,
         args.spatial_file,
         args.output_dir,
-        args.key_column
+        args.key_column,
+        args.job_id
     )
 
     print(f"地域別集計データが保存されました: {output_path}")

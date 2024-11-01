@@ -3,31 +3,21 @@
 * 水道使用量（水道栓単位）、住民基本台帳（個人単位）等のデータを住居単位のデータへ再集計する機能
 """
 
+import json
 import os
+import sys
 import tempfile
 from datetime import datetime
 import argparse
 import chardet
-import gradio as gr
 import numpy as np
 import pandas as pd
 from dateutil.relativedelta import relativedelta
 from sklearn.preprocessing import LabelEncoder
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../')))
+from async_tasks.utils import *
 
-
-
-class DataProcessor:
-    def __init__(self, input_paths, output_paths, base_date, search_period):
-        # 入力ファイルのパスを設定
-        self.INPUT_PATHS = input_paths
-        # 出力ファイルのパスを設定
-        self.OUTPUT_PATHS = output_paths
-        # 空き家予測の基準日
-        self.BASE_DATE = datetime.strptime(str(base_date), "%Y%m%d")
-        # 検索期間
-        self.SEARCH_PERIOD = int(search_period)
-        # 各データで利用するカラムを定義
-        self.COLUMNS = {
+COLUMNS = {
             "suido_use": {
                 "suido_number": "水道番号",
                 "meter_reading_date": "検針年月日",
@@ -54,6 +44,16 @@ class DataProcessor:
             }
         }
 
+class DataProcessor:
+    def __init__(self, input_paths, output_paths, base_date, search_period):
+        # 入力ファイルのパスを設定
+        self.INPUT_PATHS = input_paths
+        # 出力ファイルのパスを設定
+        self.OUTPUT_PATHS = output_paths
+        # 空き家予測の基準日
+        self.BASE_DATE = datetime.strptime(str(base_date), "%Y%m%d")
+        # 検索期間
+        self.SEARCH_PERIOD = int(search_period)
         # データごとの出力するカラムを定義
         self.OUTPUT_COLUMNS = {
             "suido": [
@@ -200,7 +200,11 @@ class SuidoProcessor(DataProcessor):
         pandas.DataFrame
             前処理済みの水道使用量データ
         """
-        cols = self.COLUMNS["suido_use"]
+        cols = COLUMNS["suido_use"]
+        df[cols["meter_reading_date"]] = df[cols["meter_reading_date"]].apply(
+            lambda x: "20" + str(x) if len(str(x)) == 6 else str(x)
+        )
+
         # 日付をdatetime型に変換
         df[cols["meter_reading_date"]] = pd.to_datetime(df[cols["meter_reading_date"]], format="%Y%m%d")
         
@@ -278,7 +282,7 @@ class SuidoProcessor(DataProcessor):
         pandas.DataFrame
             ピボットテーブル形式の水道使用量データ
         """
-        cols = self.COLUMNS["suido_use"]
+        cols = COLUMNS["suido_use"]
 
         # 検針年月が含まれているか確認
         if "検針年月" not in df.columns:
@@ -304,7 +308,7 @@ class SuidoProcessor(DataProcessor):
         pandas.DataFrame
             統計量と変化率が追加された水道データ
         """
-        cols = self.COLUMNS["suido_use"]
+        cols = COLUMNS["suido_use"]
         
         # base_date_水道使用量、start_date_水道使用量を除外して統計量を計算するためのカラムリスト
         date_columns = [col for col in df.columns if col not in [cols["suido_number"], "base_date_水道使用量", "start_date_水道使用量"]]
@@ -336,7 +340,7 @@ class SuidoProcessor(DataProcessor):
         pandas.DataFrame
             閉栓フラグが更新された水道状況データ
         """
-        cols = self.COLUMNS["suido_status"]
+        cols = COLUMNS["suido_status"]
         
         # 閉栓フラグの初期設定：usage_end_dateがnullでない場合にTrue
         df["閉栓フラグ"] = df[cols["usage_end_date"]].notnull()
@@ -370,7 +374,7 @@ class SuidoProcessor(DataProcessor):
         df_suido_operation = self.value_operation_flg(df_suido_status)
 
         # データの結合と整形
-        cols_status = self.COLUMNS["suido_status"]
+        cols_status = COLUMNS["suido_status"]
         df_suido = pd.merge(df_suido_operation[[cols_status["suido_number"], cols_status["suido_address"], "閉栓フラグ"]], 
                             df_suido_stats, on=cols_status["suido_number"], how="inner")
         
@@ -423,7 +427,7 @@ class JukiProcessor(DataProcessor):
         pandas.DataFrame
             年齢別人数が追加された住民基本台帳データ
         """
-        cols = self.COLUMNS["juki"]
+        cols = COLUMNS["juki"]
         
         # 複数のフォーマットを試して生年月日を変換
         df[cols["birth"]] = pd.to_datetime(df[cols["birth"]], errors='coerce', format='%Y/%m/%d')
@@ -470,7 +474,7 @@ class JukiProcessor(DataProcessor):
         pandas.DataFrame
             世帯人数が追加されたデータ
         """
-        cols = self.COLUMNS["juki"]
+        cols = COLUMNS["juki"]
         
         # 世帯ごとの人数をカウント
         setai_count = df.groupby([cols["setai_code"], cols["juki_address"]]).size().reset_index(name='世帯人数')
@@ -494,7 +498,7 @@ class JukiProcessor(DataProcessor):
         pandas.DataFrame
             年齢別構成比が追加されたデータ
         """
-        cols = self.COLUMNS["juki"]
+        cols = COLUMNS["juki"]
         group_cols = [cols["setai_code"], cols["juki_address"]]
         age_stats = {}
 
@@ -526,7 +530,7 @@ class JukiProcessor(DataProcessor):
         pandas.DataFrame
             男女比が追加されたデータ
         """
-        cols = self.COLUMNS["juki"]
+        cols = COLUMNS["juki"]
         gender_counts = df.groupby([cols["setai_code"], cols["juki_address"], cols["sex"]]).size().unstack(fill_value=0)
         gender_counts["男女比"] = gender_counts[2] / gender_counts[1]
         return gender_counts.reset_index()
@@ -544,7 +548,7 @@ class JukiProcessor(DataProcessor):
         pandas.DataFrame
             住定期間が追加されたデータ
         """
-        cols = self.COLUMNS["juki"]
+        cols = COLUMNS["juki"]
         
         # 「住定異動年月日」を datetime に変換（フォーマット指定、エラーは NaT に）
         df[cols["move_date"]] = pd.to_datetime(df[cols["move_date"]], format='%Y%m%d', errors='coerce')
@@ -613,7 +617,7 @@ class TatemonoProcessor(DataProcessor):
         pandas.DataFrame
             構造分類が追加された建物データ
         """
-        cols = self.COLUMNS["tatemono"]
+        cols = COLUMNS["tatemono"]
         structure_dict = {
             "木造": ["木造"],
             "RC造": ["RC造", "鉄筋コンクリート造"],
@@ -652,7 +656,7 @@ class TatemonoProcessor(DataProcessor):
         if df_tatemono is None:
             return
         
-        cols = self.COLUMNS["tatemono"]
+        cols = COLUMNS["tatemono"]
 
         # 登記日付の処理
         df_tatemono[cols["registration_date"]] = pd.to_datetime(df_tatemono[cols["registration_date"]], format='%Y/%m/%d', errors='coerce')
@@ -672,8 +676,33 @@ class TatemonoProcessor(DataProcessor):
         # 出力
         self.save_csv(df_tatemono, self.OUTPUT_PATHS["tatemono"])
 
+def set_columns(
+    suido_number, usage_status, suido_status_address, usage_start_date, usage_end_date,
+    suido_number2, meter_reading_date, suido_usage,
+    setai_code, juki_address, birth, gender, move_date,
+    *args
+):
+    global COLUMNS
+    # suido_statusセクション
+    COLUMNS["suido_status"]["suido_number"] = suido_number
+    COLUMNS["suido_status"]["usage_status"] = usage_status
+    COLUMNS["suido_status"]["usage_start_date"] = usage_start_date
+    COLUMNS["suido_status"]["usage_end_date"] = usage_end_date
+
+    # suido_use
+    COLUMNS["suido_use"]["suido_number"] = suido_number2
+    COLUMNS["suido_use"]["meter_reading_date"] = meter_reading_date
+    COLUMNS["suido_use"]["suido_usage"] = suido_usage
+
+    # jukiセクション
+    COLUMNS["juki"]["setai_code"] = setai_code
+    COLUMNS["juki"]["birth"] = birth
+    COLUMNS["juki"]["sex"] = gender
+    COLUMNS["juki"]["move_date"] = move_date
+
+    
 # すべてのデータを処理する関数を作成
-def process_all_data(suido_use_file, suido_status_file, juki_file, tatemono_file, base_date, search_period):
+def process_all_data(suido_use_file, suido_status_file, juki_file, tatemono_file, base_date, search_period, output_directory, job_id, columns):
     """
     すべてのデータファイルを処理する
     Parameters
@@ -695,62 +724,96 @@ def process_all_data(suido_use_file, suido_status_file, juki_file, tatemono_file
     list
         処理済みファイルのパスリスト
     """
-    # 入力ファイルのパスを設定
-    # 各ファイルオブジェクトから名前（パス）を取得し、辞書形式で保存
-    input_paths = {
-        "suido_use": suido_use_file,
-        "suido_status": suido_status_file,
-        "juki": juki_file,
-        "tatemono": tatemono_file
-    }
-    
-    # 出力ファイルのパスを設定
-    # 処理後のファイルの保存先パスを辞書形式で定義
-    output_paths = {
-        "suido": "{}/E013/outputs/suido_residence_{}.csv".format(citycode, targetyear),
-        "juki": "{}/E013/outputs/juki_residence_{}.csv".format(citycode, targetyear),
-        "tatemono": "{}/E013/outputs/touki_residence.csv"
-    }
-
-
-    # 各データ処理クラスを実行
-    processors = {
-        "suido": SuidoProcessor,
-        "juki": JukiProcessor,
-        "tatemono": TatemonoProcessor
-    }
-    
-    for file_key, processor_class in processors.items():
-        print(f"{file_key}データを処理中...")
-        processor_class(input_paths, output_paths, base_date, search_period).process()
+    try:
+        progress_percent = 0
+        task_id = None
+        if job_id:
+            task_id = create_or_update_job_task(job_id, progress_percent=progress_percent, preprocess_type="e013", error_code=None, result=None)
+        # 入力ファイルのパスを設定
+        # 各ファイルオブジェクトから名前（パス）を取得し、辞書形式で保存
+        input_paths = {
+            "suido_use": suido_use_file,
+            "suido_status": suido_status_file,
+            "juki": juki_file,
+            "tatemono": tatemono_file
+        }
         
-        # 処理後のファイルが存在するかを確認
-        output_file = output_paths[file_key]
-        if os.path.exists(output_file):
-            print(f"{output_file} が生成されました。")
-        else:
-            print(f"エラー: {output_file} が生成されていません。")
+        if output_directory is None:
+            output_directory = './E013/outputs'
 
-    print("すべての処理が完了しました!")
-    
-    return [path for path in output_paths.values() if os.path.exists(path)]
+        os.makedirs(output_directory, exist_ok=True)
+        # 出力ファイルのパスを設定
+        # 処理後のファイルの保存先パスを辞書形式で定義
+        output_paths = {
+            "suido": f"{output_directory}/suido_residence.csv",
+            "juki": f"{output_directory}/juki_residence.csv",
+            "tatemono": f"{output_directory}/touki_residence.csv"
+        }
+
+        if columns:
+            columns = json.loads(columns)
+            all_values = [value for sub_dict in columns.values() for value in sub_dict.values()]
+            set_columns(*all_values)
+
+        # 各データ処理クラスを実行
+        processors = {
+            "suido": SuidoProcessor,
+            "juki": JukiProcessor,
+            "tatemono": TatemonoProcessor
+        }
+        
+        for file_key, processor_class in processors.items():
+            if job_id:
+                progress_percent += 30
+                create_or_update_job_task(job_id, progress_percent=progress_percent, preprocess_type="e013", error_code=None, result=None, id= task_id)
+            print(f"{file_key}データを処理中...")
+            processor_class(input_paths, output_paths, base_date, search_period).process()
+            
+            # 処理後のファイルが存在するかを確認
+            output_file = output_paths[file_key]
+            if os.path.exists(output_file):
+                print(f"{output_file} が生成されました。")
+            else:
+                print(f"エラー: {output_file} が生成されていません。")
+
+        print("すべての処理が完了しました!")
+        if job_id:
+            create_or_update_job_task(job_id, progress_percent="100", preprocess_type="e013", error_code=None, result=json.dumps({}), id= task_id, is_finish=True)
+        
+        return [path for path in output_paths.values() if os.path.exists(path)]
+    except Exception as e:
+        print("Exception", e)
+        if task_id is not None:
+            create_or_update_job_task(job_id, progress_percent="", preprocess_type="e013", error_code="e001", result=json.dumps({}), id= task_id, is_finish=True)
 
 def main():
     parser = argparse.ArgumentParser(description="E013 - 住居単位データ作成機能")
     parser.add_argument("--suido_use", required=True, help="水道使用量データファイルのパス")
     parser.add_argument("--suido_status", required=True, help="水道状況データファイルのパス")
     parser.add_argument("--juki", required=True, help="住民基本台帳データファイルのパス")
+    parser.add_argument("--tatemono_file", required=True, help="建物データファイル")
     parser.add_argument("--base_date", type=int, required=True, help="基準日 (YYYYMMDD形式)")
     parser.add_argument("--search_period", type=int, required=True, help="検索期間（年）")
+    parser.add_argument("--output_directory", help="出力ファイルのパス", default=None)
+    parser.add_argument("--job_id", default=None)
+    parser.add_argument("--db_path", default=None)
+    parser.add_argument("--columns", default=None)
     
     args = parser.parse_args()
+
+    if args.db_path:
+        connect_sqllite(args.db_path)
 
     processed_files = process_all_data(
         args.suido_use,
         args.suido_status,
         args.juki,
+        args.tatemono_file,
         args.base_date,
-        args.search_period
+        args.search_period,
+        args.output_directory,
+        args.job_id,
+        args.columns,
     )
     
     print("処理済みファイル:")
