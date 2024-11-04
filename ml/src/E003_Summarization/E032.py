@@ -21,8 +21,18 @@ from shapely import wkt
 from datetime import datetime
 import argparse
 import chardet
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../')))
-from async_tasks.utils import *
+
+current_dir = os.path.dirname(os.path.abspath(__file__))
+async_tasks_path = os.path.join(current_dir, '..', 'async_tasks')
+if async_tasks_path not in sys.path:
+    sys.path.append(async_tasks_path)
+
+try:
+    from utils import *
+except ImportError:
+    sys.path.remove(async_tasks_path)
+    sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../')))
+    from async_tasks.utils import *
 
 class Summarization:
     def __init__(self, input_paths, output_path, key_column):

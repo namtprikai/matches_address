@@ -12,8 +12,18 @@ import unicodedata
 import argparse
 import chardet
 import pandas as pd
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../')))
-from async_tasks.utils import *
+
+current_dir = os.path.dirname(os.path.abspath(__file__))
+async_tasks_path = os.path.join(current_dir, '..', 'async_tasks')
+if async_tasks_path not in sys.path:
+    sys.path.append(async_tasks_path)
+
+try:
+    from utils import *
+except ImportError:
+    sys.path.remove(async_tasks_path)
+    sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../')))
+    from async_tasks.utils import *
 
 # 入力する各データのカラムを定義
 INPUT_COLUMNS = {

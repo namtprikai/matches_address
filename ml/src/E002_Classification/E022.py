@@ -19,8 +19,18 @@ import numpy as np
 import pandas as pd
 from sklearn.metrics import accuracy_score, confusion_matrix, precision_score, recall_score, f1_score
 from datetime import datetime
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../')))
-from async_tasks.utils import *
+
+current_dir = os.path.dirname(os.path.abspath(__file__))
+async_tasks_path = os.path.join(current_dir, '..', 'async_tasks')
+if async_tasks_path not in sys.path:
+    sys.path.append(async_tasks_path)
+
+try:
+    from utils import *
+except ImportError:
+    sys.path.remove(async_tasks_path)
+    sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../')))
+    from async_tasks.utils import *
 
 
 # pandasの表示オプションを設定
@@ -237,7 +247,7 @@ def predict(models, new_data, required_features, threshold):
 
     return test_preds, test_preds_proba
 
-def insert_sqlite_and_export(input_data):
+def insert_sqlite_and_export(input_data, job_id=None):
     """
     指定されたデータをSQLiteデータベースに挿入し、同時にインポート可能な形式でファイルを出力する
 
@@ -258,7 +268,7 @@ def insert_sqlite_and_export(input_data):
     - 処理中にエラーが発生した場合、そのエラーメッセージが表示され、接続は必ず閉じられる
     """
 
-    # global conn
+    global conn
     try:
         # カラム名のマッピング
         mapping_header = {
@@ -358,10 +368,11 @@ def insert_sqlite_and_export(input_data):
         current_year = datetime.now().year
         table_name = f"D902_akiyaresult_{current_year}"
 
-        # SQLiteにデータを挿入
-        # conn = sqlite3.connect('akiya_database.db')
-        # input_data.to_sql(table_name, conn, if_exists='replace', index=False)
-        # print(f"Inserted data into table {table_name}")
+        if job_id is None:
+            # SQLiteにデータを挿入
+            conn = sqlite3.connect('akiya_database.db')
+            input_data.to_sql(table_name, conn, if_exists='replace', index=False)
+            print(f"Inserted data into table {table_name}")
 
         # CSV形式でデータをファイルに保存
         output_file = f"{table_name}.csv"
@@ -373,9 +384,9 @@ def insert_sqlite_and_export(input_data):
         print("sql failed...")
         #print(f"Error when inserting to SQLite or exporting file: {e}")
 
-    # finally:
-    #     if conn:
-    #         conn.close()
+    finally:
+        if job_id is None and conn:
+            conn.close()
 
 def process_and_predict(input_folder, input_file, model_directory, threshold, output_file, required_features, outcome_variable, job_id=None, progress=gr.Progress()):
     """
@@ -441,7 +452,7 @@ def process_and_predict(input_folder, input_file, model_directory, threshold, ou
         os.makedirs(output_dir, exist_ok=True)
 
         #insert SQLite
-        insert_sqlite_and_export(input_data)
+        insert_sqlite_and_export(input_data, job_id)
         if job_id:
             create_or_update_job_task(job_id, progress_percent="90", preprocess_type="e022", error_code=None, result=None, id= task_id)
         # 試行するエンコーディングのリスト
