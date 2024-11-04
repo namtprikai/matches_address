@@ -8,6 +8,7 @@ interface Item {
   unit?: string;
 }
 
+// 日本語のラベルはscheme.tsのコメントアウトを参照した
 const buildingMetadata: Record<keyof SelectDataSetDetailBuilding, Item> = {
   id: {
     label: "id",
