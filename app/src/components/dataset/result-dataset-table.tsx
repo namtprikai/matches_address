@@ -458,7 +458,7 @@ function RowMenu({
 }
 
 /**
- * 判定結果データのカラム名を日本語名に変換したり値に単位を付与したりする。`ALL_DATASET_COLUMN_METADATA`に含まれているキーのみ変換し含まれていない場合は除外する（`id`など）
+ * 判定結果データのカラム名を日本語名に変換したり値に単位を付与したりする。
  * @param {any} data:ResultDataSetsResponse
  * @returns {any}
  */
