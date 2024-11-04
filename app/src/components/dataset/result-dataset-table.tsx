@@ -467,17 +467,11 @@ function parseResultDataSets(
 ): ResultDataSetsResponse {
   if (!data) return data;
 
-  const metadataKeys = Object.keys(ResultDataSetMetadata);
-
   const parsedData = data.map((row) => {
     const newRow: NonNullable<ResultDataSetsResponse>[number] = {};
 
     for (const enKey in row) {
       const value = row[enKey];
-      if (!metadataKeys.includes(enKey)) {
-        newRow[enKey] = value;
-        continue;
-      }
       type MetadataKey = keyof typeof ResultDataSetMetadata;
       const { label: jpKey, unit } =
         ResultDataSetMetadata[enKey as MetadataKey];
