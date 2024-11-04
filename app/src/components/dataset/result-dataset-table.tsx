@@ -49,8 +49,8 @@ import {
   type ResultDataSetsResponse,
   useFetchResultDataSetsWithPagination,
 } from "../../hooks/use-fetch-result-data-sets-with-pagination";
-import { usePagenation } from "../../hooks/use-pagenation";
-import { Pagenation } from "../ui/pagenation";
+import { usePagination } from "../../hooks/use-pagination";
+import { Pagination } from "../ui/pagination";
 import { DeleteRowDialog } from "./delete-row-dialog";
 import { EditNameDialog } from "./edit-name-dialog";
 import { DataPreviewDialog } from "./data-preview-dialog";
@@ -211,7 +211,7 @@ function Row({
   const dataPreviewDialogState = useDialogState(false);
   const [selectedUnit, setSelectedUnit] =
     useState<ResultDataSetUnit>("building");
-  const pagination = usePagenation(50);
+  const pagination = usePagination(50);
   const { data } = useFetchResultDataSetsWithPagination({
     dataSetResultId: item.id,
     type: selectedUnit,
@@ -286,7 +286,7 @@ function Row({
           <DataPreviewDialog
             content={
               <div>
-                <Pagenation {...pagination} />
+                <Pagination {...pagination} />
                 <div className={styles.dataPreviewTableContainer}>
                   <DataPreviewTable data={parseResultDataSets(data)} />
                 </div>

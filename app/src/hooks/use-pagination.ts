@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-export type UsePagenationReturnType = {
+export type UsePaginationReturnType = {
   page: number;
   limitPerPage: number;
   //   totalPages: number;
@@ -8,10 +8,10 @@ export type UsePagenationReturnType = {
   handleLimitPerPageChange: (newLimitPerPage: number) => void;
 };
 
-export const usePagenation = (
+export const usePagination = (
   //   total: number,
   perPage: number,
-): UsePagenationReturnType => {
+): UsePaginationReturnType => {
   const [page, setPage] = useState(1);
   const [limitPerPage, setLimitPerPage] = useState(perPage);
 

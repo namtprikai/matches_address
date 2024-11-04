@@ -44,15 +44,15 @@ export const FormNormalizationSettings = ({
       <h3 className={styles.cardTitle}>設定値の変更</h3>
       <div className={styles.basicFields}>
         <Field
-          label={LanguageMap.NORMALIZATION_PARAMETER_LABEL["referenceDate"]}
+          label={LanguageMap.NORMALIZATION_PARAMETER_LABEL["reference_date"]}
         >
           <Input
-            defaultValue={value.referenceDate}
+            defaultValue={value.reference_date}
             onChange={(_, data) => {
               onChange({
                 ...value,
-                referenceDate:
-                  data.value as NormalizationParameters["settings"]["referenceDate"],
+                reference_date:
+                  data.value as NormalizationParameters["settings"]["reference_date"],
               });
             }}
             type="date"
@@ -60,26 +60,26 @@ export const FormNormalizationSettings = ({
         </Field>
 
         <Field
-          label={LanguageMap.NORMALIZATION_PARAMETER_LABEL["referenceData"]}
+          label={LanguageMap.NORMALIZATION_PARAMETER_LABEL["reference_data"]}
         >
           <RadioGroup
-            defaultValue={value.referenceData}
+            defaultValue={value.reference_data}
             layout="horizontal"
             onChange={(_, data) => {
               onChange({
                 ...value,
-                referenceData:
-                  data.value as NormalizationParameters["settings"]["referenceData"],
+                reference_data:
+                  data.value as NormalizationParameters["settings"]["reference_data"],
               });
             }}
           >
             <Radio
               label={LanguageMap.NORMALIZATION_DATA_LABEL["waterStatus"]}
-              value={"waterStatus"}
+              value={"water_status"}
             />
             <Radio
               label={LanguageMap.NORMALIZATION_DATA_LABEL["residentRegistry"]}
-              value={"residentRegistry"}
+              value={"resident_registry"}
             />
           </RadioGroup>
         </Field>
