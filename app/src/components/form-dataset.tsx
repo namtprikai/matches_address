@@ -5,7 +5,7 @@ import {
   Option,
   tokens,
 } from "@fluentui/react-components";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { type FieldValues, type Path } from "react-hook-form";
 import { Delete16Regular } from "@fluentui/react-icons";
 import { THEME_COLORS } from "../config/theme-colors";
@@ -152,9 +152,9 @@ const useStyles = makeStyles({
 
 export const FormDataset = <
   FORM_TYPE extends FieldValues,
-  COLUMN_TYPE extends object,
+  COLUMN_TYPE extends Partial<Record<string, string>>,
 >({
-  value,
+  value: prevValue,
   onChange,
   dataSetName,
   appearance,
@@ -166,7 +166,7 @@ export const FormDataset = <
   name: Path<FORM_TYPE>;
   dataSetName: string;
   appearance?: "default" | "large";
-  onChange?: (data: typeof value) => void;
+  onChange?: (data: typeof prevValue) => void;
 }): JSX.Element => {
   const [dataSet, setDataSet] = useState<SelectRawDataSet | undefined>(
     undefined,
@@ -189,7 +189,7 @@ export const FormDataset = <
             setDataSet(undefined);
             if (onChange) {
               onChange({
-                ...value,
+                ...prevValue,
                 path: undefined,
               });
             }
@@ -200,13 +200,38 @@ export const FormDataset = <
       return <DataSetImportSymbol />;
     }
   };
+  useEffect(() => {
+    if (onChange && dataSetColumns) {
+      const columnKV = prevValue.columns
+        ? Object.entries(prevValue.columns)
+        : [];
+
+      if (columnKV.length === 0) {
+        return;
+      }
+
+      const newColumns = columnKV.reduce((acc, [key]) => {
+        return {
+          ...acc,
+          [key]: dataSetColumns[0],
+        };
+      }, {});
+
+      onChange({
+        path: prevValue.path,
+        // reduceでは厳密な型推論ができないためasで型を指定
+        columns: newColumns as COLUMN_TYPE,
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- prevValueが含まれるとcolumnsの更新を行い、無限ループになるため
+  }, [dataSetColumns]);
 
   const styles = useStyles();
-  const columns = value.columns ? Object.entries(value.columns) : [];
+  const columns = prevValue.columns ? Object.entries(prevValue.columns) : [];
 
   const dataSetColumnsToOptions = dataSetColumns?.map((column) => {
     return (
-      <Option key={column} value={column}>
+      <Option key={column} text={column} value={column}>
         {column}
       </Option>
     );
@@ -226,6 +251,19 @@ export const FormDataset = <
         <Dropdown
           className={styles.dropdown}
           disabled={dataSetColumns === undefined || dataSetColumns.length === 0}
+          onOptionSelect={(_, data) => {
+            if (onChange) {
+              onChange({
+                ...prevValue,
+                columns: {
+                  ...prevValue.columns,
+                  [key]: data.optionValue,
+                } as COLUMN_TYPE,
+              });
+            }
+          }}
+          selectedOptions={[prevValue.columns?.[key] ?? ""]}
+          value={prevValue.columns?.[key] ?? ""}
         >
           {dataSetColumnsToOptions}
         </Dropdown>
@@ -261,7 +299,7 @@ export const FormDataset = <
           setDataSet(data);
           if (onChange) {
             onChange({
-              ...value,
+              ...prevValue,
               path: data?.file_path,
             });
           }

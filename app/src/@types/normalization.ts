@@ -11,75 +11,75 @@
 
 export type NormalizationParameters = {
   settings: {
-    referenceData: "waterStatus" | "residentRegistry";
-    referenceDate: string;
+    reference_data: "water_status" | "resident_registry";
+    reference_date: string;
     advanced: {
-      similarityThreshold: number; // Default 0.95
-      nGramSize: 1 | 2 | 3; // Default 2
-      joiningMethod: "intersection" | "nearest"; // Default intersection
+      similarity_threshold: number; // Default 0.95
+      n_gram_size: 1 | 2 | 3; // Default 2
+      joining_method: "intersection" | "nearest"; // Default intersection
     };
   };
   data: {
-    residentRegistry: {
+    resident_registry: {
       path?: string;
-      columns?: {
-        householdCode?: string;
-        gender?: string;
-        address?: string;
-        birthDate?: string;
-        residentDate?: string;
+      columns: {
+        household_code: string;
+        gender: string;
+        address: string;
+        birth_date: string;
+        resident_date: string;
       };
     };
-    waterStatus: {
+    water_status: {
       path?: string;
-      columns?: {
-        waterSupplyNumber?: string;
-        waterDisconnectionDate?: string;
-        waterConnectionDate?: string;
-        waterDisconnectionFlag?: string;
-        address?: string;
+      columns: {
+        water_supply_number: string;
+        water_disconnection_date: string;
+        water_connection_date: string;
+        water_disconnection_flag: string;
+        address: string;
       };
     };
-    waterUsage: {
+    water_usage: {
       path?: string;
-      columns?: {
-        waterSupplyNumber?: string;
-        waterUsage?: string;
-        waterRecordedDate?: string;
+      columns: {
+        water_supply_number: string;
+        water_usage: string;
+        water_recorded_date: string;
       };
     };
-    landRegistry: {
+    land_registry: {
       path?: string;
-      columns?: {
-        address?: string;
-        structureName?: string;
-        registrationDate?: string;
+      columns: {
+        address: string;
+        structure_name: string;
+        registration_date: string;
       };
     };
-    vacantHouse: {
+    vacant_house: {
       path?: string;
-      columns?: {
-        vacantHouseId?: string;
-        address?: string;
-        latitude?: string;
-        longitude?: string;
+      columns: {
+        vacant_house_id: string;
+        address: string;
+        latitude: string;
+        longitude: string;
       };
     };
     geocoding: {
       path?: string;
-      columns?: {
-        address?: string;
-        latitude?: string;
-        longitude?: string;
+      columns: {
+        address: string;
+        latitude: string;
+        longitude: string;
       };
     };
-    buildingPolygon: {
+    building_polygon: {
       path?: string;
-      columns?: {
-        buildingId?: string;
+      columns: {
+        building_id: string;
       };
     };
-    urbanPlanning: {
+    urban_planning: {
       path?: string;
     };
   };
