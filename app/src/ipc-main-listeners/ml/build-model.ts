@@ -91,7 +91,7 @@ export const buildModel = (async (
     cp.stdout.on("data", (data) => {
       // eslint-disable-next-line no-console -- /** @todo for debug  */
       console.log("stdout" + data);
-      resolve(data);
+      // resolve(data);
     });
     cp.stderr.on("data", (data) => {
       // eslint-disable-next-line no-console -- /** @todo for debug  */
