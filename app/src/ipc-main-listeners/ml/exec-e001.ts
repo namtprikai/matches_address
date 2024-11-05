@@ -19,23 +19,21 @@ export const execE001 = (async (
     const output_path = getFilePathInAssets();
     const database_path = dbPath;
 
+    const postParameters = {
+      ...parameters,
+      output_path,
+      database_path,
+    };
+
+    // Pythonコードがないため実行不可なのでコメントアウト
     // childProcessに入れてバックグラウンド実行
-    const cp = spawn(
-      binaryPath("e001"),
-      [
-        "--parameters",
-        JSON.stringify(
-          JSON.stringify({
-            ...parameters,
-            output_path,
-            database_path,
-          }),
-        ),
-      ],
-      {
-        detached: true,
-      },
-    );
+    // const cp = spawn(
+    //   binaryPath("e001"),
+    //   ["--parameters", JSON.stringify(JSON.stringify(postParameters))],
+    //   {
+    //     detached: true,
+    //   },
+    // );
 
     return true;
   } catch (error) {

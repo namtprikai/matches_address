@@ -53,6 +53,7 @@ import { buildModel } from "./ml/build-model";
 import { selectBuildingsWithPagination } from "./select-buildings-with-pagination";
 import { selectAreasWithPagination } from "./select-areas-with-pagination";
 import { readDatasetColumns } from "./read-dataset-columns";
+import { execE001 } from "./ml/exec-e001";
 
 export const ipcMainListeners = {
   helloFromPython,
@@ -104,6 +105,7 @@ export const ipcMainListeners = {
   fetchJobLists,
   fetchJobTasks,
   buildModel,
+  execE001,
   selectBuildingsWithPagination,
   selectAreasWithPagination,
 };
