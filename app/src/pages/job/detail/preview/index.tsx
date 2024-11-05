@@ -7,7 +7,7 @@ import {
 import { ArrowLeftRegular } from "@fluentui/react-icons";
 import { useState } from "react";
 import { Table, type ColumnDefinition } from "../../../../components/ui/table";
-import { Pagenation } from "../../../../components/ui/pagenation";
+import { Pagination } from "../../../../components/ui/pagination";
 
 const useStyles = makeStyles({
   root: {
@@ -176,7 +176,7 @@ export function JobPreview(): JSX.Element {
           <Table columns={columns} items={paginatedData} />
         </div>
         <div className={styles.pagenation}>
-          <Pagenation
+          <Pagination
             handleLimitPerPageChange={handleLimitPerPageChange}
             handlePageChange={handlePageChange}
             limitPerPage={limitPerPage}
