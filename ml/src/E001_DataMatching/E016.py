@@ -304,10 +304,15 @@ def load_and_process_data(file_path, crs, is_tatemono=True):
             # geometry列をWKT形式からShapely geometryオブジェクトに変換
             df['geometry'] = df['geometry'].apply(parse_wkt)
         else:
+            lon_column = next((col for col in df.columns if '経度' in col), None)
+            lat_column = next((col for col in df.columns if '緯度' in col), None)
             # lat/lon列からgeometry列を作成
             if 'lat_geocoding_cleaned' in df.columns and 'lon_geocoding_cleaned' in df.columns:
                 df['geometry'] = df.apply(
                     lambda row: Point(row['lon_geocoding_cleaned'], row['lat_geocoding_cleaned']), axis=1)
+            elif lon_column and lat_column:
+                df['geometry'] = df.apply(
+                    lambda row: Point(row[lon_column], row[lat_column]), axis=1)
             else:
                 raise KeyError("'geometry' 列または 'lat_geocoding_cleaned' と 'lon_geocoding_cleaned' 列が必要です")
 
