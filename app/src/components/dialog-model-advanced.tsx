@@ -1,9 +1,4 @@
-import {
-  Dialog,
-  makeStyles,
-  DialogTrigger,
-  Checkbox,
-} from "@fluentui/react-components";
+import { Dialog, makeStyles, DialogTrigger } from "@fluentui/react-components";
 import { DismissFilled } from "@fluentui/react-icons";
 import { useForm, type FieldPath } from "react-hook-form";
 import { type z } from "zod";
@@ -29,18 +24,14 @@ const useStyles = makeStyles({
     height: "24px",
     ":hover": { cursor: "pointer" },
   },
-  disabledButton: {
-    backgroundColor: "#EFF0F0",
-    color: "#89949F",
-    cursor: "not-allowed",
-    ":hover": {
-      backgroundColor: "#EFF0F0",
-    },
-  },
   formContents: {
     display: "grid",
     gap: "16px",
     gridTemplateColumns: "repeat(2, 1fr)",
+  },
+  input: {
+    left: "0",
+    width: "16px",
   },
 });
 
@@ -49,6 +40,7 @@ type FormType = z.infer<typeof formModelCreateSchema>;
 type Props = {
   dialogState: ReturnUseDialogState;
   onSelected: (selected: FormType["settings"]["advanced"]) => void;
+  initialValues: FormType["settings"]["advanced"];
 };
 
 /**
@@ -126,7 +118,7 @@ const Fields: AdvancedField[] = [
     type: "number",
   },
   {
-    key: "num_leavs",
+    key: "num_leaves",
     label: "Num Leavs",
     placeholder: "0",
     step: "1",
@@ -158,22 +150,21 @@ const Fields: AdvancedField[] = [
 export const DialogModelAdvanced = ({
   dialogState,
   onSelected,
+  initialValues,
 }: Props): JSX.Element => {
   const styles = useStyles();
 
   const { isOpen: isDialogOpen, setIsOpen: setIsDialogOpen } = dialogState;
 
   /** メインのstateへの反映のタイミングを切り分けるためにformを上流とは別に再作成している */
-  const { register, handleSubmit } =
-    useForm<FormType["settings"]["advanced"]>();
+  const { register, handleSubmit } = useForm<FormType["settings"]["advanced"]>({
+    defaultValues: initialValues,
+  });
 
   const handleClick = handleSubmit((data): void => {
     onSelected(data);
     setIsDialogOpen(false);
   });
-
-  // 仮
-  const disabled = false;
 
   return (
     <Dialog
@@ -209,17 +200,19 @@ export const DialogModelAdvanced = ({
                     type="number"
                   />
                 )}
-                {type === "checkbox" && <Checkbox {...register(key)} />}
+                {type === "checkbox" && (
+                  /** @fixme Checkboxコンポーネント使いたい。だが使うと初期ステートが反映されない */
+                  <input
+                    className={styles.input}
+                    type="checkbox"
+                    {...register(key)}
+                  />
+                )}
               </Field>
             ))}
           </DialogContent>
           <DialogActions>
-            <Button
-              appearance="primary"
-              className={disabled ? styles.disabledButton : ""}
-              disabled={disabled}
-              onClick={handleClick}
-            >
+            <Button appearance="primary" onClick={handleClick}>
               保存
             </Button>
           </DialogActions>

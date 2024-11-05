@@ -175,6 +175,7 @@ export const ModelCreate = (): JSX.Element => {
         </Card>
         <DialogModelAdvanced
           dialogState={modelAdvancedDialogState}
+          initialValues={modelAdvanced}
           onSelected={(data) => setValue("settings.advanced", data)}
         />
       </div>
