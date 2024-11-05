@@ -6,8 +6,8 @@ export type RawOrNormalized = "raw" | "normalized";
 type Params = {
   id: number;
   type: RawOrNormalized;
-  page?: number;
-  limitPerPage?: number;
+  page: number;
+  limitPerPage: number;
 };
 
 type Response = Record<string, string>[] | undefined;
@@ -39,7 +39,7 @@ const fetcher = async ([id, type, page, limitPerPage]: [
     }
   }
 
-  if (!dataSet || !page || !limitPerPage) return undefined;
+  if (!dataSet) return undefined;
 
   const file = await window.ipcRenderer.invoke("readDatasetFile", {
     fileName: dataSet.file_path,
