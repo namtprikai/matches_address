@@ -8,7 +8,8 @@ interface Item {
   unit?: string;
 }
 
-// 日本語のラベルはscheme.tsのコメントアウトを参照した
+// 日本語のラベルは以下のスプレッドシートを参照
+// https://docs.google.com/spreadsheets/d/1j5gg41D2D82zFKPna7O18lQETGPCLtpp/edit?pli=1&gid=1342944122#gid=1342944122
 const buildingMetadata: Record<keyof SelectDataSetDetailBuilding, Item> = {
   id: {
     label: "id",
@@ -37,7 +38,7 @@ const buildingMetadata: Record<keyof SelectDataSetDetailBuilding, Item> = {
     unit: "人",
   },
   percentage_under_15: {
-    label: "15歳未満の世帯に対する人数比",
+    label: "15歳未満構成比",
     unit: "%",
   },
   members_15_to_64: {
@@ -45,7 +46,7 @@ const buildingMetadata: Record<keyof SelectDataSetDetailBuilding, Item> = {
     unit: "人",
   },
   percentage_15_to_64: {
-    label: "15歳以上64歳以下の世帯に対する人数比",
+    label: "15歳以上64歳以下構成比",
     unit: "%",
   },
   members_over_65: {
@@ -53,7 +54,7 @@ const buildingMetadata: Record<keyof SelectDataSetDetailBuilding, Item> = {
     unit: "人",
   },
   percentage_over_65: {
-    label: "65歳以上の世帯に対する人数比",
+    label: "65歳以上構成比",
     unit: "%",
   },
   gender_ratio: {
@@ -67,7 +68,7 @@ const buildingMetadata: Record<keyof SelectDataSetDetailBuilding, Item> = {
     label: "水道番号",
   },
   water_disconnection_flag: {
-    label: "閉栓フラグ",
+    label: "水道閉栓フラグ",
   },
   max_water_usage: {
     label: "最大水道使用量",
@@ -89,7 +90,7 @@ const buildingMetadata: Record<keyof SelectDataSetDetailBuilding, Item> = {
     label: "名寄せ元情報_水道",
   },
   structure_name: {
-    label: "登記上の構造名称",
+    label: "建物構造名",
   },
   registration_date: {
     label: "登記年月日",
@@ -161,7 +162,7 @@ const buildingMetadata: Record<keyof SelectDataSetDetailBuilding, Item> = {
     label: "ジオメトリデータ",
   },
   measuredheight: {
-    label: "計測高",
+    label: "浸水想定深",
     unit: "m",
   },
   measuredheightUom: {
@@ -192,30 +193,30 @@ const buildingMetadata: Record<keyof SelectDataSetDetailBuilding, Item> = {
     label: "description",
   },
   rank: {
-    label: "洪水浸水ランク",
+    label: "浸水ランク",
   },
   depth: {
-    label: "洪水浸水深",
+    label: "浸水深さ",
     unit: "m",
   },
   depth_uom: {
     label: "depth_uom",
   },
   admin_type: {
-    label: "admin_type",
+    label: "管轄自治体",
   },
   scale: {
     label: "scale",
   },
   duration: {
-    label: "洪水浸水時間",
+    label: "浸水期間",
     unit: "時間",
   },
   duration_uom: {
     label: "duration_uom",
   },
   building_use: {
-    label: "building_use",
+    label: "建築申請用途",
   },
   floors_above_ground: {
     label: "地上階数",
