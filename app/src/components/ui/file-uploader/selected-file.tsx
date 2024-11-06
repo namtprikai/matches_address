@@ -1,4 +1,4 @@
-import { ArchiveRegular } from "@fluentui/react-icons";
+import { DeleteRegular } from "@fluentui/react-icons";
 import { type MouseEventHandler } from "react";
 import { makeStyles, tokens } from "@fluentui/react-components";
 import { formatByteValue } from "../../../utils/format-byte-value";
@@ -36,7 +36,7 @@ export const SelectedFile = ({ file, onDelete }: Props): JSX.Element => {
       <div>
         <Button
           appearance="subtle"
-          icon={<ArchiveRegular />}
+          icon={<DeleteRegular />}
           onClick={onDelete}
           type="button"
         />

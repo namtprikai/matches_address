@@ -1,6 +1,6 @@
 import {
   EditFilled,
-  ArchiveRegular,
+  DeleteRegular,
   Dismiss24Regular,
 } from "@fluentui/react-icons";
 import { Suspense, useEffect } from "react";
@@ -149,7 +149,7 @@ function DeleteWorkbookButton({
         <Button
           appearance="outline"
           className={styles.button}
-          icon={<ArchiveRegular />}
+          icon={<DeleteRegular />}
           shape="square"
         />
       </DialogTrigger>
