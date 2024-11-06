@@ -3,15 +3,16 @@ import argparse
 import json
 import os
 import shutil
-import subprocess
 import sys
 import uuid
 from utils import *
 
-e012_path = os.path.join(sys._MEIPASS, 'E001_DataMatching', 'E012.py') if hasattr(sys, '_MEIPASS') else "../src/E001_DataMatching/E012.py"
-e013_path = os.path.join(sys._MEIPASS, 'E001_DataMatching', 'E013.py') if hasattr(sys, '_MEIPASS') else "../src/E001_DataMatching/E013.py"
-e014_path = os.path.join(sys._MEIPASS, 'E001_DataMatching', 'E014.py') if hasattr(sys, '_MEIPASS') else "../src/E001_DataMatching/E014.py"
-e016_path = os.path.join(sys._MEIPASS, 'E001_DataMatching', 'E016.py') if hasattr(sys, '_MEIPASS') else "../src/E001_DataMatching/E016.py"
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../')))
+from src.E001_DataMatching.E012 import process_data as E012
+from src.E001_DataMatching.E013 import process_all_data as E013
+from src.E001_DataMatching.E014 import embedding_address as E014
+from src.E001_DataMatching.E016 import process_data as E016
+
 
 def main():
 
@@ -91,84 +92,75 @@ def main():
     if params.get('joining_method') == 'nearer':
         join_option = '最近傍結合'
     search_period = "1"
-    input_zip_file = ""
+    input_zip_file = None
 
     try:
 
         connect_sqllite(params.get('db_path'))
         job_id = create_or_update_job(None ,"", "ml", args.parameters)
-        args_e012 = [
-            "python", e012_path,
-            "--suido_status", params.get('suido_status'),
-            "--suido_use", params.get('suido_use'),
-            "--juki", params.get('juki'),
-            "--touki", params.get('touki'),
-            "--akiya_result", params.get('akiya_result'),
-            "--geocoding", params.get('geocoding'),
-            "--output_directory", output_directory,
-            "--job_id", str(job_id),
-            "--db_path", params.get('db_path'),
-            "--columns", json.dumps(columns),
-        ]
-        subprocess.run(args_e012)
+
+        input_files = {
+            "suido_status": params.get('suido_status'),
+            "suido_use": params.get('suido_use'),
+            "juki": params.get('juki'),
+            "touki": params.get('touki'),
+            "akiya_result": params.get('akiya_result'),
+            "geocoding": params.get('geocoding')
+        }
+            
+        E012(input_files, output_directory, job_id, json.dumps(columns), params.get('db_path'))
         create_or_update_job(job_id, "25")
 
-        args_e013 = [
-            "python", e013_path,
-            "--suido_use", f"{output_directory}/suido_use_cleaned.csv",
-            "--suido_status", f"{output_directory}/suido_status_cleaned.csv",
-            "--juki", f"{output_directory}/juki_cleaned.csv",
-            "--tatemono_file", f"{output_directory}/touki_cleaned.csv",
-            "--base_date", params.get("reference_date").replace("-", ""),
-            "--search_period", search_period,
-            "--output_directory", output_directory,
-            "--job_id", str(job_id),
-            "--db_path", params.get('db_path'),
-            "--columns", json.dumps(columns),
-        ]
-        subprocess.run(args_e013)
+        E013(
+            f"{output_directory}/suido_use_cleaned.csv",
+            f"{output_directory}/suido_status_cleaned.csv",
+            f"{output_directory}/juki_cleaned.csv",
+            f"{output_directory}/touki_cleaned.csv",
+            params.get("reference_date").replace("-", ""),
+            search_period,
+            output_directory,
+            job_id,
+            json.dumps(columns),
+            params.get('db_path')
+        )
         create_or_update_job(job_id, "50")
 
-        args_e014 = [
-            "python", e014_path,
-            "--main_csv", f"{output_directory}/juki_residence.csv",
-            "--sub_csv", f"{output_directory}/akiya_result_cleaned.csv",
-            "--main_column", "正規化住所",
-            "--sub_column", "正規化住所",
-            "--merge_base", "",
-            "--ngram", params.get('n_gram_size'),
-            "--threshold", params.get('similarity_threshold'),
-            "--output_directory", f"{output_directory}/matched_data.csv",
-            "--job_id", str(job_id),
-            "--db_path", params.get('db_path'),
-        ]
-        subprocess.run(args_e014)
+        E014(
+            f"{output_directory}/juki_residence.csv",
+            f"{output_directory}/akiya_result_cleaned.csv",
+            "正規化住所",
+            "正規化住所",
+            "",
+            f"{output_directory}/matched_data.csv",
+            int(params.get('n_gram_size')),
+            float(params.get('similarity_threshold')),
+            1000,
+            str(job_id),
+            params.get('db_path')
+        )
         create_or_update_job(job_id, "75")
 
+        option = 0 if join_option == "交差結合" else 1
         output_path_e016 = output_directory.replace(f"/{random_str}", "")
         output_path_e016 = f"{output_path_e016}/{random_str}.csv"
-        args_e016 = [
-            "python", e016_path,
-            "--tatemono", params.get('buidling_polygon'),
-            "--water_supply", f"{output_directory}/matched_data.csv",
-            "--gpkg", params.get("census"),
-            "--ken", "愛知県",
-            "--sikuchoson", "豊田市",
-            "--join_option", join_option,
-            "--output_format", "csv",
-            "--output_path", output_path_e016,
-            "--job_id", str(job_id),
-            "--db_path", params.get('db_path'),
-        ]
 
-        if input_zip_file:
-            input_zip = ["--input_zip_file", input_zip_file]
-            args_e016.extend(input_zip)
+        E016(
+            params.get('buidling_polygon'),
+            f"{output_directory}/matched_data.csv",
+            params.get("census"),
+            "愛知県",
+            "豊田市",
+            option,
+            "csv",
+            input_zip_file,
+            output_path_e016,
+            job_id,
+            params.get('db_path')
+        )
 
-        subprocess.run(args_e016)
         create_or_update_job(job_id, "complete")
-
         create_job_results(job_id, f"{random_str}.csv")
+
     except Exception as e:
         print(e)
         if job_id:

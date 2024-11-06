@@ -356,7 +356,7 @@ def load_and_process_data(file_path, crs, is_tatemono=True):
     else:
         # その他の非CSVファイルを読み込む
         gdf = gpd.read_file(file_path)
-
+        print("gdf", gdf)
         if gdf.crs is None:
             # データのCRSを指定（EPSG:4326）
             gdf.set_crs(crs, inplace=True)
@@ -921,7 +921,7 @@ def process_plateaugml(input_zip_file, output_gpkg_file, buildings_gdf):
 
 
 
-def process_data(tatemono_path, water_supply_path, gpkg_path, ken, sikuchoson, option, output_type, input_zip_file=None, output_path=None, job_id=None):
+def process_data(tatemono_path, water_supply_path, gpkg_path, ken, sikuchoson, option, output_type, input_zip_file=None, output_path=None, job_id=None, db_path=None):
     """
     建物データと水道データを処理し、PLATEAU GMLデータも結合して結果を保存する
 
@@ -952,6 +952,8 @@ def process_data(tatemono_path, water_supply_path, gpkg_path, ken, sikuchoson, o
         出力ファイルのパスと結合率
     """
     try:
+        if db_path:
+            connect_sqllite(db_path)
         task_id = None
         if job_id:
             task_id = create_or_update_job_task(job_id, progress_percent="0", preprocess_type="e016", error_code=None, result=None)
@@ -999,7 +1001,8 @@ def process_data(tatemono_path, water_supply_path, gpkg_path, ken, sikuchoson, o
             create_or_update_job_task(job_id, progress_percent="100", preprocess_type="e016", error_code=None, result=json.dumps(result), id= task_id, is_finish=True)
 
         return output_path, join_ratio
-    except:
+    except Exception as e:
+        print("Exception", e)
         if task_id is not None:
             create_or_update_job_task(job_id, progress_percent="", preprocess_type="e016", error_code="e001", result=json.dumps({}), id= task_id, is_finish=True)
 
@@ -1022,9 +1025,6 @@ def main():
     # 結合オプションを設定（0: 交差結合、1: 最近傍結合）
     option = 0 if args.join_option == "交差結合" else 1
 
-    if args.db_path:
-        connect_sqllite(args.db_path)
-
     # データ処理を実行
     output_path, join_ratio = process_data(
         args.tatemono, 
@@ -1036,13 +1036,12 @@ def main():
         args.output_format, 
         input_zip_file=args.input_zip_file, 
         output_path=args.output_path,
-        job_id=args.job_id
+        job_id=args.job_id,
+        db_path=args.db_path
     )
 
     print(f"出力ファイル: {output_path}")
     print(f"結合率: {join_ratio}%")
-    
 
 if __name__ == "__main__":
     main()
-

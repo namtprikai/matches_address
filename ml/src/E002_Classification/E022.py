@@ -388,11 +388,13 @@ def insert_sqlite_and_export(input_data, job_id=None):
         if job_id is None and conn:
             conn.close()
 
-def process_and_predict(input_folder, input_file, model_directory, threshold, output_file, required_features, outcome_variable, job_id=None, progress=gr.Progress()):
+def process_and_predict(input_folder, input_file, model_directory, threshold, output_file, required_features, outcome_variable, job_id=None , db_path=None, progress=gr.Progress()):
     """
     入力データを処理し、予測を行い、結果を保存する
     """
     try:
+        if db_path:
+            connect_sqllite(db_path)
         task_id = None
         if job_id:
             task_id = create_or_update_job_task(job_id, progress_percent="0", preprocess_type="e022", error_code=None, result=None)
@@ -478,6 +480,7 @@ def process_and_predict(input_folder, input_file, model_directory, threshold, ou
             create_or_update_job_task(job_id, progress_percent="", preprocess_type="e022", error_code="e001", result=json.dumps({}), id= task_id, is_finish=True)
         return f"{output_file} への予測結果の保存に失敗しました", None
     except Exception as e:
+        print("Exception", e)
         if task_id is not None:
             create_or_update_job_task(job_id, progress_percent="", preprocess_type="e022", error_code="e001", result=json.dumps({}), id= task_id, is_finish=True)
 
@@ -506,9 +509,6 @@ def main():
     input_folder = os.path.dirname(args.input_file)
     input_file = os.path.basename(args.input_file)
 
-    if args.db_path:
-        connect_sqllite(args.db_path)
-
     result_message, output_path = process_and_predict(
         input_folder,
         input_file,
@@ -517,7 +517,8 @@ def main():
         args.output_file,
         REQUIRED_FEATURES,
         OUTCOME_VARIABLE,
-        args.job_id
+        args.job_id,
+        args.db_path
     )
 
     print(result_message)

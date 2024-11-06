@@ -135,7 +135,7 @@ def get_column_names(csv_file: str) -> List[str]:
         print(f"ファイル {csv_file} の読み込み中にエラーが発生しました: {e}")
         return []
 
-def embedding_address(main_csv: io.BytesIO, sub_csv: io.BytesIO, main_column: str, sub_column: str, merge_base: str, output_path:str, ngram: int = 2, threshold: float = 0.5, batch_size: int = 1000, job_id: str = None) -> Tuple[str, str]:   
+def embedding_address(main_csv: io.BytesIO, sub_csv: io.BytesIO, main_column: str, sub_column: str, merge_base: str, output_path:str, ngram: int = 2, threshold: float = 0.5, batch_size: int = 1000, job_id: str = None, db_path: str = None) -> Tuple[str, str]:   
     """
     住所名寄せ処理を行う
     
@@ -162,7 +162,8 @@ def embedding_address(main_csv: io.BytesIO, sub_csv: io.BytesIO, main_column: st
         結果ファイルのパスと結果の概要
     """
     try:
-
+        if db_path:
+            connect_sqllite(db_path)
         task_id = None
         if job_id:
             task_id = create_or_update_job_task(job_id, progress_percent="0", preprocess_type="e014", error_code=None, result=None)
@@ -294,6 +295,7 @@ def embedding_address(main_csv: io.BytesIO, sub_csv: io.BytesIO, main_column: st
 
         return saved_file_path, f"{complete_match_ratio}\n{threshold_match_ratio}\n{sub_complete_match_ratio}"
     except Exception as e:
+        print("Exception", e)
         if task_id is not None:
             create_or_update_job_task(job_id, progress_percent="", preprocess_type="e014", error_code="e001", result=json.dumps({}), id= task_id, is_finish=True)
 
@@ -340,9 +342,6 @@ def main():
     
     args = parser.parse_args()
 
-    if args.db_path:
-        connect_sqllite(args.db_path)
-
     output_path, results = embedding_address(
         args.main_csv,
         args.sub_csv,
@@ -353,7 +352,8 @@ def main():
         args.ngram,
         args.threshold,
         1000,
-        args.job_id
+        args.job_id,
+        args.db_path
     )
     
     print(f"結果ファイル: {output_path}")

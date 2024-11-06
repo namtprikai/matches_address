@@ -8,9 +8,9 @@ import sys
 import uuid
 from utils import *
 
-e022_path = os.path.join(sys._MEIPASS, 'E002_Classification', 'E022.py') if hasattr(sys, '_MEIPASS') else "../src/E002_Classification/E022.py"
-e032_path = os.path.join(sys._MEIPASS, 'E003_Summarization', 'E032.py') if hasattr(sys, '_MEIPASS') else "../src/E003_Summarization/E032.py"
-
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../')))
+from src.E002_Classification.E022 import process_and_predict as E022
+from src.E003_Summarization.E032 import process_summarization as E032
 def main():
 
     parser = argparse.ArgumentParser(description="E022,E032 空き家分析(判定)")
@@ -26,7 +26,7 @@ def main():
         'threshold': json_dict.get('settings', {}).get('threshold', "0.3"),
         'area_grouping': json_dict.get('area_grouping', {}).get('path', None),
         'area_grouping_columns': json_dict.get('area_grouping', {}).get('columns', {}),
-        'spatial_file': json_dict.get('spatial_file', 'C:/rikai/source_code/Links04_Akiya_DX/code/02_py/Gradio/E001_DataMatching/23211/E016/inputs/r2ka23.gpkg')
+        'spatial_file': json_dict.get('spatial_file')
     }
 
     random_str = str(uuid.uuid4())
@@ -37,30 +37,39 @@ def main():
 
         job_id = create_or_update_job(None ,"", "ml", args.parameters)
         file_path = f"{output_directory}/D902.csv"
-        args_e022 = [
-            'python', e022_path,
-            params.get('area_grouping'),
-            params.get('model_path'),
-            "--threshold", params.get('threshold'),
-            "--output_file", file_path,
-            "--job_id", str(job_id),
-            "--db_path", params.get('db_path'),
+
+        input_folder = os.path.dirname(params.get('area_grouping'))
+        input_file = os.path.basename(params.get('area_grouping'))
+
+        REQUIRED_FEATURES = [
+            '世帯人数', '15歳未満人数', '15歳以上64歳以下人数', '65歳以上人数', '15歳未満構成比', 
+            '15歳以上64歳以下構成比', '65歳以上構成比', '男女比', '住定期間', '最大使用水量_suido_residence', 
+            '閉栓フラグ_suido_residence', '構造名称_touki_residence', '登記日付_touki_residence'
         ]
-        subprocess.run(args_e022)
+        OUTCOME_VARIABLE = 'akiya_result_cleaned_flag'
+
+        E022(
+            input_folder, 
+            input_file,
+            params.get('model_path'),
+            float(params.get('threshold')),
+            file_path,
+            REQUIRED_FEATURES,
+            OUTCOME_VARIABLE,
+            str(job_id),
+            params.get('db_path')
+        )
         create_or_update_job(job_id, "50")
 
-        args_e032 = [
-            'python', e032_path,
+        E032(
             file_path,
             params.get('spatial_file'),
-            "--key_column", "KEY_CODE",
-            "--output_dir", output_directory,
-            "--job_id", str(job_id),
-            "--db_path", params.get('db_path')
-        ]
-        subprocess.run(args_e032)
+            output_directory,
+            "KEY_CODE",
+            str(job_id),
+            params.get('db_path')
+        )
         create_or_update_job(job_id, "complete")
-
         create_job_results(job_id, f"{random_str}.csv")
 
     except Exception as e:
@@ -69,8 +78,7 @@ def main():
             create_or_update_job(job_id, "error")
     finally:
         if output_directory and os.path.isdir(output_directory):
-            shutil.rmtree(output_directory)
-        
+            shutil.rmtree(output_directory)        
         
 if __name__ == "__main__":
     main()

@@ -349,8 +349,10 @@ def extract_zip(zip_file, extract_to):
 
 
 
-def process_summarization(akiya_pred_file, spatial_file, output_dir, key_column, job_id=None):
+def process_summarization(akiya_pred_file, spatial_file, output_dir, key_column, job_id=None, db_path=None):
     try:
+        if db_path:
+            connect_sqllite(db_path)
         task_id = None
         if job_id:
             task_id = create_or_update_job_task(job_id, progress_percent="0", preprocess_type="e032", error_code=None, result=None)
@@ -423,7 +425,7 @@ def process_summarization(akiya_pred_file, spatial_file, output_dir, key_column,
 
         return output_path
     except Exception as e:
-        print("excaption", e)
+        print("Exception", e)
         if task_id is not None:
             create_or_update_job_task(job_id, progress_percent="", preprocess_type="e032", error_code="e001", result=json.dumps({}), id= task_id, is_finish=True)
 
@@ -465,9 +467,6 @@ def main():
 
     if spatial_file_ext not in [".zip", ".gpkg"]:
         raise ValueError("読み込めるファイル形式は .zip または .gpkg のみです。")
-    
-    if args.db_path:
-        connect_sqllite(args.db_path)
 
     # process_summarization関数を呼び出して処理を実行
     output_path = process_summarization(
@@ -475,7 +474,8 @@ def main():
         args.spatial_file,
         args.output_dir,
         args.key_column,
-        args.job_id
+        args.job_id,
+        args.db_path
     )
 
     print(f"地域別集計データが保存されました: {output_path}")

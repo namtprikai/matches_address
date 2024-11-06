@@ -712,7 +712,7 @@ def set_columns(
 
     
 # すべてのデータを処理する関数を作成
-def process_all_data(suido_use_file, suido_status_file, juki_file, tatemono_file, base_date, search_period, output_directory, job_id, columns):
+def process_all_data(suido_use_file, suido_status_file, juki_file, tatemono_file, base_date, search_period, output_directory, job_id, columns, db_path=None):
     """
     すべてのデータファイルを処理する
     Parameters
@@ -735,6 +735,8 @@ def process_all_data(suido_use_file, suido_status_file, juki_file, tatemono_file
         処理済みファイルのパスリスト
     """
     try:
+        if db_path:
+            connect_sqllite(db_path)
         progress_percent = 0
         task_id = None
         if job_id:
@@ -811,9 +813,6 @@ def main():
     
     args = parser.parse_args()
 
-    if args.db_path:
-        connect_sqllite(args.db_path)
-
     processed_files = process_all_data(
         args.suido_use,
         args.suido_status,
@@ -824,6 +823,7 @@ def main():
         args.output_directory,
         args.job_id,
         args.columns,
+        args.db_path
     )
     
     print("処理済みファイル:")

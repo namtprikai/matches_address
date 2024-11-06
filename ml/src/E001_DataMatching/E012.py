@@ -651,7 +651,7 @@ def generate_dummy_data(main_df, main_address_col, DATA_COLUMNS):
 
 
 
-def process_data(input_files, output_directory, job_id, columns):
+def process_data(input_files, output_directory, job_id, columns, db_path=None):
     """
     すべてのデータファイルを処理する
 
@@ -678,6 +678,8 @@ def process_data(input_files, output_directory, job_id, columns):
     # 入力ファイルのパスを設定
     # 各ファイルオブジェクトから名前（パス）を取得し、辞書形式で保存
     try:
+        if db_path:
+            connect_sqllite(db_path)
         task_id = None
         progress_percent = 0
         if job_id:
@@ -725,7 +727,8 @@ def process_data(input_files, output_directory, job_id, columns):
         # 処理済みファイルのパスリストを返す
         # 出力パスのうち、実際にファイルが生成されたもののみをリストにして返す
         return [path for path in output_paths.values() if os.path.exists(path)]
-    except:
+    except Exception as e:
+        print("Exception", e)
         if task_id is not None:
             create_or_update_job_task(job_id, progress_percent="", preprocess_type="012", error_code="e001", result=json.dumps({}), id= task_id, is_finish=True)
 
@@ -754,10 +757,7 @@ def main():
         "geocoding": args.geocoding
     }
 
-    if args.db_path:
-        connect_sqllite(args.db_path)
-
-    processed_files = process_data(input_files, args.output_directory, args.job_id, args.columns)
+    processed_files = process_data(input_files, args.output_directory, args.job_id, args.columns, args.db_path)
     
     print("処理済みファイル:")
     for file in processed_files:
