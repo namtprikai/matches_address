@@ -211,10 +211,10 @@ export function JobGraph(): JSX.Element {
   // RadarChart 用のデータ
   const radarData = [
     { subject: "正解率", A: 85 },
-    { subject: "精度", A: 80 },
     { subject: "F値", A: 75 },
-    { subject: "再現率", A: 90 },
     { subject: "特異率", A: 70 },
+    { subject: "適合率", A: 80 },
+    { subject: "再現率", A: 90 },
   ];
 
   return (
