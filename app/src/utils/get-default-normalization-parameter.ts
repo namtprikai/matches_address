@@ -80,6 +80,9 @@ export const getDefaultNormalizationParameter = (): NormalizationParameters => {
       urban_planning: {
         path: undefined,
       },
+      census: {
+        path: undefined,
+      },
     },
   };
 };

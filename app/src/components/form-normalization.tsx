@@ -95,6 +95,66 @@ export const FormNormalization = ({ value, onSave }: Props): JSX.Element => {
             />
           )}
         />
+        <Controller
+          control={control}
+          name="data.vacant_house"
+          render={({ field: { value, onChange } }) => (
+            <FormDataset
+              dataSetName={LanguageMap.NORMALIZATION_DATA_LABEL.vacantHouse}
+              name={"data.vacant_house"}
+              onChange={onChange}
+              value={value}
+            />
+          )}
+        />
+        <Controller
+          control={control}
+          name="data.geocoding"
+          render={({ field: { value, onChange } }) => (
+            <FormDataset
+              dataSetName={LanguageMap.NORMALIZATION_DATA_LABEL.geocoding}
+              name={"data.geocoding"}
+              onChange={onChange}
+              value={value}
+            />
+          )}
+        />
+        <Controller
+          control={control}
+          name="data.building_polygon"
+          render={({ field: { value, onChange } }) => (
+            <FormDataset
+              dataSetName={LanguageMap.NORMALIZATION_DATA_LABEL.buildingPolygon}
+              name={"data.building_polygon"}
+              onChange={onChange}
+              value={value}
+            />
+          )}
+        />
+        <Controller
+          control={control}
+          name="data.urban_planning"
+          render={({ field: { value, onChange } }) => (
+            <FormDataset
+              dataSetName={LanguageMap.NORMALIZATION_DATA_LABEL.urbanPlanning}
+              name={"data.urban_planning"}
+              onChange={onChange}
+              value={value}
+            />
+          )}
+        />
+        <Controller
+          control={control}
+          name="data.census"
+          render={({ field: { value, onChange } }) => (
+            <FormDataset
+              dataSetName={LanguageMap.NORMALIZATION_DATA_LABEL.census}
+              name={"data.census"}
+              onChange={onChange}
+              value={value}
+            />
+          )}
+        />
       </div>
       <FormNormalizationSettings
         onChange={settingsOnChange}
