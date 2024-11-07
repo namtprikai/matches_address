@@ -150,6 +150,10 @@ type Props = {
   onSave: (parameters: parameters) => void;
 };
 
+/**
+ * フィルタリング結果表示用のフィールド表示コンポーネント
+ * FormFilteringParameters で選択されたフィルタリング条件や細かい条件を編集・表示する
+ */
 export const FormFilteringParameters = ({
   onSave,
   ...props

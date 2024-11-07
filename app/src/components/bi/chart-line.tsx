@@ -7,12 +7,14 @@ import {
   Line as ReLine,
   Legend as ReLegend,
   CartesianGrid as ReCartesianGrid,
+  type DotProps,
 } from "recharts";
 import {
   tokens,
   Tooltip as FUIToolTip,
   makeStyles,
 } from "@fluentui/react-components";
+import { type ActiveShape } from "recharts/types/util/types";
 import { CHART_COLORS } from "../../config/chart-colors";
 import { useFetchFilterDataSetForChart } from "../../hooks/use-fetch-filtered-data-set-for-chart";
 import { type FilterDataSetForChartArgs } from "../../ipc-main-listeners/filter-data-set-for-chart";
@@ -66,16 +68,17 @@ const CustomizedActiveDot = ({
   stroke,
   value,
   unit,
-}: {
-  cx: number;
-  cy: number;
-  stroke: string;
-  value: number;
+}: DotProps & {
+  value?: number;
   unit?: string;
 }): JSX.Element => {
   const styles = useStyles();
 
   const labelText = unit ? `${value}${unit}` : value;
+
+  if (cx == null || cy == null) {
+    return <></>;
+  }
 
   return (
     <FUIToolTip
@@ -140,7 +143,6 @@ export const ChartLine = (props: ChartLineProps): JSX.Element => {
         <ReCartesianGrid vertical={false} />
         <ReLine
           activeDot={
-            // @ts-expect-error 内部処理で適切なPropsが渡されるが型定義が不足しているためエラーが出る
             <CustomizedActiveDot
               unit={
                 props.groupingCalc === "count"

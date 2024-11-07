@@ -4,6 +4,11 @@ import {
   Tooltip as FUITooltip,
   tokens,
 } from "@fluentui/react-components";
+import { type TooltipProps } from "recharts";
+import {
+  type NameType,
+  type ValueType,
+} from "recharts/types/component/DefaultTooltipContent";
 
 const useStyles = makeStyles({
   tooltipContainer: {
@@ -23,23 +28,31 @@ const useStyles = makeStyles({
   },
 });
 
+/**
+ * TooltipPropsに渡す２つの型は、ベースのTooltipPropsが必要とする型で最低限のものを渡している
+ */
+type CustomTooltipProps = TooltipProps<ValueType, NameType>;
+
 export const CustomTooltip = ({
   active,
   payload,
-}: {
-  active: boolean;
-  payload: { value: string; unit: string | undefined }[];
-}): JSX.Element | null => {
+}: CustomTooltipProps): JSX.Element | null => {
   const styles = useStyles();
 
   if (active && payload && payload.length) {
-    const label = payload[0].value;
+    const label = payload[0].value ?? "";
     const unit = payload[0].unit ?? "";
+
     return (
       <div className={mergeClasses(styles.tooltipContainer)}>
         <FUITooltip
           content={{
-            children: label + unit,
+            children: (
+              <>
+                {label}
+                {unit}
+              </>
+            ),
             className: styles.tooltip,
           }}
           relationship="label"

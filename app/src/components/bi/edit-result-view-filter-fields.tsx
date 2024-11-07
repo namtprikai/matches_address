@@ -29,6 +29,11 @@ const useStyles = makeStyles({
   },
 });
 
+/**
+ * フィルタ条件用のフィールド表示コンポーネント
+ *
+ * @returns
+ */
 export const EditResultViewFilterFields = ({
   resultView,
 }: {
@@ -53,7 +58,9 @@ export const EditResultViewFilterFields = ({
 
   const areas: string[] = areaFilter?.value ?? [];
 
+  // 表示形式ごとに入力するフィールドを変更するための設定を取得
   const fieldOptions = TILE_VIEW_CONFIG[style ?? "map"];
+  // 重複削除のためArray.from(new Set())を利用
   const options = Array.from(
     new Set(
       fieldOptions.fields.flatMap((field) => {
@@ -67,6 +74,7 @@ export const EditResultViewFilterFields = ({
     ),
   );
 
+  // parameterのうちフィルタ条件のフィールドのみを取得
   const filterFields = fields.filter((field) => {
     return (
       field.type === "filter" && field.key !== "year" && field.key !== "area"

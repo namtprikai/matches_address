@@ -47,6 +47,9 @@ type Props = {
   onSave: (value: string[]) => void;
 } & FetchAreaGroupsArg;
 
+/**
+ * 地域フィルタ用のフィールド表示コンポーネント
+ */
 export const FormAreaFilter = (props: Props): JSX.Element => {
   const [open, setOpen] = useState(false);
   const [selectedAreas, setSelectedAreas] = useState<string[]>(props.areas);

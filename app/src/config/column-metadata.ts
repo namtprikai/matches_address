@@ -70,6 +70,9 @@ export type ColumnMetadata<COLUMN extends string | number | symbol> = {
 /**
  * D903のカラムごとのメタデータをハードコード
  * ここでの設定は、チャートの表示やグルーピングの際に利用される
+ *
+ * 日本語名称との対応は以下のスプレッドシートを正とすること
+ * https://docs.google.com/spreadsheets/d/1j5gg41D2D82zFKPna7O18lQETGPCLtpp/edit?gid=1663205080#gid=1663205080
  */
 export const AREA_DATASET_COLUMN_METADATA = {
   area: {
@@ -119,6 +122,9 @@ export const AREA_DATASET_COLUMN_METADATA = {
 /**
  * D902のカラムごとのメタデータをハードコード
  * ここでの設定は、チャートの表示やグルーピングの際に利用される
+ *
+ * 日本語名称との対応は以下のスプレッドシートを正とすること
+ * https://docs.google.com/spreadsheets/d/1j5gg41D2D82zFKPna7O18lQETGPCLtpp/edit?gid=1663205080#gid=1663205080
  */
 export const BUILDING_DATASET_COLUMN_METADATA = {
   area_group: {
