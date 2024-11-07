@@ -1,11 +1,6 @@
-import {
-  Dialog,
-  makeStyles,
-  DialogTrigger,
-  Checkbox,
-} from "@fluentui/react-components";
+import { Dialog, makeStyles, DialogTrigger } from "@fluentui/react-components";
 import { DismissFilled } from "@fluentui/react-icons";
-import { type FieldPath, type UseFormReturn } from "react-hook-form";
+import { useForm, type FieldPath } from "react-hook-form";
 import { type z } from "zod";
 import { type ReturnUseDialogState } from "../hooks/use-dialog-state";
 import { type schema as formModelCreateSchema } from "../hooks/use-form-model-create";
@@ -29,18 +24,14 @@ const useStyles = makeStyles({
     height: "24px",
     ":hover": { cursor: "pointer" },
   },
-  disabledButton: {
-    backgroundColor: "#EFF0F0",
-    color: "#89949F",
-    cursor: "not-allowed",
-    ":hover": {
-      backgroundColor: "#EFF0F0",
-    },
-  },
   formContents: {
     display: "grid",
     gap: "16px",
     gridTemplateColumns: "repeat(2, 1fr)",
+  },
+  input: {
+    left: "0",
+    width: "16px",
   },
 });
 
@@ -48,14 +39,15 @@ type FormType = z.infer<typeof formModelCreateSchema>;
 
 type Props = {
   dialogState: ReturnUseDialogState;
-  formState: UseFormReturn<FormType>;
+  onSelected: (selected: FormType["settings"]["advanced"]) => void;
+  initialValues: FormType["settings"]["advanced"];
 };
 
 /**
  * ラベル名は仮: @todo 変数の置き場所考えたい
  */
 type AdvancedField = {
-  key: FieldPath<FormType>;
+  key: FieldPath<FormType["settings"]["advanced"]>;
   label: string;
   placeholder: string;
   step?: string;
@@ -63,91 +55,91 @@ type AdvancedField = {
 };
 const Fields: AdvancedField[] = [
   {
-    key: "settings.advanced.test_size",
+    key: "test_size",
     label: "Test Size",
     placeholder: "0.0",
     step: "0.1",
     type: "number",
   },
   {
-    key: "settings.advanced.n_splits",
+    key: "n_splits",
     label: "N Splits",
     placeholder: "0",
     step: "1",
     type: "number",
   },
   {
-    key: "settings.advanced.undersample",
+    key: "undersample",
     label: "Undersample",
     placeholder: "false",
     step: "1",
     type: "checkbox",
   },
   {
-    key: "settings.advanced.undersample_ratio",
+    key: "undersample_ratio",
     label: "Undersample Ratio",
     placeholder: "0.0",
     step: "0.1",
     type: "number",
   },
   {
-    key: "settings.advanced.threshold",
+    key: "threshold",
     label: "Threshold",
     placeholder: "0.0",
     step: "0.1",
     type: "number",
   },
   {
-    key: "settings.advanced.hyperparameter_flag",
+    key: "hyperparameter_flag",
     label: "Hyperparameter Flag",
     placeholder: "false",
     step: "1",
     type: "checkbox",
   },
   {
-    key: "settings.advanced.n_trials",
+    key: "n_trials",
     label: "N Trials",
     placeholder: "0",
     step: "1",
     type: "number",
   },
   {
-    key: "settings.advanced.lambda_l1",
+    key: "lambda_l1",
     label: "Lambda L1",
     placeholder: "0.0",
     step: "0.1",
     type: "number",
   },
   {
-    key: "settings.advanced.lambda_l2",
+    key: "lambda_l2",
     label: "Lambda L2",
     placeholder: "0.0",
     step: "0.1",
     type: "number",
   },
   {
-    key: "settings.advanced.num_leavs",
+    key: "num_leaves",
     label: "Num Leavs",
     placeholder: "0",
     step: "1",
     type: "number",
   },
   {
-    key: "settings.advanced.feature_fraction",
+    key: "feature_fraction",
     label: "Feature Fraction",
     placeholder: "0.0",
     step: "0.1",
     type: "number",
   },
   {
-    key: "settings.advanced.bagging_fraction",
+    key: "bagging_fraction",
     label: "Bagging Fraction",
     placeholder: "0.0",
     step: "0.1",
     type: "number",
   },
   {
-    key: "settings.advanced.bagging_freq",
+    key: "bagging_freq",
     label: "Bagging Freq",
     placeholder: "0",
     step: "1",
@@ -157,15 +149,22 @@ const Fields: AdvancedField[] = [
 
 export const DialogModelAdvanced = ({
   dialogState,
-  formState,
+  onSelected,
+  initialValues,
 }: Props): JSX.Element => {
   const styles = useStyles();
 
   const { isOpen: isDialogOpen, setIsOpen: setIsDialogOpen } = dialogState;
-  const { register } = formState;
 
-  // 仮
-  const disabled = false;
+  /** メインのstateへの反映のタイミングを切り分けるためにformを上流とは別に再作成している */
+  const { register, handleSubmit } = useForm<FormType["settings"]["advanced"]>({
+    defaultValues: initialValues,
+  });
+
+  const handleClick = handleSubmit((data): void => {
+    onSelected(data);
+    setIsDialogOpen(false);
+  });
 
   return (
     <Dialog
@@ -201,16 +200,19 @@ export const DialogModelAdvanced = ({
                     type="number"
                   />
                 )}
-                {type === "checkbox" && <Checkbox {...register(key)} />}
+                {type === "checkbox" && (
+                  /** @fixme Checkboxコンポーネント使いたい。だが使うと初期ステートが反映されない */
+                  <input
+                    className={styles.input}
+                    type="checkbox"
+                    {...register(key)}
+                  />
+                )}
               </Field>
             ))}
           </DialogContent>
           <DialogActions>
-            <Button
-              appearance="primary"
-              className={disabled ? styles.disabledButton : ""}
-              disabled={disabled}
-            >
+            <Button appearance="primary" onClick={handleClick}>
               保存
             </Button>
           </DialogActions>

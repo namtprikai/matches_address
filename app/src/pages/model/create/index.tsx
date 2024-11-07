@@ -20,6 +20,7 @@ import {
   useFormModelCreate,
 } from "../../../hooks/use-form-model-create";
 import { DialogModelMessage } from "../../../components/dialog-model-message";
+import { useFetchDatasetColumns } from "../../../hooks/use-fetch-dataset-columns";
 
 const useStyles = makeStyles({
   root: {
@@ -77,6 +78,9 @@ export const ModelCreate = (): JSX.Element => {
   const [explanatoryVariables, setExplanatoryVariables] = useState<string[]>(
     [],
   );
+  const { data: datasetColumns } = useFetchDatasetColumns({
+    filename: normalizedDataSet?.file_path,
+  });
 
   const modelAdvancedDialogState = useDialogState();
   const modelAdvanced = watch("settings.advanced");
@@ -143,6 +147,7 @@ export const ModelCreate = (): JSX.Element => {
           </div>
         </Card>
         <DialogExplanatoryVariables
+          columnOptions={datasetColumns || []}
           dialogState={explanatoryVariablesDialogState}
           onSelected={(data) => {
             setExplanatoryVariables(data);
@@ -153,14 +158,13 @@ export const ModelCreate = (): JSX.Element => {
         <Card>
           <Subtitle2>③ パラメーターを変更</Subtitle2>
           {modelAdvanced && (
-            <div>
-              {Object.entries(modelAdvanced).map(([key, value]) => (
-                <div key={key}>
-                  <Caption1>{key}</Caption1>
-                  <Caption1>{value}</Caption1>
-                </div>
-              ))}
-            </div>
+            <span>
+              {Object.entries(modelAdvanced)
+                .filter(([, value]) => value)
+                /** @todo keyを日本語に置き換えたい */
+                .map(([key, value]) => `${key}: ${value || "未設定"}`)
+                .join(" / ")}
+            </span>
           )}
           <div>
             <Button
@@ -176,7 +180,8 @@ export const ModelCreate = (): JSX.Element => {
         </Card>
         <DialogModelAdvanced
           dialogState={modelAdvancedDialogState}
-          formState={form}
+          initialValues={modelAdvanced}
+          onSelected={(data) => setValue("settings.advanced", data)}
         />
       </div>
 
