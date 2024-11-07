@@ -5,6 +5,7 @@ import { binaryPath, type IpcMainListener } from "../";
 import { type schema } from "../../hooks/use-form-model-create";
 import { getFilePathInAssets } from "../../utils/get-file-path-in-assets";
 import { getErrorMessage } from "../../utils/get-error-message";
+import { processLogger } from "../../utils/process-logger";
 
 type Params = {
   data: z.infer<typeof schema>;
@@ -21,7 +22,6 @@ export const buildModel = (async (
     const database_path = dbPath;
 
     // childProcessに入れてバックグラウンド実行
-    // ※pidはここで受け取れるはず
     const cp = spawn(
       binaryPath("E021"),
       [
@@ -39,16 +39,7 @@ export const buildModel = (async (
       },
     );
 
-    cp.stdout.on("data", (data) => {
-      // eslint-disable-next-line no-console -- /** @todo for debug  */
-      console.log("stdout" + data);
-      // resolve(data);
-    });
-    cp.stderr.on("data", (data) => {
-      // eslint-disable-next-line no-console -- /** @todo for debug  */
-      console.log("stderr" + data);
-      // reject(data);
-    });
+    processLogger(cp);
 
     return true;
   } catch (error) {
