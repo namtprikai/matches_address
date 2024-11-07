@@ -21,6 +21,7 @@ import { DialogContent } from "../../components/ui/dialog-content";
 import { DialogActions } from "../../components/ui/dialog-actions";
 import { useDialogState } from "../../hooks/use-dialog-state";
 import { Button } from "../../components/ui/button";
+import { DialogImportModelDataset } from "../../components/dialog-import-model-dataset";
 
 const useStyles = makeStyles({
   root: {
@@ -90,6 +91,7 @@ export const JobEvaluation = (): JSX.Element => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { isOpen, setIsOpen } = useDialogState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const importModelDatasetDialogState = useDialogState();
   const navigate = useNavigate();
 
   const handleUploadButtonClick = (): void => {
@@ -119,12 +121,19 @@ export const JobEvaluation = (): JSX.Element => {
         <Card>
           <Subtitle2>① ファイルをインポート</Subtitle2>
           <div className={styles.file}>
-            <span className={styles.fileName}>sample.csv</span>
+            <Button
+              appearance="primary"
+              onClick={() => importModelDatasetDialogState.setIsOpen(true)}
+            >
+              選択
+            </Button>
+            {/* <span className={styles.fileName}>sample.csv</span>
             <span className={styles.deleteIconWrapper}>
               <DeleteRegular fontSize={16} />
-            </span>
+            </span> */}
           </div>
         </Card>
+        <DialogImportModelDataset dialogState={importModelDatasetDialogState} />
 
         <Card>
           <Subtitle2>② 分析対象のデータを選択</Subtitle2>
