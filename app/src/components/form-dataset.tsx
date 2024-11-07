@@ -2,6 +2,7 @@ import {
   Card,
   makeStyles,
   mergeClasses,
+  Option,
   tokens,
 } from "@fluentui/react-components";
 import { useEffect, useState } from "react";
@@ -11,6 +12,7 @@ import { THEME_COLORS } from "../config/theme-colors";
 import { type SelectRawDataSet } from "../schema";
 import { LanguageMap } from "../metadata";
 import { useDialogState } from "../hooks/use-dialog-state";
+import { useFetchDatasetColumns } from "../hooks/use-fetch-dataset-columns";
 import { Dropdown } from "./ui/dropdown";
 import { Field } from "./ui/field";
 import { DialogImportDataset } from "./dialog-import-dataset";
@@ -150,24 +152,30 @@ const useStyles = makeStyles({
 
 export const FormDataset = <
   FORM_TYPE extends FieldValues,
-  COLUMN_TYPE extends object,
+  COLUMN_TYPE extends Partial<Record<string, string>>,
 >({
-  value,
+  value: prevValue,
   onChange,
   dataSetName,
   appearance,
 }: {
   value: {
     columns?: COLUMN_TYPE;
-    filePath?: string;
+    path?: string;
   };
   name: Path<FORM_TYPE>;
   dataSetName: string;
   appearance?: "default" | "large";
-  onChange?: (data: typeof value) => void;
+  onChange?: (data: typeof prevValue) => void;
 }): JSX.Element => {
-  const [dataSet, setDataSet] = useState<SelectRawDataSet | null>(null);
+  const [dataSet, setDataSet] = useState<SelectRawDataSet | undefined>(
+    undefined,
+  );
   const dialogState = useDialogState();
+
+  const { data: dataSetColumns } = useFetchDatasetColumns({
+    filename: dataSet?.file_path,
+  });
 
   const { setIsOpen } = dialogState;
 
@@ -178,11 +186,11 @@ export const FormDataset = <
         <SelectedDataSetView
           dataSet={dataSet}
           onDelete={() => {
-            setDataSet(null);
+            setDataSet(undefined);
             if (onChange) {
               onChange({
-                ...value,
-                filePath: undefined,
+                ...prevValue,
+                path: undefined,
               });
             }
           }}
@@ -192,9 +200,43 @@ export const FormDataset = <
       return <DataSetImportSymbol />;
     }
   };
+  useEffect(() => {
+    if (onChange && dataSetColumns) {
+      const columnKV = prevValue.columns
+        ? Object.entries(prevValue.columns)
+        : [];
+
+      if (columnKV.length === 0) {
+        return;
+      }
+
+      const newColumns = columnKV.reduce((acc, [key]) => {
+        return {
+          ...acc,
+          [key]: dataSetColumns[0],
+        };
+      }, {});
+
+      onChange({
+        path: prevValue.path,
+        // reduceでは厳密な型推論ができないためasで型を指定
+        columns: newColumns as COLUMN_TYPE,
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- prevValueが含まれるとcolumnsの更新を行い、無限ループになるため
+  }, [dataSetColumns]);
 
   const styles = useStyles();
-  const columns = value.columns ? Object.entries(value.columns) : [];
+  const columns = prevValue.columns ? Object.entries(prevValue.columns) : [];
+
+  const dataSetColumnsToOptions = dataSetColumns?.map((column) => {
+    return (
+      <Option key={column} text={column} value={column}>
+        {column}
+      </Option>
+    );
+  });
+
   const columnsToDropDowns = columns.map(([key]) => {
     return (
       <Field
@@ -206,8 +248,24 @@ export const FormDataset = <
           ] + "カラム"
         }
       >
-        <Dropdown className={styles.dropdown}>
-          <option value="test">Test</option>
+        <Dropdown
+          className={styles.dropdown}
+          disabled={dataSetColumns === undefined || dataSetColumns.length === 0}
+          onOptionSelect={(_, data) => {
+            if (onChange) {
+              onChange({
+                ...prevValue,
+                columns: {
+                  ...prevValue.columns,
+                  [key]: data.optionValue,
+                } as COLUMN_TYPE,
+              });
+            }
+          }}
+          selectedOptions={[prevValue.columns?.[key] ?? ""]}
+          value={prevValue.columns?.[key] ?? ""}
+        >
+          {dataSetColumnsToOptions}
         </Dropdown>
       </Field>
     );
@@ -227,6 +285,7 @@ export const FormDataset = <
           <SelectorView />
         </div>
         <div
+          // FormDatasetが横長の場合のスタイルだしわけ
           className={mergeClasses(
             appearance === "large" && styles.dropdownContainer,
           )}
@@ -240,8 +299,8 @@ export const FormDataset = <
           setDataSet(data);
           if (onChange) {
             onChange({
-              ...value,
-              filePath: data?.file_path,
+              ...prevValue,
+              path: data?.file_path,
             });
           }
         }}

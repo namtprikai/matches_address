@@ -41,24 +41,19 @@ type ExplanatoryVariable = string;
 type Props = {
   dialogState: ReturnUseDialogState;
   onSelected: (data: ExplanatoryVariable[]) => void;
+  columnOptions: ExplanatoryVariable[];
 };
 
 export const DialogExplanatoryVariables = ({
   dialogState,
   onSelected,
+  columnOptions,
 }: Props): JSX.Element => {
   const styles = useStyles();
   const [selectedExplanatoryVariable, setSelectedExplanatoryVariable] =
     useState<ExplanatoryVariable[]>([]);
 
   const { isOpen: isDialogOpen, setIsOpen: setIsDialogOpen } = dialogState;
-
-  const mockColumnOptions = [
-    "住所",
-    "名前",
-    "カラム名が入ります",
-    "カラム名が入ります2",
-  ];
 
   const handleClick = (): void => {
     onSelected(selectedExplanatoryVariable);
@@ -89,7 +84,7 @@ export const DialogExplanatoryVariables = ({
             説明変数に使うカラムの選択
           </DialogTitle>
           <DialogContent>
-            {mockColumnOptions.map((column) => (
+            {columnOptions.map((column) => (
               <Checkbox
                 key={column}
                 checked={selectedExplanatoryVariable.includes(column)}

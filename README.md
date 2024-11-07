@@ -45,3 +45,14 @@ npm run make
 - `npm run build`もしくは`npm run make --workspace=app`でビルド
 - `npm run test:e2e --workspace`を実行
 - テストは `tests/sample.e2e.ts` をコピーして作成すること。ファイル名は`*.e2e.ts`にすること（詳しくは playwright.config.ts を見てください）
+
+
+## Pythonファイルのビルドについて
+
+https://microgeodata.sharepoint.com/:w:/r/sites/ProjectLINKS-ProjectLINKS/_layouts/15/doc2.aspx?sourcedoc=%7B1B221AB2-4468-460C-8980-E2CF9AB81752%7D&file=%25u30b3%25u30f3%25u30d1%25u30a4%25u30eb%25u65b9%25u6cd5.docx&action=default&mobileredirect=true
+
+
+## Pythonコードドキュメント
+
+https://github.com/eukarya-inc/links-akiya/tree/01af2a1fed149b59ae40f00e8b1875862f4b321e/ml
+

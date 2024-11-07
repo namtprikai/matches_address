@@ -1,12 +1,9 @@
 import { and, eq, gt, or } from "drizzle-orm";
-import {
-  data_set_detail_buildings,
-  type SelectDataSetDetailBuilding,
-} from "../../../schema";
-import { db } from "../../../utils/db";
-import { type IpcMainListener } from "../../../ipc-main-listeners";
+import { data_set_detail_areas, type SelectDataSetDetailArea } from "../schema";
+import { db } from "../utils/db";
+import { type IpcMainListener } from ".";
 
-export const fetchBuildingsInBatches = ((
+export const selectAreasInBatches = ((
   _: unknown,
   {
     dataSetResultId,
@@ -21,22 +18,22 @@ export const fetchBuildingsInBatches = ((
     lastId?: number;
     areas?: string[];
   },
-): SelectDataSetDetailBuilding[] | null => {
+): SelectDataSetDetailArea[] | null => {
   try {
     const result = db
       .select()
-      .from(data_set_detail_buildings)
+      .from(data_set_detail_areas)
       .where(
         and(
-          eq(data_set_detail_buildings.data_set_result_id, dataSetResultId),
+          eq(data_set_detail_areas.data_set_result_id, dataSetResultId),
           referenceDate
-            ? eq(data_set_detail_buildings.reference_date, referenceDate)
+            ? eq(data_set_detail_areas.reference_date, referenceDate)
             : undefined,
-          lastId ? gt(data_set_detail_buildings.id, lastId) : undefined,
+          lastId ? gt(data_set_detail_areas.id, lastId) : undefined,
           areas && areas.length > 0
             ? or(
                 ...areas.map((area) =>
-                  eq(data_set_detail_buildings.area_group, area),
+                  eq(data_set_detail_areas.area_group, area),
                 ),
               )
             : undefined,

@@ -9,76 +9,76 @@ import { type NormalizationParameters } from "../@types/normalization";
 export const getDefaultNormalizationParameter = (): NormalizationParameters => {
   return {
     settings: {
-      referenceData: "waterStatus",
-      referenceDate: "2021-01-01",
+      reference_data: "water_status",
+      reference_date: "2021-01-01",
       advanced: {
-        similarityThreshold: 0.95,
-        nGramSize: 2,
-        joiningMethod: "intersection",
+        similarity_threshold: 0.95,
+        n_gram_size: 2,
+        joining_method: "intersection",
       },
     },
     data: {
-      residentRegistry: {
-        filePath: undefined,
+      resident_registry: {
+        path: undefined,
         columns: {
-          householdCode: undefined,
-          address: undefined,
-          birthDate: undefined,
-          gender: undefined,
-          residentDate: undefined,
+          household_code: "",
+          address: "",
+          birth_date: "",
+          gender: "",
+          resident_date: "",
         },
       },
-      waterStatus: {
-        filePath: undefined,
+      water_status: {
+        path: undefined,
         columns: {
-          waterSupplyNumber: undefined,
-          waterDisconnectionDate: undefined,
-          waterConnectionDate: undefined,
-          waterDisconnectionFlag: undefined,
-          address: undefined,
+          water_supply_number: "",
+          water_disconnection_date: "",
+          water_connection_date: "",
+          water_disconnection_flag: "",
+          address: "",
         },
       },
-      waterUsage: {
-        filePath: undefined,
+      water_usage: {
+        path: undefined,
         columns: {
-          waterSupplyNumber: undefined,
-          waterUsage: undefined,
-          waterRecordedDate: undefined,
+          water_supply_number: "",
+          water_usage: "",
+          water_recorded_date: "",
         },
       },
-      landRegistry: {
-        filePath: undefined,
+      land_registry: {
+        path: undefined,
         columns: {
-          address: undefined,
-          structureName: undefined,
-          registrationDate: undefined,
+          address: "",
+          structure_name: "",
+          registration_date: "",
         },
       },
-      vacantHouse: {
-        filePath: undefined,
+      vacant_house: {
+        path: undefined,
         columns: {
-          vacantHouseId: undefined,
-          address: undefined,
-          latitude: undefined,
-          longitude: undefined,
+          vacant_house_id: "",
+          address: "",
+          latitude: "",
+          longitude: "",
         },
       },
       geocoding: {
-        filePath: undefined,
+        path: undefined,
         columns: {
-          address: undefined,
-          latitude: undefined,
-          longitude: undefined,
+          address: "",
+          latitude: "",
+          longitude: "",
         },
       },
-      buildingPolygon: {
-        filePath: undefined,
+      building_polygon: {
+        path: undefined,
         columns: {
-          buildingId: undefined,
+          building_id: "",
         },
       },
-      urbanPlanning: {
-        filePath: undefined,
+      urban_planning: {
+        path: undefined,
       },
     },
   };

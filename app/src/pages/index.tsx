@@ -18,6 +18,8 @@ import { Model } from "./model";
 import { Job } from "./job";
 import { JobDetail } from "./job/detail";
 import { ModelCreate } from "./model/create";
+import { JobPreview } from "./job/detail/preview";
+import { JobEvaluation } from "./evaluation";
 
 // クライアントだけで動作するアプリケーションのため`createHashRouter`を使用する
 const router = createHashRouter([
@@ -35,6 +37,10 @@ const router = createHashRouter([
         element: <>404 Not Found</>,
       },
       {
+        path: "evaluation",
+        element: <JobEvaluation />,
+      },
+      {
         path: "model",
         element: <Model />,
       },
@@ -45,6 +51,10 @@ const router = createHashRouter([
       {
         path: "job/detail/:id",
         element: <JobDetail />,
+      },
+      {
+        path: "job/preview",
+        element: <JobPreview />,
       },
       {
         path: "analysis/workbook",
@@ -58,10 +68,6 @@ const router = createHashRouter([
       {
         path: "dataset",
         element: <Dataset />,
-      },
-      {
-        path: "normalization",
-        element: <Normalization />,
       },
       {
         path: "debug",
@@ -81,6 +87,10 @@ const router = createHashRouter([
       {
         path: "analysis/workbook/:id/edit",
         element: <EditWorkbook />,
+      },
+      {
+        path: "normalization",
+        element: <Normalization />,
       },
     ],
   },

@@ -3,7 +3,7 @@ import {
   Caption1Strong,
   makeStyles,
 } from "@fluentui/react-components";
-import { type UsePagenationReturnType } from "../../hooks/use-pagenation";
+import { type UsePaginationReturnType } from "../../hooks/use-pagination";
 import { Button } from "./button";
 
 const useStyles = makeStyles({
@@ -20,9 +20,9 @@ const useStyles = makeStyles({
   },
 });
 
-type Props = UsePagenationReturnType;
+type Props = UsePaginationReturnType;
 
-export const Pagenation = ({
+export const Pagination = ({
   page,
   handlePageChange,
   limitPerPage,

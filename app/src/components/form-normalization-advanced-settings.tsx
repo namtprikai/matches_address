@@ -72,17 +72,17 @@ export const FormNormalizationAdvancedSettings = ({
   });
 
   const { field: similarityThresholdField } = useController({
-    name: "similarityThreshold",
+    name: "similarity_threshold",
     control,
   });
 
   const { field: nGramSizeField } = useController({
-    name: "nGramSize",
+    name: "n_gram_size",
     control,
   });
 
   const { field: joiningMethodField } = useController({
-    name: "joiningMethod",
+    name: "joining_method",
     control,
   });
 
