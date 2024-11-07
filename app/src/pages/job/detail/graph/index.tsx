@@ -179,43 +179,52 @@ export function JobGraph(): JSX.Element {
     navigate(-1);
   };
 
-  const chartData = [
-    {
-      label: "水道利用率",
-      value: 75,
-    },
-    {
-      label: "電力利用料",
-      value: 50,
-    },
-    {
-      label: "居住有無",
-      value: 90,
-    },
-    {
-      label: "居住有無ああああ",
-      value: 10,
-    },
-    {
-      label: "aaa",
-      value: 80,
-    },
-    {
-      label: "BBB",
-      value: 30,
-    },
+  const result = {
+    accuracy: "72.82", // 正解率
+    f1Score: "23", // F値
+    specificity: "32.21", // 特異度
+    precision: "32.21", // 適合率
+    recall: "48.32", // 再現率
+    important_columns: [
+      {
+        column: "水道使用量",
+        value: "53.24",
+      },
+      {
+        column: "電力使用量",
+        value: "45.67",
+      },
+      {
+        column: "居住有無",
+        value: "86",
+      },
+      {
+        column: "aaa",
+        value: "6",
+      },
+      {
+        column: "BBB",
+        value: "16",
+      },
+    ],
+  };
+
+  // result オブジェクトから radarData を生成
+  const radarData = [
+    { subject: "正解率", A: parseFloat(result.accuracy) },
+    { subject: "F値", A: parseFloat(result.f1Score) },
+    { subject: "特異度", A: parseFloat(result.specificity) },
+    { subject: "適合率", A: parseFloat(result.precision) },
+    { subject: "再現率", A: parseFloat(result.recall) },
   ];
+
+  // important_columns から chartData を生成
+  const chartData = result.important_columns.map((item) => ({
+    label: item.column,
+    value: parseFloat(item.value),
+  }));
 
   const xAxisLabels = Array.from({ length: 11 }, (_, i) => i * 10);
-
-  // RadarChart 用のデータ
-  const radarData = [
-    { subject: "正解率", A: 85 },
-    { subject: "F値", A: 75 },
-    { subject: "特異率", A: 70 },
-    { subject: "適合率", A: 80 },
-    { subject: "再現率", A: 90 },
-  ];
 
   return (
     <div className={styles.pageContainer}>
