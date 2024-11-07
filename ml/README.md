@@ -62,6 +62,49 @@ pip install -r requirements.txt
 pip3 install -r requirements.txt
 ```
 
+### Poetryを使う場合
+
+#### Poetryのインストール
+
+PoetryはPythonの依存関係管理ツールです。以下のコマンドを実行してPoetryをインストールします。
+
+```
+curl -sSL https://install.python-poetry.org | python3 -
+```
+
+もしくは
+
+```
+curl -sSL https://install.python-poetry.org | python -
+```
+
+インストールが完了したら、以下のコマンドでPoetryが正しくインストールされたか確認します。
+
+```
+poetry --version
+```
+
+#### 依存ライブラリのインストール
+
+Poetryを使って依存ライブラリをインストールするには、以下のコマンドを実行します。
+
+```
+cd ml
+poetry install
+```
+
+これにより、`pyproject.toml`ファイルに記載された依存関係がインストールされます。
+
+#### Pyinstallerの実行
+
+```
+poetry run pyinstaller --onefile --clean ./src/{your file}.py
+```
+
+```
+./dist/{your file}
+```
+
 ## ファイル構成
 
 - ソースコードはsrcフォルダとGradioフォルダの2種類に分かれています。
