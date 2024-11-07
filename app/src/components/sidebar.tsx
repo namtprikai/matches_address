@@ -60,7 +60,7 @@ const menuItems = [
     icon: DocumentBulletListRegular,
     label: "空き家判定",
     value: "2",
-    href: "#wip",
+    href: "#evaluation",
   },
   {
     icon: DocumentBulletListRegular,

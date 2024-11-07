@@ -19,6 +19,7 @@ import { Job } from "./job";
 import { JobDetail } from "./job/detail";
 import { ModelCreate } from "./model/create";
 import { JobPreview } from "./job/detail/preview";
+import { JobEvaluation } from "./evaluation";
 
 // クライアントだけで動作するアプリケーションのため`createHashRouter`を使用する
 const router = createHashRouter([
@@ -34,6 +35,10 @@ const router = createHashRouter([
       {
         path: "*",
         element: <>404 Not Found</>,
+      },
+      {
+        path: "evaluation",
+        element: <JobEvaluation />,
       },
       {
         path: "model",
