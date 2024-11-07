@@ -20,6 +20,7 @@ import {
   useFormModelCreate,
 } from "../../../hooks/use-form-model-create";
 import { DialogModelMessage } from "../../../components/dialog-model-message";
+import { useFetchDatasetColumns } from "../../../hooks/use-fetch-dataset-columns";
 
 const useStyles = makeStyles({
   root: {
@@ -77,6 +78,9 @@ export const ModelCreate = (): JSX.Element => {
   const [explanatoryVariables, setExplanatoryVariables] = useState<string[]>(
     [],
   );
+  const { data: datasetColumns } = useFetchDatasetColumns({
+    filename: normalizedDataSet?.file_path,
+  });
 
   const modelAdvancedDialogState = useDialogState();
   const modelAdvanced = watch("settings.advanced");
@@ -143,6 +147,7 @@ export const ModelCreate = (): JSX.Element => {
           </div>
         </Card>
         <DialogExplanatoryVariables
+          columnOptions={datasetColumns || []}
           dialogState={explanatoryVariablesDialogState}
           onSelected={(data) => {
             setExplanatoryVariables(data);
