@@ -151,6 +151,7 @@ export function Job(): JSX.Element {
       </Card>
       {/* TODO: 後で消す */}
       <Link to={"/job/preview"}>開発用: プレビュー</Link>
+      <Link to="/graph">開発用: モデル精度表示</Link>
     </div>
   );
 }

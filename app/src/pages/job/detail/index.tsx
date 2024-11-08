@@ -11,7 +11,7 @@ import {
   Button,
 } from "@fluentui/react-components";
 import { ErrorCircleFilled } from "@fluentui/react-icons";
-import { useParams, useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { DialogSaveWithName } from "../../../components/dialog-save-with-name";
 import { useFetchJobTasks } from "../../../hooks/use-fetch-job-tasks";
 import { type SelectJobTask } from "../../../schema";
@@ -114,14 +114,16 @@ const useStyles = makeStyles({
 export function JobDetail(): JSX.Element {
   const styles = useStyles();
   const navigate = useNavigate();
-  const { jobId } = useParams<{ jobId: string }>();
-
-  const { data } = useFetchJobTasks(Number(jobId));
+  const { id } = useParams<{ id: string }>();
+  const { data } = useFetchJobTasks(Number(id));
 
   const hasData = data && data.length > 0;
 
   const handlePreviewClick = (): void => {
     navigate("/job/preview");
+  };
+  const handleNavigateToJobGraph = (): void => {
+    navigate(`/job/detail/${id}/graph`);
   };
 
   return (
@@ -158,7 +160,11 @@ export function JobDetail(): JSX.Element {
               </TableHeader>
               <TableBody>
                 {data.map((item: SelectJobTask) => (
-                  <TableRow key={item.id} className={styles.tableRow}>
+                  <TableRow
+                    key={item.id}
+                    className={styles.tableRow}
+                    onClick={handleNavigateToJobGraph}
+                  >
                     <TableCell className={styles.tableCell}>
                       {item.preprocess_type ?? "不明な処理"}
                     </TableCell>
