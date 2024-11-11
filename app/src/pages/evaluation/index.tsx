@@ -22,6 +22,7 @@ import { DialogActions } from "../../components/ui/dialog-actions";
 import { useDialogState } from "../../hooks/use-dialog-state";
 import { Button } from "../../components/ui/button";
 import { DialogImportModelDataset } from "../../components/dialog-import-model-dataset";
+import { type SelectModelFile } from "../../schema";
 
 const useStyles = makeStyles({
   root: {
@@ -91,6 +92,8 @@ export const JobEvaluation = (): JSX.Element => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { isOpen, setIsOpen } = useDialogState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [selectedModelFile, setSelectedModelFile] =
+    useState<SelectModelFile | null>(null);
   const importModelDatasetDialogState = useDialogState();
   const navigate = useNavigate();
 
@@ -113,6 +116,11 @@ export const JobEvaluation = (): JSX.Element => {
     }
   };
 
+  // モデルファイルの削除
+  const handleRemoveModelFile = (): void => {
+    setSelectedModelFile(null);
+  };
+
   return (
     <div className={styles.root}>
       <h2 className={styles.heading}>空き家判定</h2>
@@ -121,19 +129,35 @@ export const JobEvaluation = (): JSX.Element => {
         <Card>
           <Subtitle2>① ファイルをインポート</Subtitle2>
           <div className={styles.file}>
-            <Button
-              appearance="primary"
-              onClick={() => importModelDatasetDialogState.setIsOpen(true)}
-            >
-              選択
-            </Button>
-            {/* <span className={styles.fileName}>sample.csv</span>
-            <span className={styles.deleteIconWrapper}>
-              <DeleteRegular fontSize={16} />
-            </span> */}
+            {selectedModelFile ? (
+              <>
+                <span className={styles.fileName}>
+                  {selectedModelFile.file_name}
+                </span>
+                <span
+                  className={styles.deleteIconWrapper}
+                  onClick={handleRemoveModelFile}
+                >
+                  <DeleteRegular fontSize={16} />
+                </span>
+              </>
+            ) : (
+              <Button
+                appearance="primary"
+                onClick={() => importModelDatasetDialogState.setIsOpen(true)}
+              >
+                選択
+              </Button>
+            )}
           </div>
         </Card>
-        <DialogImportModelDataset dialogState={importModelDatasetDialogState} />
+
+        <DialogImportModelDataset
+          dialogState={importModelDatasetDialogState}
+          onSelected={(data) => {
+            setSelectedModelFile(data);
+          }}
+        />
 
         <Card>
           <Subtitle2>② 分析対象のデータを選択</Subtitle2>
@@ -177,7 +201,7 @@ export const JobEvaluation = (): JSX.Element => {
           <DialogTrigger disableButtonEnhancement>
             <Button
               className={styles.restartButton}
-              disabled={!selectedFile}
+              disabled={!selectedFile || !selectedModelFile}
               onClick={() => setIsOpen(true)}
             >
               分析開始
@@ -213,13 +237,11 @@ export const JobEvaluation = (): JSX.Element => {
               <DialogActions>
                 <Button
                   appearance="primary"
-                  form="create-workbook"
                   onClick={() => {
                     setIsOpen(false);
                     navigate("/job");
                   }}
                   size="medium"
-                  type="submit"
                 >
                   非同期処理一覧画面へ
                 </Button>

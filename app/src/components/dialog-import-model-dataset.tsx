@@ -2,8 +2,6 @@ import {
   Dialog,
   tokens,
   makeStyles,
-  type SelectTabData,
-  type SelectTabEvent,
   Table,
   TableHeader,
   TableHeaderCell,
@@ -11,9 +9,14 @@ import {
   TableRow,
   TableCell,
   mergeClasses,
+  typographyStyles,
   DialogTrigger,
 } from "@fluentui/react-components";
-import { ArrowSortRegular, DismissFilled } from "@fluentui/react-icons";
+import {
+  ArrowSortRegular,
+  DismissFilled,
+  ComposeRegular,
+} from "@fluentui/react-icons";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { type ReturnUseDialogState } from "../hooks/use-dialog-state";
@@ -25,7 +28,6 @@ import { DialogBody } from "./ui/dialog-body";
 import { DialogTitle } from "./ui/dialog-title";
 import { DialogContent } from "./ui/dialog-content";
 import { DialogActions } from "./ui/dialog-actions";
-import { FileUploader } from "./ui/file-uploader/file-uploader";
 
 const useStyles = makeStyles({
   dialogTitle: {
@@ -44,13 +46,6 @@ const useStyles = makeStyles({
     alignItems: "center",
     height: "293px",
   },
-  uploadWrap: {
-    height: "325px",
-    padding: `${tokens.spacingVerticalNone} ${tokens.spacingVerticalS} ${
-      tokens.spacingHorizontalMNudge
-    }`,
-    borderBottom: `1px solid ${tokens.colorNeutralStroke2}`,
-  },
   noDataset: {
     display: "flex",
     flexDirection: "column",
@@ -58,14 +53,7 @@ const useStyles = makeStyles({
     alignItems: "center",
     color: tokens.colorNeutralForeground3,
     fontSize: tokens.fontSizeBase200,
-  },
-  tab: {
-    padding: `${tokens.spacingVerticalMNudge} ${tokens.spacingHorizontalNone}`,
-  },
-  tabList: {
-    display: "flex",
-    gap: tokens.spacingVerticalXL,
-    padding: `${tokens.spacingVerticalNone} ${tokens.spacingHorizontalXXL}`,
+    gap: tokens.spacingVerticalMNudge,
   },
   tableHeader: {
     display: "block",
@@ -115,11 +103,32 @@ const useStyles = makeStyles({
       backgroundColor: "#EFF0F0",
     },
   },
-  menuItemButton: {
-    justifyContent: "flex-start",
-    padding: 0,
-    fontWeight: "normal",
-    width: "100%",
+  linkToModel: {
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    gap: tokens.spacingHorizontalS,
+    color: "#6264A7",
+    textDecoration: "underline",
+    ...typographyStyles.subtitle2,
+    ":hover": { cursor: "pointer" },
+  },
+  dialogLinkToModel: {
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    gap: tokens.spacingHorizontalS,
+    color: "#6264A7",
+    textDecoration: "underline",
+    ...typographyStyles.body1,
+    ":hover": { cursor: "pointer" },
+  },
+  largeBoldIcon: {
+    fontSize: "20px",
+  },
+  dialogActions: {
+    display: "flex",
+    gap: tokens.spacingHorizontalXL,
   },
 });
 
@@ -133,7 +142,6 @@ export const DialogImportModelDataset = ({
   onSelected,
 }: Props): JSX.Element => {
   const styles = useStyles();
-  const [selectedTab, setSelectedTab] = useState(0);
   const [selectedDataSet, setSelectedDataSet] =
     useState<SelectModelFile | null>(null);
 
@@ -144,16 +152,11 @@ export const DialogImportModelDataset = ({
 
   const handleClick = (): void => {
     if (selectedDataSet !== null) {
-      // const dataset = datasets[selectedDatasetIndex];
       onSelected?.(selectedDataSet);
       setIsDialogOpen(false);
     }
   };
 
-  const handleTabChange = (_: SelectTabEvent, data: SelectTabData): void => {
-    setSelectedTab(data.value as number);
-    setSelectedDataSet(null);
-  };
   return (
     <Dialog
       onOpenChange={(_, { open }) => setIsDialogOpen(open)}
@@ -178,95 +181,85 @@ export const DialogImportModelDataset = ({
             利用するモデルを選択
           </DialogTitle>
           <DialogContent padding={false}>
-            {selectedTab === 0 && (
-              <>
-                <Table className={styles.tableHeight}>
-                  <TableHeader className={styles.tableHeader}>
+            <Table className={styles.tableHeight}>
+              <TableHeader className={styles.tableHeader}>
+                <TableRow
+                  className={mergeClasses(
+                    styles.datasetTable,
+                    styles.borderBottom,
+                  )}
+                >
+                  <TableHeaderCell
+                    className={mergeClasses(
+                      styles.datasetCell,
+                      styles.datasetHeader,
+                    )}
+                  >
+                    データセット名
+                    <ArrowSortRegular />
+                  </TableHeaderCell>
+                  <TableHeaderCell
+                    className={mergeClasses(
+                      styles.datasetCell,
+                      styles.datasetHeader,
+                    )}
+                  >
+                    最終更新
+                    <ArrowSortRegular />
+                  </TableHeaderCell>
+                </TableRow>
+              </TableHeader>
+              {datasets.length > 0 ? (
+                <TableBody className={styles.tableBody}>
+                  {datasets.map((dataset) => (
                     <TableRow
+                      key={dataset.id}
                       className={mergeClasses(
                         styles.datasetTable,
-                        styles.borderBottom,
+                        selectedDataSet?.id === dataset.id
+                          ? styles.selectedDatasetTable
+                          : styles.borderBottom,
                       )}
+                      onClick={() => setSelectedDataSet(dataset)}
                     >
-                      <TableHeaderCell
+                      <TableCell
                         className={mergeClasses(
                           styles.datasetCell,
-                          styles.datasetHeader,
+                          styles.dataName,
                         )}
                       >
-                        データセット名
-                        <ArrowSortRegular />
-                      </TableHeaderCell>
-                      <TableHeaderCell
-                        className={mergeClasses(
-                          styles.datasetCell,
-                          styles.datasetHeader,
-                        )}
-                      >
-                        最終更新
-                        <ArrowSortRegular />
-                      </TableHeaderCell>
+                        {dataset.file_name}
+                      </TableCell>
+                      <TableCell className={styles.datasetCell}>
+                        {dataset.created_at}
+                      </TableCell>
                     </TableRow>
-                  </TableHeader>
-                  {datasets.length > 0 ? (
-                    <TableBody className={styles.tableBody}>
-                      {datasets.map((dataset) => (
-                        <TableRow
-                          key={dataset.id}
-                          className={mergeClasses(
-                            styles.datasetTable,
-                            selectedDataSet?.id === dataset.id
-                              ? styles.selectedDatasetTable
-                              : styles.borderBottom,
-                          )}
-                          onClick={() => setSelectedDataSet(dataset)}
-                        >
-                          <TableCell
-                            className={mergeClasses(
-                              styles.datasetCell,
-                              styles.dataName,
-                            )}
-                          >
-                            {dataset.file_name}
-                          </TableCell>
-                          <TableCell className={styles.datasetCell}>
-                            {dataset.created_at}
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  ) : (
-                    <div className={styles.noDatasetWrap}>
-                      <span className={styles.noDataset}>
-                        現在表示できるデータセットはありません
-                        <Link to={"/model"}>モデルを作成</Link>
-                      </span>
-                    </div>
-                  )}
-                </Table>
-              </>
-            )}
-
-            {selectedTab === 1 && (
-              <div className={styles.uploadWrap}>
-                <FileUploader
-                  onChange={() => {
-                    return;
-                  }}
-                  value={null}
-                />
-              </div>
-            )}
+                  ))}
+                </TableBody>
+              ) : (
+                <div className={styles.noDatasetWrap}>
+                  <span className={styles.noDataset}>
+                    現在表示できるデータセットはありません
+                    <Link className={styles.dialogLinkToModel} to={"/model"}>
+                      モデルを作成
+                      <ComposeRegular className={styles.largeBoldIcon} />
+                    </Link>
+                  </span>
+                </div>
+              )}
+            </Table>
           </DialogContent>
-          <DialogActions>
+          <DialogActions className={styles.dialogActions}>
+            <Link className={styles.linkToModel} to={"/model"}>
+              モデルを作成
+              <ComposeRegular className={styles.largeBoldIcon} />
+            </Link>
             <Button
               appearance="primary"
               className={
-                selectedTab === 0 && selectedDataSet === null
-                  ? styles.disabledButton
-                  : ""
+                selectedDataSet === null ? styles.disabledButton : undefined
               }
-              disabled={selectedTab === 0 && selectedDataSet === null}
+              disabled={selectedDataSet === null}
               onClick={handleClick}
             >
               モデルを決定
