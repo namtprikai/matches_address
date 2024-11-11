@@ -8,7 +8,6 @@ import {
 import { useEffect, useState } from "react";
 import { type FieldValues, type Path } from "react-hook-form";
 import { Delete16Regular } from "@fluentui/react-icons";
-import { preview } from "vite";
 import { THEME_COLORS } from "../config/theme-colors";
 import { type SelectRawDataSet } from "../schema";
 import { LanguageMap } from "../metadata";
