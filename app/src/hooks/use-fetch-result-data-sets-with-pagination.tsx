@@ -8,7 +8,9 @@ type Params = {
   limitPerPage: number;
 };
 
-type Response = Record<string, string | number | null>[] | undefined;
+export type ResultDataSetsResponse =
+  | Record<string, string | number | null>[]
+  | undefined;
 
 const fetcher = ([id, type, page, limitPerPage]: [
   Params["dataSetResultId"],
@@ -16,7 +18,7 @@ const fetcher = ([id, type, page, limitPerPage]: [
   Params["page"],
   Params["limitPerPage"],
   string,
-]): Promise<Response> => {
+]): Promise<ResultDataSetsResponse> => {
   switch (type) {
     case "building": {
       const result = window.ipcRenderer.invoke(
@@ -49,7 +51,7 @@ export const useFetchResultDataSetsWithPagination = ({
   type,
   page,
   limitPerPage,
-}: Params): SWRResponse<Awaited<Response>> => {
+}: Params): SWRResponse<Awaited<ResultDataSetsResponse>> => {
   const swr = useSWR(
     [
       dataSetResultId,

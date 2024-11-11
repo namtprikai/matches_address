@@ -45,13 +45,17 @@ import { DialogContent } from "../ui/dialog-content";
 import { DialogActions } from "../ui/dialog-actions";
 import { DialogSurface } from "../ui/dialog-surface";
 import { downloadObjectsAsCSV } from "../../utils/download-objects-as-csv";
-import { useFetchResultDataSetsWithPagination } from "../../hooks/use-fetch-result-data-sets-with-pagination";
+import {
+  type ResultDataSetsResponse,
+  useFetchResultDataSetsWithPagination,
+} from "../../hooks/use-fetch-result-data-sets-with-pagination";
 import { usePagination } from "../../hooks/use-pagination";
 import { Pagination } from "../ui/pagination";
 import { DeleteRowDialog } from "./delete-row-dialog";
 import { EditNameDialog } from "./edit-name-dialog";
 import { DataPreviewDialog } from "./data-preview-dialog";
 import { DataPreviewTable } from "./data-preview-table";
+import { ResultDataSetMetadata } from "./result-dataset-metadata";
 
 const useStyles = makeStyles({
   tableHeader: {
@@ -284,7 +288,7 @@ function Row({
               <div>
                 <Pagination {...pagination} />
                 <div className={styles.dataPreviewTableContainer}>
-                  <DataPreviewTable data={data} />
+                  <DataPreviewTable data={parseResultDataSets(data)} />
                 </div>
               </div>
             }
@@ -451,4 +455,50 @@ function RowMenu({
       />
     </>
   );
+}
+
+/**
+ * 判定結果データのカラム名を日本語名に変換したり値に単位を付与したりする。
+ * @param {any} data:ResultDataSetsResponse
+ * @returns {any}
+ */
+function parseResultDataSets(
+  data: ResultDataSetsResponse,
+): ResultDataSetsResponse {
+  if (!data) return data;
+
+  const parsedData = data.map((row) => {
+    const newRow: NonNullable<ResultDataSetsResponse>[number] = {};
+
+    for (const enKey in row) {
+      const value = row[enKey];
+      type MetadataKey = keyof typeof ResultDataSetMetadata;
+      const { label: jpKey, unit } =
+        ResultDataSetMetadata[enKey as MetadataKey];
+
+      if (unit === "%") {
+        if (typeof value === "string" || value === null) {
+          newRow[jpKey] = value;
+          continue;
+        }
+        if (value === 0) {
+          newRow[jpKey] = "0%";
+          continue;
+        }
+        if (value !== 0 && value < 1) {
+          newRow[jpKey] = `${(value * 100).toFixed(0)}${unit}`;
+          continue;
+        }
+        if (value >= 1) {
+          newRow[jpKey] = `${value.toFixed(0)}${unit}`;
+          continue;
+        }
+      }
+      newRow[jpKey] = unit ? `${value}${unit}` : value;
+    }
+
+    return newRow;
+  });
+
+  return parsedData;
 }

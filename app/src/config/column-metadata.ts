@@ -4,6 +4,7 @@ import {
   type SelectDataSetDetailBuilding,
 } from "../schema";
 
+// 選択基準のドキュメントなし。コードが正
 export type AREA_DATASET_COLUMN = keyof Pick<
   SelectDataSetDetailArea,
   | "area"
@@ -14,6 +15,8 @@ export type AREA_DATASET_COLUMN = keyof Pick<
   | "vacant_house_count"
   | "predicted_probability"
 >;
+
+// 選択基準: https://www.notion.so/eukarya/a46c46fe1b9e4261b81c6c0a8df87189
 export type BUILDING_DATASET_COLUMN = keyof Pick<
   SelectDataSetDetailBuilding,
   | "area_group"
