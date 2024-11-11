@@ -145,10 +145,9 @@ export const DialogImportDataset = ({
   const datasets = fetchedDatasets ?? [];
 
   const handleClick = (): void => {
-    if (selectedDataSet !== null) {
-      onSelected?.(selectedDataSet);
-      setIsDialogOpen(false);
-    }
+    if (!selectedDataSet) return;
+    onSelected?.(selectedDataSet);
+    setIsDialogOpen(false);
   };
 
   const handleTabChange = (_: SelectTabEvent, data: SelectTabData): void => {
