@@ -155,15 +155,14 @@ export const FormDataset = <
                     className={styles.dropdown}
                     disabled={!dataSetColumns || dataSetColumns.length === 0}
                     onOptionSelect={(_, data) => {
-                      if (onChange) {
-                        onChange({
-                          ...prevValue,
-                          columns: {
-                            ...prevValue.columns,
-                            [key]: data.optionValue,
-                          } as COLUMN_TYPE,
-                        });
-                      }
+                      if (!onChange) return;
+                      onChange({
+                        ...prevValue,
+                        columns: {
+                          ...prevValue.columns,
+                          [key]: data.optionValue,
+                        } as COLUMN_TYPE,
+                      });
                     }}
                     selectedOptions={[prevValue.columns?.[key] ?? ""]}
                     value={prevValue.columns?.[key] ?? ""}
@@ -183,12 +182,11 @@ export const FormDataset = <
         dialogState={dialogState}
         onSubmit={(data) => {
           setDataSet(data);
-          if (onChange) {
-            onChange({
-              ...prevValue,
-              path: data?.file_path,
-            });
-          }
+          if (!onChange) return;
+          onChange({
+            ...prevValue,
+            path: data?.file_path,
+          });
         }}
       />
     </Card>
