@@ -30,10 +30,12 @@ export const ChartBar = (props: ChartBarProps): JSX.Element => {
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
   const [activeToolTip, setActiveToolTip] = useState<boolean>(false);
 
+  // カラムが設定されていない場合はエラーを表示
   if (props.x == null || props.y == null) {
     return <div>パラメーターの値を正しく設定してください</div>;
   }
 
+  // フィルタ結果の値が空の場合はエラーを表示
   if (data.length === 0) {
     return <div>データがありません</div>;
   }
@@ -75,7 +77,6 @@ export const ChartBar = (props: ChartBarProps): JSX.Element => {
         />
         <ReTooltip
           active={activeToolTip}
-          // @ts-expect-error 内部処理で適切なPropsが渡されるが型定義が不足しているためエラーが出る
           content={<CustomTooltip />}
           cursor={false}
           isAnimationActive={false}

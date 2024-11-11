@@ -13,7 +13,9 @@ type Props = {
   fieldOption: TileViewFieldOption;
   type: ChartDynamicColumnInput;
 };
-
+/**
+ * 指定した集計単位のデータと表示形式ごとに取得したfieldOptionから表示すべき選択肢となるカラムのオプションを自動生成する
+ */
 export const DynamicColumnOptions = ({
   unit,
   fieldOption,

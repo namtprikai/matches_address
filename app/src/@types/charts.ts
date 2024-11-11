@@ -1,8 +1,17 @@
+/**
+ * BIツール関連で利用する方をまとめたファイル
+ */
+
 import {
   type AREA_DATASET_COLUMN,
   type BUILDING_DATASET_COLUMN,
 } from "../config/column-metadata";
 
+/**
+ * BIツールでのチャート表示でのグルーピングに利用する条件の型
+ *
+ * 比較対象となるreferenceColumnTypeによって、valueの型が変わる
+ */
 export type GroupingCondition = (
   | {
       referenceColumnType: "text";
@@ -138,12 +147,18 @@ export interface ChartData {
   y: number;
 }
 
+/**
+ * チャートが共通で受け付けるBase型
+ */
 export interface ChartProps {
   data: ChartData[];
   xAxisColumn: ChartColumn;
   yAxisColumn: ChartColumn;
 }
 
+/**
+ * 表形式が受け付けるPropsの型
+ */
 export interface TableProps {
   columns: {
     key: string;

@@ -103,156 +103,180 @@ export const EditResultViewFields = ({ dataSetTitle }: Props): JSX.Element => {
             ))}
           </Select>
         </Field>
-        {columnFields.map((field, index) => {
-          if (style === null || unit === null) return null;
+        {/** 以下動的にフィールド生成 */}
+        {
+          /**
+           * 設定すべきフィールドを一括して表示・フォームとして設定する
+           * 例えば表形式や円グラフ、棒グラフごとに応じて設定すべきカラムとその値、表示名称が異なるため動的に実装する必要あり
+           */
+          columnFields.map((field, index) => {
+            if (style === null || unit === null) return null;
 
-          const fieldOption = getResultViewFieldOption(style, field.key);
+            const fieldOption = getResultViewFieldOption(style, field.key);
 
-          if (!fieldOption) return null;
+            if (!fieldOption) return null;
 
-          if (fieldOption.type === "select" && field.type === "column") {
-            const column = parameters.find((parameter) => {
-              return parameter.key === field.key && parameter.type === "column";
-            });
+            if (fieldOption.type === "select" && field.type === "column") {
+              const column = parameters.find((parameter) => {
+                return (
+                  parameter.key === field.key && parameter.type === "column"
+                );
+              });
 
-            const columnMetadata =
-              unit === "building"
-                ? BUILDING_DATASET_COLUMN_METADATA[
-                    column?.value as BUILDING_DATASET_COLUMN
-                  ]
-                : AREA_DATASET_COLUMN_METADATA[
-                    column?.value as AREA_DATASET_COLUMN
-                  ];
+              const columnMetadata =
+                unit === "building"
+                  ? BUILDING_DATASET_COLUMN_METADATA[
+                      column?.value as BUILDING_DATASET_COLUMN
+                    ]
+                  : AREA_DATASET_COLUMN_METADATA[
+                      column?.value as AREA_DATASET_COLUMN
+                    ];
 
-            return (
-              <Fragment key={field.id}>
+              return (
+                <Fragment key={field.id}>
+                  <DynamicParameterInput
+                    type={fieldOption.type}
+                    {...register(`parameters.${index}.value`)}
+                    fieldOption={fieldOption}
+                    onChange={(e) => {
+                      if (field.key === "label" || field.key === "xAxis") {
+                        const parametersWithoutGroup = fields.filter((f) => {
+                          return f.type !== "group";
+                        });
+                        replace(parametersWithoutGroup);
+                      }
+
+                      update(index, {
+                        key: field.key,
+                        value: e.target.value,
+                        type: "column",
+                      });
+                    }}
+                    unit={unit}
+                    value={field.value}
+                  />
+                  {
+                    // カラムでグルーピングが設定されている場合、グルーピング設定用のフォームを表示
+                    fieldOption?.grouping && (
+                      <FormGroupingResultView
+                        columnLabel={columnMetadata?.label}
+                        columnType={columnMetadata?.type}
+                        onSave={(parameters) => {
+                          const prevOtherParameters = fields.filter((f) => {
+                            return f.type !== "group";
+                          });
+                          const newParameters = [
+                            ...prevOtherParameters,
+                            ...parameters,
+                          ] as SelectResultView["parameters"]; // union の型推論が効きづらいため、明示的に型を指定;
+                          replace(newParameters);
+                        }}
+                        parameters={groupingFields}
+                        unit={columnMetadata?.unit}
+                      />
+                    )
+                  }
+                  {
+                    /**
+                     * グルーピングが設定されている場合、集計単位を選択するフォームを表示
+                     * ただし、X軸など集計単位の指定が不要な場合は表示しない(fieldOption.grouping === false)
+                     * また、グルーピングが設定されていない場合も表示しない(groupingFields.length > 0)
+                     */
+                    fieldOption.grouping === false &&
+                      groupingFields.length > 0 && (
+                        <Select
+                          onChange={(e) => {
+                            const prevOtherParameters = fields.filter((f) => {
+                              return f.type !== "group_option";
+                            });
+                            const newParameters = [
+                              ...prevOtherParameters,
+                              {
+                                key: "group_calc",
+                                value: e.target.value as
+                                  | "avg"
+                                  | "sum"
+                                  | "count",
+                                type: "group_option",
+                              },
+                            ] as SelectResultView["parameters"]; // union の型推論が効きづらいため、明示的に型を指定;
+                            replace(newParameters);
+                          }}
+                          value={groupCalc?.value}
+                        >
+                          <option value="avg">平均</option>
+                          <option value="sum">合計</option>
+                          <option value="count">総件数</option>
+                        </Select>
+                      )
+                  }
+                </Fragment>
+              );
+            }
+
+            // dropdownの場合は、DynamicParameterInputを使って表示するがonChangeの挙動が異なるため別記述
+            if (fieldOption.type === "dropdown") {
+              return (
                 <DynamicParameterInput
                   type={fieldOption.type}
                   {...register(`parameters.${index}.value`)}
+                  key={field.id}
                   fieldOption={fieldOption}
-                  onChange={(e) => {
-                    if (field.key === "label" || field.key === "xAxis") {
-                      const parametersWithoutGroup = fields.filter((f) => {
-                        return f.type !== "group";
-                      });
-                      replace(parametersWithoutGroup);
-                    }
+                  multiple={fieldOption.multiple ?? false}
+                  onChange={(_, data) => {
+                    // dropdownから返ってくる値が空の場合は何もしない
+                    if (data.optionValue === undefined) return;
+
+                    // 更新前の値をカンマ区切りの文字列としてデータクレンジングした上で配列化
+                    const prevValue = field.value
+                      .split(",")
+                      .filter((value) => value !== "");
+
+                    // 更新後の値を生成
+                    const newValue = prevValue.includes(data.optionValue)
+                      ? prevValue.filter((value) => {
+                          return value !== data.optionValue;
+                        })
+                      : [...prevValue, data.optionValue];
 
                     update(index, {
                       key: field.key,
-                      value: e.target.value,
+                      value: newValue.join(","),
                       type: "column",
                     });
                   }}
                   unit={unit}
                   value={field.value}
                 />
-                {fieldOption?.grouping && (
-                  <FormGroupingResultView
-                    columnLabel={columnMetadata?.label}
-                    columnType={columnMetadata?.type}
-                    onSave={(parameters) => {
-                      const prevOtherParameters = fields.filter((f) => {
-                        return f.type !== "group";
-                      });
-                      const newParameters = [
-                        ...prevOtherParameters,
-                        ...parameters,
-                      ] as SelectResultView["parameters"]; // union の型推論が効きづらいため、明示的に型を指定;
-                      replace(newParameters);
-                    }}
-                    parameters={groupingFields}
-                    unit={columnMetadata?.unit}
-                  />
-                )}
-                {fieldOption.grouping === false &&
-                  groupingFields.length > 0 && (
-                    <Select
-                      onChange={(e) => {
-                        const prevOtherParameters = fields.filter((f) => {
-                          return f.type !== "group_option";
-                        });
-                        const newParameters = [
-                          ...prevOtherParameters,
-                          {
-                            key: "group_calc",
-                            value: e.target.value as "avg" | "sum" | "count",
-                            type: "group_option",
-                          },
-                        ] as SelectResultView["parameters"]; // union の型推論が効きづらいため、明示的に型を指定;
-                        replace(newParameters);
-                      }}
-                      value={groupCalc?.value}
-                    >
-                      <option value="avg">平均</option>
-                      <option value="sum">合計</option>
-                      <option value="count">総件数</option>
-                    </Select>
-                  )}
-              </Fragment>
-            );
-          }
+              );
+            }
 
-          if (fieldOption.type === "dropdown") {
-            return (
-              <DynamicParameterInput
-                type={fieldOption.type}
-                {...register(`parameters.${index}.value`)}
-                key={field.id}
-                fieldOption={fieldOption}
-                multiple={fieldOption.multiple ?? false}
-                onChange={(_, data) => {
-                  // dropdownから返ってくる値が空の場合は何もしない
-                  if (data.optionValue === undefined) return;
+            // dialogの場合は、DynamicParameterInputを使って表示するがonSaveの挙動が異なるため別記述
+            if (fieldOption.type === "dialog") {
+              return (
+                <DynamicParameterInput
+                  type="dialog"
+                  {...register(`parameters.${index}.value`)}
+                  key={field.id}
+                  fieldOption={fieldOption}
+                  multiple={fieldOption.multiple ?? false}
+                  onSave={(newValue) => {
+                    update(index, {
+                      key: field.key,
+                      value: newValue.join(","),
+                      type: "column",
+                    });
+                  }}
+                  unit={unit}
+                  value={field.value}
+                />
+              );
+            }
 
-                  // 更新前の値をカンマ区切りの文字列としてデータクレンジングした上で配列化
-                  const prevValue = field.value
-                    .split(",")
-                    .filter((value) => value !== "");
-
-                  // 更新後の値を生成
-                  const newValue = prevValue.includes(data.optionValue)
-                    ? prevValue.filter((value) => {
-                        return value !== data.optionValue;
-                      })
-                    : [...prevValue, data.optionValue];
-
-                  update(index, {
-                    key: field.key,
-                    value: newValue.join(","),
-                    type: "column",
-                  });
-                }}
-                unit={unit}
-                value={field.value}
-              />
-            );
-          }
-
-          if (fieldOption.type === "dialog") {
-            return (
-              <DynamicParameterInput
-                type="dialog"
-                {...register(`parameters.${index}.value`)}
-                key={field.id}
-                fieldOption={fieldOption}
-                multiple={fieldOption.multiple ?? false}
-                onSave={(newValue) => {
-                  update(index, {
-                    key: field.key,
-                    value: newValue.join(","),
-                    type: "column",
-                  });
-                }}
-                unit={unit}
-                value={field.value}
-              />
-            );
-          }
-
-          return <></>;
-        })}
-
+            return <></>;
+          })
+        }
+        {/** ここまで動的にフィールド生成 */}
         <Field label="集計単位">
           <Select
             {...register("unit")}

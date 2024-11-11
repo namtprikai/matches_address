@@ -150,6 +150,9 @@ type Props = {
   unit?: string;
 };
 
+/**
+ * グルーピング用の条件を設定するコンポーネント
+ */
 export const FormGroupingResultView = ({
   parameters,
   onSave,

@@ -54,6 +54,9 @@ type Props = {
 );
 
 /**
+ * 表示形式に合わせたfieldOptionを元に入力用のフィールドを生成する.
+ * 内部でdynamic-column-options.tsxのDynamicColumnOptionsを利用して選択肢を生成する.
+ *
  * @param unit `building` か``area``のどちらか集計単位
  * @returns
  */
