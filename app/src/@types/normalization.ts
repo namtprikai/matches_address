@@ -82,5 +82,8 @@ export type NormalizationParameters = {
     urban_planning: {
       path?: string;
     };
+    census: {
+      path?: string;
+    };
   };
 };

@@ -290,7 +290,7 @@ export const FormDataset = <
             appearance === "large" && styles.dropdownContainer,
           )}
         >
-          {columnsToDropDowns}
+          {columns && columnsToDropDowns}
         </div>
       </div>
       <DialogImportDataset

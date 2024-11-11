@@ -50,6 +50,7 @@ const NORMALIZATION_DATA_LABEL = {
   geocoding: "ジオコーディングデータ",
   buildingPolygon: "建物ポリゴンデータ",
   urbanPlanning: "都市計画決定情報データ",
+  census: "国勢調査データ",
 };
 
 export const LanguageMap = {
