@@ -1,4 +1,4 @@
-import { ArchiveRegular, Dismiss24Regular } from "@fluentui/react-icons";
+import { DeleteRegular, Dismiss24Regular } from "@fluentui/react-icons";
 import {
   Dialog,
   DialogTrigger,
@@ -108,7 +108,7 @@ export const ButtonEditableSheetTitle = ({
           open={openDeleteDialog}
         >
           <DialogTrigger disableButtonEnhancement>
-            <Button appearance="subtle" icon={<ArchiveRegular />} />
+            <Button appearance="subtle" icon={<DeleteRegular />} />
           </DialogTrigger>
           <DialogSurface>
             <DialogBody>

@@ -1,4 +1,4 @@
-import { ArchiveRegular, Dismiss24Regular } from "@fluentui/react-icons";
+import { DeleteRegular, Dismiss24Regular } from "@fluentui/react-icons";
 import {
   Card,
   CardHeader,
@@ -107,7 +107,7 @@ export const TileResultView = ({
                 <Button
                   appearance="subtle"
                   className={styles.cardHeaderSubtle}
-                  icon={<ArchiveRegular />}
+                  icon={<DeleteRegular />}
                 />
               </DialogTrigger>
               <DialogSurface>
@@ -172,7 +172,7 @@ export const TileResultView = ({
               <Button
                 appearance="subtle"
                 className={styles.cardHeaderSubtle}
-                icon={<ArchiveRegular />}
+                icon={<DeleteRegular />}
               />
             </DialogTrigger>
             <DialogSurface>
