@@ -101,19 +101,9 @@ export const JobEvaluation = (): JSX.Element => {
     fileInputRef.current?.click();
   };
 
-  const handleFileChange = (
-    event: React.ChangeEvent<HTMLInputElement>,
-  ): void => {
-    if (event.target.files && event.target.files.length > 0) {
-      setSelectedFile(event.target.files[0]);
-    }
-  };
-
+  // 分析対象のデータの削除
   const handleRemoveFile = (): void => {
     setSelectedFile(null);
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
-    }
   };
 
   // モデルファイルの削除
@@ -162,26 +152,14 @@ export const JobEvaluation = (): JSX.Element => {
         <Card>
           <Subtitle2>② 分析対象のデータを選択</Subtitle2>
           <div className={styles.file}>
-            {selectedFile ? (
-              <>
-                <span className={styles.fileName}>{selectedFile.name}</span>
-                <span
-                  className={styles.deleteIconWrapper}
-                  onClick={handleRemoveFile}
-                >
-                  <DeleteRegular fontSize={16} />
-                </span>
-              </>
-            ) : (
-              <div>ファイルが選択されていません</div>
-            )}
+            <span className={styles.fileName}>{selectedFile?.name}</span>
+            <span
+              className={styles.deleteIconWrapper}
+              onClick={handleRemoveFile}
+            >
+              <DeleteRegular fontSize={16} />
+            </span>
           </div>
-          <input
-            ref={fileInputRef}
-            onChange={handleFileChange}
-            style={{ display: "none" }}
-            type="file"
-          />
           <Button
             appearance="outline"
             className={styles.button}

@@ -16,6 +16,7 @@ import {
   ArrowSortRegular,
   DismissFilled,
   ComposeRegular,
+  SearchRegular,
 } from "@fluentui/react-icons";
 import { useState } from "react";
 import { Link } from "react-router-dom";
@@ -28,6 +29,7 @@ import { DialogBody } from "./ui/dialog-body";
 import { DialogTitle } from "./ui/dialog-title";
 import { DialogContent } from "./ui/dialog-content";
 import { DialogActions } from "./ui/dialog-actions";
+import { Input } from "./ui/input";
 
 const useStyles = makeStyles({
   dialogTitle: {
@@ -130,6 +132,18 @@ const useStyles = makeStyles({
     display: "flex",
     gap: tokens.spacingHorizontalXL,
   },
+  searchBox: {
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    height: "60px",
+    width: "100%",
+    backgroundColor: "#F5F5F5",
+    padding: `${tokens.spacingVerticalS} ${tokens.spacingHorizontalM}`,
+  },
+  input: {
+    width: "100%",
+  },
 });
 
 type Props = {
@@ -181,6 +195,13 @@ export const DialogImportModelDataset = ({
             利用するモデルを選択
           </DialogTitle>
           <DialogContent padding={false}>
+            <div className={styles.searchBox}>
+              <Input
+                className={styles.input}
+                contentBefore={<SearchRegular />}
+                placeholder="モデル名"
+              />
+            </div>
             <Table className={styles.tableHeight}>
               <TableHeader className={styles.tableHeader}>
                 <TableRow
