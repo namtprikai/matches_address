@@ -124,6 +124,8 @@ const useStyles = makeStyles({
   },
 });
 
+type TabValue = "select" | "upload";
+
 type Props = {
   dialogState: ReturnUseDialogState;
   onSelected?: (data: SelectRawDataSet) => void;
@@ -134,7 +136,7 @@ export const DialogImportDataset = ({
   onSelected,
 }: Props): JSX.Element => {
   const styles = useStyles();
-  const [selectedTab, setSelectedTab] = useState(0);
+  const [selectedTab, setSelectedTab] = useState<TabValue>("select");
   const [selectedDataSet, setSelectedDataSet] =
     useState<SelectRawDataSet | null>(null);
 
@@ -150,7 +152,7 @@ export const DialogImportDataset = ({
   };
 
   const handleTabChange = (_: SelectTabEvent, data: SelectTabData): void => {
-    setSelectedTab(data.value as number);
+    setSelectedTab(data.value as TabValue);
     setSelectedDataSet(null);
   };
   return (
@@ -182,15 +184,15 @@ export const DialogImportDataset = ({
               onTabSelect={handleTabChange}
               selectedValue={selectedTab}
             >
-              <Tab className={styles.tab} value={0}>
+              <Tab className={styles.tab} value="select">
                 データセットから選択
               </Tab>
-              <Tab className={styles.tab} value={1}>
+              <Tab className={styles.tab} value="upload">
                 アップロード
               </Tab>
             </TabList>
 
-            {selectedTab === 0 && (
+            {selectedTab === "select" && (
               <>
                 <Table className={styles.tableHeight}>
                   <TableHeader className={styles.tableHeader}>
@@ -258,7 +260,7 @@ export const DialogImportDataset = ({
               </>
             )}
 
-            {selectedTab === 1 && (
+            {selectedTab === "upload" && (
               <div className={styles.uploadWrap}>
                 <FileUploader
                   onChange={(data) => {
@@ -273,11 +275,11 @@ export const DialogImportDataset = ({
             <Button
               appearance="primary"
               className={
-                selectedTab === 0 && selectedDataSet === null
+                selectedTab === "select" && selectedDataSet === null
                   ? styles.disabledButton
                   : ""
               }
-              disabled={selectedTab === 0 && selectedDataSet === null}
+              disabled={selectedTab === "select" && selectedDataSet === null}
               onClick={handleClick}
             >
               インポート
