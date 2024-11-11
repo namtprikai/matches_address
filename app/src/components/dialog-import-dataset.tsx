@@ -140,26 +140,22 @@ export const DialogImportDataset = ({
   const [selectedTab, setSelectedTab] = useState<TabValue>("select");
   const [selectedDataSet, setSelectedDataSet] =
     useState<SelectRawDataSet | null>(null);
-
-  const { isOpen: isDialogOpen, setIsOpen: setIsDialogOpen } = dialogState;
-  const { data: fetchedDatasets } = useFetchRawDatasets();
-  const datasets = fetchedDatasets ?? [];
+  const { isOpen, setIsOpen } = dialogState;
+  const { data: rawDataSets } = useFetchRawDatasets();
 
   const handleClick = (): void => {
     if (!selectedDataSet) return;
     onSubmit?.(selectedDataSet);
-    setIsDialogOpen(false);
+    setIsOpen(false);
   };
 
   const handleTabChange = (_: SelectTabEvent, data: SelectTabData): void => {
     setSelectedTab(data.value as TabValue);
     setSelectedDataSet(null);
   };
+
   return (
-    <Dialog
-      onOpenChange={(_, { open }) => setIsDialogOpen(open)}
-      open={isDialogOpen}
-    >
+    <Dialog onOpenChange={(_, { open }) => setIsOpen(open)} open={isOpen}>
       <DialogSurface>
         <DialogBody>
           <DialogTitle
@@ -191,75 +187,71 @@ export const DialogImportDataset = ({
                 アップロード
               </Tab>
             </TabList>
-
             {selectedTab === "select" && (
-              <>
-                <Table className={styles.tableHeight}>
-                  <TableHeader className={styles.tableHeader}>
-                    <TableRow
+              <Table className={styles.tableHeight}>
+                <TableHeader className={styles.tableHeader}>
+                  <TableRow
+                    className={mergeClasses(
+                      styles.datasetTable,
+                      styles.borderBottom,
+                    )}
+                  >
+                    <TableHeaderCell
                       className={mergeClasses(
-                        styles.datasetTable,
-                        styles.borderBottom,
+                        styles.datasetCell,
+                        styles.datasetHeader,
                       )}
                     >
-                      <TableHeaderCell
+                      データセット名
+                      <ArrowSortRegular />
+                    </TableHeaderCell>
+                    <TableHeaderCell
+                      className={mergeClasses(
+                        styles.datasetCell,
+                        styles.datasetHeader,
+                      )}
+                    >
+                      最終更新
+                      <ArrowSortRegular />
+                    </TableHeaderCell>
+                  </TableRow>
+                </TableHeader>
+                {rawDataSets && rawDataSets.length > 0 ? (
+                  <TableBody className={styles.tableBody}>
+                    {rawDataSets.map((dataSet) => (
+                      <TableRow
+                        key={dataSet.id}
                         className={mergeClasses(
-                          styles.datasetCell,
-                          styles.datasetHeader,
+                          styles.datasetTable,
+                          selectedDataSet?.id === dataSet.id
+                            ? styles.selectedDatasetTable
+                            : styles.borderBottom,
                         )}
+                        onClick={() => setSelectedDataSet(dataSet)}
                       >
-                        データセット名
-                        <ArrowSortRegular />
-                      </TableHeaderCell>
-                      <TableHeaderCell
-                        className={mergeClasses(
-                          styles.datasetCell,
-                          styles.datasetHeader,
-                        )}
-                      >
-                        最終更新
-                        <ArrowSortRegular />
-                      </TableHeaderCell>
-                    </TableRow>
-                  </TableHeader>
-                  {datasets.length > 0 ? (
-                    <TableBody className={styles.tableBody}>
-                      {datasets.map((dataset) => (
-                        <TableRow
-                          key={dataset.id}
+                        <TableCell
                           className={mergeClasses(
-                            styles.datasetTable,
-                            selectedDataSet?.id === dataset.id
-                              ? styles.selectedDatasetTable
-                              : styles.borderBottom,
+                            styles.datasetCell,
+                            styles.dataName,
                           )}
-                          onClick={() => setSelectedDataSet(dataset)}
                         >
-                          <TableCell
-                            className={mergeClasses(
-                              styles.datasetCell,
-                              styles.dataName,
-                            )}
-                          >
-                            {dataset.file_name}
-                          </TableCell>
-                          <TableCell className={styles.datasetCell}>
-                            {dataset.created_at}
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  ) : (
-                    <div className={styles.noDatasetWrap}>
-                      <span className={styles.noDataset}>
-                        現在表示できるデータセットはありません
-                      </span>
-                    </div>
-                  )}
-                </Table>
-              </>
+                          {dataSet.file_name}
+                        </TableCell>
+                        <TableCell className={styles.datasetCell}>
+                          {dataSet.created_at}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                ) : (
+                  <div className={styles.noDatasetWrap}>
+                    <span className={styles.noDataset}>
+                      現在表示できるデータセットはありません
+                    </span>
+                  </div>
+                )}
+              </Table>
             )}
-
             {selectedTab === "upload" && (
               <div className={styles.uploadWrap}>
                 <FileUploader
