@@ -128,12 +128,13 @@ type TabValue = "select" | "upload";
 
 type Props = {
   dialogState: ReturnUseDialogState;
-  onSelected?: (data: SelectRawDataSet) => void;
+  onSubmit?: (data: SelectRawDataSet) => void;
+  initialDataSetId?: number;
 };
 
 export const DialogImportDataset = ({
   dialogState,
-  onSelected,
+  onSubmit,
 }: Props): JSX.Element => {
   const styles = useStyles();
   const [selectedTab, setSelectedTab] = useState<TabValue>("select");
@@ -146,7 +147,7 @@ export const DialogImportDataset = ({
 
   const handleClick = (): void => {
     if (!selectedDataSet) return;
-    onSelected?.(selectedDataSet);
+    onSubmit?.(selectedDataSet);
     setIsDialogOpen(false);
   };
 

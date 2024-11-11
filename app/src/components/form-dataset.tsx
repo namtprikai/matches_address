@@ -295,7 +295,7 @@ export const FormDataset = <
       </div>
       <DialogImportDataset
         dialogState={dialogState}
-        onSelected={(data) => {
+        onSubmit={(data) => {
           setDataSet(data);
           if (onChange) {
             onChange({
