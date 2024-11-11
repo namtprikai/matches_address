@@ -10,7 +10,7 @@ interface Item {
 
 // 日本語のラベルは以下のスプレッドシートを参照
 // https://docs.google.com/spreadsheets/d/1j5gg41D2D82zFKPna7O18lQETGPCLtpp/edit?pli=1&gid=1342944122#gid=1342944122
-// TODO: スプシにあって実装にないデータもある。Python側の出力を確認してから追加する想定
+// TODO: スプシにあって実装にないデータがありコメントアウトしている。Python側の出力を確認してから追加する想定
 const buildingMetadata: Record<keyof SelectDataSetDetailBuilding, Item> = {
   id: {
     label: "id",
