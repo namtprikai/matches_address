@@ -12,21 +12,40 @@
 * 結合割合計算（水道データ）
 """
 
+import json
 import math
 import os
 import random
 import string
 import argparse
+import sys
 import chardet
 import geopandas as gpd
-import gradio as gr
 import numpy as np
 import pandas as pd
 import tempfile
-import zipfile 
+import zipfile
+import shutil
+import subprocess
+import xml.etree.ElementTree as ET
+import glob
+from tqdm import tqdm
+from concurrent.futures import ThreadPoolExecutor
 from pyproj import Transformer
 from shapely import wkt, wkb
 from shapely.geometry import MultiPolygon, Point, Polygon
+
+current_dir = os.path.dirname(os.path.abspath(__file__))
+async_tasks_path = os.path.join(current_dir, '..', 'async_tasks')
+if async_tasks_path not in sys.path:
+    sys.path.append(async_tasks_path)
+
+try:
+    from utils import *
+except ImportError:
+    sys.path.remove(async_tasks_path)
+    sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../')))
+    from async_tasks.utils import *
 
 pd.set_option("display.max_columns", None)
 
@@ -35,66 +54,79 @@ option = 0
 
 # 各データで利用するカラムを定義
 COLUMNS = {
-        "tatemono": {
-            'gml_id':"id",
-            'class':"区分",
-            'measuredHeight':"計測高さ",
-            'measuredHeight_uom':"計測高さ計測単位",
-            'srcScale':"地図情報レベル",
-            'geometrySrcDesc':"幾何属性作成⽅法",
-            'thematicSrcDesc':"主題属性作成⽅法",
-            'lod1HeightType':"建築物の⾼さの算出⽅法",
-            'buildingID':"建築物に付与される固有の識別",
-            'prefecture':"⼟地が所在する都道府県の都道府県コ−ド",
-            'city':"⼟地が所在する市区町村の市区町村コ−ド",
-            'description':"概要",
-            'rank':"浸水ランク",
-            'depth':"浸水深",
-            'depth_uom':"浸水深の単位",
-            'adminType':"浸水リスク指定機関区分",
-            'scale':"浸水規模",
-            'duration':"継続時間",
-            'duration_uom':"継続時間単位",
-            '建築確認申請の用途':"建築確認申請の用途",
-            '地上階数':"地上階数",
-            '地下階数':"地下階数",
-            'value':"拡張属性",
-            'value_uom':"拡張属性の単位",
-            'buildingDisasterRiskAttribute|BuildingInlandFloodingRiskAttribute|description':"内水浸水リスク説明",
-            'buildingDisasterRiskAttribute|BuildingInlandFloodingRiskAttribute|rank':"内水浸水リスクランク",
-            'buildingDisasterRiskAttribute|BuildingInlandFloodingRiskAttribute|depth':"内水浸水深",
-            'buildingDisasterRiskAttribute|BuildingInlandFloodingRiskAttribute|depth_uom':"内水浸水深の単位",  
-            'name':"名称",
-            'areaType':"土砂災害リスク区域区分",
-            'buildingDisasterRiskAttribute|BuildingRiverFloodingRiskAttribute|description':"洪水浸水リスク説明",
-            'buildingDisasterRiskAttribute|BuildingRiverFloodingRiskAttribute|rank':"洪水浸水リスクランク",
-            'buildingDisasterRiskAttribute|BuildingRiverFloodingRiskAttribute|depth':"洪水浸水深",
-            'buildingDisasterRiskAttribute|BuildingRiverFloodingRiskAttribute|depth_uom':"洪水浸水深の単位",
-            'buildingDisasterRiskAttribute|BuildingLandSlideRiskAttribute|description':"洪水浸水リスク説明",
-            '大規模店舗名称':"大規模店舗名称", 
-            'appearanceSrcDesc':"テクスチャ作成⽅法",
-            'branchID':"建物ID 枝番", 
-            'geometry':"建物ポリゴン情報"
-        },
-        "water_supply": {
-            'count':"人数", 
-            'count_age_under_15':"15歳以下人数", 
-            'count_age_under_15_ratio':"15歳以下割合",
-            'count_age_15_to_64':"15ー64歳人数",
-            'count_age_15_to_64_ratio':"15ー64歳割合",
-            'count_age_over_65':"65歳以上人数",
-            'count_age_over_65_ratio':"65歳以上割合",
-            'count_male':"男性人数",
-            'male_ratio':"男性割合", 
-            'count_female':"女性人数",
-            'female_ratio':"女性割合", 
-            'residence_duration':"居住期間",
-            '開閉栓区分':"開閉栓区分", 
-            'max_suido_use':"最大使用量",
-            'target':"ターゲット数",
-            'geometry':"位置情報"
-        },
+    "tatemono": {
+        'gml_id': "id",
+        'class': "区分",
+        'measuredHeight': "計測高さ",
+        'measuredHeight_uom': "計測高さ計測単位",
+        'srcScale': "地図情報レベル",
+        'geometrySrcDesc': "幾何属性作成⽅法",
+        'thematicSrcDesc': "主題属性作成⽅法",
+        'lod1HeightType': "建築物の⾼さの算出⽅法",
+        'buildingID': "建築物に付与される固有の識別",
+        'prefecture': "⼟地が所在する都道府県の都道府県コ−ド",
+        'city': "⼟地が所在する市区町村の市区町村コ−ド",
+        'description': "概要",
+        'rank': "浸水ランク",
+        'depth': "浸水深",
+        'depth_uom': "浸水深の単位",
+        'adminType': "浸水リスク指定機関区分",
+        'scale': "浸水規模",
+        'duration': "継続時間",
+        'duration_uom': "継続時間単位",
+        '建築確認申請の用途': "建築確認申請の用途",
+        '地上階数': "地上階数",
+        '地下階数': "地下階数",
+        'value': "拡張属性",
+        'value_uom': "拡張属性の単位",
+        'buildingDisasterRiskAttribute|BuildingInlandFloodingRiskAttribute|description': "内水浸水リスク説明",
+        'buildingDisasterRiskAttribute|BuildingInlandFloodingRiskAttribute|rank': "内水浸水リスクランク",
+        'buildingDisasterRiskAttribute|BuildingInlandFloodingRiskAttribute|depth': "内水浸水深",
+        'buildingDisasterRiskAttribute|BuildingInlandFloodingRiskAttribute|depth_uom': "内水浸水深の単位",
+        'name': "名称",
+        'areaType': "土砂災害リスク区域区分",
+        'buildingDisasterRiskAttribute|BuildingRiverFloodingRiskAttribute|description': "洪水浸水リスク説明",
+        'buildingDisasterRiskAttribute|BuildingRiverFloodingRiskAttribute|rank': "洪水浸水リスクランク",
+        'buildingDisasterRiskAttribute|BuildingRiverFloodingRiskAttribute|depth': "洪水浸水深",
+        'buildingDisasterRiskAttribute|BuildingRiverFloodingRiskAttribute|depth_uom': "洪水浸水深の単位",
+        'buildingDisasterRiskAttribute|BuildingLandSlideRiskAttribute|description': "洪水浸水リスク説明",
+        '大規模店舗名称': "大規模店舗名称",
+        'appearanceSrcDesc': "テクスチャ作成⽅法",
+        'branchID': "建物ID 枝番",
+        'geometry': "建物ポリゴン情報"
+    },
+    "water_supply": {
+        'count': "人数",
+        'count_age_under_15': "15歳以下人数",
+        'count_age_under_15_ratio': "15歳以下割合",
+        'count_age_15_to_64': "15ー64歳人数",
+        'count_age_15_to_64_ratio': "15ー64歳割合",
+        'count_age_over_65': "65歳以上人数",
+        'count_age_over_65_ratio': "65歳以上割合",
+        'count_male': "男性人数",
+        'male_ratio': "男性割合",
+        'count_female': "女性人数",
+        'female_ratio': "女性割合",
+        'residence_duration': "居住期間",
+        '開閉栓区分': "開閉栓区分",
+        'max_suido_use': "最大使用量",
+        'target': "ターゲット数",
+        'geometry': "位置情報"
+    },
+    "plateaugml": {
+        'class_plateaugml': "class",
+        'usage_plateaugml': "usage",
+        'yearOfConstruction_plateaugml': "yearOfConstruction",
+        'measuredHeight_plateaugml': "measuredHeight",
+        'storeysAboveGround_plateaugml': "storeysAboveGround",
+        'creationDate_plateaugml': "creationDate",
+        'buildingDataQualityAttribute_plateaugml': "buildingDataQualityAttribute",
+        'buildingDetailAttribute_plateaugml': "buildingDetailAttribute",
+        'buildingIDAttribute_plateaugml': "buildingIDAttribute",
+        'geometry_plateaugml': "geometry"
     }
+}
+
 
 # データごとの出力するカラムを定義
 OUTPUT_COLUMNS = {
@@ -242,29 +274,29 @@ def read_csv(path: str, **kwargs) -> pd.DataFrame:
         print(f"ファイル {path} の読み込み中にエラーが発生しました: {e}")
         return None
 
-def load_and_process_data(file_path, crs,is_tatemono=True):
+def load_and_process_data(file_path, crs, is_tatemono=True):
     """
-    ファイルを読み込み、ジオメトリデータを処理してGeoDataFrameを作成する
+    ファイルを読み込み、ジオメトリデータを処理してGeoDataFrameを作成する。
 
     Parameters
     ----------
     file_path : str
-        読み込むファイルのパス
+        読み込むファイルのパス。
     is_tatemono : bool
-        建物データであるかどうかを示すフラグ（デフォルトはTrue）
+        建物データであるかどうかを示すフラグ（デフォルトはTrue）。
 
     Returns
     -------
     GeoDataFrame
-        処理されたジオメトリデータを含むGeoDataFrame
+        処理されたジオメトリデータを含むGeoDataFrame。
     """
     if file_path.lower().endswith('.csv'):
         # CSVファイルを読み込む
         df = read_csv(file_path)
-        
+
         if df is None:
             raise ValueError(f"ファイルの読み込みに失敗しました: {file_path}")
-        
+
         # geometry列が存在するか確認
         if 'geometry' in df.columns:
             # geometry列が文字列のデータのみを保持
@@ -272,41 +304,69 @@ def load_and_process_data(file_path, crs,is_tatemono=True):
             # geometry列をWKT形式からShapely geometryオブジェクトに変換
             df['geometry'] = df['geometry'].apply(parse_wkt)
         else:
-            # もしgeometry列が存在しない場合、lat/lonからgeometry列を作成
+            lon_column = next((col for col in df.columns if '経度' in col), None)
+            lat_column = next((col for col in df.columns if '緯度' in col), None)
+            # lat/lon列からgeometry列を作成
             if 'lat_geocoding_cleaned' in df.columns and 'lon_geocoding_cleaned' in df.columns:
-                # lat_geocoding_cleaned と lon_geocoding_cleaned 列からジオメトリデータを作成
                 df['geometry'] = df.apply(
                     lambda row: Point(row['lon_geocoding_cleaned'], row['lat_geocoding_cleaned']), axis=1)
+            elif lon_column and lat_column:
+                df['geometry'] = df.apply(
+                    lambda row: Point(row[lon_column], row[lat_column]), axis=1)
             else:
                 raise KeyError("'geometry' 列または 'lat_geocoding_cleaned' と 'lon_geocoding_cleaned' 列が必要です")
-        
+
         # 無効なジオメトリを除外
         df = df[df['geometry'].notnull()]
-    
+
         # GeoDataFrameを作成
         gdf = gpd.GeoDataFrame(df, geometry='geometry', crs=4326)
         return gdf
-    else:
-        # ZIPファイルかどうかを確認
-        if file_path.lower().endswith('.zip'):
-            # 一時ディレクトリを作成
-            temp_dir = os.path.join(os.getcwd(), "temp_files")
-            os.makedirs(temp_dir, exist_ok=True)
-            extracted_files = extract_zip(file_path, temp_dir)
-            print("Reading shapefile...")
-            gdf = gpd.read_file(extracted_files["shp"])
+
+    elif file_path.lower().endswith('.zip'):
+        # ZIPファイルかどうかを確認し、処理
+        temp_dir = os.path.join(os.getcwd(), "temp_files")
+        os.makedirs(temp_dir, exist_ok=True)
+        extracted_files = extract_zip(file_path, temp_dir)
+
+        # shapefileを探す
+        shp_files = [f for f in extracted_files if f.endswith(".shp")]
+
+        # shapefileが存在しない場合は、process_plateaugmlを実行
+        if not shp_files:
+            # 空のGeoDataFrameを作成
+            buildings_gdf = gpd.GeoDataFrame()
+            output_gpkg_file = os.path.join(temp_dir, "output.gpkg")
+            process_plateaugml(file_path, output_gpkg_file, buildings_gdf)  # buildings_gdfを引数として渡す
+            gdf = gpd.read_file(output_gpkg_file)
         else:
-            # その他の非CSVファイルを読み込む
-            gdf = gpd.read_file(file_path)
-        
+            # shapefileを読み込む
+            gdf = gpd.read_file(shp_files[0])
+
         if gdf.crs is None:
-            # ここでデータの実際のCRSを指定します。例としてEPSG:4326を使用
+            # データのCRSを指定（EPSG:4326）
             gdf.set_crs(crs, inplace=True)
-        # buildingID 列を追加（index に 1 を加えた値）
+
+        # buildingID列を追加
         gdf['buildingID'] = gdf.index + 1
         gdf['buildingID'] = gdf['buildingID'].astype(str)
-            
+
         return gdf
+
+    else:
+        # その他の非CSVファイルを読み込む
+        gdf = gpd.read_file(file_path)
+        print("gdf", gdf)
+        if gdf.crs is None:
+            # データのCRSを指定（EPSG:4326）
+            gdf.set_crs(crs, inplace=True)
+
+        # buildingID列を追加
+        gdf['buildingID'] = gdf.index + 1
+        gdf['buildingID'] = gdf['buildingID'].astype(str)
+
+        return gdf
+
 
 def get_transformer(pref: str, city: str) -> int:
     """
@@ -541,15 +601,21 @@ def assign_points_to_buildings(buildings_gdf, points_gdf, mul, crs, point_select
         else:
             buildings_gdf = buildings_gdf.rename(columns={'geometry': 'geometry_plateau'})
             combined_gdf = combined_gdf.merge(buildings_gdf[['right_geometry']], left_on='index_right', right_index=True, how='left')
-        # Z次元を削除した2次元ジオメトリに変換
-        _drop_z = lambda geom: wkb.loads(wkb.dumps(geom, output_dimension=2))
-        combined_gdf['geometry_plateau'] = combined_gdf['geometry_plateau'].transform(_drop_z)
+        # ここでgeometry_plateauのZ次元を削除した2次元ジオメトリに変換
+        def _drop_z(geom):
+            if geom is not None and not geom.is_empty:
+                return wkb.loads(wkb.dumps(geom, output_dimension=2))
+            return None
+
+        # geometry_plateauに対して有効なジオメトリのみ変換を適用
+        combined_gdf['geometry_plateau'] = combined_gdf['geometry_plateau'].apply(_drop_z)
+
         # 建物のジオメトリに設定しなおして、GeoDataFrameに変換
         combined_gdf = gpd.GeoDataFrame(combined_gdf, geometry='geometry')
+
         # 不要な列を削除
-        columns_to_drop = ["centroid", "area", "index_left", "index_right","buffer", "distance"]
+        columns_to_drop = ["centroid", "area", "index_left", "index_right", "buffer", "distance"]
         combined_gdf = combined_gdf.drop(columns=[col for col in columns_to_drop if col in combined_gdf.columns])
-        
     
     combined_gdf.to_crs(4326, inplace=True)
     # 結合率の算出
@@ -602,7 +668,7 @@ def add_keycode(gdf, gpkg_path):
     shp = shp.to_crs(epsg=4326)
     shp = shp[['KEY_CODE','S_NAME','geometry']]
     gdf = gdf.to_crs(epsg=4326)
-    gdf_add_keycode = gpd.sjoin(gdf, shp, how='left', op='within')
+    gdf_add_keycode = gpd.sjoin(gdf, shp, how='left', predicate='within')
     if 'geometry_right' in gdf_add_keycode.columns:
             gdf_add_keycode = gdf_add_keycode.drop(columns=['geometry_right'])
             gdf_add_keycode = gdf_add_keycode.rename(columns={'geometry_left': 'geometry'})
@@ -657,9 +723,207 @@ def save_geodataframe(gdf, output_path, output_type):
         # サポートされていない出力形式が指定された場合、例外を発生させる
         raise ValueError(f"サポートされていない出力形式です: {output_type}")
 
-def process_data(tatemono_path, water_supply_path, gpkg_path, ken, sikuchoson, option, output_type, output_path = None):
+def unzip_file(zip_file, extract_to):
     """
-    建物データと水道データを処理して結果を保存する
+    指定されたZIPファイルを指定したディレクトリに解凍する。
+
+    Parameters
+    ----------
+    zip_file : str
+        ZIPファイルのパス。
+    extract_to : str
+        解凍先のディレクトリ。
+    """
+    with zipfile.ZipFile(zip_file, 'r') as zip_ref:
+        zip_ref.extractall(extract_to)
+
+def filter_elements(gml_file, output_file):
+    """
+    GMLファイルから指定された要素のみを抽出し、フィルタリングされたファイルを保存する。
+
+    Parameters
+    ----------
+    gml_file : str
+        入力のGMLファイルのパス。
+    output_file : str
+        フィルタリング後の出力ファイルのパス。
+    """
+    tree = ET.parse(gml_file)
+    root = tree.getroot()
+
+    # 残す要素のタグをリストにする
+    keep_tags = {
+        "{http://www.opengis.net/citygml/building/2.0}lod0RoofEdge",
+        "{http://www.opengis.net/citygml/building/2.0}class",
+        "{http://www.opengis.net/citygml/building/2.0}usage",
+        "{http://www.opengis.net/citygml/building/2.0}yearOfConstruction",
+        "{http://www.opengis.net/citygml/building/2.0}measuredHeight",
+        "{http://www.opengis.net/citygml/building/2.0}storeysAboveGround",
+        "{http://www.opengis.net/citygml/2.0}creationDate",
+        "{https://www.geospatial.jp/iur/uro/3.0}buildingDataQualityAttribute",
+        "{https://www.geospatial.jp/iur/uro/3.0}buildingDetailAttribute",
+        "{https://www.geospatial.jp/iur/uro/3.0}buildingIDAttribute"
+    }
+
+    namespace = {
+        'bldg': 'http://www.opengis.net/citygml/building/2.0',
+        'core': 'http://www.opengis.net/citygml/2.0',
+        'uro': 'https://www.geospatial.jp/iur/uro/3.0'
+    }
+
+    for building in root.findall(".//bldg:Building", namespace):
+        for elem in list(building):
+            if elem.tag not in keep_tags:
+                building.remove(elem)
+
+        # 残すべき要素が1つもない場合は建物自体を削除
+        if not any(elem.tag in keep_tags for elem in list(building)):
+            root.remove(building)
+
+    # 結果を一時ファイルに保存
+    tree.write(output_file, encoding="utf-8", xml_declaration=True)
+
+def convert_gml_to_gpkg(gml_file):
+    """
+    GMLファイルをGeoPackage形式に変換する。
+
+    Parameters
+    ----------
+    gml_file : str
+        GMLファイルのパス。
+    """
+    filtered_gml_file = f"{gml_file[:-4]}_filtered.gml"
+
+    # フィルタリングされたファイルが既に存在する場合は処理をスキップ
+    if not os.path.exists(filtered_gml_file):
+        filter_elements(gml_file, filtered_gml_file)
+
+    gpkg_file = f"{gml_file[:-4]}.gpkg"
+    cmd = ["ogr2ogr", "-f", "GPKG", gpkg_file, filtered_gml_file, "-dim", "3", "-skipfailures"]
+    print(f"Running command: {' '.join(cmd)}")
+    subprocess.run(cmd, capture_output=True, text=True)
+
+    # 一時ファイルの削除
+    os.remove(filtered_gml_file)
+
+def add_plateaugml_suffix(gdf):
+    """
+    GeoDataFrameのカラムに'_plateaugml'の接尾辞を追加する
+
+    Parameters
+    ----------
+    gdf : GeoDataFrame
+        変換対象のGeoDataFrame
+
+    Returns
+    -------
+    GeoDataFrame
+        接尾辞を追加したGeoDataFrame
+    """
+    gdf = gdf.rename(columns=lambda col: f"{col}_plateaugml" if col != 'geometry' else col)
+    return gdf
+
+
+def extract_geometries_from_gml(gml_file):
+    """
+    GMLファイルからジオメトリ（Polygon）を抽出する。
+
+    Parameters
+    ----------
+    gml_file : str
+        GMLファイルのパス。
+
+    Returns
+    -------
+    list
+        ポリゴンジオメトリのリスト。
+    """
+    tree = ET.parse(gml_file)
+    root = tree.getroot()
+
+    # GMLの名前空間を定義する
+    ns = {'gml': 'http://www.opengis.net/gml'}
+
+    # GMLファイル内のポリゴン要素を検索する
+    geometries = []
+    for geom in root.findall('.//gml:Polygon', ns):
+        pos_list = geom.find('.//gml:posList', ns)
+
+        if pos_list is not None:
+            coordinates = pos_list.text.strip().split()
+
+            # 座標の数が偶数個でなければスキップ
+            if len(coordinates) % 2 != 0:
+                print(f"Warning: {gml_file} の posList に奇数個の座標値が含まれています。スキップします。")
+                continue
+
+            # 緯度経度ペアを作成
+            try:
+                points = [(float(coordinates[i]), float(coordinates[i+1])) for i in range(0, len(coordinates), 2)]
+                polygon = Polygon(points)
+                geometries.append(polygon)
+            except (ValueError, IndexError) as e:
+                print(f"Error: {gml_file} からポリゴンを作成する際にエラーが発生しました: {e}")
+                continue
+
+    return geometries
+
+
+def process_plateaugml(input_zip_file, output_gpkg_file, buildings_gdf):
+    """
+    ZIPファイルからGMLファイルを抽出し、GeoPackage形式に変換する処理。
+    PLATEAUデータを建物データと空間結合する処理を含む。
+
+    Parameters
+    ----------
+    input_zip_file : str
+        入力のZIPファイルのパス。
+    output_gpkg_file : str
+        出力のGeoPackageファイルのパス。
+    buildings_gdf : GeoDataFrame
+        空間結合する建物データのGeoDataFrame。
+    """
+    temp_dir = os.path.join(os.path.dirname(output_gpkg_file), "temp")
+    if not os.path.exists(temp_dir):
+        os.makedirs(temp_dir)
+
+    # ZIPファイルを解凍
+    unzip_file(input_zip_file, temp_dir)
+
+    # 解凍されたディレクトリからudx/bldgフォルダ内のGMLファイルを取得
+    gml_files = glob.glob(os.path.join(temp_dir, "udx", "bldg", "*.gml"))
+
+    # GMLファイルの処理
+    with ThreadPoolExecutor(max_workers=4) as executor:
+        list(tqdm(executor.map(convert_gml_to_gpkg, gml_files), total=len(gml_files)))
+
+    # 生成されたGPKGファイルを結合
+    gpkg_files = glob.glob(os.path.join(temp_dir, "udx", "bldg", "*.gpkg"))
+    gdf_plateu_all = gpd.GeoDataFrame()
+    for gpkg_file in tqdm(gpkg_files):
+        gpkg_path = gpkg_file.replace("\\", "/")
+        gdf_plateu = gpd.read_file(gpkg_file)
+        gdf_plateu_all = pd.concat([gdf_plateu_all, gdf_plateu], axis=0)
+
+    # gdf_plateu_allにCRSが設定されているか確認し、なければデフォルトでEPSG:4326を設定
+    if gdf_plateu_all.crs is None:
+        print("CRSが設定されていないため、EPSG:4326を設定します。")
+        gdf_plateu_all.set_crs(epsg=4326, inplace=True)
+
+    # 座標系変換（必要であれば他の座標系に変換）
+    gdf_plateu_all = gdf_plateu_all.to_crs(epsg=4326)
+    
+    # 結果をGeoPackage形式で保存
+    gdf_plateu_all.to_file(output_gpkg_file, driver="GPKG")
+
+    # 一時ファイルのクリーンアップ
+    shutil.rmtree(temp_dir)
+
+
+
+def process_data(tatemono_path, water_supply_path, gpkg_path, ken, sikuchoson, option, output_type, input_zip_file=None, output_path=None, job_id=None, db_path=None):
+    """
+    建物データと水道データを処理し、PLATEAU GMLデータも結合して結果を保存する
 
     Parameters
     ----------
@@ -667,70 +931,117 @@ def process_data(tatemono_path, water_supply_path, gpkg_path, ken, sikuchoson, o
         建物データのファイルパス
     water_supply_path : str
         水道データのファイルパス
+    gpkg_path : str
+        国勢調査の町丁字ポリゴンデータのGPKGファイルパス
     ken : str
-        県の名前
+        都道府県名
     sikuchoson : str
-        市区町村の名前
+        市区町村名
     option : str
-        オプション設定
+        オプション設定（交差結合、最近傍結合）
     output_type : str
-        出力形式（'gpkg'または'csv'）
+        出力形式（'csv'または'gpkg'）
+    input_zip_file : str, optional
+        PLATEAU GMLデータのZIPファイルのパス（デフォルトはNone）
+    output_path : str, optional
+        出力ファイルのパス（デフォルトはNone）
 
     Returns
     -------
     tuple
         出力ファイルのパスと結合率
     """
-    # 座標系を設定
-    crs = get_transformer(ken, sikuchoson)
-    # 建物データと水道データを読み込み、処理
-    tatemono = load_and_process_data(tatemono_path,crs)
-    #water_supply = load_and_process_data(water_supply_path, is_tatemono=True)
-    water_supply = load_and_process_data(water_supply_path,crs)
-    
-    tatemono.to_crs(crs, inplace=True)
-    water_supply.to_crs(crs, inplace=True)
-    
-    # 水道データの全列を選択
-    point_selected_column = water_supply.columns
-    
-    # 建物データと水道データを結合
-    tatemono_use_point, join_ratio = assign_points_to_buildings(tatemono, water_supply, 2, crs, point_selected_column, option)
-    
-    # 住居IDを追加
-    add_residenceID(tatemono_use_point)
-    tatemono_use_point_add_keycode = add_keycode(tatemono_use_point, gpkg_path)
-    # 結果を保存
-    if output_path is None:
-        output_path = os.path.join(os.getcwd(), f"D901.{output_type}")
-    
-    save_geodataframe(tatemono_use_point_add_keycode, output_path, output_type)
-    
-    return output_path, join_ratio
+    try:
+        if db_path:
+            connect_sqllite(db_path)
+        task_id = None
+        if job_id:
+            task_id = create_or_update_job_task(job_id, progress_percent="0", preprocess_type="e016", error_code=None, result=None)
+        # 座標系を設定
+        crs = get_transformer(ken, sikuchoson)
+        
+        # 建物データと水道データを読み込み、処理
+        tatemono = load_and_process_data(tatemono_path, crs)
+        water_supply = load_and_process_data(water_supply_path, crs)
+        if job_id:
+            create_or_update_job_task(job_id, progress_percent="20", preprocess_type="e016", error_code=None, result=None, id= task_id)
+        tatemono.to_crs(crs, inplace=True)
+        water_supply.to_crs(crs, inplace=True)
+        
+        # 水道データの全列を選択
+        point_selected_column = water_supply.columns
 
+        # 建物データと水道データを結合
+        tatemono_use_point, join_ratio = assign_points_to_buildings(tatemono, water_supply, 2, crs, point_selected_column, option)
+        if job_id:
+            create_or_update_job_task(job_id, progress_percent="50", preprocess_type="e016", error_code=None, result=None, id= task_id)
+        # 住居IDを追加
+        add_residenceID(tatemono_use_point)
+        
+        if job_id:
+            create_or_update_job_task(job_id, progress_percent="70", preprocess_type="e016", error_code=None, result=None, id= task_id)
+        # 地域コードと町丁字名の付与
+        tatemono_use_point_add_keycode = add_keycode(tatemono_use_point, gpkg_path)
 
+        # 結果を保存
+        if output_path is None:
+            output_path = os.path.join(os.getcwd(), f"D901.{output_type}")
+
+        output_dir = os.path.dirname(output_path)
+
+        if not os.path.exists(output_dir):
+            os.makedirs(output_dir)
+
+        save_geodataframe(tatemono_use_point_add_keycode, output_path, output_type)
+
+        if job_id:
+            result = {
+                "joining_rate": join_ratio
+            }
+            create_or_update_job_task(job_id, progress_percent="100", preprocess_type="e016", error_code=None, result=json.dumps(result), id= task_id, is_finish=True)
+
+        return output_path, join_ratio
+    except Exception as e:
+        print("Exception", e)
+        if task_id is not None:
+            create_or_update_job_task(job_id, progress_percent="", preprocess_type="e016", error_code="e001", result=json.dumps({}), id= task_id, is_finish=True)
 
 def main():
     parser = argparse.ArgumentParser(description="E016 - 空間結合機能")
     parser.add_argument("--tatemono", required=True, help="建物データのファイルパス (CSV)")
     parser.add_argument("--water_supply", required=True, help="水道データのファイルパス (CSV)")
+    parser.add_argument("--gpkg", required=True, help="国勢調査の町丁字ポリゴンデータのGPKGファイルパス")
     parser.add_argument("--ken", required=True, help="都道府県名")
     parser.add_argument("--sikuchoson", required=True, help="市区町村名")
     parser.add_argument("--join_option", choices=["交差結合", "最近傍結合"], default="交差結合", help="結合方式")
     parser.add_argument("--output_format", choices=["csv", "gpkg"], default="csv", help="出力形式")
-    
+    parser.add_argument("--input_zip_file", default=None)
+    parser.add_argument("--output_path", help="出力ファイルのパス", default=None)
+    parser.add_argument("--job_id", default=None)
+    parser.add_argument("--db_path", default=None)
+
     args = parser.parse_args()
 
     # 結合オプションを設定（0: 交差結合、1: 最近傍結合）
     option = 0 if args.join_option == "交差結合" else 1
 
     # データ処理を実行
-    output_path, join_ratio = process_data(args.tatemono, args.water_supply, args.ken, args.sikuchoson, option, args.output_format)
+    output_path, join_ratio = process_data(
+        args.tatemono, 
+        args.water_supply, 
+        args.gpkg, 
+        args.ken, 
+        args.sikuchoson, 
+        option, 
+        args.output_format, 
+        input_zip_file=args.input_zip_file, 
+        output_path=args.output_path,
+        job_id=args.job_id,
+        db_path=args.db_path
+    )
 
     print(f"出力ファイル: {output_path}")
     print(f"結合率: {join_ratio}%")
-    
 
 if __name__ == "__main__":
     main()
-

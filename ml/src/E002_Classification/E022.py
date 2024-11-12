@@ -4,10 +4,13 @@
 """
 
 import glob
+import json
 import os
 import pickle
+import shutil
 import sqlite3
 import argparse
+import sys
 import chardet
 import tempfile
 import zipfile 
@@ -16,6 +19,18 @@ import numpy as np
 import pandas as pd
 from sklearn.metrics import accuracy_score, confusion_matrix, precision_score, recall_score, f1_score
 from datetime import datetime
+
+current_dir = os.path.dirname(os.path.abspath(__file__))
+async_tasks_path = os.path.join(current_dir, '..', 'async_tasks')
+if async_tasks_path not in sys.path:
+    sys.path.append(async_tasks_path)
+
+try:
+    from utils import *
+except ImportError:
+    sys.path.remove(async_tasks_path)
+    sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../')))
+    from async_tasks.utils import *
 
 
 # pandasの表示オプションを設定
@@ -157,6 +172,7 @@ def load_models(model_zip):
         # 各モデルファイルを読み込み、リストに追加
         with open(model_file, 'rb') as f:
             models.append(pickle.load(f))
+    shutil.rmtree(temp_dir)
     return models
 
 def check_features(new_data, required_features, outcome_variable):
@@ -231,7 +247,7 @@ def predict(models, new_data, required_features, threshold):
 
     return test_preds, test_preds_proba
 
-def insert_sqlite_and_export(input_data):
+def insert_sqlite_and_export(input_data, job_id=None):
     """
     指定されたデータをSQLiteデータベースに挿入し、同時にインポート可能な形式でファイルを出力する
 
@@ -352,10 +368,11 @@ def insert_sqlite_and_export(input_data):
         current_year = datetime.now().year
         table_name = f"D902_akiyaresult_{current_year}"
 
-        # SQLiteにデータを挿入
-        conn = sqlite3.connect('akiya_database.db')
-        input_data.to_sql(table_name, conn, if_exists='replace', index=False)
-        print(f"Inserted data into table {table_name}")
+        if job_id is None:
+            # SQLiteにデータを挿入
+            conn = sqlite3.connect('akiya_database.db')
+            input_data.to_sql(table_name, conn, if_exists='replace', index=False)
+            print(f"Inserted data into table {table_name}")
 
         # CSV形式でデータをファイルに保存
         output_file = f"{table_name}.csv"
@@ -368,88 +385,111 @@ def insert_sqlite_and_export(input_data):
         #print(f"Error when inserting to SQLite or exporting file: {e}")
 
     finally:
-        if conn:
+        if job_id is None and conn:
             conn.close()
 
-def process_and_predict(input_folder, input_file, model_directory, threshold, output_file, required_features, outcome_variable):
+def process_and_predict(input_folder, input_file, model_directory, threshold, output_file, required_features, outcome_variable, job_id=None , db_path=None, progress=gr.Progress()):
     """
     入力データを処理し、予測を行い、結果を保存する
     """
-    # ディレクトリの設定
-    print("ディレクトリを設定中...")
-    setup_directory(os.path.expanduser('~'))
+    try:
+        if db_path:
+            connect_sqllite(db_path)
+        task_id = None
+        if job_id:
+            task_id = create_or_update_job_task(job_id, progress_percent="0", preprocess_type="e022", error_code=None, result=None)
+        # ディレクトリの設定
+        print("ディレクトリを設定中...")
+        # setup_directory(os.path.expanduser('~'))
 
-    # 入力データの読み込み
-    print("入力データを読み込み中...")
-    input_path = os.path.join(input_folder, input_file)
-    input_data = read_csv(input_path)
+        # 入力データの読み込み
+        print("入力データを読み込み中...")
+        input_path = os.path.join(input_folder, input_file)
+        input_data = read_csv(input_path)
+        if job_id:
+            create_or_update_job_task(job_id, progress_percent="20", preprocess_type="e022", error_code=None, result=None, id= task_id)
+        # 予測用データ（REQUIRED_FEATURES）を準備するためのコピーを作成
+        prediction_data = input_data.copy()
 
-    # 予測用データ（REQUIRED_FEATURES）を準備するためのコピーを作成
-    prediction_data = input_data.copy()
+        # 'geometry'列を一時的に保存し、予測から除外
+        geometry_data = prediction_data['geometry']
+        prediction_data = prediction_data.drop(columns=['geometry'], errors='ignore')
 
-    # 'geometry'列を一時的に保存し、予測から除外
-    geometry_data = prediction_data['geometry']
-    prediction_data = prediction_data.drop(columns=['geometry'], errors='ignore')
+        # 閉栓フラグをブール値に変換
+        prediction_data["閉栓フラグ_suido_residence"] = prediction_data["閉栓フラグ_suido_residence"].map({"True": True, "False": False}).astype("bool")
+        # '登記日付_touki_residence'をdatetime型に変換
+        prediction_data['登記日付_touki_residence'] = pd.to_datetime(prediction_data['登記日付_touki_residence'], errors='coerce', format='%Y/%m/%d')
 
-    # 閉栓フラグをブール値に変換
-    prediction_data["閉栓フラグ_suido_residence"] = prediction_data["閉栓フラグ_suido_residence"].map({"True": True, "False": False}).astype("boolean")
-    # '登記日付_touki_residence'をdatetime型に変換
-    prediction_data['登記日付_touki_residence'] = pd.to_datetime(prediction_data['登記日付_touki_residence'], errors='coerce', format='%Y/%m/%d')
+        # 基準日を設定
+        base_date = pd.to_datetime('2023/03/20')
 
-    # 基準日を設定
-    base_date = pd.to_datetime('2023/03/20')
+        # 基準日からの経過日数を計算
+        prediction_data['登記日付_touki_residence'] = (base_date - prediction_data['登記日付_touki_residence']).dt.days
+        if job_id:
+            create_or_update_job_task(job_id, progress_percent="30", preprocess_type="e022", error_code=None, result=None, id= task_id)
+        # 訓練済みモデルの読み込み
+        print("訓練済みモデルを読み込み中...")
+        models = load_models(model_directory)
+        if job_id:
+            create_or_update_job_task(job_id, progress_percent="50", preprocess_type="e022", error_code=None, result=None, id= task_id)
+        # 特徴量のチェック
+        print("特徴量をチェック中...")
+        prediction_data, features_match, message = check_features(prediction_data, required_features, outcome_variable)
+        if not features_match:
+            return message, None
 
-    # 基準日からの経過日数を計算
-    prediction_data['登記日付_touki_residence'] = (base_date - prediction_data['登記日付_touki_residence']).dt.days
- 
-    # 訓練済みモデルの読み込み
-    print("訓練済みモデルを読み込み中...")
-    models = load_models(model_directory)
+        # 予測の実行
+        print("予測中...")
+        test_preds, test_preds_proba = predict(models, prediction_data, required_features, threshold)
+        if job_id:
+            create_or_update_job_task(job_id, progress_percent="70", preprocess_type="e022", error_code=None, result=None, id= task_id)
+        # 結果の保存
+        print("結果を保存中...")
 
-    # 特徴量のチェック
-    print("特徴量をチェック中...")
-    prediction_data, features_match, message = check_features(prediction_data, required_features, outcome_variable)
-    if not features_match:
-        return message, None
+        # 元のinput_dataに予測結果を追加
+        input_data['predicted_label'] = test_preds
+        input_data['predicted_probability'] = test_preds_proba
+        input_data['geometry'] = geometry_data
+        output_dir = output_file.replace("D902.csv", "")
+        os.makedirs(output_dir, exist_ok=True)
 
-    # 予測の実行
-    print("予測中...")
-    test_preds, test_preds_proba = predict(models, prediction_data, required_features, threshold)
+        #insert SQLite
+        insert_sqlite_and_export(input_data, job_id)
+        if job_id:
+            create_or_update_job_task(job_id, progress_percent="90", preprocess_type="e022", error_code=None, result=None, id= task_id)
+        # 試行するエンコーディングのリスト
+        encodings = ['shift_jis', 'cp932', 'utf-8']
+        for encoding in encodings:
+            try:
+                # 各エンコーディングでCSVファイルとして保存を試みる
+                input_data.to_csv(output_file, index=False, encoding=encoding)
+                print(f"ファイルが {encoding} エンコーディングで正常に保存されました: {output_file}")
+                progress(1.0, desc="Completed!")
 
-    # 結果の保存
-    print("結果を保存中...")
+                if job_id:
+                    create_or_update_job_task(job_id, progress_percent="100", preprocess_type="e022", error_code=None, result=json.dumps({}), id= task_id, is_finish=True)
+                return f"予測結果が {output_file} に保存されました", output_file
+            except Exception as e:
+                # 保存中にエラーが発生した場合、エラーメッセージを表示して次のエンコーディングを試す
+                print(f"ファイル {output_file} を {encoding} エンコーディングで保存中にエラーが発生しました: {e}")
 
-    # 元のinput_dataに予測結果を追加
-    input_data['predicted_label'] = test_preds
-    input_data['predicted_probability'] = test_preds_proba
-    input_data['geometry'] = geometry_data
+        # すべてのエンコーディングで保存に失敗した場合のメッセージ
+        progress(1.0, desc="保存に失敗しました!")
 
-    #insert SQLite
-    insert_sqlite_and_export(input_data)
-
-    # 試行するエンコーディングのリスト
-    encodings = ['shift_jis', 'cp932', 'utf-8']
-    for encoding in encodings:
-        try:
-            # 各エンコーディングでCSVファイルとして保存を試みる
-            input_data.to_csv(output_file, index=False, encoding=encoding)
-            print(f"ファイルが {encoding} エンコーディングで正常に保存されました: {output_file}")
-            print(1.0, desc="Completed!")
-            return f"予測結果が {output_file} に保存されました", output_file
-        except Exception as e:
-            # 保存中にエラーが発生した場合、エラーメッセージを表示して次のエンコーディングを試す
-            print(f"ファイル {output_file} を {encoding} エンコーディングで保存中にエラーが発生しました: {e}")
-
-    # すべてのエンコーディングで保存に失敗した場合のメッセージ
-    print(1.0, desc="保存に失敗しました!")
-    return f"{output_file} への予測結果の保存に失敗しました", None
+        if job_id:
+            create_or_update_job_task(job_id, progress_percent="", preprocess_type="e022", error_code="e001", result=json.dumps({}), id= task_id, is_finish=True)
+        return f"{output_file} への予測結果の保存に失敗しました", None
+    except Exception as e:
+        print("Exception", e)
+        if task_id is not None:
+            create_or_update_job_task(job_id, progress_percent="", preprocess_type="e022", error_code="e001", result=json.dumps({}), id= task_id, is_finish=True)
 
 def main():
     # !!!!!! 引数で指定に要変更
     REQUIRED_FEATURES = [
         '世帯人数', '15歳未満人数', '15歳以上64歳以下人数', '65歳以上人数', '15歳未満構成比', 
         '15歳以上64歳以下構成比', '65歳以上構成比', '男女比', '住定期間', '最大使用水量_suido_residence', 
-        '閉栓フラグ_suido_residence' 
+        '閉栓フラグ_suido_residence', '構造名称_touki_residence', '登記日付_touki_residence'
     ]
     # !!!!!! 引数で指定に要変更
     OUTCOME_VARIABLE = 'akiya_result_cleaned_flag'
@@ -461,6 +501,8 @@ def main():
     parser.add_argument("model_directory", help="モデルファイルが格納されているディレクトリーのパス")
     parser.add_argument("--threshold", type=float, default=DEFAULT_THRESHOLD, help="二値分類の閾値")
     parser.add_argument("--output_file", default=OUTPUT_FILE, help="出力CSVファイルのパス (D902)")
+    parser.add_argument("--job_id", default=None)
+    parser.add_argument("--db_path", default=None)
     
     args = parser.parse_args()
 
@@ -474,7 +516,9 @@ def main():
         args.threshold,
         args.output_file,
         REQUIRED_FEATURES,
-        OUTCOME_VARIABLE
+        OUTCOME_VARIABLE,
+        args.job_id,
+        args.db_path
     )
 
     print(result_message)
