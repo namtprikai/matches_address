@@ -140,6 +140,7 @@ export const DialogImportDataset = ({
   const [selectedTab, setSelectedTab] = useState<TabValue>("select");
   const [selectedDataSet, setSelectedDataSet] =
     useState<SelectRawDataSet | null>(null);
+  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const { isOpen, setIsOpen } = dialogState;
   const { data: rawDataSets } = useFetchRawDatasets();
 
@@ -153,6 +154,10 @@ export const DialogImportDataset = ({
     setSelectedTab(data.value as TabValue);
     setSelectedDataSet(null);
   };
+
+  const isDisabledImportButton =
+    (selectedTab === "select" && !selectedDataSet) ||
+    (selectedTab === "upload" && !uploadedFile);
 
   return (
     <Dialog onOpenChange={(_, { open }) => setIsOpen(open)} open={isOpen}>
@@ -255,10 +260,9 @@ export const DialogImportDataset = ({
             {selectedTab === "upload" && (
               <div className={styles.uploadWrap}>
                 <FileUploader
-                  onChange={(data) => {
-                    return;
+                  onUpload={(file) => {
+                    setUploadedFile(file);
                   }}
-                  value={null}
                 />
               </div>
             )}
@@ -266,12 +270,8 @@ export const DialogImportDataset = ({
           <DialogActions>
             <Button
               appearance="primary"
-              className={
-                selectedTab === "select" && selectedDataSet === null
-                  ? styles.disabledButton
-                  : ""
-              }
-              disabled={selectedTab === "select" && selectedDataSet === null}
+              className={isDisabledImportButton ? styles.disabledButton : ""}
+              disabled={isDisabledImportButton}
               onClick={handleClick}
             >
               インポート
