@@ -3,7 +3,6 @@ import { type z } from "zod";
 import { dbPath } from "../../utils/db";
 import { binaryPath, type IpcMainListener } from "../";
 import { type schema } from "../../hooks/use-form-model-create";
-import { getFilePathInAssets } from "../../utils/get-file-path-in-assets";
 import { getErrorMessage } from "../../utils/get-error-message";
 import { processLogger } from "../../utils/process-logger";
 
@@ -18,7 +17,7 @@ export const buildModel = (async (
   const { data } = params;
 
   try {
-    const output_path = getFilePathInAssets();
+    const output_path = dbPath;
     const database_path = dbPath;
 
     // childProcessに入れてバックグラウンド実行
