@@ -7,13 +7,9 @@ import {
   Dialog,
   DialogTrigger,
 } from "@fluentui/react-components";
-import {
-  DeleteRegular,
-  AddRegular,
-  Dismiss24Regular,
-} from "@fluentui/react-icons";
+import { DeleteRegular, Dismiss24Regular } from "@fluentui/react-icons";
 import { useNavigate } from "react-router-dom";
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { DialogSurface } from "../../components/ui/dialog-surface";
 import { DialogBody } from "../../components/ui/dialog-body";
 import { DialogTitle } from "../../components/ui/dialog-title";
@@ -22,7 +18,11 @@ import { DialogActions } from "../../components/ui/dialog-actions";
 import { useDialogState } from "../../hooks/use-dialog-state";
 import { Button } from "../../components/ui/button";
 import { DialogImportModelDataset } from "../../components/dialog-import-model-dataset";
+import { DialogImportAnalysisDataset } from "../../components/dialog-import-analysis-dataset";
+import { DialogModelAdvanced } from "../../components/dialog-model-advanced";
+import { useFormModelCreate } from "../../hooks/use-form-model-create";
 import { type SelectModelFile } from "../../schema";
+import { Dropdown } from "../../components/ui/dropdown";
 
 const useStyles = makeStyles({
   root: {
@@ -61,6 +61,7 @@ const useStyles = makeStyles({
     display: "flex",
     alignItems: "center",
     gap: tokens.spacingHorizontalM,
+    flexWrap: "wrap",
   },
   deleteIconWrapper: {
     width: "32px",
@@ -85,21 +86,35 @@ const useStyles = makeStyles({
     color: "#6264A7",
     textDecoration: "underline",
   },
+  fileItem: {
+    display: "flex",
+    alignItems: "center",
+    gap: tokens.spacingHorizontalS,
+  },
+  dropdownWrapper: {
+    display: "flex",
+    flexDirection: "column",
+    gap: tokens.spacingVerticalS,
+  },
+  dropdown: {
+    width: "196px",
+    height: "36px",
+  },
 });
 
 export const JobEvaluation = (): JSX.Element => {
   const styles = useStyles();
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const { isOpen, setIsOpen } = useDialogState(false);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [selectedFile, setSelectedFile] = useState<SelectModelFile | null>(
+    null,
+  );
   const [selectedModelFile, setSelectedModelFile] =
     useState<SelectModelFile | null>(null);
   const importModelDatasetDialogState = useDialogState();
+  const importAnalysisDatasetDialogState = useDialogState();
+  const modelAdvancedDialogState = useDialogState();
   const navigate = useNavigate();
-
-  const handleUploadButtonClick = (): void => {
-    fileInputRef.current?.click();
-  };
+  const form = useFormModelCreate();
 
   // 分析対象のデータの削除
   const handleRemoveFile = (): void => {
@@ -116,6 +131,7 @@ export const JobEvaluation = (): JSX.Element => {
       <h2 className={styles.heading}>空き家判定</h2>
 
       <div className={styles.contents}>
+        {/* モデルファイルの選択 */}
         <Card>
           <Subtitle2>① ファイルをインポート</Subtitle2>
           <div className={styles.file}>
@@ -149,26 +165,96 @@ export const JobEvaluation = (): JSX.Element => {
           }}
         />
 
+        {/* 分析対象のデータの選択 */}
         <Card>
           <Subtitle2>② 分析対象のデータを選択</Subtitle2>
           <div className={styles.file}>
-            <span className={styles.fileName}>{selectedFile?.name}</span>
-            <span
-              className={styles.deleteIconWrapper}
-              onClick={handleRemoveFile}
-            >
-              <DeleteRegular fontSize={16} />
-            </span>
+            {selectedFile ? (
+              <div key={selectedFile.id} className={styles.fileItem}>
+                <span className={styles.fileName}>
+                  {selectedFile.file_name}
+                </span>
+                <span
+                  className={styles.deleteIconWrapper}
+                  onClick={handleRemoveFile}
+                >
+                  <DeleteRegular fontSize={16} />
+                </span>
+              </div>
+            ) : (
+              <Button
+                appearance="primary"
+                onClick={() => importAnalysisDatasetDialogState.setIsOpen(true)}
+              >
+                選択
+              </Button>
+            )}
           </div>
-          <Button
-            appearance="outline"
-            className={styles.button}
-            icon={<AddRegular />}
-            onClick={handleUploadButtonClick}
-          >
-            <span className={styles.text}>データを追加</span>
-          </Button>
         </Card>
+
+        <DialogImportAnalysisDataset
+          dialogState={importAnalysisDatasetDialogState}
+          onSelected={(data) => {
+            setSelectedFile(data);
+          }}
+        />
+
+        <Card>
+          <Subtitle2>③ 地域集計用データをアップロード</Subtitle2>
+          <div className={styles.file}>
+            {selectedFile ? (
+              <div key={selectedFile.id} className={styles.fileItem}>
+                <span className={styles.fileName}>
+                  {selectedFile.file_name}
+                </span>
+                <span
+                  className={styles.deleteIconWrapper}
+                  onClick={handleRemoveFile}
+                >
+                  <DeleteRegular fontSize={16} />
+                </span>
+              </div>
+            ) : (
+              <Button
+                appearance="primary"
+                onClick={() => importAnalysisDatasetDialogState.setIsOpen(true)}
+              >
+                アップロード
+              </Button>
+            )}
+          </div>
+          <div className={styles.dropdownWrapper}>
+            <label htmlFor="area-id-dropdown">地域IDカラム</label>
+            <Dropdown
+              className={styles.dropdown}
+              id="area-id-dropdown"
+              placeholder="選択"
+            />
+            <label htmlFor="area-name-dropdown">地域名称カラム</label>
+            <Dropdown
+              className={styles.dropdown}
+              id="area-name-dropdown"
+              placeholder="選択"
+            />
+          </div>
+        </Card>
+
+        <Card>
+          <Subtitle2>④ 高度な設定</Subtitle2>
+          <div className={styles.file}>
+            <Button
+              appearance="transparent"
+              onClick={() => modelAdvancedDialogState.setIsOpen(true)}
+            >
+              高度な設定を変更
+            </Button>
+          </div>
+        </Card>
+
+        <DialogModelAdvanced
+          dialogState={modelAdvancedDialogState}
+          formState={form}
+        />
       </div>
 
       <div className={styles.footer}>
