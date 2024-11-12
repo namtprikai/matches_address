@@ -1,6 +1,6 @@
 import { type NormalizationParameters } from "../../@types/normalization";
 import { getErrorMessage } from "../../utils/get-error-message";
-import { dbPath } from "../../utils/db";
+import { dbDirectoryPath, dbPath } from "../../utils/db";
 import { type IpcMainListener } from "..";
 
 export type ExecE001Args = NormalizationParameters;
@@ -14,7 +14,7 @@ export const execE001 = (async (
   },
 ): Promise<true | false> => {
   try {
-    const output_path = dbPath;
+    const output_path = dbDirectoryPath;
     const database_path = dbPath;
 
     const postParameters = {
