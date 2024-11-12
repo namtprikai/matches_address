@@ -1,5 +1,4 @@
 import { makeStyles } from "@fluentui/react-components";
-import { FileUploader } from "../../components/ui/file-uploader/file-uploader";
 
 const useStyles = makeStyles({
   flex: {
@@ -16,12 +15,6 @@ export function Debug(): JSX.Element {
       <div className={styles.flex}>
         <a href="#">Go to home page</a>
       </div>
-      <FileUploader
-        onChange={() => {
-          return;
-        }}
-        value={null}
-      />
     </div>
   );
 }
