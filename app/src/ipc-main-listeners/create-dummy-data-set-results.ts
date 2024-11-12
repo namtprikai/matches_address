@@ -6,7 +6,7 @@ import {
   data_set_detail_buildings,
 } from "../schema";
 import { db } from "../utils/db";
-import { getFilePathInAssets } from "../utils/get-file-path-in-assets";
+import { getFilePathInPublic } from "../utils/get-file-path-in-public";
 import { TOYOTA_AREAS } from "./dummy-area";
 import { type IpcMainListener } from ".";
 
@@ -21,7 +21,7 @@ export const createDummyDataSetResults = (async (
     // 建物データをJSONファイルから取得する
     const d902 = await Promise.all(
       Array.from({ length: full ? 10 : 1 }, (_, i) => i + 1).map(async (i) => {
-        const filePath = getFilePathInAssets("D902", `${i}.json`);
+        const filePath = getFilePathInPublic("D902", `${i}.json`);
         const rawData = await readFile(filePath, { encoding: "utf8" });
         const jsonData: FeatureCollection = JSON.parse(rawData.toString());
         return jsonData;
@@ -29,7 +29,7 @@ export const createDummyDataSetResults = (async (
     );
 
     const d903 = await (async () => {
-      const filePath = getFilePathInAssets("D903.json");
+      const filePath = getFilePathInPublic("D903.json");
       const rawData = await readFile(filePath, { encoding: "utf8" });
       const jsonData: FeatureCollection = JSON.parse(rawData.toString());
       return jsonData;
