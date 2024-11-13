@@ -5,11 +5,12 @@ import {
   tokens,
   typographyStyles,
   Dialog,
+  Option,
   DialogTrigger,
 } from "@fluentui/react-components";
 import { DeleteRegular, Dismiss24Regular } from "@fluentui/react-icons";
 import { useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { DialogSurface } from "../../components/ui/dialog-surface";
 import { DialogBody } from "../../components/ui/dialog-body";
 import { DialogTitle } from "../../components/ui/dialog-title";
@@ -29,6 +30,7 @@ import { Dropdown } from "../../components/ui/dropdown";
 import { useFetchModelFiles } from "../../hooks/use-fetch-model-files";
 import { useFetchNormalizedDatasets } from "../../hooks/use-fetch-normalized-datasets";
 import { useFetchRawDatasets } from "../../hooks/use-fetch-raw-datasets";
+import { useFetchDatasetColumns } from "../../hooks/use-fetch-dataset-columns";
 
 const useStyles = makeStyles({
   root: {
@@ -129,6 +131,25 @@ export const JobEvaluation = (): JSX.Element => {
   const navigate = useNavigate();
   const form = useFormModelCreate();
 
+  // カラム情報と選択されたカラムの状態管理
+  const [areaColumns, setAreaColumns] = useState<string[]>([]);
+  const [selectedAreaIdColumn, setSelectedAreaIdColumn] = useState<string>("");
+  const [selectedAreaNameColumn, setSelectedAreaNameColumn] =
+    useState<string>("");
+
+  // カラム情報を取得するフック
+  const { data: areaFileColumns } = useFetchDatasetColumns({
+    filename: selectedAreaFile?.file_path,
+  });
+
+  useEffect(() => {
+    if (areaFileColumns) {
+      setAreaColumns(areaFileColumns);
+    } else {
+      setAreaColumns([]);
+    }
+  }, [areaFileColumns]);
+
   // 分析対象のデータの削除
   const handleRemoveFile = (): void => {
     setSelectedFile(null);
@@ -142,6 +163,9 @@ export const JobEvaluation = (): JSX.Element => {
   // 地域集計用データの削除
   const handleRemoveAreaFile = (): void => {
     setSelectedAreaFile(null);
+    setAreaColumns([]);
+    setSelectedAreaIdColumn("");
+    setSelectedAreaNameColumn("");
   };
 
   return (
@@ -253,19 +277,41 @@ export const JobEvaluation = (): JSX.Element => {
               </Button>
             )}
           </div>
+
+          {/* ドロップダウンの表示 */}
           <div className={styles.dropdownWrapper}>
             <label htmlFor="area-id-dropdown">地域IDカラム</label>
             <Dropdown
               className={styles.dropdown}
               id="area-id-dropdown"
+              onOptionSelect={(event, data) =>
+                setSelectedAreaIdColumn(data.optionValue ?? "")
+              }
               placeholder="選択"
-            />
+              value={selectedAreaIdColumn}
+            >
+              {areaColumns.map((column) => (
+                <Option key={column} text={column} value={column}>
+                  {column}
+                </Option>
+              ))}
+            </Dropdown>
             <label htmlFor="area-name-dropdown">地域名称カラム</label>
             <Dropdown
               className={styles.dropdown}
               id="area-name-dropdown"
+              onOptionSelect={(event, data) =>
+                setSelectedAreaIdColumn(data.optionValue ?? "")
+              }
               placeholder="選択"
-            />
+              value={selectedAreaNameColumn}
+            >
+              {areaColumns.map((column) => (
+                <Option key={column} text={column} value={column}>
+                  {column}
+                </Option>
+              ))}
+            </Dropdown>
           </div>
         </Card>
 
