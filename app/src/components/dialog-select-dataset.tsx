@@ -21,8 +21,6 @@ import {
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { type ReturnUseDialogState } from "../hooks/use-dialog-state";
-import { type SelectModelFile } from "../schema";
-import { useFetchModelFiles } from "../hooks/use-fetch-model-files";
 import { Button } from "./ui/button";
 import { DialogSurface } from "./ui/dialog-surface";
 import { DialogBody } from "./ui/dialog-body";
@@ -47,15 +45,15 @@ const useStyles = makeStyles({
     justifyContent: "center",
     alignItems: "center",
     height: "293px",
+    flexDirection: "column",
+    gap: tokens.spacingVerticalMNudge,
   },
   noDataset: {
     display: "flex",
-    flexDirection: "column",
     justifyContent: "center",
     alignItems: "center",
     color: tokens.colorNeutralForeground3,
     fontSize: tokens.fontSizeBase200,
-    gap: tokens.spacingVerticalMNudge,
   },
   tableHeader: {
     display: "block",
@@ -130,6 +128,12 @@ const useStyles = makeStyles({
   },
   dialogActions: {
     display: "flex",
+    width: "100%",
+    gridColumnStart: 1,
+    justifyContent: "space-between",
+  },
+  dialogAction: {
+    display: "flex",
     gap: tokens.spacingHorizontalXL,
   },
   searchBox: {
@@ -146,23 +150,38 @@ const useStyles = makeStyles({
   },
 });
 
-type Props = {
-  dialogState: ReturnUseDialogState;
-  onSelected?: (data: SelectModelFile) => void;
+type Dataset = {
+  id: number;
+  file_name: string | null;
+  created_at: string;
 };
 
-export const DialogImportModelDataset = ({
+type Props<T extends Dataset> = {
+  dialogState: ReturnUseDialogState;
+  isModel?: boolean;
+  onSelected?: (data: T) => void;
+  useFetchDatasets: () => { data: T[] | undefined };
+  title: string;
+  placeholder: string;
+  emptyMessage: string;
+};
+
+export function DialogSelectDataset<T extends Dataset>({
   dialogState,
+  isModel = false,
   onSelected,
-}: Props): JSX.Element => {
+  useFetchDatasets,
+  title,
+  placeholder,
+  emptyMessage,
+}: Props<T>): JSX.Element {
   const styles = useStyles();
-  const [selectedDataSet, setSelectedDataSet] =
-    useState<SelectModelFile | null>(null);
+  const [selectedDataSet, setSelectedDataSet] = useState<T | null>(null);
 
   const { isOpen: isDialogOpen, setIsOpen: setIsDialogOpen } = dialogState;
 
-  const { data: modelFiles } = useFetchModelFiles();
-  const datasets = modelFiles ?? [];
+  const { data: datasets } = useFetchDatasets();
+  const dataItems = datasets ?? [];
 
   const handleClick = (): void => {
     if (selectedDataSet !== null) {
@@ -192,14 +211,14 @@ export const DialogImportModelDataset = ({
             }
             className={styles.dialogTitle}
           >
-            利用するモデルを選択
+            {title}
           </DialogTitle>
           <DialogContent padding={false}>
             <div className={styles.searchBox}>
               <Input
                 className={styles.input}
                 contentBefore={<SearchRegular />}
-                placeholder="モデル名"
+                placeholder={placeholder}
               />
             </div>
             <Table className={styles.tableHeight}>
@@ -230,9 +249,9 @@ export const DialogImportModelDataset = ({
                   </TableHeaderCell>
                 </TableRow>
               </TableHeader>
-              {datasets.length > 0 ? (
+              {dataItems.length > 0 ? (
                 <TableBody className={styles.tableBody}>
-                  {datasets.map((dataset) => (
+                  {dataItems.map((dataset) => (
                     <TableRow
                       key={dataset.id}
                       className={mergeClasses(
@@ -259,22 +278,26 @@ export const DialogImportModelDataset = ({
                 </TableBody>
               ) : (
                 <div className={styles.noDatasetWrap}>
-                  <span className={styles.noDataset}>
-                    現在表示できるデータセットはありません
+                  <span className={styles.noDataset}>{emptyMessage}</span>
+                  {isModel && (
                     <Link className={styles.dialogLinkToModel} to={"/model"}>
                       モデルを作成
                       <ComposeRegular className={styles.largeBoldIcon} />
                     </Link>
-                  </span>
+                  )}
                 </div>
               )}
             </Table>
           </DialogContent>
-          <DialogActions className={styles.dialogActions}>
-            <Link className={styles.linkToModel} to={"/model"}>
-              モデルを作成
-              <ComposeRegular className={styles.largeBoldIcon} />
-            </Link>
+          <DialogActions
+            className={isModel ? styles.dialogActions : styles.dialogAction}
+          >
+            {isModel && (
+              <Link className={styles.linkToModel} to={"/model"}>
+                モデルを作成
+                <ComposeRegular className={styles.largeBoldIcon} />
+              </Link>
+            )}
             <Button
               appearance="primary"
               className={
@@ -283,11 +306,11 @@ export const DialogImportModelDataset = ({
               disabled={selectedDataSet === null}
               onClick={handleClick}
             >
-              モデルを決定
+              データを決定
             </Button>
           </DialogActions>
         </DialogBody>
       </DialogSurface>
     </Dialog>
   );
-};
+}

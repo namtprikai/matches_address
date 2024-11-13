@@ -17,12 +17,18 @@ import { DialogContent } from "../../components/ui/dialog-content";
 import { DialogActions } from "../../components/ui/dialog-actions";
 import { useDialogState } from "../../hooks/use-dialog-state";
 import { Button } from "../../components/ui/button";
-import { DialogImportModelDataset } from "../../components/dialog-import-model-dataset";
-import { DialogImportAnalysisDataset } from "../../components/dialog-import-analysis-dataset";
+import { DialogSelectDataset } from "../../components/dialog-select-dataset";
 import { DialogModelAdvanced } from "../../components/dialog-model-advanced";
 import { useFormModelCreate } from "../../hooks/use-form-model-create";
-import { type SelectModelFile } from "../../schema";
+import {
+  type SelectModelFile,
+  type SelectNormalizedDataSet,
+  type SelectRawDataSet,
+} from "../../schema";
 import { Dropdown } from "../../components/ui/dropdown";
+import { useFetchModelFiles } from "../../hooks/use-fetch-model-files";
+import { useFetchNormalizedDatasets } from "../../hooks/use-fetch-normalized-datasets";
+import { useFetchRawDatasets } from "../../hooks/use-fetch-raw-datasets";
 
 const useStyles = makeStyles({
   root: {
@@ -105,13 +111,20 @@ const useStyles = makeStyles({
 export const JobEvaluation = (): JSX.Element => {
   const styles = useStyles();
   const { isOpen, setIsOpen } = useDialogState(false);
-  const [selectedFile, setSelectedFile] = useState<SelectModelFile | null>(
-    null,
-  );
+
+  // 選択されたファイルの状態管理
+  const [selectedFile, setSelectedFile] =
+    useState<SelectNormalizedDataSet | null>(null);
   const [selectedModelFile, setSelectedModelFile] =
     useState<SelectModelFile | null>(null);
+  const [selectedAreaFile, setSelectedAreaFile] =
+    useState<SelectRawDataSet | null>(null);
+
+  // ダイアログの状態管理
   const importModelDatasetDialogState = useDialogState();
   const importAnalysisDatasetDialogState = useDialogState();
+  const importAreaDatasetDialogState = useDialogState();
+
   const modelAdvancedDialogState = useDialogState();
   const navigate = useNavigate();
   const form = useFormModelCreate();
@@ -124,6 +137,11 @@ export const JobEvaluation = (): JSX.Element => {
   // モデルファイルの削除
   const handleRemoveModelFile = (): void => {
     setSelectedModelFile(null);
+  };
+
+  // 地域集計用データの削除
+  const handleRemoveAreaFile = (): void => {
+    setSelectedAreaFile(null);
   };
 
   return (
@@ -158,11 +176,17 @@ export const JobEvaluation = (): JSX.Element => {
           </div>
         </Card>
 
-        <DialogImportModelDataset
+        {/* ダイアログの定義 */}
+        <DialogSelectDataset<SelectModelFile>
           dialogState={importModelDatasetDialogState}
+          emptyMessage="現在表示できるモデルはありません"
+          isModel
           onSelected={(data) => {
             setSelectedModelFile(data);
           }}
+          placeholder="モデル名"
+          title="利用するモデルを選択"
+          useFetchDatasets={useFetchModelFiles}
         />
 
         {/* 分析対象のデータの選択 */}
@@ -192,24 +216,30 @@ export const JobEvaluation = (): JSX.Element => {
           </div>
         </Card>
 
-        <DialogImportAnalysisDataset
+        {/* ダイアログの定義 */}
+        <DialogSelectDataset<SelectNormalizedDataSet>
           dialogState={importAnalysisDatasetDialogState}
+          emptyMessage="現在表示できるデータセットはありません"
           onSelected={(data) => {
             setSelectedFile(data);
           }}
+          placeholder="データ名"
+          title="分析対象のデータを選択"
+          useFetchDatasets={useFetchNormalizedDatasets}
         />
 
+        {/* 地域集計用データの選択 */}
         <Card>
           <Subtitle2>③ 地域集計用データをアップロード</Subtitle2>
           <div className={styles.file}>
-            {selectedFile ? (
-              <div key={selectedFile.id} className={styles.fileItem}>
+            {selectedAreaFile ? (
+              <div key={selectedAreaFile.id} className={styles.fileItem}>
                 <span className={styles.fileName}>
-                  {selectedFile.file_name}
+                  {selectedAreaFile.file_name}
                 </span>
                 <span
                   className={styles.deleteIconWrapper}
-                  onClick={handleRemoveFile}
+                  onClick={handleRemoveAreaFile}
                 >
                   <DeleteRegular fontSize={16} />
                 </span>
@@ -217,9 +247,9 @@ export const JobEvaluation = (): JSX.Element => {
             ) : (
               <Button
                 appearance="primary"
-                onClick={() => importAnalysisDatasetDialogState.setIsOpen(true)}
+                onClick={() => importAreaDatasetDialogState.setIsOpen(true)}
               >
-                アップロード
+                選択
               </Button>
             )}
           </div>
@@ -239,6 +269,19 @@ export const JobEvaluation = (): JSX.Element => {
           </div>
         </Card>
 
+        {/* ダイアログの定義 */}
+        <DialogSelectDataset<SelectRawDataSet>
+          dialogState={importAreaDatasetDialogState}
+          emptyMessage="現在表示できるデータセットはありません"
+          onSelected={(data) => {
+            setSelectedAreaFile(data);
+          }}
+          placeholder="データ名"
+          title="地域集計用データを選択"
+          useFetchDatasets={useFetchRawDatasets}
+        />
+
+        {/* 高度な設定 */}
         <Card>
           <Subtitle2>④ 高度な設定</Subtitle2>
           <div className={styles.file}>
@@ -257,6 +300,7 @@ export const JobEvaluation = (): JSX.Element => {
         />
       </div>
 
+      {/* フッター */}
       <div className={styles.footer}>
         <Dialog
           onOpenChange={(event, data) => setIsOpen(data.open)}
