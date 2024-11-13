@@ -20,7 +20,6 @@ import numpy as np
 import pandas as pd
 import lightgbm as lgb
 import optuna
-import gradio as gr
 import zipfile
 import argparse
 from concurrent.futures import ThreadPoolExecutor
@@ -261,7 +260,7 @@ def split_data(df, params):
 # - 出力：「D014　学習済みモデル【pkl】」
 
 @profile
-def train_lgb_with_optuna(train_df, params, progress, citycode_value, targetyear_value, output_path, model_name):
+def train_lgb_with_optuna(train_df, params, citycode_value, targetyear_value, output_path, model_name):
     """
     K-Fold交差検証とOptunaによるハイパーパラメータチューニングを用いてLightGBMモデルを学習する
    
@@ -271,8 +270,6 @@ def train_lgb_with_optuna(train_df, params, progress, citycode_value, targetyear
         学習データを含むデータフレーム
     params : dict
         各種パラメータを含む辞書
-    progress : gr.Progress
-        進捗状況を表示するためのGradioのProgressオブジェクト
 
     Returns
     -------
@@ -319,7 +316,6 @@ def train_lgb_with_optuna(train_df, params, progress, citycode_value, targetyear
         # これらのパラメータで交差検証を実行
         accuracy_list = []
         for fold, (train_index, val_index) in enumerate(kf.split(X_train)):
-            progress((0.3 + 0.5 * (fold / params['n_splits'])), desc=f"Training fold {fold+1}/{params['n_splits']}")
             # このフォールドのデータを学習用と検証用に分割
             X_tr, X_val = X_train.iloc[train_index], X_train.iloc[val_index]
             y_tr, y_val = y_train.iloc[train_index], y_train.iloc[val_index]
@@ -676,7 +672,7 @@ def save_metrics_and_importances(score_dict, feature_importances_dict_train, cit
 
 
 def train_and_evaluate(job_id, input_file, output_path, explanatory_variables, test_size, n_splits, undersample, undersample_ratio, threshold, hyperparameter_flag, n_trials, 
-                       lambda_l1, lambda_l2, num_leaves, feature_fraction, bagging_fraction, bagging_freq, min_data_in_leaf, citycode_value, targetyear_value, progress=gr.Progress()):
+                       lambda_l1, lambda_l2, num_leaves, feature_fraction, bagging_fraction, bagging_freq, min_data_in_leaf, citycode_value, targetyear_value):
     """
     モデルを学習し評価する主要関数
 
@@ -716,8 +712,6 @@ def train_and_evaluate(job_id, input_file, output_path, explanatory_variables, t
         バギングの頻度
     min_data_in_leaf : int
         葉ノードの最小データ数
-    progress : gr.Progress
-        進捗状況を表示するためのGradioのProgressオブジェクト
 
     Returns
     -------
@@ -731,7 +725,6 @@ def train_and_evaluate(job_id, input_file, output_path, explanatory_variables, t
     
     try:
         # setup_directory()
-        progress(0, desc="Loading data...")
         task_id = create_or_update_job_task(job_id, progress_percent="0", preprocess_type="E021_モデル構築", error_code=None, result=None)
         create_or_update_job(job_id , "0")
         file_path = input_file
@@ -739,7 +732,6 @@ def train_and_evaluate(job_id, input_file, output_path, explanatory_variables, t
         if df is None:
             raise ValueError(f"ファイル {file_path} の読み込みに失敗しました。")
         
-        progress(0.1, desc="Preparing learning data...")
         create_or_update_job_task(job_id, progress_percent="10", preprocess_type="E021_モデル構築", error_code=None, result=None, id= task_id)
         create_or_update_job(job_id , "10")
         learning_data = prepare_learning_data(df, explanatory_variables)
@@ -761,23 +753,19 @@ def train_and_evaluate(job_id, input_file, output_path, explanatory_variables, t
             'min_data_in_leaf': int(min_data_in_leaf),
         }
         
-        progress(0.2, desc="Splitting data...")
         create_or_update_job_task(job_id, progress_percent="20", preprocess_type="E021_モデル構築", error_code=None, result=None, id= task_id)
         create_or_update_job(job_id , "20")
         train_df, test_df = split_data(learning_data, params)
         
-        progress(0.3, desc="Training model...")
         model_name = str(uuid.uuid4())
         create_or_update_job_task(job_id, progress_percent="30", preprocess_type="E021_モデル構築", error_code=None, result=None, id= task_id)
         create_or_update_job(job_id , "30")
-        models, oof_pred, feature_importances_dict_train, model_zip_file_path = train_lgb_with_optuna(train_df, params, progress, citycode_value, targetyear_value, output_path, model_name)
+        models, oof_pred, feature_importances_dict_train, model_zip_file_path = train_lgb_with_optuna(train_df, params, citycode_value, targetyear_value, output_path, model_name)
         
-        progress(0.8, desc="Evaluating model...")
         create_or_update_job_task(job_id, progress_percent="80", preprocess_type="E021_モデル構築", error_code=None, result=None, id= task_id)
         create_or_update_job(job_id , "80")
         pred, score_dict, feature_importances_dict_test, feature_importance_plot = evaluate_models_on_test(test_df, models, params)
         
-        progress(0.9, desc="Saving results...")
         create_or_update_job_task(job_id, progress_percent="90", preprocess_type="E021_モデル構築", error_code=None, result=None, id= task_id)
         create_or_update_job(job_id , "90")
         if citycode_value is not None:
@@ -793,7 +781,6 @@ def train_and_evaluate(job_id, input_file, output_path, explanatory_variables, t
         # Save evaluation metrics and feature importances
         data_zip_file_path = save_metrics_and_importances(score_dict, feature_importances_dict_train, citycode_value, targetyear_value, output_path)
         # data_zip_file_path = f'./data/{citycode_value}/E021/outputs/data_files.zip'
-        progress(0.95, desc="Print results...")
         create_or_update_job_task(job_id, progress_percent="95", preprocess_type="E021_モデル構築", error_code=None, result=None, id= task_id)
         create_or_update_job(job_id , "95")
         # Create a string with the evaluation results
@@ -822,7 +809,6 @@ def train_and_evaluate(job_id, input_file, output_path, explanatory_variables, t
         }
         
         # Update progress to complete
-        progress(1.0, desc="Completed!")
 
         create_or_update_job_task(job_id, progress_percent="100", preprocess_type="E021_モデル構築", error_code=None, result=json.dumps(result), id= task_id, is_finish=True)
         create_or_update_job(job_id , "complete")
@@ -861,7 +847,7 @@ def create_table_if_not_exist():
         job_id INTEGER NOT NULL,
         progress_percent TEXT,
         preprocess_type TEXT,
-        error_code TEXT CHECK(error_code IN ('undefined_error')),
+        error_code TEXT,
         result BLOB,
         finished_at TEXT DEFAULT NULL,
         created_at TEXT DEFAULT (CURRENT_TIMESTAMP) NOT NULL,
@@ -954,7 +940,7 @@ def main():
 
     params = {
         'input_path': json_dict.get('input_path', None),
-        'output_path': json_dict.get('output_directory', '.'),
+        'output_path': json_dict.get('output_path', '.'),
         'explanatory_variables': json_dict.get('settings', {}).get('explanatory_variables', []),
         'test_size': json_dict.get('settings', {}).get('advanced', {}).get('test_size', 0.3),
         'n_splits': json_dict.get('settings', {}).get('advanced', {}).get('n_splits', 3),

@@ -3,12 +3,11 @@ import argparse
 import json
 import os
 import shutil
-import subprocess
 import sys
 import uuid
 from utils import *
 
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../')))
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../')))
 from src.E002_Classification.E022 import process_and_predict as E022
 from src.E003_Summarization.E032 import process_summarization as E032
 def main():

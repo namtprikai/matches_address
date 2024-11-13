@@ -11,8 +11,6 @@ import pandas as pd
 import geopandas as gpd
 import os
 import shutil
-import tempfile
-import gradio as gr
 import sqlite3
 import zipfile 
 from shapely.geometry import MultiPolygon, Polygon

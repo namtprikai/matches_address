@@ -7,7 +7,7 @@ import sys
 import uuid
 from utils import *
 
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../')))
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../')))
 from src.E001_DataMatching.E012 import process_data as E012
 from src.E001_DataMatching.E013 import process_all_data as E013
 from src.E001_DataMatching.E014 import embedding_address as E014
