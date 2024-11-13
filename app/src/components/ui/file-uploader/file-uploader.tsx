@@ -1,14 +1,15 @@
-import { makeStyles } from "@fluentui/react-components";
-import { useCallback, useState } from "react";
+import { makeStyles, tokens } from "@fluentui/react-components";
+import { useState } from "react";
 import { useDropzone } from "react-dropzone";
-import { SelectedFile } from "./selected-file";
-import { UploadFileSymbol } from "./upload-file-symbol";
+import { DeleteRegular } from "@fluentui/react-icons";
+import { type MouseEventHandler } from "react";
+import { formatByteValue } from "../../../utils/format-byte-value";
+import { Button } from "../button";
 import { DropFileSymbol } from "./drop-file-symbol";
+import { UploadFileSymbol } from "./upload-file-symbol";
 
 type Props = {
-  variant?: "default" | "simple";
-  value: File | null;
-  onChange: (file: File | null) => void;
+  onUpload: (file: File | null) => void;
 };
 
 const useStyles = makeStyles({
@@ -25,39 +26,89 @@ const useStyles = makeStyles({
   },
 });
 
-export const FileUploader = ({ variant = "default" }: Props): JSX.Element => {
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+export const FileUploader = ({ onUpload }: Props): JSX.Element => {
+  const styles = useStyles();
+  const [selectedFile, setSelectedFile] = useState<{
+    name: string;
+    size: number;
+  } | null>(null);
 
-  const onDrop = useCallback((acceptedFiles: File[]) => {
-    setSelectedFile(acceptedFiles[0]);
-  }, []);
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
-    onDrop,
+    onDrop: (acceptedFiles: File[]) => {
+      if (acceptedFiles.length > 0) {
+        const file = acceptedFiles[0];
+        setSelectedFile({
+          name: file.name,
+          size: file.size,
+        });
+        onUpload(file);
+      }
+    },
   });
 
-  const styles = useStyles();
-
-  if (variant === "default") {
-    return (
-      <div {...getRootProps()} className={styles.root}>
-        <input hidden type="file" {...getInputProps()} />
-        {selectedFile ? (
-          <SelectedFile
-            file={selectedFile}
-            onDelete={(event) => {
-              event.stopPropagation(); // ファイル選択のイベントが発火しないようにする
-              setSelectedFile(null);
-            }}
-          />
-        ) : isDragActive ? (
-          <DropFileSymbol />
-        ) : (
-          <UploadFileSymbol />
-        )}
-      </div>
-    );
-  }
-
-  // simple の場合のコンポーネントを追加
-  return <></>;
+  return (
+    <div {...getRootProps()} className={styles.root}>
+      <input hidden type="file" {...getInputProps()} />
+      {selectedFile ? (
+        <SelectedFile
+          fileName={selectedFile.name}
+          fileSize={selectedFile.size}
+          onDelete={(event) => {
+            event.stopPropagation(); // ファイル選択のイベントが発火しないようにする
+            setSelectedFile(null);
+          }}
+        />
+      ) : isDragActive ? (
+        <DropFileSymbol />
+      ) : (
+        <UploadFileSymbol />
+      )}
+    </div>
+  );
 };
+
+const useSelectedFileStyles = makeStyles({
+  root: {
+    display: "flex",
+    alignItems: "flex-start",
+    gap: tokens.spacingHorizontalXXXL,
+  },
+  fileSize: {
+    fontSize: tokens.fontSizeBase300,
+  },
+});
+
+type SelectedFileProps = {
+  fileName: string;
+  fileSize: number;
+  onDelete: MouseEventHandler<HTMLButtonElement>;
+};
+
+function SelectedFile({
+  fileName,
+  fileSize,
+  onDelete,
+}: SelectedFileProps): JSX.Element {
+  const styles = useSelectedFileStyles();
+
+  return (
+    <div className={styles.root}>
+      <div>
+        <p>{fileName}</p>
+        <p className={styles.fileSize}>
+          {formatByteValue(fileSize, {
+            unit: "MB",
+          })}
+        </p>
+      </div>
+      <div>
+        <Button
+          appearance="subtle"
+          icon={<DeleteRegular />}
+          onClick={onDelete}
+          type="button"
+        />
+      </div>
+    </div>
+  );
+}

@@ -263,10 +263,9 @@ export const DialogImportNormalizedDataset = ({
             {selectedTab === 1 && (
               <div className={styles.uploadWrap}>
                 <FileUploader
-                  onChange={() => {
+                  onUpload={() => {
                     return;
                   }}
-                  value={null}
                 />
               </div>
             )}

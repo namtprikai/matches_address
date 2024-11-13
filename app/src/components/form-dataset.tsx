@@ -17,6 +17,182 @@ import { Dropdown } from "./ui/dropdown";
 import { Field } from "./ui/field";
 import { DialogImportDataset } from "./dialog-import-dataset";
 
+const useStyles = makeStyles({
+  fileSelectorContainer: {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
+    width: "200px",
+    height: "160px",
+    padding: `${tokens.spacingVerticalM} ${tokens.spacingHorizontalM}`,
+    border: `1px dashed ${tokens.colorNeutralStroke2}`,
+    borderRadius: "5px",
+    cursor: "pointer",
+    backgroundColor: tokens.colorNeutralBackground3,
+    gap: `${tokens.spacingVerticalS} 0`,
+  },
+  fieldContainer: {
+    display: "flex",
+    gap: "16px",
+  },
+  dropdownContainer: {
+    display: "grid",
+    gridTemplateColumns: "1fr 1fr 1fr",
+    gridAutoRows: "60px",
+    gap: `${tokens.spacingVerticalS} ${tokens.spacingHorizontalM}`,
+  },
+  dropdown: {
+    height: "36px",
+  },
+  field: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "2px",
+  },
+});
+
+export const FormDataset = <
+  FORM_TYPE extends FieldValues,
+  COLUMN_TYPE extends Partial<Record<string, string>>,
+>({
+  value: prevValue,
+  onChange,
+  dataSetName,
+  appearance,
+}: {
+  value: {
+    columns?: COLUMN_TYPE;
+    path?: string;
+  };
+  name: Path<FORM_TYPE>;
+  dataSetName: string;
+  appearance?: "default" | "large";
+  onChange?: (data: typeof prevValue) => void;
+}): JSX.Element => {
+  const styles = useStyles();
+  const [dataSet, setDataSet] = useState<SelectRawDataSet | undefined>(
+    undefined,
+  );
+  const dialogState = useDialogState();
+  const { data: dataSetColumns } = useFetchDatasetColumns({
+    filename: dataSet?.file_path,
+  });
+  const { setIsOpen } = dialogState;
+
+  useEffect(() => {
+    if (onChange && dataSetColumns) {
+      const columnKV = prevValue.columns
+        ? Object.entries(prevValue.columns)
+        : [];
+
+      if (columnKV.length === 0) {
+        return;
+      }
+
+      const newColumns = columnKV.reduce((acc, [key]) => {
+        return {
+          ...acc,
+          [key]: dataSetColumns[0],
+        };
+      }, {});
+
+      onChange({
+        path: prevValue.path,
+        // reduceでは厳密な型推論ができないためasで型を指定
+        columns: newColumns as COLUMN_TYPE,
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- prevValueが含まれるとcolumnsの更新を行い、無限ループになるため
+  }, [dataSetColumns]);
+
+  return (
+    <Card>
+      <p>{dataSetName}</p>
+      <div className={styles.fieldContainer}>
+        <div
+          className={styles.fileSelectorContainer}
+          onClick={() => {
+            setIsOpen(true);
+          }}
+          role="button"
+        >
+          {dataSet ? (
+            <SelectedDataSetView
+              dataSet={dataSet}
+              onDelete={() => {
+                setDataSet(undefined);
+                if (onChange) {
+                  onChange({
+                    ...prevValue,
+                    path: undefined,
+                  });
+                }
+              }}
+            />
+          ) : (
+            <DataSetImportSymbol />
+          )}
+        </div>
+        <div
+          // FormDatasetが横長の場合のスタイルだしわけ
+          className={mergeClasses(
+            appearance === "large" && styles.dropdownContainer,
+          )}
+        >
+          {prevValue.columns
+            ? Object.entries(prevValue.columns).map(([key]) => (
+                <Field
+                  key={key}
+                  className={styles.field}
+                  label={
+                    LanguageMap.NORMALIZATION_PARAMETER_LABEL[
+                      key as keyof typeof LanguageMap.NORMALIZATION_PARAMETER_LABEL
+                    ] + "カラム"
+                  }
+                >
+                  <Dropdown
+                    className={styles.dropdown}
+                    disabled={!dataSetColumns || dataSetColumns.length === 0}
+                    onOptionSelect={(_, data) => {
+                      if (!onChange) return;
+                      onChange({
+                        ...prevValue,
+                        columns: {
+                          ...prevValue.columns,
+                          [key]: data.optionValue,
+                        } as COLUMN_TYPE,
+                      });
+                    }}
+                    selectedOptions={[prevValue.columns?.[key] ?? ""]}
+                    value={prevValue.columns?.[key] ?? ""}
+                  >
+                    {dataSetColumns?.map((column) => (
+                      <Option key={column} text={column} value={column}>
+                        {column}
+                      </Option>
+                    ))}
+                  </Dropdown>
+                </Field>
+              ))
+            : null}
+        </div>
+      </div>
+      <DialogImportDataset
+        dialogState={dialogState}
+        onSubmit={(data) => {
+          setDataSet(data);
+          if (!onChange) return;
+          onChange({
+            ...prevValue,
+            path: data?.file_path,
+          });
+        }}
+      />
+    </Card>
+  );
+};
+
 /**
  * データセットインポートのアイコンや文字部分をスタイリングするためにスタイルを別定義
  */
@@ -50,6 +226,7 @@ const DataSetImportSymbol = (): JSX.Element => {
     </div>
   );
 };
+
 /**
  * 選択されたデータセットの表示部分用のスタイル
  */
@@ -112,199 +289,5 @@ const SelectedDataSetView = ({
         <span>削除</span>
       </button>
     </div>
-  );
-};
-
-const useStyles = makeStyles({
-  fileSelectorContainer: {
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    justifyContent: "center",
-    width: "200px",
-    height: "160px",
-    padding: `${tokens.spacingVerticalM} ${tokens.spacingHorizontalM}`,
-    border: `1px dashed ${tokens.colorNeutralStroke2}`,
-    borderRadius: "5px",
-    cursor: "pointer",
-    backgroundColor: tokens.colorNeutralBackground3,
-    gap: `${tokens.spacingVerticalS} 0`,
-  },
-  fieldContainer: {
-    display: "flex",
-    gap: "16px",
-  },
-  dropdownContainer: {
-    display: "grid",
-    gridTemplateColumns: "1fr 1fr 1fr",
-    gridAutoRows: "60px",
-    gap: `${tokens.spacingVerticalS} ${tokens.spacingHorizontalM}`,
-  },
-  dropdown: {
-    height: "36px",
-  },
-  field: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "2px",
-  },
-});
-
-export const FormDataset = <
-  FORM_TYPE extends FieldValues,
-  COLUMN_TYPE extends Partial<Record<string, string>>,
->({
-  value: prevValue,
-  onChange,
-  dataSetName,
-  appearance,
-}: {
-  value: {
-    columns?: COLUMN_TYPE;
-    path?: string;
-  };
-  name: Path<FORM_TYPE>;
-  dataSetName: string;
-  appearance?: "default" | "large";
-  onChange?: (data: typeof prevValue) => void;
-}): JSX.Element => {
-  const [dataSet, setDataSet] = useState<SelectRawDataSet | undefined>(
-    undefined,
-  );
-  const dialogState = useDialogState();
-
-  const { data: dataSetColumns } = useFetchDatasetColumns({
-    filename: dataSet?.file_path,
-  });
-
-  const { setIsOpen } = dialogState;
-
-  // {}で囲んでif処理を書くのが可読性低いので別関数化
-  const SelectorView = (): JSX.Element => {
-    if (dataSet) {
-      return (
-        <SelectedDataSetView
-          dataSet={dataSet}
-          onDelete={() => {
-            setDataSet(undefined);
-            if (onChange) {
-              onChange({
-                ...prevValue,
-                path: undefined,
-              });
-            }
-          }}
-        />
-      );
-    } else {
-      return <DataSetImportSymbol />;
-    }
-  };
-  useEffect(() => {
-    if (onChange && dataSetColumns) {
-      const columnKV = prevValue.columns
-        ? Object.entries(prevValue.columns)
-        : [];
-
-      if (columnKV.length === 0) {
-        return;
-      }
-
-      const newColumns = columnKV.reduce((acc, [key]) => {
-        return {
-          ...acc,
-          [key]: dataSetColumns[0],
-        };
-      }, {});
-
-      onChange({
-        path: prevValue.path,
-        // reduceでは厳密な型推論ができないためasで型を指定
-        columns: newColumns as COLUMN_TYPE,
-      });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- prevValueが含まれるとcolumnsの更新を行い、無限ループになるため
-  }, [dataSetColumns]);
-
-  const styles = useStyles();
-  const columns = prevValue.columns ? Object.entries(prevValue.columns) : [];
-
-  const dataSetColumnsToOptions = dataSetColumns?.map((column) => {
-    return (
-      <Option key={column} text={column} value={column}>
-        {column}
-      </Option>
-    );
-  });
-
-  const columnsToDropDowns = columns.map(([key]) => {
-    return (
-      <Field
-        key={key}
-        className={styles.field}
-        label={
-          LanguageMap.NORMALIZATION_PARAMETER_LABEL[
-            key as keyof typeof LanguageMap.NORMALIZATION_PARAMETER_LABEL
-          ] + "カラム"
-        }
-      >
-        <Dropdown
-          className={styles.dropdown}
-          disabled={dataSetColumns === undefined || dataSetColumns.length === 0}
-          onOptionSelect={(_, data) => {
-            if (onChange) {
-              onChange({
-                ...prevValue,
-                columns: {
-                  ...prevValue.columns,
-                  [key]: data.optionValue,
-                } as COLUMN_TYPE,
-              });
-            }
-          }}
-          selectedOptions={[prevValue.columns?.[key] ?? ""]}
-          value={prevValue.columns?.[key] ?? ""}
-        >
-          {dataSetColumnsToOptions}
-        </Dropdown>
-      </Field>
-    );
-  });
-
-  return (
-    <Card>
-      <p>{dataSetName}</p>
-      <div className={styles.fieldContainer}>
-        <div
-          className={styles.fileSelectorContainer}
-          onClick={() => {
-            setIsOpen(true);
-          }}
-          role="button"
-        >
-          <SelectorView />
-        </div>
-        <div
-          // FormDatasetが横長の場合のスタイルだしわけ
-          className={mergeClasses(
-            appearance === "large" && styles.dropdownContainer,
-          )}
-        >
-          {columns && columnsToDropDowns}
-        </div>
-      </div>
-      <DialogImportDataset
-        dialogState={dialogState}
-        onSelected={(data) => {
-          setDataSet(data);
-          if (onChange) {
-            onChange({
-              ...prevValue,
-              path: data?.file_path,
-            });
-          }
-        }}
-      />
-    </Card>
   );
 };
