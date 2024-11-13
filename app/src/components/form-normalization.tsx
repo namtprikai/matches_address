@@ -51,7 +51,6 @@ export const FormNormalization = ({ value, onSave }: Props): JSX.Element => {
           <FormDataset
             appearance="large"
             dataSetName={LanguageMap.NORMALIZATION_DATA_LABEL.residentRegistry}
-            name={"data.resident_registry"}
             onChange={onChange}
             value={value}
           />
@@ -64,7 +63,6 @@ export const FormNormalization = ({ value, onSave }: Props): JSX.Element => {
           <FormDataset
             appearance="large"
             dataSetName={LanguageMap.NORMALIZATION_DATA_LABEL.waterStatus}
-            name={"data.water_status"}
             onChange={onChange}
             value={value}
           />
@@ -77,7 +75,6 @@ export const FormNormalization = ({ value, onSave }: Props): JSX.Element => {
           render={({ field: { value, onChange } }) => (
             <FormDataset
               dataSetName={LanguageMap.NORMALIZATION_DATA_LABEL.waterUsage}
-              name={"data.water_usage"}
               onChange={onChange}
               value={value}
             />
@@ -89,7 +86,6 @@ export const FormNormalization = ({ value, onSave }: Props): JSX.Element => {
           render={({ field: { value, onChange } }) => (
             <FormDataset
               dataSetName={LanguageMap.NORMALIZATION_DATA_LABEL.landRegistry}
-              name={"data.land_registry"}
               onChange={onChange}
               value={value}
             />
@@ -101,7 +97,6 @@ export const FormNormalization = ({ value, onSave }: Props): JSX.Element => {
           render={({ field: { value, onChange } }) => (
             <FormDataset
               dataSetName={LanguageMap.NORMALIZATION_DATA_LABEL.vacantHouse}
-              name={"data.vacant_house"}
               onChange={onChange}
               value={value}
             />
@@ -113,7 +108,6 @@ export const FormNormalization = ({ value, onSave }: Props): JSX.Element => {
           render={({ field: { value, onChange } }) => (
             <FormDataset
               dataSetName={LanguageMap.NORMALIZATION_DATA_LABEL.geocoding}
-              name={"data.geocoding"}
               onChange={onChange}
               value={value}
             />
@@ -125,7 +119,6 @@ export const FormNormalization = ({ value, onSave }: Props): JSX.Element => {
           render={({ field: { value, onChange } }) => (
             <FormDataset
               dataSetName={LanguageMap.NORMALIZATION_DATA_LABEL.buildingPolygon}
-              name={"data.building_polygon"}
               onChange={onChange}
               value={value}
             />
@@ -137,7 +130,6 @@ export const FormNormalization = ({ value, onSave }: Props): JSX.Element => {
           render={({ field: { value, onChange } }) => (
             <FormDataset
               dataSetName={LanguageMap.NORMALIZATION_DATA_LABEL.urbanPlanning}
-              name={"data.urban_planning"}
               onChange={onChange}
               value={value}
             />
@@ -149,7 +141,6 @@ export const FormNormalization = ({ value, onSave }: Props): JSX.Element => {
           render={({ field: { value, onChange } }) => (
             <FormDataset
               dataSetName={LanguageMap.NORMALIZATION_DATA_LABEL.census}
-              name={"data.census"}
               onChange={onChange}
               value={value}
             />

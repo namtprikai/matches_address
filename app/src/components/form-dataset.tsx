@@ -53,19 +53,17 @@ const useStyles = makeStyles({
 });
 
 export const FormDataset = <
-  FORM_TYPE extends FieldValues,
   COLUMN_TYPE extends Partial<Record<string, string>>,
 >({
   value: prevValue,
-  onChange,
   dataSetName,
   appearance,
+  onChange,
 }: {
   value: {
     columns?: COLUMN_TYPE;
     path?: string;
   };
-  name: Path<FORM_TYPE>;
   dataSetName: string;
   appearance?: "default" | "large";
   onChange?: (data: typeof prevValue) => void;
