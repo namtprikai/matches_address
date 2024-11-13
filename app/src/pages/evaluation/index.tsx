@@ -355,7 +355,9 @@ export const JobEvaluation = (): JSX.Element => {
           <DialogTrigger disableButtonEnhancement>
             <Button
               className={styles.restartButton}
-              disabled={!selectedFile || !selectedModelFile}
+              disabled={
+                !selectedFile || !selectedModelFile || !selectedAreaFile
+              }
               onClick={() => setIsOpen(true)}
             >
               分析開始
