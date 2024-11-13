@@ -13,7 +13,7 @@ export const readCSVHeaders = async (filePath: string): Promise<string[]> => {
   // from_line: 1, to_line: 1で1行目のみ取得
   // trimでエスケープ文字を削除
   const parser = createReadStream(filePath)
-    .pipe(decodeStream("Shift_JIS"))
+    .pipe(decodeStream("utf-8"))
     .pipe(encodeStream("utf-8"))
     .pipe(parse({ from_line: 1, to_line: 1, trim: true }));
 
