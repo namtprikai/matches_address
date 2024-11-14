@@ -1,3 +1,5 @@
+import { type SelectRawDataSet } from "../schema";
+
 /**
  * WIP
  * この型定義は検討途中のものであり、最終的な型定義ではないです
@@ -8,7 +10,6 @@
  *
  * TODO: 要件定義資料ないしは他の公開資料に上記資料を置き換える
  */
-
 export type NormalizationParameters = {
   settings: {
     reference_data: "water_status" | "resident_registry";
@@ -21,7 +22,8 @@ export type NormalizationParameters = {
   };
   data: {
     resident_registry: {
-      path?: string;
+      id: SelectRawDataSet["id"];
+      path: string;
       columns: {
         household_code: string;
         gender: string;
@@ -31,7 +33,8 @@ export type NormalizationParameters = {
       };
     };
     water_status: {
-      path?: string;
+      id: SelectRawDataSet["id"];
+      path: string;
       columns: {
         water_supply_number: string;
         water_disconnection_date: string;
@@ -41,7 +44,8 @@ export type NormalizationParameters = {
       };
     };
     water_usage: {
-      path?: string;
+      id: SelectRawDataSet["id"];
+      path: string;
       columns: {
         water_supply_number: string;
         water_usage: string;
@@ -49,7 +53,8 @@ export type NormalizationParameters = {
       };
     };
     land_registry: {
-      path?: string;
+      id: SelectRawDataSet["id"];
+      path: string;
       columns: {
         address: string;
         structure_name: string;
@@ -57,7 +62,8 @@ export type NormalizationParameters = {
       };
     };
     vacant_house: {
-      path?: string;
+      id: SelectRawDataSet["id"];
+      path: string;
       columns: {
         vacant_house_id: string;
         address: string;
@@ -66,7 +72,8 @@ export type NormalizationParameters = {
       };
     };
     geocoding: {
-      path?: string;
+      id: SelectRawDataSet["id"];
+      path: string;
       columns: {
         address: string;
         latitude: string;
@@ -74,16 +81,19 @@ export type NormalizationParameters = {
       };
     };
     building_polygon: {
-      path?: string;
+      id: SelectRawDataSet["id"];
+      path: string;
       columns: {
         building_id: string;
       };
     };
     urban_planning: {
-      path?: string;
+      id: SelectRawDataSet["id"];
+      path: string;
     };
     census: {
-      path?: string;
+      id: SelectRawDataSet["id"];
+      path: string;
     };
   };
 };

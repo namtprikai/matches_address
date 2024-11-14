@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { FormNormalization } from "../../components/form-normalization";
 import { type NormalizationParameters } from "../../@types/normalization";
-import { getDefaultNormalizationParameter } from "../../utils/get-default-normalization-parameter";
+import { defaultNormalizationParameters } from "../../utils/default-normalization-parameters";
 import { Button } from "../../components/ui/button";
 
 const useStyles = makeStyles({
@@ -40,7 +40,7 @@ const useStyles = makeStyles({
 export function Normalization(): JSX.Element {
   const navigator = useNavigate();
   const [parameters, setParameters] = useState<NormalizationParameters>(
-    getDefaultNormalizationParameter,
+    defaultNormalizationParameters,
   );
 
   const execE001 = async (): Promise<void> => {

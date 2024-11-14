@@ -11,7 +11,7 @@ import { useController, useForm } from "react-hook-form";
 import { Dismiss24Regular } from "@fluentui/react-icons";
 import { type NormalizationParameters } from "../@types/normalization";
 import { useDialogState } from "../hooks/use-dialog-state";
-import { getDefaultNormalizationParameter } from "../utils/get-default-normalization-parameter";
+import { defaultNormalizationParameters } from "../utils/default-normalization-parameters";
 import { DialogSurface } from "./ui/dialog-surface";
 import { DialogBody } from "./ui/dialog-body";
 import { DialogTitle } from "./ui/dialog-title";
@@ -91,7 +91,7 @@ export const FormNormalizationAdvancedSettings = ({
   const styles = useStyles();
 
   const setDefaultValue = (): void => {
-    reset(getDefaultNormalizationParameter().settings.advanced);
+    reset(defaultNormalizationParameters.settings.advanced);
   };
 
   const onSubmit = handleSubmit((data) => {
