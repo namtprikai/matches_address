@@ -78,32 +78,31 @@ export const FormDataset = <
   });
   const { setIsOpen } = dialogState;
 
-  // TODO: いったんコメントアウトして消すかどうか判断する
-  // useEffect(() => {
-  //   if (onChange && dataSetColumns) {
-  //     const columnKV = prevValue.columns
-  //       ? Object.entries(prevValue.columns)
-  //       : [];
+  useEffect(() => {
+    if (onChange && dataSetColumns) {
+      const columnKV = prevValue.columns
+        ? Object.entries(prevValue.columns)
+        : [];
 
-  //     if (columnKV.length === 0) {
-  //       return;
-  //     }
+      if (columnKV.length === 0) {
+        return;
+      }
 
-  //     const newColumns = columnKV.reduce((acc, [key]) => {
-  //       return {
-  //         ...acc,
-  //         [key]: dataSetColumns[0],
-  //       };
-  //     }, {});
+      const newColumns = columnKV.reduce((acc, [key]) => {
+        return {
+          ...acc,
+          [key]: dataSetColumns[0],
+        };
+      }, {});
 
-  //     onChange({
-  //       path: prevValue.path,
-  //       // reduceでは厳密な型推論ができないためasで型を指定
-  //       columns: newColumns as COLUMN_TYPE,
-  //     });
-  //   }
-  //   // eslint-disable-next-line react-hooks/exhaustive-deps -- prevValueが含まれるとcolumnsの更新を行い、無限ループになるため
-  // }, [dataSetColumns]);
+      onChange({
+        path: prevValue.path,
+        // reduceでは厳密な型推論ができないためasで型を指定
+        columns: newColumns as COLUMN_TYPE,
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- prevValueが含まれるとcolumnsの更新を行い、無限ループになるため
+  }, [dataSetColumns]);
 
   return (
     <Card>
