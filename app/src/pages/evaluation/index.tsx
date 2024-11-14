@@ -175,7 +175,7 @@ export const JobEvaluation = (): JSX.Element => {
       <div className={styles.contents}>
         {/* モデルファイルの選択 */}
         <Card>
-          <Subtitle2>① ファイルをインポート</Subtitle2>
+          <Subtitle2>① 利用するモデルを選択</Subtitle2>
           <div className={styles.file}>
             {selectedModelFile ? (
               <>
