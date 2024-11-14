@@ -54,6 +54,7 @@ import { selectBuildingsWithPagination } from "./select-buildings-with-paginatio
 import { selectAreasWithPagination } from "./select-areas-with-pagination";
 import { readDatasetColumns } from "./read-dataset-columns";
 import { execE001 } from "./ml/exec-e001";
+import { _demoInsertJobs } from "./_demo-insert-jobs";
 
 export const ipcMainListeners = {
   helloFromPython,
@@ -108,6 +109,7 @@ export const ipcMainListeners = {
   execE001,
   selectBuildingsWithPagination,
   selectAreasWithPagination,
+  _demoInsertJobs,
 };
 
 export const execFileAsync = promisify(execFile);
