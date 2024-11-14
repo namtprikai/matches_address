@@ -631,7 +631,8 @@ export const jobs = sqliteTable("jobs", {
   status: text("status"), // job_tasksでprogress_percent取得できるならcomputedに表示できるかも
   type: text("type", { enum: ["preprocess", "ml", "result"] }),
   parameters: text("parameters", { mode: "json" })
-    .$type<Record<string, string>>() /** WIP:定義 */
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- 3パターンのJSONを受け取るため、しぶしぶanyを使う。unknownとzodスキーマで型を制約することが望ましい
+    .$type<any>()
     .notNull(),
 
   created_at: text("created_at")
