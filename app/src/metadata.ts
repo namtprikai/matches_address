@@ -20,14 +20,20 @@ const RESULT_VIEWS_UNIT: {
   area: "地域",
 };
 
-type NormalizationParameterLabel =
-  NormalizationParameters["data"]["resident_registry"]["columns"] &
+type NormalizationParameterLabelKey =
+  keyof (NormalizationParameters["data"]["resident_registry"]["columns"] &
     NormalizationParameters["data"]["water_status"]["columns"] &
     NormalizationParameters["data"]["water_usage"]["columns"] &
     NormalizationParameters["data"]["land_registry"]["columns"] &
     NormalizationParameters["data"]["vacant_house"]["columns"] &
     NormalizationParameters["data"]["geocoding"]["columns"] &
-    NormalizationParameters["data"]["building_polygon"]["columns"];
+    NormalizationParameters["data"]["building_polygon"]["columns"] &
+    Omit<NormalizationParameters["settings"], "advanced">);
+
+type NormalizationParameterLabel = Record<
+  NormalizationParameterLabelKey,
+  string
+>;
 
 const NORMALIZATION_PARAMETER_LABEL: NormalizationParameterLabel = {
   address: "住所",
@@ -47,6 +53,8 @@ const NORMALIZATION_PARAMETER_LABEL: NormalizationParameterLabel = {
   registration_date: "登録年月日",
   vacant_house_id: "空き家ID",
   building_id: "建物ID",
+  reference_date: "基準日",
+  reference_data: "基準データ",
 };
 
 const NORMALIZATION_DATA_LABEL = {
