@@ -1,3 +1,4 @@
+import { type NormalizationParameters } from "./@types/normalization";
 import { type result_views } from "./schema";
 
 type ResultViewsStyle = (typeof result_views.style.enumValues)[number];
@@ -19,12 +20,21 @@ const RESULT_VIEWS_UNIT: {
   area: "地域",
 };
 
-const NORMALIZATION_PARAMETER_LABEL = {
+type NormalizationParameterLabel =
+  NormalizationParameters["data"]["resident_registry"]["columns"] &
+    NormalizationParameters["data"]["water_status"]["columns"] &
+    NormalizationParameters["data"]["water_usage"]["columns"] &
+    NormalizationParameters["data"]["land_registry"]["columns"] &
+    NormalizationParameters["data"]["vacant_house"]["columns"] &
+    NormalizationParameters["data"]["geocoding"]["columns"] &
+    NormalizationParameters["data"]["building_polygon"]["columns"];
+
+const NORMALIZATION_PARAMETER_LABEL: NormalizationParameterLabel = {
   address: "住所",
   latitude: "緯度",
   longitude: "経度",
   household_code: "世帯番号",
-  birthDate: "生年月日",
+  birth_date: "生年月日",
   gender: "性別",
   resident_date: "住定年月日",
   water_supply_number: "水道番号",
@@ -37,8 +47,6 @@ const NORMALIZATION_PARAMETER_LABEL = {
   registration_date: "登録年月日",
   vacant_house_id: "空き家ID",
   building_id: "建物ID",
-  reference_date: "基準日",
-  reference_data: "基準データ",
 };
 
 const NORMALIZATION_DATA_LABEL = {
