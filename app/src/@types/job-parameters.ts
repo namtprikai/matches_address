@@ -9,7 +9,7 @@ type BaseParameters = {
 
 type PreprocessParameters = NormalizationParameters;
 type ModelCreateParameters = z.infer<typeof modelCreateSchema>;
-type ResultParameters = z.infer<typeof modelCreateSchema>;
+type ResultParameters = unknown; /** @todo 空き家判定の実装落ち着いてから */
 
 export type JobParameters = BaseParameters &
   (PreprocessParameters | ModelCreateParameters | ResultParameters);
