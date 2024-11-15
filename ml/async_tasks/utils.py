@@ -21,6 +21,8 @@ def create_table_if_not_exist():
         status TEXT,
         type TEXT CHECK(type IN ('preprocess', 'ml', 'result')),
         parameters TEXT NOT NULL,
+        process_id INTEGER NOT NULL,
+        is_named INTEGER NOT NULL,
         
         created_at TEXT DEFAULT (CURRENT_TIMESTAMP) NOT NULL,
         updated_at TEXT DEFAULT (CURRENT_TIMESTAMP) NOT NULL
@@ -55,13 +57,13 @@ def create_table_if_not_exist():
     """)
     CONNECTION.commit()
 
-def create_or_update_job(job_id: int, status: str, job_type: str = "", parameters: str = "") -> int:
+def create_or_update_job(job_id: int, status: str, job_type: str = "", process_id: int = 0, is_named: int = 0, parameters: str = "") -> int:
     try:
         if job_id is None:
             CURSOR.execute("""
-                INSERT INTO jobs (status, type, parameters) 
-                    VALUES (?, ?, ?)
-                        """, (status, job_type, parameters))
+                INSERT INTO jobs (status, type, parameters, process_id, is_named) 
+                    VALUES (?, ?, ?, ?, ?)
+                        """, (status, job_type, parameters, process_id, is_named))
             job_id = CURSOR.lastrowid
         else:
             CURSOR.execute("""

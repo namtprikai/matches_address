@@ -39,7 +39,6 @@ def main():
         'census': json_dict.get('data', {}).get('census', {}).get('path', {}),
         'buidling_polygon': json_dict.get('data', {}).get('buidling_polygon', {}).get('path', {}),
         'urban_planning': json_dict.get('data', {}).get('urban_planning', {}).get('path', {}),
-        'census': json_dict.get('data', {}).get('census', {}).get('path', {}),
         'n_gram_size': json_dict.get('settings', {}).get('advanced', {}).get('n_gram_size', "2"),
         'similarity_threshold': json_dict.get('settings', {}).get('advanced', {}).get('similarity_threshold', "0.95"),
         'joining_method': json_dict.get('settings', {}).get('advanced', {}).get('joining_method', ""),
@@ -97,7 +96,7 @@ def main():
     try:
 
         connect_sqllite(params.get('db_path'))
-        job_id = create_or_update_job(None ,"", "ml", args.parameters)
+        job_id = create_or_update_job(None ,"", "ml", os.getpid(), 0, args.parameters)
 
         input_files = {
             "suido_status": params.get('suido_status'),

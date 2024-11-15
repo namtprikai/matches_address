@@ -34,7 +34,7 @@ def main():
     try:
         connect_sqllite(params.get('db_path'))
 
-        job_id = create_or_update_job(None ,"", "ml", args.parameters)
+        job_id = create_or_update_job(None ,"", "ml", os.getpid(), 0, args.parameters)
         file_path = f"{output_directory}/D902.csv"
 
         input_folder = os.path.dirname(params.get('area_grouping'))

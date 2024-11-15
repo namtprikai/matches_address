@@ -12,7 +12,7 @@ from src.E003_Summarization.E033 import processing as E033
 
 def main():
 
-    parser = argparse.ArgumentParser(description="E004")
+    parser = argparse.ArgumentParser(description="IF004 データ出力")
     parser.add_argument("--parameters", type=str)
     args = parser.parse_args()
  
@@ -32,7 +32,7 @@ def main():
     try:
         connect_sqllite(params.get('db_path'))
 
-        job_id = create_or_update_job(None ,"", "ml", args.parameters)
+        job_id = create_or_update_job(None ,"", "ml", os.getpid(), 0, args.parameters)
         file_path = f"{output_directory}.{params.get('output_format')}"
  
         params = {
