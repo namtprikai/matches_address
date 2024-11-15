@@ -3,8 +3,8 @@ import { type schema as modelCreateSchema } from "../hooks/use-form-model-create
 import { type NormalizationParameters } from "./normalization";
 
 type BaseParameters = {
-  output_path: string;
-  database_path?: string;
+  output_path?: string; // ファイル出力が必要な場合のみ指定
+  database_path: string; // SQLite データベースファイルのパス
 };
 
 type PreprocessParameters = NormalizationParameters;
