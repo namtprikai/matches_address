@@ -16,6 +16,9 @@ export const buildModel = (async (
 ): Promise<boolean> => {
   const { data } = params;
 
+  // eslint-disable-next-line no-console -- for debug @todo remove
+  console.log("--- start buildModel ---", data);
+
   try {
     const output_path = dbDirectoryPath;
     const database_path = dbPath;
