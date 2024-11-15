@@ -25,7 +25,6 @@ export const DebugCreateButtons = (): JSX.Element => {
               .invoke("_debugCreateJob", {
                 job: "処理完了",
                 jobType: "preprocess",
-                parameters: {},
               })
               .catch(console.error);
           }}
@@ -39,7 +38,6 @@ export const DebugCreateButtons = (): JSX.Element => {
               .invoke("_debugCreateJob", {
                 job: "処理失敗",
                 jobType: "preprocess",
-                parameters: {},
               })
               .catch(console.error);
           }}
@@ -53,7 +51,30 @@ export const DebugCreateButtons = (): JSX.Element => {
               .invoke("_debugCreateJob", {
                 job: "処理開始",
                 jobType: "ml",
-                parameters: {},
+                parameters: {
+                  output_path: "output.csv",
+                  database_path: "database.db",
+                  input_path: "test.csv",
+                  settings: {
+                    explanatory_variables: ["水道番号", "メータ番号"],
+                    advanced: {
+                      test_size: 0.3,
+                      n_splits: 3,
+                      undersample: true,
+                      undersample_ratio: 3,
+                      threshold: 0.3,
+                      hyperparameter_flag: true,
+                      n_trials: 100,
+                      lambda_l1: 0,
+                      lambda_l2: 0,
+                      num_leaves: 31,
+                      feature_fraction: 1,
+                      bagging_fraction: 1,
+                      bagging_freq: 0,
+                      min_data_in_leaf: 20,
+                    },
+                  },
+                },
               })
               .catch(console.error);
           }}
@@ -67,7 +88,6 @@ export const DebugCreateButtons = (): JSX.Element => {
               .invoke("_debugCreateJob", {
                 job: "処理完了",
                 jobType: "ml",
-                parameters: {},
               })
               .catch(console.error);
           }}
@@ -81,7 +101,6 @@ export const DebugCreateButtons = (): JSX.Element => {
               .invoke("_debugCreateJob", {
                 job: "処理失敗",
                 jobType: "ml",
-                parameters: {},
               })
               .catch(console.error);
           }}
@@ -95,7 +114,7 @@ export const DebugCreateButtons = (): JSX.Element => {
               .invoke("_debugCreateJob", {
                 job: "処理開始",
                 jobType: "result",
-                parameters: {},
+                // parameters:,
               })
               .catch(console.error);
           }}
@@ -109,7 +128,6 @@ export const DebugCreateButtons = (): JSX.Element => {
               .invoke("_debugCreateJob", {
                 job: "処理完了",
                 jobType: "result",
-                parameters: {},
               })
               .catch(console.error);
           }}
@@ -123,7 +141,6 @@ export const DebugCreateButtons = (): JSX.Element => {
               .invoke("_debugCreateJob", {
                 job: "処理失敗",
                 jobType: "result",
-                parameters: {},
               })
               .catch(console.error);
           }}

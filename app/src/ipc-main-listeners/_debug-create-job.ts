@@ -1,6 +1,6 @@
 import { spawn } from "child_process";
 import { jobs, type InsertJob } from "../schema";
-import { db } from "../utils/db";
+import { db, dbDirectoryPath, dbPath } from "../utils/db";
 import { type IpcMainListener } from ".";
 
 type Params = {
@@ -17,6 +17,10 @@ export const _debugCreateJob = (async (
     detached: true,
   });
 
+  const output_path = dbDirectoryPath;
+  const database_path = dbPath;
+  const { parameterType } = parameters;
+
   db.insert(jobs)
     .values({
       status:
@@ -24,7 +28,11 @@ export const _debugCreateJob = (async (
       type: jobType,
       is_named: false,
       process_id: cp.pid,
-      parameters,
+      parameters: {
+        ...parameters,
+        output_path,
+        database_path,
+      },
     })
     .returning({ insertedId: jobs.id })
     .get();
