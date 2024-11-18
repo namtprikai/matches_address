@@ -12,7 +12,7 @@ export type FetchAreaGroupsArg = {
   unit: "building" | "area";
 };
 
-export const fetchAreaGroups = (async (
+export const selectAreaGroups = (async (
   _: unknown,
   props: FetchAreaGroupsArg,
 ): Promise<string[]> => {

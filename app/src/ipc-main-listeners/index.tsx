@@ -26,7 +26,7 @@ import { deleteResultView } from "./delete-result-view";
 import { deleteResultSheet } from "./delete-result-sheet";
 import { createDummyDataSetResults } from "./create-dummy-data-set-results";
 import { deleteWorkbook } from "./delete-workbook";
-import { fetchAreaGroups } from "./fetch-area-groups";
+import { selectAreaGroups } from "./select-area-groups";
 import { updateResultViewsLayoutIndex } from "./update-result-views-layout-index";
 import { selectRawDatasets } from "./select-raw-datasets";
 import { insertRawDatasets } from "./insert-raw-datasets";
@@ -78,7 +78,7 @@ export const ipcMainListeners = {
   filterDataSetForTable,
   selectBuildingsInBatches,
   selectReferenceDates,
-  fetchAreaGroups,
+  selectAreaGroups,
   createDummyDataSetResults,
   selectAreasInBatches,
   deleteWorkbook,
