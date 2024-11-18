@@ -8,10 +8,6 @@ import { Button } from "../button";
 import { DropFileSymbol } from "./drop-file-symbol";
 import { UploadFileSymbol } from "./upload-file-symbol";
 
-type Props = {
-  onUpload: (file: File | null) => void;
-};
-
 const useStyles = makeStyles({
   root: {
     display: "flex",
@@ -25,6 +21,10 @@ const useStyles = makeStyles({
     cursor: "pointer",
   },
 });
+
+type Props = {
+  onUpload: (file: File | null) => void;
+};
 
 export const FileUploader = ({ onUpload }: Props): JSX.Element => {
   const styles = useStyles();
