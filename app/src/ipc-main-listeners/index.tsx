@@ -48,7 +48,7 @@ import { deleteDataSetResult } from "./delete-data-set-result";
 import { updateModelFiles } from "./update-model-files";
 import { deleteModelFiles } from "./delete-model-files";
 import { selectJobs } from "./select-jobs";
-import { fetchJobTasks } from "./fetch-job-tasks";
+import { selectJobTasks } from "./select-job-tasks";
 import { buildModel } from "./ml/build-model";
 import { selectBuildingsWithPagination } from "./select-buildings-with-pagination";
 import { selectAreasWithPagination } from "./select-areas-with-pagination";
@@ -103,7 +103,7 @@ export const ipcMainListeners = {
   updateModelFiles,
   deleteModelFiles,
   selectJobs,
-  fetchJobTasks,
+  selectJobTasks,
   buildModel,
   execE001,
   selectBuildingsWithPagination,

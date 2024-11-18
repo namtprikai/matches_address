@@ -1,12 +1,24 @@
 import useSWR, { type SWRResponse } from "swr";
 import { type SelectJobTask } from "../schema";
 
-const fetcher = async (id: number): Promise<SelectJobTask[]> => {
-  const result = await window.ipcRenderer.invoke("fetchJobTasks", id);
+type Params = {
+  jobId: SelectJobTask["job_id"];
+};
+
+const fetcher = async ({ jobId }: Params): Promise<SelectJobTask[]> => {
+  const result = await window.ipcRenderer.invoke("selectJobTasks", jobId);
   return result;
 };
 
-export const useFetchJobTasks = (id: number): SWRResponse<SelectJobTask[]> => {
-  const swr = useSWR(["fetchJobTasks", id], () => fetcher(id));
+export const useFetchJobTasks = ({
+  jobId,
+}: Params): SWRResponse<SelectJobTask[]> => {
+  const swr = useSWR(
+    {
+      jobId,
+      key: useFetchJobTasks.name,
+    },
+    fetcher,
+  );
   return swr;
 };
