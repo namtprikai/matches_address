@@ -16,11 +16,10 @@ import { DialogBody } from "../../components/ui/dialog-body";
 import { DialogTitle } from "../../components/ui/dialog-title";
 import { DialogContent } from "../../components/ui/dialog-content";
 import { DialogActions } from "../../components/ui/dialog-actions";
+import { DialogSetting } from "../../components/dialog-setting";
 import { useDialogState } from "../../hooks/use-dialog-state";
 import { Button } from "../../components/ui/button";
 import { DialogSelectDataset } from "../../components/dialog-select-dataset";
-import { DialogModelAdvanced } from "../../components/dialog-model-advanced";
-import { useFormModelCreate } from "../../hooks/use-form-model-create";
 import {
   type SelectModelFile,
   type SelectNormalizedDataSet,
@@ -110,7 +109,16 @@ const useStyles = makeStyles({
   },
 });
 
+type AdvancedSettingsType = {
+  similarityThreshold: number;
+};
+
+const initialAdvancedSettings: AdvancedSettingsType = {
+  similarityThreshold: 0, // デフォルト値
+};
+
 export const JobEvaluation = (): JSX.Element => {
+  const navigate = useNavigate();
   const styles = useStyles();
   const { isOpen, setIsOpen } = useDialogState(false);
 
@@ -127,9 +135,9 @@ export const JobEvaluation = (): JSX.Element => {
   const importAnalysisDatasetDialogState = useDialogState();
   const importAreaDatasetDialogState = useDialogState();
 
-  const modelAdvancedDialogState = useDialogState();
-  const navigate = useNavigate();
-  const form = useFormModelCreate();
+  // 高度な設定の状態管理
+  const [advancedSettings, setAdvancedSettings] =
+    useState<AdvancedSettingsType>(initialAdvancedSettings);
 
   // カラム情報と選択されたカラムの状態管理
   const [areaColumns, setAreaColumns] = useState<string[]>([]);
@@ -331,19 +339,12 @@ export const JobEvaluation = (): JSX.Element => {
         <Card>
           <Subtitle2>④ 高度な設定</Subtitle2>
           <div className={styles.file}>
-            <Button
-              appearance="transparent"
-              onClick={() => modelAdvancedDialogState.setIsOpen(true)}
-            >
-              高度な設定を変更
-            </Button>
+            <DialogSetting
+              onChange={(newValue) => setAdvancedSettings(newValue)}
+              value={advancedSettings}
+            />
           </div>
         </Card>
-
-        <DialogModelAdvanced
-          dialogState={modelAdvancedDialogState}
-          formState={form}
-        />
       </div>
 
       {/* フッター */}
