@@ -20,13 +20,16 @@ const useStyles = makeStyles({
 });
 
 type Props = {
-  value: NormalizationParameters;
+  parameters: NormalizationParameters;
   onSave: (parameters: NormalizationParameters) => void;
 };
 
-export const FormNormalization = ({ value, onSave }: Props): JSX.Element => {
+export const FormNormalization = ({
+  parameters,
+  onSave,
+}: Props): JSX.Element => {
   const { handleSubmit, control } = useForm<NormalizationParameters>({
-    defaultValues: value,
+    defaultValues: parameters,
   });
 
   const onSubmit = handleSubmit((data) => {

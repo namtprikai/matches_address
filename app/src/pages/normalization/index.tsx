@@ -78,7 +78,7 @@ export function Normalization(): JSX.Element {
               onSave={(parameters) => {
                 setParameters(parameters);
               }}
-              value={parameters}
+              parameters={parameters}
             />
           </div>
         </div>
