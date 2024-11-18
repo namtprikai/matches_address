@@ -57,7 +57,7 @@ export function Normalization(): JSX.Element {
 
   const handleClick = async (): Promise<void> => {
     // TODO: jobの登録はpython側で行うため後で削除する
-    await window.ipcRenderer.invoke("_demoInsertJobs", {
+    await window.ipcRenderer.invoke("_debugInsertJobs", {
       parameters,
       type: "preprocess",
     });
