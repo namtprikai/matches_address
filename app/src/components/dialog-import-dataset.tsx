@@ -141,13 +141,27 @@ export const DialogImportDataset = ({
   const [selectedDataSet, setSelectedDataSet] =
     useState<SelectRawDataSet | null>(null);
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
   const { isOpen, setIsOpen } = dialogState;
   const { data: rawDataSets } = useFetchRawDatasets();
 
   const handleClick = (): void => {
-    if (!selectedDataSet) return;
-    onSubmit?.(selectedDataSet);
-    setIsOpen(false);
+    if (!onSubmit) return;
+
+    switch (selectedTab) {
+      case "select":
+        if (!selectedDataSet) return;
+        onSubmit(selectedDataSet);
+        break;
+      case "upload":
+        if (!uploadedFile) return;
+        setIsLoading(true);
+        break;
+      default: {
+        const _exhaustiveCheck: never = selectedTab;
+        throw new Error(`Unexpected tab value: ${_exhaustiveCheck}`);
+      }
+    }
   };
 
   const handleTabChange = (_: SelectTabEvent, data: SelectTabData): void => {
@@ -260,6 +274,7 @@ export const DialogImportDataset = ({
             {selectedTab === "upload" && (
               <div className={styles.uploadWrap}>
                 <FileUploader
+                  isLoading={isLoading}
                   onUpload={(file) => {
                     setUploadedFile(file);
                   }}
