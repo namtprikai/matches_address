@@ -4,7 +4,7 @@ import path from "path";
 import { promisify } from "util";
 import { selectBuildingsInBatches } from "./select-buildings-in-batches";
 import { selectAreasInBatches } from "./select-areas-in-batches";
-import { fetchReferenceDates } from "./fetch-reference-dates";
+import { selectReferenceDates } from "./select-reference-dates";
 import { helloFromPython } from "./hello-from-python";
 import { saveNameFromPython } from "./save-name-from-python";
 import { createWorkbooks } from "./create-workbooks";
@@ -77,7 +77,7 @@ export const ipcMainListeners = {
   filterDataSetForChart,
   filterDataSetForTable,
   selectBuildingsInBatches,
-  fetchReferenceDates,
+  selectReferenceDates,
   fetchAreaGroups,
   createDummyDataSetResults,
   selectAreasInBatches,

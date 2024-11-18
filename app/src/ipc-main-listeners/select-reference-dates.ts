@@ -12,7 +12,7 @@ export type ReferenceDate = SelectDataSetDetailBuilding["reference_date"];
 /**
  * "2020-01-01" などの日付を配列で取得する
  */
-export const fetchReferenceDates = (async (
+export const selectReferenceDates = (async (
   _: unknown,
   { dataSetResultId }: { dataSetResultId: SelectDataSetResult["id"] },
 ): Promise<ReferenceDate[]> => {
