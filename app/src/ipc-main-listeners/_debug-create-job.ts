@@ -1,7 +1,10 @@
 import { spawn } from "child_process";
 import { jobs, type InsertJob } from "../schema";
 import { db, dbDirectoryPath, dbPath } from "../utils/db";
-import { type ExecE001Args } from "./ml/exec-e001";
+import {
+  type PreprocessParameters,
+  type ModelCreateParameters,
+} from "../@types/job-parameters";
 import { type IpcMainListener } from ".";
 
 type Params = {
@@ -20,10 +23,14 @@ export const _debugCreateJob = (async (
   const output_path = dbDirectoryPath;
   const database_path = dbPath;
 
-  const createmock = (type: InsertJob["type"]): ExecE001Args => {
+  const createmock = (
+    type: InsertJob["type"],
+  ): PreprocessParameters | ModelCreateParameters => {
     switch (type) {
       case "preprocess":
         return mockE001;
+      case "ml":
+        return mockBuildModel;
       default:
         return mockE001;
     }
@@ -46,7 +53,8 @@ export const _debugCreateJob = (async (
     .get();
 }) satisfies IpcMainListener;
 
-const mockE001: ExecE001Args = {
+/** 型推論が通じないので指定。モックなので一旦気にしない・・ */
+const mockE001: PreprocessParameters = {
   settings: {
     reference_data: "water_status",
     reference_date: "2021-01-01",
@@ -111,5 +119,28 @@ const mockE001: ExecE001Args = {
     },
     urban_planning: {},
     census: {},
+  },
+};
+
+const mockBuildModel = {
+  input_path: "test.csv",
+  settings: {
+    explanatory_variables: ["水道番号", "メータ番号"],
+    advanced: {
+      test_size: 0.3,
+      n_splits: 3,
+      undersample: true,
+      undersample_ratio: 3,
+      threshold: 0.3,
+      hyperparameter_flag: true,
+      n_trials: 100,
+      lambda_l1: 0,
+      lambda_l2: 0,
+      num_leaves: 31,
+      feature_fraction: 1,
+      bagging_fraction: 1,
+      bagging_freq: 0,
+      min_data_in_leaf: 20,
+    },
   },
 };

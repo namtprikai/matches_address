@@ -7,9 +7,9 @@ type BaseParameters = {
   database_path: string; // SQLite データベースファイルのパス
 };
 
-type PreprocessParameters = NormalizationParameters;
-type ModelCreateParameters = z.infer<typeof modelCreateSchema>;
-type ResultParameters = z.infer<
+export type PreprocessParameters = NormalizationParameters;
+export type ModelCreateParameters = z.infer<typeof modelCreateSchema>;
+export type ResultParameters = z.infer<
   typeof modelCreateSchema
 >; /** @todo 空き家判定の実装落ち着いてから */
 
