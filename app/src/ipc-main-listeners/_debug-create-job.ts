@@ -66,6 +66,8 @@ const mockE001: PreprocessParameters = {
   },
   data: {
     resident_registry: {
+      id: 0,
+      path: "",
       columns: {
         household_code: "",
         address: "",
@@ -75,6 +77,8 @@ const mockE001: PreprocessParameters = {
       },
     },
     water_status: {
+      id: 0,
+      path: "",
       columns: {
         water_supply_number: "",
         water_disconnection_date: "",
@@ -84,6 +88,8 @@ const mockE001: PreprocessParameters = {
       },
     },
     water_usage: {
+      id: 0,
+      path: "",
       columns: {
         water_supply_number: "",
         water_usage: "",
@@ -91,6 +97,8 @@ const mockE001: PreprocessParameters = {
       },
     },
     land_registry: {
+      id: 0,
+      path: "",
       columns: {
         address: "",
         structure_name: "",
@@ -98,6 +106,8 @@ const mockE001: PreprocessParameters = {
       },
     },
     vacant_house: {
+      id: 0,
+      path: "",
       columns: {
         vacant_house_id: "",
         address: "",
@@ -106,6 +116,8 @@ const mockE001: PreprocessParameters = {
       },
     },
     geocoding: {
+      id: 0,
+      path: "",
       columns: {
         address: "",
         latitude: "",
@@ -113,12 +125,14 @@ const mockE001: PreprocessParameters = {
       },
     },
     building_polygon: {
+      id: 0,
+      path: "",
       columns: {
         building_id: "",
       },
     },
-    urban_planning: {},
-    census: {},
+    urban_planning: { id: 0, path: "" },
+    census: { id: 0, path: "" },
   },
 };
 

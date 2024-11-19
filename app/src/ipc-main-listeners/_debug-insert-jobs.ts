@@ -4,13 +4,14 @@ import { type IpcMainListener } from ".";
 
 export const _debugInsertJobs = (async (
   _: unknown,
-  { type, parameters }: InsertJob,
+  { type, parameters, is_named }: InsertJob,
 ): Promise<{ insertedId: number }> => {
   const res = await db
     .insert(jobs)
     .values({
       type,
       parameters,
+      is_named,
     })
     .returning({
       insertedId: result_views.id,
