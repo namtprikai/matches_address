@@ -658,7 +658,7 @@ export const job_tasks = sqliteTable("job_tasks", {
     .notNull(),
   progress_percent: text("progress_percent"),
   preprocess_type: text("preprocess_type", {
-    enum: ["住居単位データ作成", "空間結合"],
+    enum: ["e012", "e013", "e014", "e016"],
   }),
   error_code: text("error_code", { enum: ["undefined_error"] }),
 

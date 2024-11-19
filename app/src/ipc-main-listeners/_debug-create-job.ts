@@ -57,13 +57,44 @@ export const _debugCreateJob = (async (
       return;
     }
     if (job === "処理完了") {
-      await tx.insert(job_tasks).values({
-        job_id: insertedId,
-        progress_percent: "",
-        preprocess_type: null,
-        finished_at: sql`(CURRENT_TIMESTAMP)`,
-        result: createmockResult(jobType),
-      });
+      if (jobType === "preprocess") {
+        await tx.insert(job_tasks).values({
+          job_id: insertedId,
+          progress_percent: "100",
+          preprocess_type: "e012",
+          finished_at: sql`(CURRENT_TIMESTAMP)`,
+          result: { completion: "" },
+        });
+        await tx.insert(job_tasks).values({
+          job_id: insertedId,
+          progress_percent: "100",
+          preprocess_type: "e013",
+          finished_at: sql`(CURRENT_TIMESTAMP)`,
+          result: { joining_rate: "43.21" },
+        });
+        await tx.insert(job_tasks).values({
+          job_id: insertedId,
+          progress_percent: "100",
+          preprocess_type: "e014",
+          finished_at: sql`(CURRENT_TIMESTAMP)`,
+          result: { joining_rate: "93.21" },
+        });
+        await tx.insert(job_tasks).values({
+          job_id: insertedId,
+          progress_percent: "100",
+          preprocess_type: "e016",
+          finished_at: sql`(CURRENT_TIMESTAMP)`,
+          result: { joining_rate: "73.21" },
+        });
+      } else {
+        await tx.insert(job_tasks).values({
+          job_id: insertedId,
+          progress_percent: "100",
+          preprocess_type: null,
+          finished_at: sql`(CURRENT_TIMESTAMP)`,
+          result: createmockResult(jobType),
+        });
+      }
       await tx.insert(job_results).values({
         job_id: insertedId,
         file_path: "py_results.csv",
