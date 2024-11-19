@@ -1,7 +1,8 @@
-/** @todo たぶんpreprocess_typeごとに違う？ */
-type PreprocessResult = Record<string, string>;
+type PreprocessTaskResult = {
+  joining_rate: string;
+};
 
-type ModelCreateResult = {
+type ModelCreateTaskResult = {
   accuracy: string; // 正解率
   f1Score: string; // f値
   specificity: string; // 特異度
@@ -11,6 +12,9 @@ type ModelCreateResult = {
 };
 
 /** @todo / 命名のリファクタも */
-type ResultResult = Record<string, string>;
+type ResultTaskResult = Record<string, string>;
 
-export type JobTaskResult = PreprocessResult | ModelCreateResult | ResultResult;
+export type JobTaskResult =
+  | PreprocessTaskResult
+  | ModelCreateTaskResult
+  | ResultTaskResult;

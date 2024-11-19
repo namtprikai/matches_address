@@ -63,7 +63,7 @@ export const _debugCreateJob = (async (
           progress_percent: "100",
           preprocess_type: "e012",
           finished_at: sql`(CURRENT_TIMESTAMP)`,
-          result: { completion: "" },
+          result: { joining_rate: "" },
         });
         await tx.insert(job_tasks).values({
           job_id: insertedId,
