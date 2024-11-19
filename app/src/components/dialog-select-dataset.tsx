@@ -183,16 +183,31 @@ export function DialogSelectDataset<T extends Dataset>({
   const { data: datasets } = useFetchDatasets();
   const dataItems = datasets ?? [];
 
+  const [searchQuery, setSearchQuery] = useState<string>("");
+
+  const filteredDataItems = dataItems.filter((dataset) =>
+    dataset.file_name?.toLowerCase().includes(searchQuery.toLowerCase()),
+  );
+
   const handleClick = (): void => {
     if (selectedDataSet !== null) {
       onSelected?.(selectedDataSet);
       setIsDialogOpen(false);
+      setSearchQuery("");
     }
   };
 
   return (
     <Dialog
-      onOpenChange={(_, { open }) => setIsDialogOpen(open)}
+      onOpenChange={(_, { open }) => {
+        setIsDialogOpen(open);
+
+        if (!open) {
+          // ダイアログが閉じられたときに状態をリセット
+          setSelectedDataSet(null);
+          setSearchQuery("");
+        }
+      }}
       open={isDialogOpen}
     >
       <DialogSurface>
@@ -218,7 +233,9 @@ export function DialogSelectDataset<T extends Dataset>({
               <Input
                 className={styles.input}
                 contentBefore={<SearchRegular />}
+                onChange={(event) => setSearchQuery(event.target.value)}
                 placeholder={placeholder}
+                value={searchQuery}
               />
             </div>
             <Table className={styles.tableHeight}>
@@ -249,9 +266,9 @@ export function DialogSelectDataset<T extends Dataset>({
                   </TableHeaderCell>
                 </TableRow>
               </TableHeader>
-              {dataItems.length > 0 ? (
+              {filteredDataItems.length > 0 ? (
                 <TableBody className={styles.tableBody}>
-                  {dataItems.map((dataset) => (
+                  {filteredDataItems.map((dataset) => (
                     <TableRow
                       key={dataset.id}
                       className={mergeClasses(
@@ -268,7 +285,7 @@ export function DialogSelectDataset<T extends Dataset>({
                           styles.dataName,
                         )}
                       >
-                        {dataset.file_name}
+                        {dataset.file_name ?? "名称未設定"}
                       </TableCell>
                       <TableCell className={styles.datasetCell}>
                         {dataset.created_at}
