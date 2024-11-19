@@ -1,6 +1,12 @@
 import { spawn } from "child_process";
 import { sql } from "drizzle-orm";
-import { jobs, type InsertJob, job_tasks, job_results } from "../schema";
+import {
+  jobs,
+  type InsertJob,
+  job_tasks,
+  job_results,
+  type InsertJobTask,
+} from "../schema";
 import { db, dbDirectoryPath, dbPath } from "../utils/db";
 import {
   type PreprocessParameters,
@@ -24,19 +30,6 @@ export const _debugCreateJob = (async (
   const output_path = dbDirectoryPath;
   const database_path = dbPath;
 
-  const createmock = (
-    type: InsertJob["type"],
-  ): PreprocessParameters | ModelCreateParameters => {
-    switch (type) {
-      case "preprocess":
-        return mockE001;
-      case "ml":
-        return mockBuildModel;
-      default:
-        return mockE001;
-    }
-  };
-
   await db.transaction(async (tx) => {
     const { insertedId } = tx
       .insert(jobs)
@@ -56,7 +49,7 @@ export const _debugCreateJob = (async (
       .get();
 
     if (job === "処理開始") {
-      tx.insert(job_tasks).values({
+      await tx.insert(job_tasks).values({
         job_id: insertedId,
         progress_percent: "",
         preprocess_type: null,
@@ -64,21 +57,21 @@ export const _debugCreateJob = (async (
       return;
     }
     if (job === "処理完了") {
-      tx.insert(job_tasks).values({
+      await tx.insert(job_tasks).values({
         job_id: insertedId,
         progress_percent: "",
         preprocess_type: null,
         finished_at: sql`(CURRENT_TIMESTAMP)`,
-        result: {},
+        result: createmockResult(jobType),
       });
-      tx.insert(job_results).values({
+      await tx.insert(job_results).values({
         job_id: insertedId,
         file_path: "py_results.csv",
       });
       return;
     }
     if (job === "処理失敗") {
-      tx.insert(job_tasks).values({
+      await tx.insert(job_tasks).values({
         job_id: insertedId,
         progress_percent: "",
         preprocess_type: null,
@@ -89,6 +82,46 @@ export const _debugCreateJob = (async (
     }
   });
 }) satisfies IpcMainListener;
+
+const createmock = (
+  type: InsertJob["type"],
+): PreprocessParameters | ModelCreateParameters => {
+  switch (type) {
+    case "preprocess":
+      return mockE001;
+    case "ml":
+      return mockBuildModel;
+    default:
+      return mockE001;
+  }
+};
+
+const createmockResult = (type: InsertJob["type"]): InsertJobTask["result"] => {
+  switch (type) {
+    case "preprocess":
+      return {};
+    case "ml":
+      return {
+        accuracy: "72.82", // 正解率
+        f1Score: "23", // f値
+        specificity: "32.21", // 特異度
+        precision: "32.21", // 適合率
+        recall: "48.32", // 再現率
+        important_columns: [
+          {
+            column: "水道使用量",
+            value: "53.24",
+          },
+          {
+            column: "",
+            value: "",
+          },
+        ],
+      };
+    default:
+      return {};
+  }
+};
 
 /** 型推論が通じないので指定。モックなので一旦気にしない・・ */
 const mockE001: PreprocessParameters = {
