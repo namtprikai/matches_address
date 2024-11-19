@@ -25,7 +25,7 @@ export const buildModel = (async (
 
     // childProcessに入れてバックグラウンド実行
     const cp = spawn(
-      binaryPath("E021"),
+      binaryPath("IF002"),
       [
         "--parameters",
         JSON.stringify(
