@@ -130,7 +130,9 @@ const createmock = (
 const createmockResult = (type: InsertJob["type"]): InsertJobTask["result"] => {
   switch (type) {
     case "preprocess":
-      return {};
+      return {
+        joining_rate: "43.21",
+      };
     case "ml":
       return {
         accuracy: "72.82", // 正解率
@@ -150,7 +152,9 @@ const createmockResult = (type: InsertJob["type"]): InsertJobTask["result"] => {
         ],
       };
     default:
-      return {};
+      return {
+        joining_rate: "0",
+      };
   }
 };
 

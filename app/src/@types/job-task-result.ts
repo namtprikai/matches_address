@@ -11,10 +11,4 @@ type ModelCreateTaskResult = {
   important_columns: { column: string; value: string }[];
 };
 
-/** @todo / 命名のリファクタも */
-type ResultTaskResult = Record<string, string>;
-
-export type JobTaskResult =
-  | PreprocessTaskResult
-  | ModelCreateTaskResult
-  | ResultTaskResult;
+export type JobTaskResult = PreprocessTaskResult | ModelCreateTaskResult;
