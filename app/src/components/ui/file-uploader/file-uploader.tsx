@@ -1,4 +1,4 @@
-import { makeStyles, tokens } from "@fluentui/react-components";
+import { makeStyles, Spinner, tokens } from "@fluentui/react-components";
 import { useState } from "react";
 import { useDropzone } from "react-dropzone";
 import { DeleteRegular } from "@fluentui/react-icons";
@@ -7,10 +7,6 @@ import { formatByteValue } from "../../../utils/format-byte-value";
 import { Button } from "../button";
 import { DropFileSymbol } from "./drop-file-symbol";
 import { UploadFileSymbol } from "./upload-file-symbol";
-
-type Props = {
-  onUpload: (file: File | null) => void;
-};
 
 const useStyles = makeStyles({
   root: {
@@ -24,9 +20,17 @@ const useStyles = makeStyles({
     borderRadius: "5px",
     cursor: "pointer",
   },
+  spin: {
+    animation: "$spin 2s linear infinite",
+  },
 });
 
-export const FileUploader = ({ onUpload }: Props): JSX.Element => {
+type Props = {
+  onUpload: (file: File | null) => void;
+  isLoading?: boolean;
+};
+
+export const FileUploader = ({ onUpload, isLoading }: Props): JSX.Element => {
   const styles = useStyles();
   const [selectedFile, setSelectedFile] = useState<{
     name: string;
@@ -45,6 +49,14 @@ export const FileUploader = ({ onUpload }: Props): JSX.Element => {
       }
     },
   });
+
+  if (isLoading) {
+    return (
+      <div className={styles.root}>
+        <Spinner />
+      </div>
+    );
+  }
 
   return (
     <div {...getRootProps()} className={styles.root}>
