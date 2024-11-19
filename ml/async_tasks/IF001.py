@@ -38,6 +38,7 @@ def main():
         'geocoding': json_dict.get('data', {}).get('geocoding', {}).get('path', {}),
         'census': json_dict.get('data', {}).get('census', {}).get('path', {}),
         'buidling_polygon': json_dict.get('data', {}).get('buidling_polygon', {}).get('path', {}),
+        'buidling_polygon_column': json_dict.get('data', {}).get('buidling_polygon', {}).get('columns', {}).get('building_id', None),
         'urban_planning': json_dict.get('data', {}).get('urban_planning', {}).get('path', {}),
         'n_gram_size': json_dict.get('settings', {}).get('advanced', {}).get('n_gram_size', "2"),
         'similarity_threshold': json_dict.get('settings', {}).get('advanced', {}).get('similarity_threshold', "0.95"),
@@ -106,8 +107,13 @@ def main():
             "akiya_result": params.get('akiya_result'),
             "geocoding": params.get('geocoding')
         }
+        merge_base = 'suido_residence'
+        main_data_type = 'suido_status'
+        if params.get('reference_data') == 'resident_registry':
+            merge_base = 'juki_residence'
+            main_data_type = 'juki'
             
-        E012(input_files, output_directory, job_id, json.dumps(columns), params.get('db_path'))
+        E012(input_files, output_directory, main_data_type, job_id, json.dumps(columns), params.get('db_path'))
         create_or_update_job(job_id, "25")
 
         E013(
@@ -129,7 +135,7 @@ def main():
             f"{output_directory}/akiya_result_cleaned.csv",
             "正規化住所",
             "正規化住所",
-            "",
+            merge_base,
             f"{output_directory}/matched_data.csv",
             int(params.get('n_gram_size')),
             float(params.get('similarity_threshold')),
@@ -143,10 +149,14 @@ def main():
         output_path_e016 = output_directory.replace(f"/{random_str}", "")
         output_path_e016 = f"{output_path_e016}/{random_str}.csv"
 
+        gpkg_path = params.get("urban_planning", None)
+        if gpkg_path is None:
+            gpkg_path = params.get("census", None)
+
         E016(
             params.get('buidling_polygon'),
             f"{output_directory}/matched_data.csv",
-            params.get("census"),
+            gpkg_path,
             "愛知県",
             "豊田市",
             option,
@@ -154,7 +164,8 @@ def main():
             input_zip_file,
             output_path_e016,
             job_id,
-            params.get('db_path')
+            params.get('db_path'),
+            params.get('buidling_polygon_column', 'buildingID')
         )
 
         create_or_update_job(job_id, "complete")

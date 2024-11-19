@@ -274,7 +274,7 @@ def read_csv(path: str, **kwargs) -> pd.DataFrame:
         print(f"ファイル {path} の読み込み中にエラーが発生しました: {e}")
         return None
 
-def load_and_process_data(file_path, crs, is_tatemono=True):
+def load_and_process_data(file_path, crs, building_id, is_tatemono=True):
     """
     ファイルを読み込み、ジオメトリデータを処理してGeoDataFrameを作成する。
 
@@ -348,8 +348,8 @@ def load_and_process_data(file_path, crs, is_tatemono=True):
             gdf.set_crs(crs, inplace=True)
 
         # buildingID列を追加
-        gdf['buildingID'] = gdf.index + 1
-        gdf['buildingID'] = gdf['buildingID'].astype(str)
+        gdf[building_id] = gdf.index + 1
+        gdf[building_id] = gdf[building_id].astype(str)
 
         return gdf
 
@@ -362,8 +362,8 @@ def load_and_process_data(file_path, crs, is_tatemono=True):
             gdf.set_crs(crs, inplace=True)
 
         # buildingID列を追加
-        gdf['buildingID'] = gdf.index + 1
-        gdf['buildingID'] = gdf['buildingID'].astype(str)
+        gdf[building_id] = gdf.index + 1
+        gdf[building_id] = gdf[building_id].astype(str)
 
         return gdf
 
@@ -505,7 +505,7 @@ def extract_zip(zip_file, extract_to):
         "prj": prj_file
     }
 
-def assign_points_to_buildings(buildings_gdf, points_gdf, mul, crs, point_selected_column, option):
+def assign_points_to_buildings(buildings_gdf, points_gdf, mul, crs, point_selected_column, option, building_id):
     """
     建物のジオメトリとポイントのジオメトリを結合し、ポイントを建物に割り当てる
     
@@ -590,7 +590,7 @@ def assign_points_to_buildings(buildings_gdf, points_gdf, mul, crs, point_select
         # IDが存在しない行
         dropped_rows = joined[joined['ID'].isna()]
         # IDが存在する行で'buildingID'をキーにして、'distance'が最小のものを抽出(空間結合による重複を削除)
-        result_gdf = joined.loc[filtered_gdf.groupby('buildingID')['distance'].idxmin().tolist()]
+        result_gdf = joined.loc[filtered_gdf.groupby(building_id)['distance'].idxmin().tolist()]
         
         # IDあり（重複解消済み）とIDなしの結合
         combined_gdf = pd.concat([dropped_rows, result_gdf])
@@ -644,7 +644,7 @@ def generate_random_string(length=4):
     # 指定された長さのランダムな文字列を生成して返す
     return ''.join(random.choice(characters) for i in range(length))
 
-def add_residenceID(gdf):
+def add_residenceID(gdf, building_id):
     """
     GeoDataFrameにresidenceID列を追加する
 
@@ -654,7 +654,7 @@ def add_residenceID(gdf):
         GeoDataFrame、'buildingID'列を含む必要がある
     """
     # 'buildingID'列とランダムに生成された文字列を結合して'residenceID'列を作成
-    gdf['residenceID'] = gdf['buildingID'] + '-' + gdf.apply(lambda _: generate_random_string(), axis=1)
+    gdf['residenceID'] = gdf[building_id].astype(str) + '-' + gdf.apply(lambda _: generate_random_string(), axis=1)
     
 def add_keycode(gdf, gpkg_path):
     """
@@ -921,7 +921,7 @@ def process_plateaugml(input_zip_file, output_gpkg_file, buildings_gdf):
 
 
 
-def process_data(tatemono_path, water_supply_path, gpkg_path, ken, sikuchoson, option, output_type, input_zip_file=None, output_path=None, job_id=None, db_path=None):
+def process_data(tatemono_path, water_supply_path, gpkg_path, ken, sikuchoson, option, output_type, input_zip_file=None, output_path=None, job_id=None, db_path=None, building_id='buildingID'):
     """
     建物データと水道データを処理し、PLATEAU GMLデータも結合して結果を保存する
 
@@ -961,8 +961,9 @@ def process_data(tatemono_path, water_supply_path, gpkg_path, ken, sikuchoson, o
         crs = get_transformer(ken, sikuchoson)
         
         # 建物データと水道データを読み込み、処理
-        tatemono = load_and_process_data(tatemono_path, crs)
-        water_supply = load_and_process_data(water_supply_path, crs)
+        tatemono = load_and_process_data(tatemono_path, crs, building_id)
+        water_supply = load_and_process_data(water_supply_path, crs, building_id)
+
         if job_id:
             create_or_update_job_task(job_id, progress_percent="20", preprocess_type="e016", error_code=None, result=None, id= task_id)
         tatemono.to_crs(crs, inplace=True)
@@ -972,11 +973,11 @@ def process_data(tatemono_path, water_supply_path, gpkg_path, ken, sikuchoson, o
         point_selected_column = water_supply.columns
 
         # 建物データと水道データを結合
-        tatemono_use_point, join_ratio = assign_points_to_buildings(tatemono, water_supply, 2, crs, point_selected_column, option)
+        tatemono_use_point, join_ratio = assign_points_to_buildings(tatemono, water_supply, 2, crs, point_selected_column, option, building_id)
         if job_id:
             create_or_update_job_task(job_id, progress_percent="50", preprocess_type="e016", error_code=None, result=None, id= task_id)
         # 住居IDを追加
-        add_residenceID(tatemono_use_point)
+        add_residenceID(tatemono_use_point, building_id)
         
         if job_id:
             create_or_update_job_task(job_id, progress_percent="70", preprocess_type="e016", error_code=None, result=None, id= task_id)

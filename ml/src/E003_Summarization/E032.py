@@ -40,6 +40,9 @@ class Summarization:
         self.OUTPUT_PATH = output_path
         # 集計に使用するカラム名を設定
         self.key_column = key_column
+        key_code = key_column
+        if isinstance(key_code, list):
+            key_code = key_column[0]
 
         # 各データで使用するカラムを定義
         self.INPUT_COLUMNS = {
@@ -52,14 +55,13 @@ class Summarization:
                 "65歳以上人数": "65歳以上人数"
             },
             "city_block": {
-                "KEY_CODE": self.key_column,
+                "KEY_CODE": key_code,
                 "city_block_geometry": "geometry"
             }
         }
 
         # 出力するデータのカラムを定義
-        self.OUTPUT_COLUMNS = [
-            self.key_column,
+        OUTPUT = [
             "住戸数",
             "空き家数",
             "空き家率",
@@ -67,6 +69,11 @@ class Summarization:
             "高齢者率",
             "geometry"
         ]
+
+        if isinstance(self.key_column, list):
+            self.OUTPUT_COLUMNS = self.key_column + OUTPUT 
+        else:
+            self.OUTPUT_COLUMNS = [self.key_column] + OUTPUT 
 
 
     

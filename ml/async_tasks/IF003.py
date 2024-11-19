@@ -60,11 +60,17 @@ def main():
         )
         create_or_update_job(job_id, "50")
 
+        columns = params.get('area_grouping_columns', None)
+        key_column = []
+        if columns:
+            key_column = [columns.get('area_group_id'), columns.get('area_group_name')]
+        else:
+            key_column = 'KEY_CODE'
         E032(
             file_path,
             params.get('spatial_file'),
             output_directory,
-            "KEY_CODE",
+            key_column,
             str(job_id),
             params.get('db_path')
         )

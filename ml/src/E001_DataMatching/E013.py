@@ -440,10 +440,10 @@ class JukiProcessor(DataProcessor):
         cols = COLUMNS["juki"]
         
         # 複数のフォーマットを試して生年月日を変換
-        df[cols["birth"]] = pd.to_datetime(df[cols["birth"]], errors='coerce', format='%Y/%m/%d')
-        df[cols["birth"]].fillna(pd.to_datetime(df[cols["birth"]], format='%Y-%m-%d', errors='coerce'), inplace=True)
-        df[cols["move_date"]] = pd.to_datetime(df[cols["birth"]], errors='coerce', format='%Y/%m/%d')
-        df[cols["move_date"]].fillna(pd.to_datetime(df[cols["birth"]], format='%Y-%m-%d', errors='coerce'), inplace=True)
+        df = normalize_dates(df, cols["birth"])
+        df.drop(columns=[f'{cols["birth"]}_normalized'], inplace=True)
+        df = normalize_dates(df, cols["move_date"])
+        df.drop(columns=[f'{cols["move_date"]}_normalized'], inplace=True)
 
                 
         # 無効な生年月日データがある場合、警告を出力
@@ -797,6 +797,24 @@ def process_all_data(suido_use_file, suido_status_file, juki_file, tatemono_file
         print("Exception", e)
         if task_id is not None:
             create_or_update_job_task(job_id, progress_percent="", preprocess_type="e013", error_code="e001", result=json.dumps({}), id= task_id, is_finish=True)
+
+def normalize_dates(df, column, formats=['%Y/%m/%d', '%d/%m/%Y', '%Y-%m-%d', '%m/%d/%Y', '%Y%m%d']):
+    # Initialize the temporary column with NaN values
+    temp_column = f'{column}_normalized'
+    df[temp_column] = np.nan
+
+    # Try the provided formats on the invalid values
+    for fmt in formats:
+        mask = df[temp_column].isna()
+        df.loc[mask, temp_column] = pd.to_datetime(
+            df.loc[mask, column], format=fmt, errors='coerce'
+        )
+
+    # Remove the time portion and keep only the date
+    df[temp_column] = pd.to_datetime(df[temp_column], errors='coerce')
+    df[column] = df[temp_column]
+    
+    return df
 
 def main():
     parser = argparse.ArgumentParser(description="E013 - 住居単位データ作成機能")
