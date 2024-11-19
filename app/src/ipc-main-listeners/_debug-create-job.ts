@@ -1,6 +1,6 @@
 import { spawn } from "child_process";
 import { sql } from "drizzle-orm";
-import { jobs, type InsertJob, job_tasks } from "../schema";
+import { jobs, type InsertJob, job_tasks, job_results } from "../schema";
 import { db, dbDirectoryPath, dbPath } from "../utils/db";
 import {
   type PreprocessParameters,
@@ -70,6 +70,10 @@ export const _debugCreateJob = (async (
         preprocess_type: null,
         finished_at: sql`(CURRENT_TIMESTAMP)`,
         result: {},
+      });
+      tx.insert(job_results).values({
+        job_id: insertedId,
+        file_path: "py_results.csv",
       });
       return;
     }
