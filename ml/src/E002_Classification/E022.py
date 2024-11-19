@@ -14,7 +14,6 @@ import sys
 import chardet
 import tempfile
 import zipfile 
-import gradio as gr
 import numpy as np
 import pandas as pd
 from sklearn.metrics import accuracy_score, confusion_matrix, precision_score, recall_score, f1_score
@@ -388,7 +387,7 @@ def insert_sqlite_and_export(input_data, job_id=None):
         if job_id is None and conn:
             conn.close()
 
-def process_and_predict(input_folder, input_file, model_directory, threshold, output_file, required_features, outcome_variable, job_id=None , db_path=None, progress=gr.Progress()):
+def process_and_predict(input_folder, input_file, model_directory, threshold, output_file, required_features, outcome_variable, job_id=None , db_path=None):
     """
     入力データを処理し、予測を行い、結果を保存する
     """
@@ -464,7 +463,6 @@ def process_and_predict(input_folder, input_file, model_directory, threshold, ou
                 # 各エンコーディングでCSVファイルとして保存を試みる
                 input_data.to_csv(output_file, index=False, encoding=encoding)
                 print(f"ファイルが {encoding} エンコーディングで正常に保存されました: {output_file}")
-                progress(1.0, desc="Completed!")
 
                 if job_id:
                     create_or_update_job_task(job_id, progress_percent="100", preprocess_type="e022", error_code=None, result=json.dumps({}), id= task_id, is_finish=True)
@@ -474,8 +472,6 @@ def process_and_predict(input_folder, input_file, model_directory, threshold, ou
                 print(f"ファイル {output_file} を {encoding} エンコーディングで保存中にエラーが発生しました: {e}")
 
         # すべてのエンコーディングで保存に失敗した場合のメッセージ
-        progress(1.0, desc="保存に失敗しました!")
-
         if job_id:
             create_or_update_job_task(job_id, progress_percent="", preprocess_type="e022", error_code="e001", result=json.dumps({}), id= task_id, is_finish=True)
         return f"{output_file} への予測結果の保存に失敗しました", None

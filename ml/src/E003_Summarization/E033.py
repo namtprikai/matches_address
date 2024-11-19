@@ -1,12 +1,25 @@
+import argparse
 import json
 import logging
 import os
+import sys
 import chardet
 import geopandas as gpd
-import gradio as gr
 import pandas as pd
 from shapely import wkt
 from shapely.geometry import MultiPolygon, Polygon
+
+current_dir = os.path.dirname(os.path.abspath(__file__))
+async_tasks_path = os.path.join(current_dir, '..', 'async_tasks')
+if async_tasks_path not in sys.path:
+    sys.path.append(async_tasks_path)
+
+try:
+    from utils import *
+except ImportError:
+    sys.path.remove(async_tasks_path)
+    sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../')))
+    from async_tasks.utils import *
 
 
 # 一般的な座標系のリスト
@@ -50,37 +63,47 @@ def remove_z_coordinate(geometry):
         return geometry
 
 def read_input_data(input_path):
-    """
-    入力データ（D902）を読み込む関数
-    """
-    with open(input_path, 'rb') as file:
-        raw_data = file.read()
-    detected_encoding = chardet.detect(raw_data)['encoding']
-    
-    encodings = [detected_encoding, 'shift-jis', 'cp932', 'utf-8']
-    
-    for encoding in encodings:
-        try:
-            df = pd.read_csv(input_path, encoding=encoding)
-            logging.info(f"Successfully read the file using {encoding} encoding")
-            break
-        except UnicodeDecodeError:
-            logging.warning(f"Failed to read with {encoding} encoding, trying next...")
-    else:
-        raise ValueError("Unable to read the file with any of the attempted encodings")
+    try:
+        # ファイルの最初の数キロバイトのみを読み込む（大きなファイルでの効率化）
+        with open(input_path, 'rb') as file:
+            raw_data = file.read(4096)  # 最初の4KBだけ読み込む
+        
+        # chardetを使って推測する（ただしデータの一部のみ）
+        detected_encoding = chardet.detect(raw_data)['encoding']
+        logging.info(f"Detected encoding: {detected_encoding}")
 
-    if 'geometry' not in df.columns:
-        raise ValueError("'geometry' column is missing in the input data")
+        # 既知のエンコーディングを優先的に試す
+        encodings = ['shift-jis', 'cp932', 'utf-8']
+        if detected_encoding:
+            encodings.insert(0, detected_encoding)  # 推測されたエンコーディングを先頭に追加
 
-    df['geometry'] = df['geometry'].apply(wkt.loads)
-    df['geometry'] = df['geometry'].apply(remove_z_coordinate)
+        for encoding in encodings:
+            try:
+                logging.info(f"Trying to read the file with {encoding} encoding")
+                df = pd.read_csv(input_path, encoding=encoding)
+                logging.info(f"Successfully read the file using {encoding} encoding")
+                break
+            except UnicodeDecodeError as e:
+                logging.warning(f"Failed to read with {encoding} encoding: {e}")
+        else:
+            raise ValueError("Unable to read the file with any of the attempted encodings")
 
-    gdf = gpd.GeoDataFrame(df, geometry='geometry')
+        if 'geometry' not in df.columns:
+            raise ValueError("'geometry' column is missing in the input data")
 
-    if gdf.crs is None:
-        gdf.set_crs(epsg=4326, inplace=True)
+        df['geometry'] = df['geometry'].apply(wkt.loads)
+        df['geometry'] = df['geometry'].apply(remove_z_coordinate)
 
-    return gdf
+        gdf = gpd.GeoDataFrame(df, geometry='geometry')
+
+        if gdf.crs is None:
+            gdf.set_crs(epsg=4326, inplace=True)
+
+        return gdf
+    except Exception as e:
+        logging.error(f"An error occurred while reading input data: {str(e)}")
+        raise
+
 
 
 
@@ -88,54 +111,80 @@ def export_data(gdf, output_path, output_format):
     """
     データをエクスポートする関数
     """
-    if output_format.lower() == 'csv':
-        encodings = ['shift_jis', 'cp932', 'utf-8']
-        for encoding in encodings:
-            gdf.to_csv(output_path, index=False, encoding=encoding)
-            print(f"CSV exported using {encoding} encoding.")
- 
-    elif output_format.lower() == 'geojson':
-        gdf.to_file(output_path, driver='GeoJSON')
-    else:
-        raise ValueError("Unsupported output format. Use 'csv' or 'geojson'.")
+    try:
+        if output_format.lower() == 'csv':
+            encodings = ['shift_jis', 'cp932', 'utf-8']
+            for encoding in encodings:
+                try:
+                    gdf.to_csv(output_path, index=False, encoding=encoding)
+                    logging.info(f"CSV exported successfully using {encoding} encoding.")
+                    return output_path
+                except Exception as e:
+                    logging.warning(f"Failed to export CSV with {encoding} encoding: {e}")
+            raise ValueError("Failed to export CSV with all attempted encodings.")
+        elif output_format.lower() == 'geojson':
+            gdf.to_file(output_path, driver='GeoJSON')
+            logging.info("GeoJSON exported successfully.")
+        else:
+            raise ValueError("Unsupported output format. Use 'csv' or 'geojson'.")
+        return output_path
+    except Exception as e:
+        logging.error(f"An error occurred during export: {str(e)}")
+        raise
 
-    return output_path
-
-def processing(params):
+def processing(params, job_id=None, db_path=None):
     """
     メイン処理を行う関数
     """
     try:
+        if db_path:
+            connect_sqllite(db_path)
         input_path = params['input_file']
         output_path = params['output_path']
+        task_id = None
+        if job_id:
+            task_id = create_or_update_job_task(job_id, progress_percent="0", preprocess_type="e033", error_code=None, result=None)
 
         logging.info(f"Reading input data from {input_path}")
         gdf = read_input_data(input_path)
-        
+
+        if job_id:
+            create_or_update_job_task(job_id, progress_percent="20", preprocess_type="e033", error_code=None, result=None, id= task_id)
+
         if params.get('target_crs'):
             logging.info(f"Target CRS specified: {params['target_crs']}")
             target_crs = params['target_crs']
             if gdf.crs.to_string().upper() != target_crs.upper():
                 logging.info(f"Converting CRS from {gdf.crs} to {target_crs}")
-                if target_crs.upper().startswith("EPSG:"):
-                    target_crs_epsg = int(target_crs.split(':')[1])
+                target_crs = target_crs.split(':')
+                if len(target_crs) > 1:
+                    target_crs = target_crs[1].split(' ')[0]
                 else:
-                    raise ValueError("target_crs must be in 'EPSG:xxxx' format")
-
+                    target_crs = target_crs[0]
+                target_crs_epsg = int(target_crs)
                 gdf = gdf.to_crs(epsg=target_crs_epsg)
-
                 logging.info(f"CRS conversion completed. New CRS: {gdf.crs}")
             else:
                 logging.info("Input CRS matches target CRS. No conversion needed.")
         else:
             logging.info("No target CRS specified. Skipping conversion.")
+
+        if job_id:
+            create_or_update_job_task(job_id, progress_percent="40", preprocess_type="e033", error_code=None, result=None, id= task_id)
         
         logging.info(f"Exporting data to {output_path}")
         output_file_path = export_data(gdf, output_path, params['output_format'])
 
+        if job_id:
+            create_or_update_job_task(job_id, progress_percent="100", preprocess_type="e033", error_code=None, result=json.dumps({}), id= task_id, is_finish=True)
+
         logging.info("Processing completed successfully")
         return output_file_path
     except Exception as e:
+        print("Exception", e)
+        if task_id is not None:
+            create_or_update_job_task(job_id, progress_percent="", preprocess_type="e033", error_code="e001", result=json.dumps({}), id= task_id, is_finish=True)
+
         logging.error(f"An error occurred: {str(e)}")
         return f"An error occurred: {str(e)}"
 
@@ -148,6 +197,8 @@ def main():
     parser.add_argument("--target_crs", choices=COMMON_CRS + ['custom'], help="変換後の座標系")
     parser.add_argument("--custom_crs", help="カスタム座標系 (例: EPSG:2249)")
     parser.add_argument("--output_path", help="出力ファイルのパス")
+    parser.add_argument("--job_id", default=None)
+    parser.add_argument("--db_path", default=None)
     
     args = parser.parse_args()
 
@@ -172,7 +223,7 @@ def main():
         'output_path': args.output_path
     }
 
-    result = processing(params)
+    result = processing(params, args.job_id, args.db_path)
     print(result)
 
 if __name__ == '__main__':

@@ -101,9 +101,35 @@ poetry install
 poetry run pyinstaller --onefile --clean ./src/{your file}.py
 ```
 
+or
+
+```
+./build.sh
+```
+
 ```
 ./dist/{your file}
 ```
+
+実行例
+
+<details>
+<summary>実行例</summary>
+
+```
+
+
+- IF001:
+  ./dist/IF001 --parameters '{\"output_path\": \"C:/source_code/links-akiya/ml/dist/\", \"database_path\": \"C:/source_code/links-akiya/ml/database.db\", \"settings\": {\"reference_date\": \"2023-03-20\", \"advanced\": {\"n_gram_size\": \"1\", \"similarity_threshold\": \"0.95\", \"joining_method\": \"intersection\"}}, \"data\": {\"resident_registry\": {\"path\": \"C:/23211/E012/inputs/juki_2023.csv\", \"columns\": {\"household_code\": \"世帯コード\", \"birthdate\": \"生年月日\", \"gender\": \"性別\", \"resident_date\": \"住定異動年月日\", \"address\": \"住所\"}}, \"water_status\": {\"path\": \"C:/23211/E012/inputs/suido_status_2023.csv\", \"columns\": {\"water_disconnection_flag\": \"開閉栓区分\", \"water_disconnection_date\": \"使用中止日\", \"water_supply_number\": \"水道番号\", \"water_connection_flag\": \"使用開始日\", \"address\": \"設置場所\"}},\"buidling_polygon\": {\"path\": \"C:/23211/E016/inputs/toyota_lod0_attributes.csv\", \"columns\": {\"building_id\": \"buildingID\"}}, \"water_supply_usage\": {\"path\": \"C:/23211/E012/inputs/suido_use_2023.csv\", \"columns\": {\"water_supply_number\": \"水道番号\", \"water_usage\": \"使用水量\", \"water_recorded_date\": \"検針年月日\"}}, \"land_registry\": {\"path\": \"C:/23211/E012/inputs/touki.csv\", \"columns\": {\"address\": \"住所\", \"structure_name\": \"登記構造\", \"registration_date\": \"登記日付\"}}, \"vacant_house\": {\"path\": \"C:/23211/E012/inputs/akiya_result.csv\", \"columns\": {\"vacant_house_id\": \"ID\", \"address\": \"住所\", \"latitude\": \"経度\", \"longitude\": \"緯度\"}}, \"geocoding\": {\"path\": \"C:/23211/E012/inputs/geocoding.csv\"}, \"census\": {\"path\": \"C:/23211/E016/inputs/r2ka23.gpkg\"}}}'
+- IF002:
+  ./dist/IF002 --parameters '{\"input_path\": \"C:/23211/E021/inputs/D901.csv\", \"database_path\": \"C:/source_code/links-akiya/ml/database.db\", \"test_size\": 0.3, \"n_splits\": 3, \"undersample\": \"\", \"undersample_ratio\": 3.0, \"threshold\": 0.3, \"hyperparameter_flag\": \"\", \"n_trials\": 100, \"lambda_l1\": 0, \"lambda_l2\": 0, \"num_leaves\": 31, \"feature_fraction\": 1.0, \"bagging_fraction\": 1.0, \"bagging_freq\": 0, \"min_data_in_leaf\": 20, \"output_path\": \"C:/source_code/links-akiya/ml/dist/\"}'
+- IF003:
+  ./dist/IF003 --parameters '{\"output_path\": \"C:/source_code/links-akiya/ml/dist/\", \"dataset_path\": \"C:/source_code/links-akiya/ml/database.db\", \"threshold\": \"0.3\", \"area_grouping\": { \"path\": \"C:/23211/E022/inputs/D902.csv\"}, \"model_path\": \"C:/23211/E022/inputs/models.zip\", \"spatial_file\": \"C:/23211/E016/inputs/r2ka23.gpkg\" }'
+- IF004:
+  ./dist/IF004 --parameters '{\"output_path\": \"C:/source_code/links-akiya/ml/dist/\", \"dataset_path\": \"C:/source_code/links-akiya/ml/database.db\", \"input_file\": \"C:/path/833817ba-6dc9-4f64-999b-18f13beb1d93.csv\", \"ouput_file_type\": \"csv\", \"output_coordinate\": \"4326\" }'
+```
+
+</details>
 
 ## ファイル構成
 
