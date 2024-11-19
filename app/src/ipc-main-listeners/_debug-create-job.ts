@@ -1,5 +1,6 @@
 import { spawn } from "child_process";
-import { jobs, type InsertJob } from "../schema";
+import { sql } from "drizzle-orm";
+import { jobs, type InsertJob, job_tasks } from "../schema";
 import { db, dbDirectoryPath, dbPath } from "../utils/db";
 import {
   type PreprocessParameters,
@@ -36,21 +37,53 @@ export const _debugCreateJob = (async (
     }
   };
 
-  db.insert(jobs)
-    .values({
-      status:
-        job === "処理開始" ? "" : job === "処理完了" ? "complete" : "error",
-      type: jobType,
-      is_named: false,
-      process_id: cp.pid,
-      parameters: {
-        ...createmock(jobType),
-        output_path,
-        database_path,
-      },
-    })
-    .returning({ insertedId: jobs.id })
-    .get();
+  await db.transaction(async (tx) => {
+    const { insertedId } = tx
+      .insert(jobs)
+      .values({
+        status:
+          job === "処理開始" ? "" : job === "処理完了" ? "complete" : "error",
+        type: jobType,
+        is_named: false,
+        process_id: cp.pid,
+        parameters: {
+          ...createmock(jobType),
+          output_path,
+          database_path,
+        },
+      })
+      .returning({ insertedId: jobs.id })
+      .get();
+
+    if (job === "処理開始") {
+      tx.insert(job_tasks).values({
+        job_id: insertedId,
+        progress_percent: "",
+        preprocess_type: null,
+      });
+      return;
+    }
+    if (job === "処理完了") {
+      tx.insert(job_tasks).values({
+        job_id: insertedId,
+        progress_percent: "",
+        preprocess_type: null,
+        finished_at: sql`(CURRENT_TIMESTAMP)`,
+        result: {},
+      });
+      return;
+    }
+    if (job === "処理失敗") {
+      tx.insert(job_tasks).values({
+        job_id: insertedId,
+        progress_percent: "",
+        preprocess_type: null,
+        finished_at: sql`(CURRENT_TIMESTAMP)`,
+        error_code: "undefined_error",
+      });
+      return;
+    }
+  });
 }) satisfies IpcMainListener;
 
 /** 型推論が通じないので指定。モックなので一旦気にしない・・ */
