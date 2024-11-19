@@ -18,6 +18,7 @@ import {
   TYPE_DISPLAY_MAP,
   type JobType,
 } from "../../config/job-type-display-map";
+import { DebugCreateButtons } from "./detail/_debug-create-buttuns";
 
 const useStyles = makeStyles({
   root: {
@@ -83,6 +84,8 @@ export function Job(): JSX.Element {
   return (
     <div className={styles.root}>
       <h2 className={styles.heading}>非同期処理一覧</h2>
+
+      <DebugCreateButtons />
 
       <Card className={styles.content}>
         {hasData ? (

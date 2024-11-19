@@ -3,7 +3,7 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 export const schema = z.object({
-  path: z.string(),
+  input_path: z.string(),
   settings: z.object({
     explanatory_variables: z.array(z.string()).min(1),
     advanced: z.object({

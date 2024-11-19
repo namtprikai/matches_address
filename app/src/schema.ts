@@ -7,6 +7,7 @@ import {
 } from "drizzle-orm/sqlite-core";
 import { sql } from "drizzle-orm";
 import { type FilterCondition, type GroupingCondition } from "./@types/charts";
+import { type JobParameters } from "./@types/job-parameters";
 
 export const users = sqliteTable("users", {
   id: integer("id").primaryKey(),
@@ -630,11 +631,11 @@ export const jobs = sqliteTable("jobs", {
   id: integer("id").primaryKey(),
   status: text("status"), // job_tasksでprogress_percent取得できるならcomputedに表示できるかも
   type: text("type", { enum: ["preprocess", "ml", "result"] }),
-  process_id: integer("process_id").notNull(),
+  process_id: integer("process_id"),
   is_named: integer("is_named", { mode: "boolean" }).notNull(), // 1: 名前をつけて保存済み / 0: 未保存
 
   parameters: text("parameters", { mode: "json" })
-    .$type<Record<string, string>>() /** WIP:定義 */
+    .$type<JobParameters>()
     .notNull(),
 
   created_at: text("created_at")

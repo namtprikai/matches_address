@@ -108,7 +108,7 @@ export const ModelCreate = (): JSX.Element => {
               インポート
             </Button>
             <div>
-              <Text>{errors.path?.message}</Text>
+              <Text>{errors.input_path?.message}</Text>
             </div>
           </div>
         </Card>
@@ -116,7 +116,7 @@ export const ModelCreate = (): JSX.Element => {
           dialogState={importNormalizedDatasetDialogState}
           onSelected={(data) => {
             setNormalizedDataSet(data);
-            setValue("path", data.file_path);
+            setValue("input_path", data.file_path);
           }}
         />
 
