@@ -115,7 +115,7 @@ export function JobDetail(): JSX.Element {
   const styles = useStyles();
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
-  const { data } = useFetchJobTasks(Number(id));
+  const { data } = useFetchJobTasks({ jobId: Number(id) });
 
   const hasData = data && data.length > 0;
 

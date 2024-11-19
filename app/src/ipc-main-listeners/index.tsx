@@ -4,7 +4,7 @@ import path from "path";
 import { promisify } from "util";
 import { selectBuildingsInBatches } from "./select-buildings-in-batches";
 import { selectAreasInBatches } from "./select-areas-in-batches";
-import { fetchReferenceDates } from "./fetch-reference-dates";
+import { selectReferenceDates } from "./select-reference-dates";
 import { helloFromPython } from "./hello-from-python";
 import { saveNameFromPython } from "./save-name-from-python";
 import { createWorkbooks } from "./create-workbooks";
@@ -26,7 +26,7 @@ import { deleteResultView } from "./delete-result-view";
 import { deleteResultSheet } from "./delete-result-sheet";
 import { createDummyDataSetResults } from "./create-dummy-data-set-results";
 import { deleteWorkbook } from "./delete-workbook";
-import { fetchAreaGroups } from "./fetch-area-groups";
+import { selectAreaGroups } from "./select-area-groups";
 import { updateResultViewsLayoutIndex } from "./update-result-views-layout-index";
 import { selectRawDatasets } from "./select-raw-datasets";
 import { insertRawDatasets } from "./insert-raw-datasets";
@@ -47,8 +47,8 @@ import { deleteNormalizedDataset } from "./delete-normalized-dataset";
 import { deleteDataSetResult } from "./delete-data-set-result";
 import { updateModelFiles } from "./update-model-files";
 import { deleteModelFiles } from "./delete-model-files";
-import { fetchJobLists } from "./fetch-job-lists";
-import { fetchJobTasks } from "./fetch-job-tasks";
+import { selectJobs } from "./select-jobs";
+import { selectJobTasks } from "./select-job-tasks";
 import { buildModel } from "./ml/build-model";
 import { selectBuildingsWithPagination } from "./select-buildings-with-pagination";
 import { selectAreasWithPagination } from "./select-areas-with-pagination";
@@ -79,8 +79,8 @@ export const ipcMainListeners = {
   filterDataSetForChart,
   filterDataSetForTable,
   selectBuildingsInBatches,
-  fetchReferenceDates,
-  fetchAreaGroups,
+  selectReferenceDates,
+  selectAreaGroups,
   createDummyDataSetResults,
   selectAreasInBatches,
   deleteWorkbook,
@@ -104,8 +104,8 @@ export const ipcMainListeners = {
   deleteDataSetResult,
   updateModelFiles,
   deleteModelFiles,
-  fetchJobLists,
-  fetchJobTasks,
+  selectJobs,
+  selectJobTasks,
   buildModel,
   execE001,
   selectBuildingsWithPagination,

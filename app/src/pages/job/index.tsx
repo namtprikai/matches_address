@@ -11,7 +11,7 @@ import {
 } from "@fluentui/react-components";
 import { useNavigate, Link } from "react-router-dom";
 import { ErrorCircleFilled } from "@fluentui/react-icons";
-import { useFetchJobLists } from "../../hooks/use-fetch-job-lists";
+import { useFetchJobs } from "../../hooks/use-fetch-jobs";
 import { type SelectJob } from "../../schema";
 import { formatDate } from "../../utils/format-date";
 import {
@@ -77,7 +77,7 @@ const useStyles = makeStyles({
 export function Job(): JSX.Element {
   const styles = useStyles();
   const navigate = useNavigate();
-  const { data } = useFetchJobLists();
+  const { data } = useFetchJobs();
 
   const hasData = data && data.length > 0;
 

@@ -1,5 +1,5 @@
 import useSWR, { type SWRResponse } from "swr";
-import { type ReferenceDate } from "../ipc-main-listeners/fetch-reference-dates";
+import { type ReferenceDate } from "../ipc-main-listeners/select-reference-dates";
 
 const fetcher = ([dataSetResultId]: [
   number | undefined | null,
@@ -7,7 +7,7 @@ const fetcher = ([dataSetResultId]: [
 ]): Promise<ReferenceDate[] | undefined> => {
   if (dataSetResultId == null) return Promise.resolve(undefined);
 
-  const result = window.ipcRenderer.invoke("fetchReferenceDates", {
+  const result = window.ipcRenderer.invoke("selectReferenceDates", {
     dataSetResultId,
   });
   return result;
