@@ -18,7 +18,7 @@ import {
   TYPE_DISPLAY_MAP,
   type JobType,
 } from "../../config/job-type-display-map";
-import { DebugCreateButtons } from "./detail/_debug-create-buttuns";
+import { DebugCreateButtons } from "./_debug-create-buttuns";
 
 const useStyles = makeStyles({
   root: {
