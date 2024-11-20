@@ -120,10 +120,7 @@ export function PreprocessDetail(): JSX.Element {
   const hasData = data && data.length > 0;
 
   const handlePreviewClick = (): void => {
-    navigate("/job/preview");
-  };
-  const handleNavigateToJobGraph = (): void => {
-    navigate(`/job/detail/${id}/graph`);
+    navigate(`/job/preview/${id}`);
   };
 
   return (
@@ -160,11 +157,7 @@ export function PreprocessDetail(): JSX.Element {
               </TableHeader>
               <TableBody>
                 {data.map((item: SelectJobTask) => (
-                  <TableRow
-                    key={item.id}
-                    className={styles.tableRow}
-                    onClick={handleNavigateToJobGraph}
-                  >
+                  <TableRow key={item.id} className={styles.tableRow}>
                     <TableCell className={styles.tableCell}>
                       {item.preprocess_type ?? "不明な処理"}
                     </TableCell>

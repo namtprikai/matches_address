@@ -9,7 +9,7 @@ import {
   TableRow,
   TableCell,
 } from "@fluentui/react-components";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { ErrorCircleFilled } from "@fluentui/react-icons";
 import { useFetchJobs } from "../../hooks/use-fetch-jobs";
 import { type SelectJob } from "../../schema";
@@ -113,7 +113,9 @@ export function Job(): JSX.Element {
                   <TableRow
                     key={item.id}
                     className={styles.tableRow}
-                    onClick={() => navigate(`/job/detail/${item.id}`)}
+                    onClick={() =>
+                      navigate(`/job/detail/${item.id}/${item.type}`)
+                    }
                   >
                     <TableCell className={styles.tableCell}>
                       {formatDate(item.created_at)}
@@ -152,9 +154,6 @@ export function Job(): JSX.Element {
           </div>
         )}
       </Card>
-      {/* TODO: 後で消す */}
-      <Link to={"/job/preview"}>開発用: プレビュー</Link>
-      <Link to="/graph">開発用: モデル精度表示</Link>
     </div>
   );
 }
