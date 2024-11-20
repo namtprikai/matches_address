@@ -11,7 +11,8 @@ import {
 } from "@fluentui/react-components";
 import { DeleteRegular, Dismiss24Regular } from "@fluentui/react-icons";
 import { useNavigate } from "react-router-dom";
-import { useForm, type SubmitHandler } from "react-hook-form";
+import { type SubmitHandler } from "react-hook-form";
+import { type z } from "zod";
 import { DialogSurface } from "../../components/ui/dialog-surface";
 import { DialogBody } from "../../components/ui/dialog-body";
 import { DialogTitle } from "../../components/ui/dialog-title";
@@ -21,6 +22,10 @@ import { DialogSetting } from "../../components/dialog-setting";
 import { useDialogState } from "../../hooks/use-dialog-state";
 import { Button } from "../../components/ui/button";
 import { DialogSelectDataset } from "../../components/dialog-select-dataset";
+import {
+  useFormDataEvaluation,
+  type schema,
+} from "../../hooks/use-form-data-evaluate";
 import {
   type SelectModelFile,
   type SelectNormalizedDataSet,
@@ -110,38 +115,15 @@ const useStyles = makeStyles({
   },
 });
 
-type AdvancedSettingsType = {
-  similarityThreshold: number;
-};
-
-const initialAdvancedSettings: AdvancedSettingsType = {
-  similarityThreshold: 0, // デフォルト値
-};
-
-type FormValues = {
-  selectedModelFile: SelectModelFile | null;
-  selectedFile: SelectNormalizedDataSet | null;
-  selectedAreaFile: SelectRawDataSet | null;
-  selectedAreaIdColumn: string;
-  selectedAreaNameColumn: string;
-  advancedSettings: AdvancedSettingsType;
-};
+type FormType = z.infer<typeof schema>;
 
 export const JobEvaluation = (): JSX.Element => {
   const styles = useStyles();
   const navigate = useNavigate();
+  const form = useFormDataEvaluation();
 
-  // フォームの初期化
-  const { handleSubmit, setValue, watch } = useForm<FormValues>({
-    defaultValues: {
-      selectedModelFile: null,
-      selectedFile: null,
-      selectedAreaFile: null,
-      selectedAreaIdColumn: "",
-      selectedAreaNameColumn: "",
-      advancedSettings: initialAdvancedSettings,
-    },
-  });
+  // フォームのメソッドを取得
+  const { handleSubmit, setValue, watch } = form;
 
   // ダイアログの状態管理
   const importModelDatasetDialogState = useDialogState();
@@ -153,16 +135,16 @@ export const JobEvaluation = (): JSX.Element => {
   const [areaColumns, setAreaColumns] = useState<string[]>([]);
 
   // 選択された値を取得
-  const selectedModelFile = watch("selectedModelFile");
-  const selectedFile = watch("selectedFile");
-  const selectedAreaFile = watch("selectedAreaFile");
-  const selectedAreaIdColumn = watch("selectedAreaIdColumn");
-  const selectedAreaNameColumn = watch("selectedAreaNameColumn");
-  const advancedSettings = watch("advancedSettings");
+  const modelPath = watch("model_path");
+  const datasetPath = watch("dataset_path");
+  const spatialFile = watch("spatial_file");
+  const threshold = watch("settings.threshold");
+  const areaGroupIdColumn = watch("area_grouping.columns.area_group_id");
+  const areaGroupNameColumn = watch("area_grouping.columns.area_group_name");
 
   // カラム情報を取得するフック
   const { data: areaFileColumns } = useFetchDatasetColumns({
-    filename: selectedAreaFile?.file_path,
+    filename: spatialFile,
   });
 
   useEffect(() => {
@@ -174,30 +156,31 @@ export const JobEvaluation = (): JSX.Element => {
   }, [areaFileColumns]);
 
   // フォーム送信時の処理
-  const onSubmit: SubmitHandler<FormValues> = async (data) => {
-    // ここで API リクエストを行う
-  };
+  const onSubmit = handleSubmit(async (data: FormType) => {
+    await window.ipcRenderer.invoke("evaluateData", { data });
+  });
 
   // 分析対象のデータの削除
   const handleRemoveFile = (): void => {
-    setValue("selectedFile", null);
+    setValue("dataset_path", "");
   };
 
   // モデルファイルの削除
   const handleRemoveModelFile = (): void => {
-    setValue("selectedModelFile", null);
+    setValue("model_path", "");
   };
 
   // 地域集計用データの削除
   const handleRemoveAreaFile = (): void => {
-    setValue("selectedAreaFile", null);
+    setValue("area_grouping.path", "");
+    setValue("spatial_file", "");
     setAreaColumns([]);
-    setValue("selectedAreaIdColumn", "");
-    setValue("selectedAreaNameColumn", "");
+    setValue("area_grouping.columns.area_group_id", "");
+    setValue("area_grouping.columns.area_group_name", "");
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)}>
+    <form onSubmit={onSubmit}>
       <div className={styles.root}>
         <h2 className={styles.heading}>空き家判定</h2>
 
@@ -206,11 +189,9 @@ export const JobEvaluation = (): JSX.Element => {
           <Card>
             <Subtitle2>① 利用するモデルを選択</Subtitle2>
             <div className={styles.file}>
-              {selectedModelFile ? (
+              {modelPath ? (
                 <>
-                  <span className={styles.fileName}>
-                    {selectedModelFile.file_name}
-                  </span>
+                  <span className={styles.fileName}>{modelPath}</span>
                   <span
                     className={styles.deleteIconWrapper}
                     onClick={handleRemoveModelFile}
@@ -235,7 +216,7 @@ export const JobEvaluation = (): JSX.Element => {
             emptyMessage="現在表示できるモデルはありません"
             isModel
             onSelected={(data) => {
-              setValue("selectedModelFile", data);
+              setValue("model_path", data.file_path ?? "");
             }}
             placeholder="モデル名"
             title="利用するモデルを選択"
@@ -246,11 +227,9 @@ export const JobEvaluation = (): JSX.Element => {
           <Card>
             <Subtitle2>② 分析対象のデータを選択</Subtitle2>
             <div className={styles.file}>
-              {selectedFile ? (
-                <div key={selectedFile.id} className={styles.fileItem}>
-                  <span className={styles.fileName}>
-                    {selectedFile.file_name}
-                  </span>
+              {datasetPath ? (
+                <div className={styles.fileItem}>
+                  <span className={styles.fileName}>{datasetPath}</span>
                   <span
                     className={styles.deleteIconWrapper}
                     onClick={handleRemoveFile}
@@ -276,7 +255,7 @@ export const JobEvaluation = (): JSX.Element => {
             dialogState={importAnalysisDatasetDialogState}
             emptyMessage="現在表示できるデータセットはありません"
             onSelected={(data) => {
-              setValue("selectedFile", data);
+              setValue("dataset_path", data.file_path);
             }}
             placeholder="データ名"
             title="分析対象のデータを選択"
@@ -287,11 +266,9 @@ export const JobEvaluation = (): JSX.Element => {
           <Card>
             <Subtitle2>③ 地域集計用データをアップロード</Subtitle2>
             <div className={styles.file}>
-              {selectedAreaFile ? (
-                <div key={selectedAreaFile.id} className={styles.fileItem}>
-                  <span className={styles.fileName}>
-                    {selectedAreaFile.file_name}
-                  </span>
+              {spatialFile ? (
+                <div className={styles.fileItem}>
+                  <span className={styles.fileName}>{spatialFile}</span>
                   <span
                     className={styles.deleteIconWrapper}
                     onClick={handleRemoveAreaFile}
@@ -310,17 +287,20 @@ export const JobEvaluation = (): JSX.Element => {
             </div>
 
             {/* ドロップダウンの表示 */}
-            {selectedAreaFile && (
+            {spatialFile && (
               <div className={styles.dropdownWrapper}>
                 <label htmlFor="area-id-dropdown">地域IDカラム</label>
                 <Dropdown
                   className={styles.dropdown}
                   id="area-id-dropdown"
                   onOptionSelect={(event, data) =>
-                    setValue("selectedAreaIdColumn", data.optionValue ?? "")
+                    setValue(
+                      "area_grouping.columns.area_group_id",
+                      data.optionValue ?? "",
+                    )
                   }
                   placeholder="選択"
-                  value={selectedAreaIdColumn}
+                  value={areaGroupIdColumn}
                 >
                   {areaColumns.map((column) => (
                     <Option key={column} text={column} value={column}>
@@ -333,10 +313,13 @@ export const JobEvaluation = (): JSX.Element => {
                   className={styles.dropdown}
                   id="area-name-dropdown"
                   onOptionSelect={(event, data) =>
-                    setValue("selectedAreaNameColumn", data.optionValue ?? "")
+                    setValue(
+                      "area_grouping.columns.area_group_name",
+                      data.optionValue ?? "",
+                    )
                   }
                   placeholder="選択"
-                  value={selectedAreaNameColumn}
+                  value={areaGroupNameColumn}
                 >
                   {areaColumns.map((column) => (
                     <Option key={column} text={column} value={column}>
@@ -353,7 +336,8 @@ export const JobEvaluation = (): JSX.Element => {
             dialogState={importAreaDatasetDialogState}
             emptyMessage="現在表示できるデータセットはありません"
             onSelected={(data) => {
-              setValue("selectedAreaFile", data);
+              setValue("area_grouping.path", data.file_path);
+              setValue("spatial_file", data.file_path);
             }}
             placeholder="データ名"
             title="地域集計用データを選択"
@@ -365,8 +349,10 @@ export const JobEvaluation = (): JSX.Element => {
             <Subtitle2>④ 高度な設定</Subtitle2>
             <div className={styles.file}>
               <DialogSetting
-                onChange={(newValue) => setValue("advancedSettings", newValue)}
-                value={advancedSettings}
+                onChange={(newValue) =>
+                  setValue("settings.threshold", newValue.similarityThreshold)
+                }
+                value={{ similarityThreshold: threshold }}
               />
             </div>
           </Card>
@@ -377,11 +363,11 @@ export const JobEvaluation = (): JSX.Element => {
           <Button
             className={styles.restartButton}
             disabled={
-              !selectedFile ||
-              !selectedModelFile ||
-              !selectedAreaFile ||
-              !selectedAreaIdColumn ||
-              !selectedAreaNameColumn
+              !modelPath ||
+              !datasetPath ||
+              !spatialFile ||
+              !areaGroupIdColumn ||
+              !areaGroupNameColumn
             }
             type="submit"
           >

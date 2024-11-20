@@ -50,6 +50,7 @@ import { deleteModelFiles } from "./delete-model-files";
 import { selectJobs } from "./select-jobs";
 import { selectJobTasks } from "./select-job-tasks";
 import { buildModel } from "./ml/build-model";
+import { evaluateData } from "./ml/evaluate-data";
 import { selectBuildingsWithPagination } from "./select-buildings-with-pagination";
 import { selectAreasWithPagination } from "./select-areas-with-pagination";
 import { readDatasetColumns } from "./read-dataset-columns";
@@ -107,6 +108,7 @@ export const ipcMainListeners = {
   selectJobs,
   selectJobTasks,
   buildModel,
+  evaluateData,
   execE001,
   selectBuildingsWithPagination,
   selectAreasWithPagination,
