@@ -10,7 +10,7 @@ import {
   TableCell,
   Button,
 } from "@fluentui/react-components";
-import { ErrorCircleFilled } from "@fluentui/react-icons";
+import { ErrorCircleFilled, ArrowLeftRegular } from "@fluentui/react-icons";
 import { useNavigate, useParams } from "react-router-dom";
 import { DialogSaveWithName } from "../../../../components/dialog-save-with-name";
 import { useFetchJobTasks } from "../../../../hooks/use-fetch-job-tasks";
@@ -30,6 +30,10 @@ const useStyles = makeStyles({
   heading: {
     fontSize: tokens.fontSizeBase500,
     lineHeight: tokens.lineHeightBase600,
+    display: "flex",
+    width: "fit-content",
+    alignItems: "center",
+    gap: tokens.spacingHorizontalS,
   },
   content: {
     display: "flex",
@@ -123,10 +127,21 @@ export function PreprocessDetail(): JSX.Element {
     navigate(`/job/preview/${id}`);
   };
 
+  const handleBack = (): void => {
+    navigate(-1);
+  };
+
   return (
     <div className={styles.pageContainer}>
       <div className={styles.root}>
-        <h2 className={styles.heading}>処理結果</h2>
+        <h2 className={styles.heading}>
+          <Button
+            appearance="subtle"
+            icon={<ArrowLeftRegular />}
+            onClick={handleBack}
+          />
+          処理結果
+        </h2>
 
         <div className={styles.result}>
           <span className={styles.message}>処理が完了しました。</span>
