@@ -164,7 +164,7 @@ const useStyles = makeStyles({
   },
 });
 
-export function JobGraph(): JSX.Element {
+export function MlDetail(): JSX.Element {
   const styles = useStyles();
   const navigate = useNavigate();
   const [radarColor, setRadarColor] = useState("#8884d8");

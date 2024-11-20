@@ -12,9 +12,9 @@ import {
 } from "@fluentui/react-components";
 import { ErrorCircleFilled } from "@fluentui/react-icons";
 import { useNavigate, useParams } from "react-router-dom";
-import { DialogSaveWithName } from "../../../components/dialog-save-with-name";
-import { useFetchJobTasks } from "../../../hooks/use-fetch-job-tasks";
-import { type SelectJobTask } from "../../../schema";
+import { DialogSaveWithName } from "../../../../components/dialog-save-with-name";
+import { useFetchJobTasks } from "../../../../hooks/use-fetch-job-tasks";
+import { type SelectJobTask } from "../../../../schema";
 
 const useStyles = makeStyles({
   root: {
@@ -111,7 +111,7 @@ const useStyles = makeStyles({
   },
 });
 
-export function JobDetail(): JSX.Element {
+export function PreprocessDetail(): JSX.Element {
   const styles = useStyles();
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
