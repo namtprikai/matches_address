@@ -6,7 +6,6 @@ import {
   tokens,
 } from "@fluentui/react-components";
 import { useEffect, useState } from "react";
-import { type FieldValues, type Path } from "react-hook-form";
 import { Delete16Regular } from "@fluentui/react-icons";
 import { THEME_COLORS } from "../config/theme-colors";
 import { type SelectRawDataSet } from "../schema";
