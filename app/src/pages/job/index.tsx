@@ -59,7 +59,7 @@ const useStyles = makeStyles({
     },
   },
   statusCell: {
-    display: "flex",
+    display: "inline-flex",
     alignItems: "center",
     backgroundColor: "#ecf2ef",
     fontWeight: tokens.fontWeightSemibold,
@@ -124,22 +124,36 @@ export function Job(): JSX.Element {
                         : "不明"}
                     </TableCell>
                     <TableCell className={styles.tableCell}>
-                      <span
-                        className={styles.statusCell}
-                        style={
-                          statusInfo.color
-                            ? { color: statusInfo.color }
-                            : undefined
-                        }
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "4px",
+                        }}
                       >
+                        <span
+                          className={styles.statusCell}
+                          style={
+                            item.status === "error"
+                              ? {
+                                  color: "#C4314B",
+                                  backgroundColor: "#c4314b14",
+                                }
+                              : item.status === "complete"
+                                ? undefined
+                                : {
+                                    color: "#6264A7",
+                                    backgroundColor: "#6264a71f",
+                                  }
+                          }
+                        >
+                          {statusInfo.label}
+                        </span>
                         {statusInfo.icon}
-                        {statusInfo.label}
-                      </span>
+                      </div>
                     </TableCell>
                     <TableCell className={styles.tableCell}>
-                      <span className={styles.statusCell}>
-                        {item.status === "completed" ? "完了" : "未"}
-                      </span>
+                      <span className={styles.statusCell}>{"未"}</span>
                     </TableCell>
                   </TableRow>
                 );
@@ -159,22 +173,25 @@ export function Job(): JSX.Element {
   );
 }
 
-// MEMO: statusが決まりきっていないので仮置き progress_percent取得できるならcomputedに表示なる
-function getStatusInfo(status: string | null | undefined): {
+function getStatusInfo(status: SelectJob["status"]): {
   label: string;
-  color?: string;
   icon?: JSX.Element;
 } {
-  if (!status || status === "error") {
+  if (status === "error") {
     return {
       label: "エラー",
-      icon: <ErrorCircleFilled style={{ marginRight: "4px" }} />,
+      icon: <ErrorCircleFilled style={{ color: "#C4314B", fontSize: 18 }} />,
     };
-  } else if (status === "in_progress") {
-    return { label: "進行中", color: "#6264A7" };
-  } else if (status === "completed") {
+  } else if (status === "") {
+    return { label: "進行中 0%" };
+  } else if (status === "complete") {
     return { label: "完了" };
   } else {
-    return { label: status };
+    /** "" | "error" | "complete"以外はそのまま表示、という型表現をSchemaで書けなかったためignore */
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment -- 理由は上段の通り
+    // @ts-ignore
+    return {
+      label: status ? `進行中 ${Math.round(status)}%` : "",
+    };
   }
 }
