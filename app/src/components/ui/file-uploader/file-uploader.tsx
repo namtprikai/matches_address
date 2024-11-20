@@ -54,7 +54,7 @@ export const FileUploader = ({ onUpload, isLoading }: Props): JSX.Element => {
     return (
       <div className={styles.root}>
         <Spinner />
-        ファイルを保存中です...
+        ファイルをアップロード中です...
       </div>
     );
   }
