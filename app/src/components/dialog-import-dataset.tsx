@@ -153,6 +153,7 @@ export const DialogImportDataset = ({
       case "select":
         if (!selectedDataSet) return;
         onSubmit(selectedDataSet);
+        dialogState.setIsOpen(false);
         break;
       case "upload":
         {
