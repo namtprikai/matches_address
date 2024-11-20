@@ -138,7 +138,7 @@ export function Job(): JSX.Element {
                     </TableCell>
                     <TableCell className={styles.tableCell}>
                       <span className={styles.statusCell}>
-                        {item.status === "completed" ? "完了" : "未"}
+                        {item.is_named ? "完了" : "未"}
                       </span>
                     </TableCell>
                   </TableRow>
