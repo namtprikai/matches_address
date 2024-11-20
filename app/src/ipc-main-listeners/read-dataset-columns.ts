@@ -2,7 +2,7 @@ import { basename } from "path";
 import { Open } from "unzipper";
 import { readCSVHeaders } from "../utils/read-csv-headers";
 import { readShpAttributes } from "../utils/read-shp-attributes";
-import { getFilePathInPublic } from "../utils/get-file-path-in-public";
+import { getFilePathInDatabaseDirectory } from "../utils/get-file-path-in-database-directory";
 import { type IpcMainListener } from ".";
 
 export type readDatasetColumnsArgs = {
@@ -47,7 +47,7 @@ export const readDatasetColumns = (async (
     return undefined;
   }
 
-  const filePath = getFilePathInPublic(filename);
+  const filePath = getFilePathInDatabaseDirectory(filename);
   const fileType = await classifyFileType(filePath);
 
   switch (fileType) {
