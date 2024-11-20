@@ -142,7 +142,7 @@ export const DialogSetting = ({ value, onChange }: Props): JSX.Element => {
                     max={1}
                     min={0}
                     onChange={handleInputChange}
-                    step={0.01}
+                    step={0.1}
                     type="number"
                     value={localValue.similarityThreshold.toString()}
                   />
@@ -151,7 +151,7 @@ export const DialogSetting = ({ value, onChange }: Props): JSX.Element => {
                     max={1}
                     min={0}
                     onChange={handleSliderChange}
-                    step={0.01}
+                    step={0.1}
                     value={localValue.similarityThreshold}
                   />
                 </div>
