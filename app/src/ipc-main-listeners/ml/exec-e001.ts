@@ -1,7 +1,9 @@
+import { spawn } from "child_process";
 import { type NormalizationParameters } from "../../@types/normalization";
 import { getErrorMessage } from "../../utils/get-error-message";
 import { dbDirectoryPath, dbPath } from "../../utils/db";
-import { type IpcMainListener } from "..";
+import { binaryPath, type IpcMainListener } from "..";
+import { processLogger } from "../../utils/process-logger";
 
 export type ExecE001Args = NormalizationParameters;
 
@@ -25,13 +27,15 @@ export const execE001 = (async (
 
     // Pythonコードがないため実行不可なのでコメントアウト
     // childProcessに入れてバックグラウンド実行
-    // const cp = spawn(
-    //   binaryPath("e001"),
-    //   ["--parameters", JSON.stringify(JSON.stringify(postParameters))],
-    //   {
-    //     detached: true,
-    //   },
-    // );
+    const cp = spawn(
+      binaryPath("IF002"),
+      ["--parameters", JSON.stringify(JSON.stringify(postParameters))],
+      {
+        detached: true,
+      },
+    );
+
+    processLogger(cp);
 
     return true;
   } catch (error) {
