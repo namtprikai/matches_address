@@ -109,13 +109,18 @@ export function Job(): JSX.Element {
             <TableBody>
               {data.map((item: SelectJob) => {
                 const statusInfo = getStatusInfo(item.status);
+                /** result か null ではないかつ、 status が complete または error であればクリック(遷移)可能 */
+                const clickable =
+                  !(item.type === "result" || item.type === null) &&
+                  (item.status === "complete" || item.status === "error");
                 return (
                   <TableRow
                     key={item.id}
-                    className={styles.tableRow}
-                    onClick={() =>
-                      navigate(`/job/detail/${item.id}/${item.type}`)
-                    }
+                    className={clickable ? styles.tableRow : ""}
+                    onClick={() => {
+                      if (!clickable) return;
+                      navigate(`/job/detail/${item.id}/${item.type}`);
+                    }}
                   >
                     <TableCell className={styles.tableCell}>
                       {formatDate(item.created_at)}
