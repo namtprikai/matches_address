@@ -275,7 +275,7 @@ const SelectedDataSetView = ({
 
   return (
     <div className={styles.root}>
-      <p className={styles.selectedDataSetFilePath}>{dataSet.file_path}</p>
+      <p className={styles.selectedDataSetFilePath}>{dataSet.file_name}</p>
       <button
         className={styles.deleteButton}
         onClick={(event) => {
