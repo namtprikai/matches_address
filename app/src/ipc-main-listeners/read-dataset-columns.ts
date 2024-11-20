@@ -2,6 +2,7 @@ import { basename } from "path";
 import { Open } from "unzipper";
 import { readCSVHeaders } from "../utils/read-csv-headers";
 import { readShpAttributes } from "../utils/read-shp-attributes";
+import { getFilePathInDatabaseDirectory } from "../utils/get-file-path-in-database-directory";
 import { getFilePathInPublic } from "../utils/get-file-path-in-public";
 import { type IpcMainListener } from ".";
 
@@ -47,8 +48,11 @@ export const readDatasetColumns = (async (
     return undefined;
   }
 
-  const filePath = getFilePathInPublic(filename);
-  const fileType = await classifyFileType(filePath);
+  const filePath =
+    filename === "dummy-data.csv"
+      ? getFilePathInPublic(filename)
+      : getFilePathInDatabaseDirectory(filename);
+  const fileType = await classifyFileType(filename);
 
   switch (fileType) {
     case "csv": {

@@ -20,6 +20,7 @@ import { Tab } from "../components/ui/tab";
 import { useFetchRawDatasets } from "../hooks/use-fetch-raw-datasets";
 import { type ReturnUseDialogState } from "../hooks/use-dialog-state";
 import { type SelectRawDataSet } from "../schema";
+import { saveDataSetFile } from "../utils/save-data-set-file";
 import { Button } from "./ui/button";
 import { DialogSurface } from "./ui/dialog-surface";
 import { DialogBody } from "./ui/dialog-body";
@@ -145,17 +146,41 @@ export const DialogImportDataset = ({
   const { isOpen, setIsOpen } = dialogState;
   const { data: rawDataSets } = useFetchRawDatasets();
 
-  const handleClick = (): void => {
+  const handleClick = async (): Promise<void> => {
     if (!onSubmit) return;
 
     switch (selectedTab) {
       case "select":
         if (!selectedDataSet) return;
         onSubmit(selectedDataSet);
+        dialogState.setIsOpen(false);
         break;
       case "upload":
-        if (!uploadedFile) return;
-        setIsLoading(true);
+        {
+          // ファイルを保存→データセットを取得→onSubmit
+          try {
+            if (!uploadedFile) throw new Error("ファイルが選択されていません");
+            setIsLoading(true);
+            const result = await saveDataSetFile(uploadedFile);
+            if (!result?.insertedId)
+              throw new Error("ファイルの保存中にエラーが発生しました");
+            const rawDataSet = await window.ipcRenderer.invoke(
+              "selectRawDataset",
+              {
+                id: result.insertedId,
+              },
+            );
+            if (!rawDataSet)
+              throw new Error("データセットの取得中にエラーが発生しました");
+            onSubmit(rawDataSet);
+          } catch (error) {
+            console.error(error);
+          } finally {
+            setIsLoading(false);
+            dialogState.setIsOpen(false);
+          }
+        }
+
         break;
       default: {
         const _exhaustiveCheck: never = selectedTab;

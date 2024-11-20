@@ -6,7 +6,6 @@ import {
   tokens,
 } from "@fluentui/react-components";
 import { useEffect, useState } from "react";
-import { type FieldValues, type Path } from "react-hook-form";
 import { Delete16Regular } from "@fluentui/react-icons";
 import { THEME_COLORS } from "../config/theme-colors";
 import { type SelectRawDataSet } from "../schema";
@@ -242,17 +241,12 @@ const selectedDataSetViewStyles = makeStyles({
     color: "#c4314b", // token内に同色が存在しないためハードコード
     cursor: "pointer",
     fontSize: tokens.fontSizeBase200,
-    background: "none",
-    outline: "none",
-    border: "none",
     display: "flex",
     alignItems: "center",
-    flexGrow: 1,
+    justifyContent: "center",
     gap: tokens.spacingHorizontalXS,
-    position: "absolute",
-    bottom: "0",
-    left: "50%",
-    transform: "translateX(-50%)",
+    background: "none",
+    border: "none",
   },
   selectedDataSetFilePath: {
     color: THEME_COLORS.primary,
@@ -275,7 +269,7 @@ const SelectedDataSetView = ({
 
   return (
     <div className={styles.root}>
-      <p className={styles.selectedDataSetFilePath}>{dataSet.file_path}</p>
+      <p className={styles.selectedDataSetFilePath}>{dataSet.file_name}</p>
       <button
         className={styles.deleteButton}
         onClick={(event) => {

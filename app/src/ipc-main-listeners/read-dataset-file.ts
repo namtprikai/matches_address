@@ -1,5 +1,7 @@
 import path from "path";
 import { readFileSync } from "fs";
+import { dbDirectoryPath } from "../utils/db";
+import { getFilePathInPublic } from "../utils/get-file-path-in-public";
 import { type IpcMainListener } from ".";
 
 export const readDatasetFile = (async (
@@ -10,29 +12,12 @@ export const readDatasetFile = (async (
     fileName: string;
   },
 ) => {
-  const isDev = process.env.NODE_ENV === "development";
-  const directoryName = "database";
-  const folderPath = isDev
-    ? path.resolve(directoryName)
-    : path.resolve(process.resourcesPath, directoryName);
   const filePath =
     fileName === "dummy-data.csv"
-      ? getDummyDataCsv()
-      : path.resolve(folderPath, fileName);
+      ? getFilePathInPublic(fileName)
+      : path.resolve(dbDirectoryPath, fileName);
 
   const data = readFileSync(filePath);
 
   return data;
 }) satisfies IpcMainListener;
-
-// TODO: 後で削除する
-function getDummyDataCsv(): string {
-  const isDev = process.env.NODE_ENV === "development";
-  const directoryName = "public";
-  const fileName = "dummy-data.csv";
-  const filePath = isDev
-    ? path.resolve(directoryName, fileName)
-    : path.resolve(process.resourcesPath, directoryName, fileName);
-
-  return filePath;
-}
