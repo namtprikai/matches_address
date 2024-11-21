@@ -21,6 +21,8 @@ def main():
     args = parser.parse_args()
  
     json_dict = json.loads(args.parameters)
+    if isinstance(json_dict, str):
+        json_dict = json.loads(json_dict)
 
     params = {
         'db_path': json_dict.get('database_path', None),
