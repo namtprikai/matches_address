@@ -630,7 +630,7 @@ export type InsertRawDataSet = typeof raw_data_sets.$inferInsert;
 
 export const jobs = sqliteTable("jobs", {
   id: integer("id").primaryKey(),
-  status: text("status"), // job_tasksでprogress_percent取得できるならcomputedに表示できるかも
+  status: text("status", { enum: ["", "complete", "error"] }),
   type: text("type", { enum: ["preprocess", "ml", "result"] }),
   process_id: integer("process_id"),
   is_named: integer("is_named", { mode: "boolean" }).notNull(), // 1: 名前をつけて保存済み / 0: 未保存
