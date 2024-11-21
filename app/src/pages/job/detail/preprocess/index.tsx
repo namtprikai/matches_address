@@ -115,6 +115,16 @@ const useStyles = makeStyles({
   },
 });
 
+/** @todo PreprocessTypeの日本語表現を追加する */
+const PreprocessTypeMap: {
+  [key in Exclude<SelectJobTask["preprocess_type"], null>]: string;
+} = {
+  e012: "e012",
+  e013: "e013",
+  e014: "e014",
+  e016: "e016",
+};
+
 export function PreprocessDetail(): JSX.Element {
   const styles = useStyles();
   const navigate = useNavigate();
@@ -174,7 +184,9 @@ export function PreprocessDetail(): JSX.Element {
                 {data.map((item: SelectJobTask) => (
                   <TableRow key={item.id} className={styles.tableRow}>
                     <TableCell className={styles.tableCell}>
-                      {item.preprocess_type ?? "不明な処理"}
+                      {item.preprocess_type
+                        ? PreprocessTypeMap[item.preprocess_type]
+                        : "不明な処理"}
                     </TableCell>
                     <TableCell className={styles.tableCell}>
                       {item.job_id}
