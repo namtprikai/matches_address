@@ -58,12 +58,6 @@ const useStyles = makeStyles({
     padding: `${tokens.spacingVerticalS} ${tokens.spacingHorizontalM}`,
     fontSize: tokens.fontSizeBase200,
   },
-  tableRow: {
-    ":hover": {
-      backgroundColor: tokens.colorNeutralBackground1Hover,
-      cursor: "pointer",
-    },
-  },
   successRateCell: {
     display: "flex",
     alignItems: "center",
@@ -185,7 +179,7 @@ export function PreprocessDetail(): JSX.Element {
               </TableHeader>
               <TableBody>
                 {data.map((item: SelectJobTask) => (
-                  <TableRow key={item.id} className={styles.tableRow}>
+                  <TableRow key={item.id}>
                     <TableCell className={styles.tableCell}>
                       {item.preprocess_type
                         ? PreprocessTypeMap[item.preprocess_type]
