@@ -192,7 +192,11 @@ export function PreprocessDetail(): JSX.Element {
                         : "不明な処理"}
                     </TableCell>
                     <TableCell className={styles.tableCell}>
-                      {item.job_id}
+                      {item.preprocess_type &&
+                        (item.preprocess_type ===
+                        "e013" /** 仮: @todo 指標の対応を確認して修正する */
+                          ? "緯度経度付与率"
+                          : "結合率")}
                     </TableCell>
                     <TableCell className={styles.tableCell}>
                       <div className={styles.successRateCell}>
