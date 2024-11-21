@@ -8,6 +8,7 @@ import {
 import { sql } from "drizzle-orm";
 import { type FilterCondition, type GroupingCondition } from "./@types/charts";
 import { type JobParameters } from "./@types/job-parameters";
+import { type JobTaskResult } from "./@types/job-task-result";
 
 export const users = sqliteTable("users", {
   id: integer("id").primaryKey(),
@@ -629,7 +630,7 @@ export type InsertRawDataSet = typeof raw_data_sets.$inferInsert;
 
 export const jobs = sqliteTable("jobs", {
   id: integer("id").primaryKey(),
-  status: text("status"), // job_tasksでprogress_percent取得できるならcomputedに表示できるかも
+  status: text("status", { enum: ["", "complete", "error"] }),
   type: text("type", { enum: ["preprocess", "ml", "result"] }),
   process_id: integer("process_id"),
   is_named: integer("is_named", { mode: "boolean" }).notNull(), // 1: 名前をつけて保存済み / 0: 未保存
@@ -657,14 +658,14 @@ export const job_tasks = sqliteTable("job_tasks", {
     .notNull(),
   progress_percent: text("progress_percent"),
   preprocess_type: text("preprocess_type", {
-    enum: ["住居単位データ作成", "空間結合"],
+    enum: ["e012", "e013", "e014", "e016"],
   }),
   error_code: text("error_code", { enum: ["undefined_error"] }),
 
   // 完了したら設定される
   result: blob("result", {
     mode: "json",
-  }).$type<Record<string, string>>() /** WIP:定義 */,
+  }).$type<JobTaskResult>(),
 
   // 完了したら設定される
   finished_at: text("finished_at").default(sql`(CURRENT_TIMESTAMP)`),
