@@ -34,9 +34,6 @@ const useStyles = makeStyles({
     width: "fit-content",
     alignItems: "center",
     gap: tokens.spacingHorizontalS,
-    ":hover": {
-      cursor: "pointer",
-    },
     ...typographyStyles.subtitle1,
   },
   result: {
@@ -164,7 +161,7 @@ const useStyles = makeStyles({
   },
 });
 
-export function JobGraph(): JSX.Element {
+export function MlDetail(): JSX.Element {
   const styles = useStyles();
   const navigate = useNavigate();
   const [radarColor, setRadarColor] = useState("#8884d8");
@@ -229,8 +226,12 @@ export function JobGraph(): JSX.Element {
   return (
     <div className={styles.pageContainer}>
       <div className={styles.root}>
-        <div className={styles.heading} onClick={handleBack}>
-          <ArrowLeftRegular />
+        <div className={styles.heading}>
+          <Button
+            appearance="subtle"
+            icon={<ArrowLeftRegular />}
+            onClick={handleBack}
+          />
           処理結果
         </div>
 

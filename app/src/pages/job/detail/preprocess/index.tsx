@@ -10,11 +10,11 @@ import {
   TableCell,
   Button,
 } from "@fluentui/react-components";
-import { ErrorCircleFilled } from "@fluentui/react-icons";
+import { ErrorCircleFilled, ArrowLeftRegular } from "@fluentui/react-icons";
 import { useNavigate, useParams } from "react-router-dom";
-import { DialogSaveWithName } from "../../../components/dialog-save-with-name";
-import { useFetchJobTasks } from "../../../hooks/use-fetch-job-tasks";
-import { type SelectJobTask } from "../../../schema";
+import { DialogSaveWithName } from "../../../../components/dialog-save-with-name";
+import { useFetchJobTasks } from "../../../../hooks/use-fetch-job-tasks";
+import { type SelectJobTask } from "../../../../schema";
 
 const useStyles = makeStyles({
   root: {
@@ -30,6 +30,10 @@ const useStyles = makeStyles({
   heading: {
     fontSize: tokens.fontSizeBase500,
     lineHeight: tokens.lineHeightBase600,
+    display: "flex",
+    width: "fit-content",
+    alignItems: "center",
+    gap: tokens.spacingHorizontalS,
   },
   content: {
     display: "flex",
@@ -111,7 +115,7 @@ const useStyles = makeStyles({
   },
 });
 
-export function JobDetail(): JSX.Element {
+export function PreprocessDetail(): JSX.Element {
   const styles = useStyles();
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
@@ -120,16 +124,24 @@ export function JobDetail(): JSX.Element {
   const hasData = data && data.length > 0;
 
   const handlePreviewClick = (): void => {
-    navigate("/job/preview");
+    navigate(`/job/preview/${id}`);
   };
-  const handleNavigateToJobGraph = (): void => {
-    navigate(`/job/detail/${id}/graph`);
+
+  const handleBack = (): void => {
+    navigate(-1);
   };
 
   return (
     <div className={styles.pageContainer}>
       <div className={styles.root}>
-        <h2 className={styles.heading}>処理結果</h2>
+        <h2 className={styles.heading}>
+          <Button
+            appearance="subtle"
+            icon={<ArrowLeftRegular />}
+            onClick={handleBack}
+          />
+          処理結果
+        </h2>
 
         <div className={styles.result}>
           <span className={styles.message}>処理が完了しました。</span>
@@ -160,11 +172,7 @@ export function JobDetail(): JSX.Element {
               </TableHeader>
               <TableBody>
                 {data.map((item: SelectJobTask) => (
-                  <TableRow
-                    key={item.id}
-                    className={styles.tableRow}
-                    onClick={handleNavigateToJobGraph}
-                  >
+                  <TableRow key={item.id} className={styles.tableRow}>
                     <TableCell className={styles.tableCell}>
                       {item.preprocess_type ?? "不明な処理"}
                     </TableCell>

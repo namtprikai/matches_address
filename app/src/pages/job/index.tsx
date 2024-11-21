@@ -10,7 +10,7 @@ import {
   TableCell,
   mergeClasses,
 } from "@fluentui/react-components";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { ErrorCircleFilled } from "@fluentui/react-icons";
 import { useFetchJobs } from "../../hooks/use-fetch-jobs";
 import { type SelectJob } from "../../schema";
@@ -19,7 +19,7 @@ import {
   TYPE_DISPLAY_MAP,
   type JobType,
 } from "../../config/job-type-display-map";
-import { DebugCreateButtons } from "./detail/_debug-create-buttuns";
+import { DebugCreateButtons } from "./_debug-create-buttuns";
 
 const useStyles = makeStyles({
   root: {
@@ -123,11 +123,18 @@ export function Job(): JSX.Element {
             <TableBody>
               {data.map((item: SelectJob) => {
                 const statusInfo = getStatusInfo(item.status);
+                /** result か null ではないかつ、 status が complete または error であればクリック(遷移)可能 */
+                const clickable =
+                  !(item.type === "result" || item.type === null) &&
+                  (item.status === "complete" || item.status === "error");
                 return (
                   <TableRow
                     key={item.id}
-                    className={styles.tableRow}
-                    onClick={() => navigate(`/job/detail/${item.id}`)}
+                    className={clickable ? styles.tableRow : ""}
+                    onClick={() => {
+                      if (!clickable) return;
+                      navigate(`/job/detail/${item.id}/${item.type}`);
+                    }}
                   >
                     <TableCell className={styles.tableCell}>
                       {formatDate(item.created_at)}
@@ -173,9 +180,6 @@ export function Job(): JSX.Element {
           </div>
         )}
       </Card>
-      {/* TODO: 後で消す */}
-      <Link to={"/job/preview"}>開発用: プレビュー</Link>
-      <Link to="/graph">開発用: モデル精度表示</Link>
     </div>
   );
 }

@@ -16,11 +16,11 @@ import { Dataset } from "./dataset";
 import { LayoutWithoutPadding } from "./layoutWithoutPadding";
 import { Model } from "./model";
 import { Job } from "./job";
-import { JobDetail } from "./job/detail";
+import { PreprocessDetail } from "./job/detail/preprocess";
 import { ModelCreate } from "./model/create";
 import { JobPreview } from "./job/detail/preview";
 import { JobEvaluation } from "./evaluation";
-import { JobGraph } from "./job/detail/graph";
+import { MlDetail } from "./job/detail/ml";
 
 // クライアントだけで動作するアプリケーションのため`createHashRouter`を使用する
 const router = createHashRouter([
@@ -51,22 +51,20 @@ const router = createHashRouter([
       },
       {
         path: "job/detail/:id",
-        element: <JobDetail />,
         children: [
           {
-            path: "graph",
-            element: <JobGraph />,
+            path: "ml",
+            element: <MlDetail />,
+          },
+          {
+            path: "preprocess",
+            element: <PreprocessDetail />,
           },
         ],
       },
-      // TODO: 開発用リンク あとで削除
       {
-        path: "job/preview",
+        path: "job/preview/:id",
         element: <JobPreview />,
-      },
-      {
-        path: "graph",
-        element: <JobGraph />,
       },
       {
         path: "analysis/workbook",
