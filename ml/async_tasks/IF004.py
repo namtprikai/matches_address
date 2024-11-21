@@ -29,16 +29,17 @@ def main():
     }
 
     random_str = str(uuid.uuid4())
-    output_directory = f"{params.get('output_path')}/{random_str}".replace("//", "/")
+    output_directory = concatenate(params.get('output_path'), random_str)
 
     try:
         connect_sqllite(params.get('db_path'))
 
         job_id = create_or_update_job(None ,"", "ml", os.getpid(), 0, args.parameters)
         file_path = f"{output_directory}.{params.get('output_format')}"
- 
+        input_file = concatenate(params.get('output_path'), params.get('input_file'))
+        
         params = {
-            'input_file': params.get('input_file'),
+            'input_file': input_file,
             'output_format': params.get('output_format'),
             'target_crs': params.get('target_crs'),
             'output_path': file_path
