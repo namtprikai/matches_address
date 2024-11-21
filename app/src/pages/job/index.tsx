@@ -159,7 +159,7 @@ export function Job(): JSX.Element {
                           styles.statusCellComplete,
                         )}
                       >
-                        {"未"}
+                        {item.is_named ? "完了" : "未"}
                       </span>
                     </TableCell>
                   </TableRow>
