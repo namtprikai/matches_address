@@ -20,8 +20,8 @@ export const buildModel = (async (
   console.log("--- start buildModel ---", data);
 
   try {
-    const output_path = dbDirectory; // すべてのファイル配置先の絶対パス
-    const database_path = dbPath; // データベース本体の絶対パス SQLiteの書き込みのための
+    const output_path = dbDirectory;
+    const database_path = dbPath;
 
     // childProcessに入れてバックグラウンド実行
     const cp = spawn(
