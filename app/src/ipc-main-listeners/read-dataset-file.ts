@@ -1,6 +1,6 @@
 import path from "path";
 import { readFileSync } from "fs";
-import { dbDirectoryPath } from "../utils/db";
+import { dbDirectory } from "../utils/db";
 import { getFilePathInPublic } from "../utils/get-file-path-in-public";
 import { type IpcMainListener } from ".";
 
@@ -15,7 +15,7 @@ export const readDatasetFile = (async (
   const filePath =
     fileName === "dummy-data.csv"
       ? getFilePathInPublic(fileName)
-      : path.resolve(dbDirectoryPath, fileName);
+      : path.resolve(dbDirectory, fileName);
 
   const data = readFileSync(filePath);
 

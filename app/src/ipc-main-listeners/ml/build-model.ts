@@ -1,6 +1,6 @@
 import { spawn } from "child_process";
 import { type z } from "zod";
-import { dbDirectoryPath, dbPath } from "../../utils/db";
+import { dbDirectory, dbPath } from "../../utils/db";
 import { binaryPath, type IpcMainListener } from "../";
 import { type schema } from "../../hooks/use-form-model-create";
 import { getErrorMessage } from "../../utils/get-error-message";
@@ -20,8 +20,8 @@ export const buildModel = (async (
   console.log("--- start buildModel ---", data);
 
   try {
-    const output_path = dbDirectoryPath;
-    const database_path = dbPath;
+    const output_path = dbDirectory; // すべてのファイル配置先の絶対パス
+    const database_path = dbPath; // データベース本体の絶対パス SQLiteの書き込みのための
 
     // childProcessに入れてバックグラウンド実行
     const cp = spawn(

@@ -7,7 +7,7 @@ import {
   job_results,
   type InsertJobTask,
 } from "../schema";
-import { db, dbDirectoryPath, dbPath } from "../utils/db";
+import { db, dbDirectory, dbPath } from "../utils/db";
 import {
   type PreprocessParameters,
   type ModelCreateParameters,
@@ -27,7 +27,7 @@ export const _debugCreateJob = (async (
     detached: true,
   });
 
-  const output_path = dbDirectoryPath;
+  const output_path = dbDirectory;
   const database_path = dbPath;
 
   await db.transaction(async (tx) => {

@@ -8,7 +8,7 @@ import {
 
 const isDev = process.env.NODE_ENV === "development";
 
-export const dbDirectoryPath = (() => {
+export const dbDirectory = (() => {
   const directoryName = "database";
 
   let result: string;
@@ -24,7 +24,7 @@ export const dbDirectoryPath = (() => {
 export const dbPath = (() => {
   const fileName = "database.db";
 
-  const result = path.resolve(dbDirectoryPath, fileName);
+  const result = path.resolve(dbDirectory, fileName);
 
   const directory = path.dirname(result);
   if (!existsSync(directory)) {
