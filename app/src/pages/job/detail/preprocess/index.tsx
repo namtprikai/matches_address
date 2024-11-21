@@ -58,12 +58,6 @@ const useStyles = makeStyles({
     padding: `${tokens.spacingVerticalS} ${tokens.spacingHorizontalM}`,
     fontSize: tokens.fontSizeBase200,
   },
-  tableRow: {
-    ":hover": {
-      backgroundColor: tokens.colorNeutralBackground1Hover,
-      cursor: "pointer",
-    },
-  },
   successRateCell: {
     display: "flex",
     alignItems: "center",
@@ -114,6 +108,19 @@ const useStyles = makeStyles({
     fontSize: tokens.fontSizeBase300,
   },
 });
+
+/**
+ * @todo PreprocessTypeの日本語表現を追加する
+ * https://github.com/eukarya-inc/links-akiya/issues/447
+ * */
+const PreprocessTypeMap: {
+  [key in Exclude<SelectJobTask["preprocess_type"], null>]: string;
+} = {
+  e012: "e012",
+  e013: "e013",
+  e014: "e014",
+  e016: "e016",
+};
 
 export function PreprocessDetail(): JSX.Element {
   const styles = useStyles();
@@ -172,12 +179,18 @@ export function PreprocessDetail(): JSX.Element {
               </TableHeader>
               <TableBody>
                 {data.map((item: SelectJobTask) => (
-                  <TableRow key={item.id} className={styles.tableRow}>
+                  <TableRow key={item.id}>
                     <TableCell className={styles.tableCell}>
-                      {item.preprocess_type ?? "不明な処理"}
+                      {item.preprocess_type
+                        ? PreprocessTypeMap[item.preprocess_type]
+                        : "不明な処理"}
                     </TableCell>
                     <TableCell className={styles.tableCell}>
-                      {item.job_id}
+                      {item.preprocess_type &&
+                        (item.preprocess_type ===
+                        "e013" /** 仮: @todo 指標の対応を確認して修正する https://github.com/eukarya-inc/links-akiya/issues/448 */
+                          ? "緯度経度付与率"
+                          : "結合率")}
                     </TableCell>
                     <TableCell className={styles.tableCell}>
                       <div className={styles.successRateCell}>
