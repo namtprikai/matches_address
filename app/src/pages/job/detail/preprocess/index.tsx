@@ -115,7 +115,10 @@ const useStyles = makeStyles({
   },
 });
 
-/** @todo #447 PreprocessTypeの日本語表現を追加する */
+/**
+ * @todo PreprocessTypeの日本語表現を追加する
+ * https://github.com/eukarya-inc/links-akiya/issues/447
+ * */
 const PreprocessTypeMap: {
   [key in Exclude<SelectJobTask["preprocess_type"], null>]: string;
 } = {
