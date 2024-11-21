@@ -8,6 +8,7 @@ import {
   TableBody,
   TableRow,
   TableCell,
+  mergeClasses,
 } from "@fluentui/react-components";
 import { useNavigate, Link } from "react-router-dom";
 import { ErrorCircleFilled } from "@fluentui/react-icons";
@@ -58,15 +59,28 @@ const useStyles = makeStyles({
       cursor: "pointer",
     },
   },
+  statusCellContainer: {
+    display: "flex",
+    alignItems: "center",
+    gap: "4px",
+  },
   statusCell: {
     display: "inline-flex",
     alignItems: "center",
-    backgroundColor: "#ecf2ef",
     fontWeight: tokens.fontWeightSemibold,
     fontSize: tokens.fontSizeBase200,
-    color: "#09583B",
     padding: tokens.spacingVerticalXS,
     borderRadius: tokens.borderRadiusSmall,
+    color: "#6264A7",
+    backgroundColor: "#6264a71f",
+  },
+  statusCellError: {
+    color: "#C4314B",
+    backgroundColor: "#c4314b14",
+  },
+  statusCellComplete: {
+    color: "#09583B",
+    backgroundColor: "#ecf2ef",
   },
   noData: {
     color: "#616161",
@@ -124,28 +138,14 @@ export function Job(): JSX.Element {
                         : "不明"}
                     </TableCell>
                     <TableCell className={styles.tableCell}>
-                      <div
-                        style={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: "4px",
-                        }}
-                      >
+                      <div className={styles.statusCellContainer}>
                         <span
-                          className={styles.statusCell}
-                          style={
-                            item.status === "error"
-                              ? {
-                                  color: "#C4314B",
-                                  backgroundColor: "#c4314b14",
-                                }
-                              : item.status === "complete"
-                                ? undefined
-                                : {
-                                    color: "#6264A7",
-                                    backgroundColor: "#6264a71f",
-                                  }
-                          }
+                          className={mergeClasses(
+                            styles.statusCell,
+                            item.status === "error" && styles.statusCellError,
+                            item.status === "complete" &&
+                              styles.statusCellComplete,
+                          )}
                         >
                           {statusInfo.label}
                         </span>
@@ -153,7 +153,14 @@ export function Job(): JSX.Element {
                       </div>
                     </TableCell>
                     <TableCell className={styles.tableCell}>
-                      <span className={styles.statusCell}>{"未"}</span>
+                      <span
+                        className={mergeClasses(
+                          styles.statusCell,
+                          styles.statusCellComplete,
+                        )}
+                      >
+                        {"未"}
+                      </span>
                     </TableCell>
                   </TableRow>
                 );
