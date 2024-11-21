@@ -194,7 +194,7 @@ export function PreprocessDetail(): JSX.Element {
                     <TableCell className={styles.tableCell}>
                       {item.preprocess_type &&
                         (item.preprocess_type ===
-                        "e013" /** 仮: @todo 指標の対応を確認して修正する */
+                        "e013" /** 仮: @todo 指標の対応を確認して修正する https://github.com/eukarya-inc/links-akiya/issues/448 */
                           ? "緯度経度付与率"
                           : "結合率")}
                     </TableCell>
