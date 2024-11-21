@@ -115,7 +115,7 @@ const useStyles = makeStyles({
   },
 });
 
-/** @todo PreprocessTypeの日本語表現を追加する */
+/** @todo #447 PreprocessTypeの日本語表現を追加する */
 const PreprocessTypeMap: {
   [key in Exclude<SelectJobTask["preprocess_type"], null>]: string;
 } = {
