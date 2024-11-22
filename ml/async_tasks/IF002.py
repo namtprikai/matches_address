@@ -17,6 +17,8 @@ def main():
     args = parser.parse_args()
  
     json_dict = json.loads(args.parameters)
+    if isinstance(json_dict, str):
+        json_dict = json.loads(json_dict)
 
     params = {
         'db_path': json_dict.get("database_path", None),
@@ -42,12 +44,13 @@ def main():
     }
 
     random_str = str(uuid.uuid4())
-    output_directory = f"{params.get('output_path')}/{random_str}".replace("//", "/")
+    output_directory = concatenate(params.get('output_path'), random_str)
     
     try:
         connect_sqllite(params.get('db_path'))
 
         job_id = create_or_update_job(None ,"", "ml", os.getpid(), 0, args.parameters)
+        params['input_path'] = concatenate(params.get('output_path'), json_dict.get('input_path'))
         params['output_path'] = output_directory
         params['job_id'] = job_id
         

@@ -21,6 +21,8 @@ def main():
     args = parser.parse_args()
  
     json_dict = json.loads(args.parameters)
+    if isinstance(json_dict, str):
+        json_dict = json.loads(json_dict)
 
     params = {
         'db_path': json_dict.get('database_path', None),
@@ -87,7 +89,7 @@ def main():
 
 
     random_str = str(uuid.uuid4())
-    output_directory = f"{params.get('output_path')}/{random_str}".replace("//", "/")
+    output_directory = concatenate(params.get('output_path'), random_str)
     join_option = "交差結合"
     if params.get('joining_method') == 'nearer':
         join_option = '最近傍結合'
@@ -100,12 +102,12 @@ def main():
         job_id = create_or_update_job(None ,"", "ml", os.getpid(), 0, args.parameters)
 
         input_files = {
-            "suido_status": params.get('suido_status'),
-            "suido_use": params.get('suido_use'),
-            "juki": params.get('juki'),
-            "touki": params.get('touki'),
-            "akiya_result": params.get('akiya_result'),
-            "geocoding": params.get('geocoding')
+            "suido_status": concatenate(params.get('output_path'), params.get('suido_status')),
+            "suido_use": concatenate(params.get('output_path'), params.get('suido_use')),
+            "juki": concatenate(params.get('output_path'), params.get('juki')),
+            "touki": concatenate(params.get('output_path'), params.get('touki')),
+            "akiya_result": concatenate(params.get('output_path'), params.get('akiya_result')),
+            "geocoding": concatenate(params.get('output_path'), params.get('geocoding'))
         }
         merge_base = 'suido_residence'
         main_data_type = 'suido_status'
@@ -152,9 +154,11 @@ def main():
         gpkg_path = params.get("urban_planning", None)
         if gpkg_path is None:
             gpkg_path = params.get("census", None)
-
+        gpkg_path = concatenate(params.get('output_path'), gpkg_path)
+        
+        tatemono_path = concatenate(params.get('output_path'), params.get('buidling_polygon')),
         E016(
-            params.get('buidling_polygon'),
+            tatemono_path,
             f"{output_directory}/matched_data.csv",
             gpkg_path,
             "愛知県",

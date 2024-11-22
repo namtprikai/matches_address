@@ -17,6 +17,8 @@ def main():
     args = parser.parse_args()
  
     json_dict = json.loads(args.parameters)
+    if isinstance(json_dict, str):
+        json_dict = json.loads(json_dict)
 
     params = {
         'db_path': json_dict.get('dataset_path'),
@@ -29,7 +31,7 @@ def main():
     }
 
     random_str = str(uuid.uuid4())
-    output_directory = f"{params.get('output_path')}/{random_str}".replace("//", "/")
+    output_directory = concatenate(params.get('output_path'), random_str)
 
     try:
         connect_sqllite(params.get('db_path'))
@@ -37,9 +39,12 @@ def main():
         job_id = create_or_update_job(None ,"", "ml", os.getpid(), 0, args.parameters)
         file_path = f"{output_directory}/D902.csv"
 
-        input_folder = os.path.dirname(params.get('area_grouping'))
-        input_file = os.path.basename(params.get('area_grouping'))
+        area_grouping = concatenate(params.get('output_path'), params.get('area_grouping'))
+        input_folder = os.path.dirname(area_grouping)
+        input_file = os.path.basename(area_grouping)
 
+        model_path = concatenate(params.get('output_path'), params.get('model_path'))
+        
         REQUIRED_FEATURES = [
             '世帯人数', '15歳未満人数', '15歳以上64歳以下人数', '65歳以上人数', '15歳未満構成比', 
             '15歳以上64歳以下構成比', '65歳以上構成比', '男女比', '住定期間', '最大使用水量_suido_residence', 
@@ -50,7 +55,7 @@ def main():
         E022(
             input_folder, 
             input_file,
-            params.get('model_path'),
+            model_path,
             float(params.get('threshold')),
             file_path,
             REQUIRED_FEATURES,

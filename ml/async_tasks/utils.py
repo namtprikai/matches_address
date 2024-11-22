@@ -115,3 +115,9 @@ def create_job_results(job_id: int, file_path: str):
     except sqlite3.Error as e:
         print(f"An error occurred: {e}")
         CONNECTION.rollback()
+        
+def concatenate(path_1: str, path_2: str):
+    try:
+        return f"{path_1}/{path_2}".replace("//", "/")
+    except:
+        return path_2
