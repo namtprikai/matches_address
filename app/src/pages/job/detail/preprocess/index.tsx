@@ -15,6 +15,8 @@ import { useNavigate, useParams } from "react-router-dom";
 import { DialogSaveWithName } from "../../../../components/dialog-save-with-name";
 import { useFetchJobTasks } from "../../../../hooks/use-fetch-job-tasks";
 import { type SelectJobTask } from "../../../../schema";
+import { downloadFile } from "../../../../utils/download-file";
+import { useFetchJobResults } from "../../../../hooks/use-fetch-job-results";
 
 const useStyles = makeStyles({
   root: {
@@ -127,6 +129,7 @@ export function PreprocessDetail(): JSX.Element {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
   const { data } = useFetchJobTasks({ jobId: Number(id) });
+  const { data: jobResultsData } = useFetchJobResults({ jobId: Number(id) });
 
   const hasData = data && data.length > 0;
 
@@ -157,7 +160,15 @@ export function PreprocessDetail(): JSX.Element {
             <Button className={styles.button} onClick={handlePreviewClick}>
               プレビューを見る
             </Button>
-            <Button className={styles.button}>ダウンロード</Button>
+            <Button
+              className={styles.button}
+              onClick={async () => {
+                if (!jobResultsData) return;
+                await downloadFile(jobResultsData.file_path);
+              }}
+            >
+              ダウンロード
+            </Button>
           </div>
         </div>
 
