@@ -1,7 +1,7 @@
 import { spawn } from "child_process";
 import { type NormalizationParameters } from "../../@types/normalization";
 import { getErrorMessage } from "../../utils/get-error-message";
-import { dbDirectoryPath, dbPath } from "../../utils/db";
+import { dbDirectory, dbPath } from "../../utils/db";
 import { binaryPath, type IpcMainListener } from "..";
 import { processLogger } from "../../utils/process-logger";
 
@@ -16,7 +16,7 @@ export const execE001 = (async (
   },
 ): Promise<true | false> => {
   try {
-    const output_path = dbDirectoryPath;
+    const output_path = dbDirectory;
     const database_path = dbPath;
 
     const postParameters = {

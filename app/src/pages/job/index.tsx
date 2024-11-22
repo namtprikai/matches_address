@@ -163,7 +163,7 @@ export function Job(): JSX.Element {
                       <span
                         className={mergeClasses(
                           styles.statusCell,
-                          styles.statusCellComplete,
+                          item.is_named && styles.statusCellComplete,
                         )}
                       >
                         {item.is_named ? "完了" : "未"}

@@ -8,7 +8,8 @@ import {
 
 const isDev = process.env.NODE_ENV === "development";
 
-export const dbDirectoryPath = (() => {
+/** 生成されるすべてのファイルを配置するディレクトリのパスを返却する */
+export const dbDirectory = (() => {
   const directoryName = "database";
 
   let result: string;
@@ -21,10 +22,11 @@ export const dbDirectoryPath = (() => {
   return result;
 })();
 
+/** SQliteのファイル実体のフルパスを返却する */
 export const dbPath = (() => {
   const fileName = "database.db";
 
-  const result = path.resolve(dbDirectoryPath, fileName);
+  const result = path.resolve(dbDirectory, fileName);
 
   const directory = path.dirname(result);
   if (!existsSync(directory)) {
