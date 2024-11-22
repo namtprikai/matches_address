@@ -63,28 +63,28 @@ export const _debugCreateJob = (async (
           progress_percent: "100",
           preprocess_type: "e012",
           finished_at: sql`(CURRENT_TIMESTAMP)`,
-          result: { joining_rate: "" },
+          result: { taskResultType: "preprocess", joining_rate: "20" },
         });
         await tx.insert(job_tasks).values({
           job_id: insertedId,
           progress_percent: "100",
           preprocess_type: "e013",
           finished_at: sql`(CURRENT_TIMESTAMP)`,
-          result: { joining_rate: "43.21" },
+          result: { taskResultType: "preprocess", joining_rate: "43.21" },
         });
         await tx.insert(job_tasks).values({
           job_id: insertedId,
           progress_percent: "100",
           preprocess_type: "e014",
           finished_at: sql`(CURRENT_TIMESTAMP)`,
-          result: { joining_rate: "93.21" },
+          result: { taskResultType: "preprocess", joining_rate: "93.21" },
         });
         await tx.insert(job_tasks).values({
           job_id: insertedId,
           progress_percent: "100",
           preprocess_type: "e016",
           finished_at: sql`(CURRENT_TIMESTAMP)`,
-          result: { joining_rate: "73.21" },
+          result: { taskResultType: "preprocess", joining_rate: "73.21" },
         });
       } else {
         await tx.insert(job_tasks).values({
@@ -131,10 +131,12 @@ const createmockResult = (type: InsertJob["type"]): InsertJobTask["result"] => {
   switch (type) {
     case "preprocess":
       return {
+        taskResultType: "preprocess",
         joining_rate: "43.21",
       };
     case "ml":
       return {
+        taskResultType: "model_create",
         accuracy: "72.82", // 正解率
         f1Score: "23", // f値
         specificity: "32.21", // 特異度
@@ -153,6 +155,7 @@ const createmockResult = (type: InsertJob["type"]): InsertJobTask["result"] => {
       };
     default:
       return {
+        taskResultType: "preprocess",
         joining_rate: "0",
       };
   }
