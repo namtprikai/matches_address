@@ -1,6 +1,6 @@
 import { spawn } from "child_process";
 import { type z } from "zod";
-import { dbDirectoryPath, dbPath } from "../../utils/db";
+import { dbDirectory, dbPath } from "../../utils/db";
 import { binaryPath, type IpcMainListener } from "../";
 import { type schema } from "../../hooks/use-form-data-evaluate";
 import { getErrorMessage } from "../../utils/get-error-message";
@@ -20,7 +20,7 @@ export const evaluateData = (async (
   console.log("--- start evaluateData ---", data);
 
   try {
-    const output_path = dbDirectoryPath;
+    const output_path = dbDirectory;
     const database_path = dbPath;
 
     // childProcessに入れてバックグラウンド実行
