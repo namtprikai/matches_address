@@ -17,6 +17,7 @@ import { useFetchJobTasks } from "../../../../hooks/use-fetch-job-tasks";
 import { type SelectJobTask } from "../../../../schema";
 import { downloadFile } from "../../../../utils/download-file";
 import { useFetchJobResults } from "../../../../hooks/use-fetch-job-results";
+import { useDialogState } from "../../../../hooks/use-dialog-state";
 
 const useStyles = makeStyles({
   root: {
@@ -131,6 +132,8 @@ export function PreprocessDetail(): JSX.Element {
   const { data } = useFetchJobTasks({ jobId: Number(id) });
   const { data: jobResultsData } = useFetchJobResults({ jobId: Number(id) });
 
+  const dialogState = useDialogState();
+
   const hasData = data && data.length > 0;
 
   const handlePreviewClick = (): void => {
@@ -156,7 +159,14 @@ export function PreprocessDetail(): JSX.Element {
         <div className={styles.result}>
           <span className={styles.message}>処理が完了しました。</span>
           <div className={styles.buttonWrapper}>
-            <DialogSaveWithName />
+            {jobResultsData && (
+              <DialogSaveWithName
+                dialogState={dialogState}
+                filePath={jobResultsData.file_path}
+                jobId={Number(id)}
+                jobResultsId={jobResultsData.id}
+              />
+            )}
             <Button className={styles.button} onClick={handlePreviewClick}>
               プレビューを見る
             </Button>

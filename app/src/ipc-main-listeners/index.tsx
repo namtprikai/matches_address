@@ -58,6 +58,7 @@ import { execE001 } from "./ml/exec-e001";
 import { _debugInsertJobs } from "./_debug-insert-jobs";
 import { _debugCreateJob } from "./_debug-create-job";
 import { selectJobResults } from "./select-job-results";
+import { createNormalizedDatasets } from "./create-normalized-datasets";
 
 export const ipcMainListeners = {
   helloFromPython,
@@ -116,6 +117,7 @@ export const ipcMainListeners = {
   _debugInsertJobs,
   _debugCreateJob,
   selectJobResults,
+  createNormalizedDatasets,
 };
 
 export const execFileAsync = promisify(execFile);
