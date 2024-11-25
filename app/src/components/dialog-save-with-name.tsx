@@ -4,7 +4,6 @@ import {
   DialogTrigger,
   makeStyles,
   tokens,
-  mergeClasses,
 } from "@fluentui/react-components";
 import { useState } from "react"; // useState をインポート
 import { type FormProps } from "react-router-dom";
@@ -22,33 +21,19 @@ const useStyles = makeStyles({
   input: {
     width: "100%",
   },
-  button: {
-    borderRadius: "100px",
-    height: "32px",
-    padding: `5px ${tokens.spacingHorizontalXL}`,
-  },
-  saveWithName: {
-    border: 0,
-    backgroundColor: "#09583B",
-    color: "#fff",
-  },
   DialogBody: {
     width: "449px",
   },
 });
 
 type Props = {
-  filePath: string;
-  jobId: number;
-  jobResultsId: number;
   dialogState: ReturnUseDialogState;
+  onSave: (inputValue: string) => Promise<void>;
 };
 
 export const DialogSaveWithName = ({
-  filePath,
-  jobId,
-  jobResultsId,
   dialogState,
+  onSave,
 }: Props): JSX.Element => {
   const { isOpen: isDialogOpen, setIsOpen: setIsDialogOpen } = dialogState;
 
@@ -59,18 +44,12 @@ export const DialogSaveWithName = ({
   const handleSubmit: FormProps["onSubmit"] = (e) => {
     e.preventDefault();
     // フォーム送信時の処理をここに記述
-    (async () => {
-      await window.ipcRenderer.invoke("createNormalizedDatasets", {
-        jobId,
-        insertParams: {
-          file_name: inputValue,
-          file_path: filePath,
-          job_results_id: jobResultsId,
-        },
-      });
-      setIsDialogOpen(false);
-      setInputValue("");
-    })().catch(console.error);
+    onSave(inputValue)
+      .then(() => {
+        setIsDialogOpen(false);
+        setInputValue("");
+      })
+      .catch(console.error);
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
@@ -82,11 +61,6 @@ export const DialogSaveWithName = ({
       onOpenChange={(_, { open }) => setIsDialogOpen(open)}
       open={isDialogOpen}
     >
-      <DialogTrigger disableButtonEnhancement>
-        <Button className={mergeClasses(styles.button, styles.saveWithName)}>
-          名前をつけて保存
-        </Button>
-      </DialogTrigger>
       <DialogSurface className={styles.DialogBody}>
         <DialogBody>
           <DialogTitle
