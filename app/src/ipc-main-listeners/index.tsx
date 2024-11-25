@@ -57,6 +57,7 @@ import { readDatasetColumns } from "./read-dataset-columns";
 import { execE001 } from "./ml/exec-e001";
 import { _debugInsertJobs } from "./_debug-insert-jobs";
 import { _debugCreateJob } from "./_debug-create-job";
+import { selectJobResults } from "./select-job-results";
 
 export const ipcMainListeners = {
   helloFromPython,
@@ -114,6 +115,7 @@ export const ipcMainListeners = {
   selectAreasWithPagination,
   _debugInsertJobs,
   _debugCreateJob,
+  selectJobResults,
 };
 
 export const execFileAsync = promisify(execFile);

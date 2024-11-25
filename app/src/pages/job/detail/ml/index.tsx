@@ -17,6 +17,8 @@ import {
 import { ArrowLeftRegular } from "@fluentui/react-icons";
 import { DialogSaveWithName } from "../../../../components/dialog-save-with-name";
 import { useFetchJobTasks } from "../../../../hooks/use-fetch-job-tasks";
+import { useFetchJobResults } from "../../../../hooks/use-fetch-job-results";
+import { downloadFile } from "../../../../utils/download-file";
 
 const useStyles = makeStyles({
   root: {
@@ -168,7 +170,9 @@ export function MlDetail(): JSX.Element {
   const styles = useStyles();
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
+
   const { data } = useFetchJobTasks({ jobId: Number(id) });
+  const { data: jobResultsData } = useFetchJobResults({ jobId: Number(id) });
 
   if (!data || !data[0].result) return <></>;
   if (data[0].result.taskResultType === "preprocess") return <></>;
@@ -215,7 +219,15 @@ export function MlDetail(): JSX.Element {
           <span className={styles.message}>処理が完了しました。</span>
           <div className={styles.buttonWrapper}>
             <DialogSaveWithName />
-            <Button className={styles.button}>ダウンロード</Button>
+            <Button
+              className={styles.button}
+              onClick={async () => {
+                if (!jobResultsData) return;
+                await downloadFile(jobResultsData.file_path);
+              }}
+            >
+              ダウンロード
+            </Button>
           </div>
         </div>
 
