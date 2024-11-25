@@ -10,7 +10,7 @@ export const insertNormalizedDatasets = (async (
   _: unknown,
   { file_name, file_path, job_results_id }: InsertNormalizedDataSet,
 ): Promise<{ insertedId: number }> => {
-  const res = await db
+  const res = db
     .insert(normalized_data_sets)
     .values({
       file_name,
