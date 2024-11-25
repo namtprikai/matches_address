@@ -64,13 +64,6 @@ const useStyles = makeStyles({
     width: "100%",
     padding: tokens.spacingHorizontalXXL,
   },
-  restartButton: {
-    backgroundColor: "#6264A7",
-    color: "#fff",
-    borderRadius: "100px",
-    padding: `${tokens.spacingVerticalMNudge} ${tokens.spacingHorizontalL}`,
-    height: "40px",
-  },
   columnContainer: {
     display: "flex",
     flexDirection: "column",
@@ -346,7 +339,7 @@ export function MlDetail(): JSX.Element {
       </div>
 
       <div className={styles.restartButtonWrapper}>
-        <Button className={styles.restartButton}>再実行へ</Button>
+        <Button appearance="primary">再実行へ</Button>
       </div>
     </div>
   );
