@@ -5,7 +5,7 @@ import {
   Text,
   typographyStyles,
 } from "@fluentui/react-components";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import {
   Radar,
   RadarChart,
@@ -14,9 +14,9 @@ import {
   PolarRadiusAxis,
   Tooltip,
 } from "recharts";
-import { useState } from "react";
 import { ArrowLeftRegular } from "@fluentui/react-icons";
 import { DialogSaveWithName } from "../../../../components/dialog-save-with-name";
+import { useFetchJobTasks } from "../../../../hooks/use-fetch-job-tasks";
 
 const useStyles = makeStyles({
   root: {
@@ -161,50 +161,26 @@ const useStyles = makeStyles({
   },
 });
 
+const SAFE_COLOR = "#8884d8";
+const ERROR_COLOR = "#C4314B";
+
 export function MlDetail(): JSX.Element {
   const styles = useStyles();
   const navigate = useNavigate();
-  const [radarColor, setRadarColor] = useState("#8884d8");
+  const { id } = useParams<{ id: string }>();
+  const { data } = useFetchJobTasks({ jobId: Number(id) });
 
-  const toggleRadarColor = (): void => {
-    setRadarColor((prevColor) =>
-      prevColor === "#8884d8" ? "#C4314B" : "#8884d8",
-    );
-  };
+  if (!data || !data[0].result) return <></>;
+  if (data[0].result.taskResultType === "preprocess") return <></>;
+
+  /** @see https://project-links.slack.com/archives/C074TSBS7PW/p1731043911917709?thread_ts=1730328973.471009&cid=C074TSBS7PW */
+  const isLowAccuracy = data && Number(data[0].result.accuracy) < 51;
 
   const handleBack = (): void => {
     navigate(-1);
   };
 
-  const result = {
-    accuracy: "72.82", // 正解率
-    f1Score: "23", // F値
-    specificity: "32.21", // 特異度
-    precision: "32.21", // 適合率
-    recall: "48.32", // 再現率
-    important_columns: [
-      {
-        column: "水道使用量",
-        value: "53.24",
-      },
-      {
-        column: "電力使用量",
-        value: "45.67",
-      },
-      {
-        column: "居住有無",
-        value: "86",
-      },
-      {
-        column: "aaa",
-        value: "6",
-      },
-      {
-        column: "BBB",
-        value: "16",
-      },
-    ],
-  };
+  const result = data[0].result;
 
   // result オブジェクトから radarData を生成
   const radarData = [
@@ -240,10 +216,6 @@ export function MlDetail(): JSX.Element {
           <div className={styles.buttonWrapper}>
             <DialogSaveWithName />
             <Button className={styles.button}>ダウンロード</Button>
-            {/* TODO: 開発用 後で消す */}
-            <Button className={styles.button} onClick={toggleRadarColor}>
-              色を変更
-            </Button>
           </div>
         </div>
 
@@ -268,14 +240,14 @@ export function MlDetail(): JSX.Element {
               <PolarRadiusAxis angle={90} domain={[0, 100]} />
               <Radar
                 dataKey="A"
-                fill={radarColor}
+                fill={isLowAccuracy ? ERROR_COLOR : SAFE_COLOR}
                 fillOpacity={0.6}
                 name="指標"
-                stroke={radarColor}
+                stroke={isLowAccuracy ? ERROR_COLOR : SAFE_COLOR}
               />
               <Tooltip />
             </RadarChart>
-            {radarColor !== "#8884d8" && (
+            {isLowAccuracy && (
               <div className={styles.detail}>
                 学習データ量が少なすぎます。正答率を上げるためには、〇〇以上のデータに修正して再実行をしてください。
               </div>
@@ -289,7 +261,7 @@ export function MlDetail(): JSX.Element {
               <div className={styles.yAxisLabel}>
                 {chartData.map((data, index) => (
                   <Text key={index} className={styles.yAxisLabelText}>
-                    {data.label}
+                    {data.label || "--"}
                   </Text>
                 ))}
               </div>
@@ -299,10 +271,10 @@ export function MlDetail(): JSX.Element {
                     <div key={index} className={styles.barWrapper}>
                       <div
                         className={styles.bar}
-                        style={{ width: `${data.value}%` }}
+                        style={{ width: `${data.value || 0}%` }}
                       ></div>
                       <Text style={{ marginLeft: tokens.spacingHorizontalS }}>
-                        {data.value}%
+                        {data.value || "--"}%
                       </Text>
                     </div>
                   ))}

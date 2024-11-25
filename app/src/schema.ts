@@ -656,7 +656,7 @@ export const job_tasks = sqliteTable("job_tasks", {
   job_id: integer("job_id")
     .references(() => jobs.id)
     .notNull(),
-  progress_percent: text("progress_percent"),
+  progress_percent: text("progress_percent") /** @memo 結局使ってないかも */,
   preprocess_type: text("preprocess_type", {
     enum: ["e012", "e013", "e014", "e016"],
   }),

@@ -178,7 +178,7 @@ export function PreprocessDetail(): JSX.Element {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {data.map((item: SelectJobTask) => (
+                {data.map((item) => (
                   <TableRow key={item.id}>
                     <TableCell className={styles.tableCell}>
                       {item.preprocess_type
@@ -225,5 +225,9 @@ export function PreprocessDetail(): JSX.Element {
 
 // 成功率を取得する関数
 function getIndexRate(item: SelectJobTask): string {
-  return item.progress_percent ?? "N/A";
+  if (item.result?.taskResultType === "preprocess") {
+    return item.result.joining_rate;
+  } else {
+    return "N/A";
+  }
 }
