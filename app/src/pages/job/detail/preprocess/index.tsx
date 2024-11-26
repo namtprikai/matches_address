@@ -95,13 +95,6 @@ const useStyles = makeStyles({
     width: "100%",
     padding: tokens.spacingHorizontalXXL,
   },
-  restartButton: {
-    backgroundColor: "#6264A7",
-    color: "#fff",
-    borderRadius: "100px",
-    padding: `${tokens.spacingVerticalMNudge} ${tokens.spacingHorizontalL}`,
-    height: "40px",
-  },
   noData: {
     color: "#616161",
     fontSize: tokens.fontSizeBase300,
@@ -253,10 +246,7 @@ export function PreprocessDetail(): JSX.Element {
         </Card>
       </div>
       <div className={styles.restartButtonWrapper}>
-        <Button
-          className={styles.restartButton}
-          onClick={() => navigate("/job/restart")}
-        >
+        <Button appearance="primary" onClick={() => navigate("/job/restart")}>
           再実行へ
         </Button>
       </div>
