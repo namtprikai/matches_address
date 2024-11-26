@@ -228,21 +228,21 @@ export function MlDetail(): JSX.Element {
             >
               名前をつけて保存
             </Button>
-            {jobResultsData && (
-              <DialogSaveWithName
-                dialogState={dialogState}
-                onSave={async (inputValue: string) => {
-                  await window.ipcRenderer.invoke("createModelFiles", {
-                    jobId: jobResultsData.job_id,
-                    insertParams: {
-                      file_name: inputValue,
-                      file_path: jobResultsData.file_path,
-                    },
-                  });
-                  await mutate();
-                }}
-              />
-            )}
+
+            <DialogSaveWithName
+              dialogState={dialogState}
+              onSave={async (inputValue: string) => {
+                if (!jobResultsData) return;
+                await window.ipcRenderer.invoke("createModelFiles", {
+                  jobId: jobResultsData.job_id,
+                  insertParams: {
+                    file_name: inputValue,
+                    file_path: jobResultsData.file_path,
+                  },
+                });
+                await mutate();
+              }}
+            />
             <Button
               onClick={async () => {
                 if (!jobResultsData) return;

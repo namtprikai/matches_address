@@ -167,22 +167,22 @@ export function PreprocessDetail(): JSX.Element {
             >
               名前をつけて保存
             </Button>
-            {jobResultsData && (
-              <DialogSaveWithName
-                dialogState={dialogState}
-                onSave={async (inputValue: string) => {
-                  await window.ipcRenderer.invoke("createNormalizedDatasets", {
-                    jobId: jobResultsData.job_id,
-                    insertParams: {
-                      file_name: inputValue,
-                      file_path: jobResultsData.file_path,
-                      job_results_id: jobResultsData.id,
-                    },
-                  });
-                  await mutate();
-                }}
-              />
-            )}
+            <DialogSaveWithName
+              dialogState={dialogState}
+              onSave={async (inputValue: string) => {
+                if (!jobResultsData) return;
+                await window.ipcRenderer.invoke("createNormalizedDatasets", {
+                  jobId: jobResultsData.job_id,
+                  insertParams: {
+                    file_name: inputValue,
+                    file_path: jobResultsData.file_path,
+                    job_results_id: jobResultsData.id,
+                  },
+                });
+                await mutate();
+              }}
+            />
+
             <Button onClick={handlePreviewClick}>プレビューを見る</Button>
             <Button
               onClick={async () => {
