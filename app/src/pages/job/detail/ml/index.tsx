@@ -1,7 +1,6 @@
 import {
   makeStyles,
   tokens,
-  Button,
   Text,
   typographyStyles,
 } from "@fluentui/react-components";
@@ -19,6 +18,9 @@ import { DialogSaveWithName } from "../../../../components/dialog-save-with-name
 import { useFetchJobTasks } from "../../../../hooks/use-fetch-job-tasks";
 import { useFetchJobResults } from "../../../../hooks/use-fetch-job-results";
 import { downloadFile } from "../../../../utils/download-file";
+import { useDialogState } from "../../../../hooks/use-dialog-state";
+import { useFetchJobs } from "../../../../hooks/use-fetch-jobs";
+import { Button } from "../../../../components/ui/button";
 
 const useStyles = makeStyles({
   root: {
@@ -52,11 +54,6 @@ const useStyles = makeStyles({
   buttonWrapper: {
     display: "flex",
     gap: tokens.spacingHorizontalS,
-  },
-  button: {
-    borderRadius: "100px",
-    height: "32px",
-    padding: `5px ${tokens.spacingHorizontalXL}`,
   },
   restartButtonWrapper: {
     display: "flex",
@@ -161,6 +158,13 @@ const useStyles = makeStyles({
     borderRadius: tokens.borderRadiusSmall,
     width: "100%",
   },
+  saveWithNameButton: {
+    backgroundColor: "#09583B",
+    color: "#fff",
+    "&:hover": {
+      border: `${tokens.strokeWidthThin} solid ${tokens.colorNeutralStroke1}`,
+    },
+  },
 });
 
 const SAFE_COLOR = "#8884d8";
@@ -173,6 +177,9 @@ export function MlDetail(): JSX.Element {
 
   const { data } = useFetchJobTasks({ jobId: Number(id) });
   const { data: jobResultsData } = useFetchJobResults({ jobId: Number(id) });
+  const { data: job, mutate } = useFetchJobs(Number(id));
+
+  const dialogState = useDialogState();
 
   if (!data || !data[0].result) return <></>;
   if (data[0].result.taskResultType === "preprocess") return <></>;
@@ -185,6 +192,7 @@ export function MlDetail(): JSX.Element {
   };
 
   const result = data[0].result;
+  const isNamed = job && job[0].is_named;
 
   // result オブジェクトから radarData を生成
   const radarData = [
@@ -218,9 +226,31 @@ export function MlDetail(): JSX.Element {
         <div className={styles.result}>
           <span className={styles.message}>処理が完了しました。</span>
           <div className={styles.buttonWrapper}>
-            <DialogSaveWithName />
             <Button
-              className={styles.button}
+              className={isNamed ? "" : styles.saveWithNameButton}
+              disabled={isNamed}
+              onClick={() => {
+                dialogState.setIsOpen(true);
+              }}
+            >
+              名前をつけて保存
+            </Button>
+            {jobResultsData && (
+              <DialogSaveWithName
+                dialogState={dialogState}
+                onSave={async (inputValue: string) => {
+                  await window.ipcRenderer.invoke("createModelFiles", {
+                    jobId: jobResultsData.job_id,
+                    insertParams: {
+                      file_name: inputValue,
+                      file_path: jobResultsData.file_path,
+                    },
+                  });
+                  await mutate();
+                }}
+              />
+            )}
+            <Button
               onClick={async () => {
                 if (!jobResultsData) return;
                 await downloadFile(jobResultsData.file_path);

@@ -8,7 +8,6 @@ import {
   TableBody,
   TableRow,
   TableCell,
-  Button,
 } from "@fluentui/react-components";
 import { ErrorCircleFilled, ArrowLeftRegular } from "@fluentui/react-icons";
 import { useNavigate, useParams } from "react-router-dom";
@@ -17,6 +16,9 @@ import { useFetchJobTasks } from "../../../../hooks/use-fetch-job-tasks";
 import { type SelectJobTask } from "../../../../schema";
 import { downloadFile } from "../../../../utils/download-file";
 import { useFetchJobResults } from "../../../../hooks/use-fetch-job-results";
+import { useDialogState } from "../../../../hooks/use-dialog-state";
+import { Button } from "../../../../components/ui/button";
+import { useFetchJobs } from "../../../../hooks/use-fetch-jobs";
 
 const useStyles = makeStyles({
   root: {
@@ -81,11 +83,6 @@ const useStyles = makeStyles({
     display: "flex",
     gap: tokens.spacingHorizontalS,
   },
-  button: {
-    borderRadius: "100px",
-    height: "32px",
-    padding: `5px ${tokens.spacingHorizontalXL}`,
-  },
   errorIcon: {
     color: "#6264A7",
   },
@@ -109,6 +106,13 @@ const useStyles = makeStyles({
     color: "#616161",
     fontSize: tokens.fontSizeBase300,
   },
+  saveWithNameButton: {
+    backgroundColor: "#09583B",
+    color: "#fff",
+    "&:hover": {
+      border: `${tokens.strokeWidthThin} solid ${tokens.colorNeutralStroke1}`,
+    },
+  },
 });
 
 /**
@@ -130,6 +134,9 @@ export function PreprocessDetail(): JSX.Element {
   const { id } = useParams<{ id: string }>();
   const { data } = useFetchJobTasks({ jobId: Number(id) });
   const { data: jobResultsData } = useFetchJobResults({ jobId: Number(id) });
+  const { data: job, mutate } = useFetchJobs(Number(id));
+
+  const dialogState = useDialogState();
 
   const hasData = data && data.length > 0;
 
@@ -140,6 +147,8 @@ export function PreprocessDetail(): JSX.Element {
   const handleBack = (): void => {
     navigate(-1);
   };
+
+  const isNamed = job && job[0].is_named;
 
   return (
     <div className={styles.pageContainer}>
@@ -156,12 +165,33 @@ export function PreprocessDetail(): JSX.Element {
         <div className={styles.result}>
           <span className={styles.message}>処理が完了しました。</span>
           <div className={styles.buttonWrapper}>
-            <DialogSaveWithName />
-            <Button className={styles.button} onClick={handlePreviewClick}>
-              プレビューを見る
-            </Button>
             <Button
-              className={styles.button}
+              className={isNamed ? "" : styles.saveWithNameButton}
+              disabled={isNamed}
+              onClick={() => {
+                dialogState.setIsOpen(true);
+              }}
+            >
+              名前をつけて保存
+            </Button>
+            {jobResultsData && (
+              <DialogSaveWithName
+                dialogState={dialogState}
+                onSave={async (inputValue: string) => {
+                  await window.ipcRenderer.invoke("createNormalizedDatasets", {
+                    jobId: jobResultsData.job_id,
+                    insertParams: {
+                      file_name: inputValue,
+                      file_path: jobResultsData.file_path,
+                      job_results_id: jobResultsData.id,
+                    },
+                  });
+                  await mutate();
+                }}
+              />
+            )}
+            <Button onClick={handlePreviewClick}>プレビューを見る</Button>
+            <Button
               onClick={async () => {
                 if (!jobResultsData) return;
                 await downloadFile(jobResultsData.file_path);
