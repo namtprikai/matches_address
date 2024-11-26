@@ -1006,6 +1006,7 @@ def process_data(tatemono_path, water_supply_path, gpkg_path, ken, sikuchoson, o
         print("Exception", e)
         if task_id is not None:
             create_or_update_job_task(job_id, progress_percent="", preprocess_type="e016", error_code="e001", result=json.dumps({}), id= task_id, is_finish=True)
+        raise Exception(e)
 
 def main():
     parser = argparse.ArgumentParser(description="E016 - 空間結合機能")

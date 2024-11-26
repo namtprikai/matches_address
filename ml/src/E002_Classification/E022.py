@@ -479,6 +479,7 @@ def process_and_predict(input_folder, input_file, model_directory, threshold, ou
         print("Exception", e)
         if task_id is not None:
             create_or_update_job_task(job_id, progress_percent="", preprocess_type="e022", error_code="e001", result=json.dumps({}), id= task_id, is_finish=True)
+        raise Exception(e)
 
 def main():
     # !!!!!! 引数で指定に要変更

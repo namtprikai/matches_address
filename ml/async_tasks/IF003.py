@@ -27,7 +27,7 @@ def main():
         'threshold': json_dict.get('settings', {}).get('threshold', "0.3"),
         'area_grouping': json_dict.get('area_grouping', {}).get('path', None),
         'area_grouping_columns': json_dict.get('area_grouping', {}).get('columns', {}),
-        'spatial_file': json_dict.get('spatial_file')
+        'spatial_file': json_dict.get('spatial_file', None)
     }
 
     random_str = str(uuid.uuid4())
@@ -71,9 +71,11 @@ def main():
             key_column = [columns.get('area_group_id'), columns.get('area_group_name')]
         else:
             key_column = 'KEY_CODE'
+            
+        spatial_file = concatenate(params.get('output_path'), params.get('spatial_file'))
         E032(
             file_path,
-            params.get('spatial_file'),
+            spatial_file,
             output_directory,
             key_column,
             str(job_id),

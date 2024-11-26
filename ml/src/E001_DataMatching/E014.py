@@ -298,6 +298,7 @@ def embedding_address(main_csv: io.BytesIO, sub_csv: io.BytesIO, main_column: st
         print("Exception", e)
         if task_id is not None:
             create_or_update_job_task(job_id, progress_percent="", preprocess_type="e014", error_code="e001", result=json.dumps({}), id= task_id, is_finish=True)
+        raise Exception(e)
 
 def save_csv(df, path):
     """

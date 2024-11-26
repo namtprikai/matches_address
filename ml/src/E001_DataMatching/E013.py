@@ -797,6 +797,7 @@ def process_all_data(suido_use_file, suido_status_file, juki_file, tatemono_file
         print("Exception", e)
         if task_id is not None:
             create_or_update_job_task(job_id, progress_percent="", preprocess_type="e013", error_code="e001", result=json.dumps({}), id= task_id, is_finish=True)
+        raise Exception(e)
 
 def normalize_dates(df, column, formats=['%Y/%m/%d', '%d/%m/%Y', '%Y-%m-%d', '%m/%d/%Y', '%Y%m%d']):
     # Initialize the temporary column with NaN values

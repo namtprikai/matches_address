@@ -27,21 +27,21 @@ def main():
     params = {
         'db_path': json_dict.get('database_path', None),
         'output_path': json_dict.get('output_path', '.'),
-        'suido_status': json_dict.get('data', {}).get('water_status', {}).get('path', {}),
+        'suido_status': json_dict.get('data', {}).get('water_status', {}).get('path', None),
         'suido_status_columns': json_dict.get('data', {}).get('water_status', {}).get('columns', {}),
-        'suido_use': json_dict.get('data', {}).get('water_supply_usage', {}).get('path', {}),
+        'suido_use': json_dict.get('data', {}).get('water_supply_usage', {}).get('path', None),
         'suido_use_columns': json_dict.get('data', {}).get('water_supply_usage', {}).get('columns', {}),
-        'juki': json_dict.get('data', {}).get('resident_registry', {}).get('path', {}),
+        'juki': json_dict.get('data', {}).get('resident_registry', {}).get('path', None),
         'juki_columns': json_dict.get('data', {}).get('resident_registry', {}).get('columns', {}),
-        'touki': json_dict.get('data', {}).get('land_registry', {}).get('path', {}),
+        'touki': json_dict.get('data', {}).get('land_registry', {}).get('path', None),
         'touki_columns': json_dict.get('data', {}).get('land_registry', {}).get('columns', {}),
-        'akiya_result': json_dict.get('data', {}).get('vacant_house', {}).get('path', {}),
+        'akiya_result': json_dict.get('data', {}).get('vacant_house', {}).get('path', None),
         'akiya_result_columns': json_dict.get('data', {}).get('vacant_house', {}).get('columns', {}),
-        'geocoding': json_dict.get('data', {}).get('geocoding', {}).get('path', {}),
-        'census': json_dict.get('data', {}).get('census', {}).get('path', {}),
-        'buidling_polygon': json_dict.get('data', {}).get('buidling_polygon', {}).get('path', {}),
+        'geocoding': json_dict.get('data', {}).get('geocoding', {}).get('path', None),
+        'census': json_dict.get('data', {}).get('census', {}).get('path', None),
+        'buidling_polygon': json_dict.get('data', {}).get('buidling_polygon', {}).get('path', None),
         'buidling_polygon_column': json_dict.get('data', {}).get('buidling_polygon', {}).get('columns', {}).get('building_id', None),
-        'urban_planning': json_dict.get('data', {}).get('urban_planning', {}).get('path', {}),
+        'urban_planning': json_dict.get('data', {}).get('urban_planning', {}).get('path', None),
         'n_gram_size': json_dict.get('settings', {}).get('advanced', {}).get('n_gram_size', "2"),
         'similarity_threshold': json_dict.get('settings', {}).get('advanced', {}).get('similarity_threshold', "0.95"),
         'joining_method': json_dict.get('settings', {}).get('advanced', {}).get('joining_method', ""),
@@ -156,7 +156,8 @@ def main():
             gpkg_path = params.get("census", None)
         gpkg_path = concatenate(params.get('output_path'), gpkg_path)
         
-        tatemono_path = concatenate(params.get('output_path'), params.get('buidling_polygon')),
+        tatemono_path = concatenate(params.get('output_path'), params.get('buidling_polygon'))
+        
         E016(
             tatemono_path,
             f"{output_directory}/matched_data.csv",

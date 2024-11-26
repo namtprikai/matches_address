@@ -837,6 +837,7 @@ def train_and_evaluate(db_path, input_file, output_path, explanatory_variables, 
         print("Error: ", e)
         if task_id is not None:
             create_or_update_job_task(job_id, progress_percent="", preprocess_type="E021_モデル構築", error_code="e001", result=json.dumps({}), id= task_id, is_finish=True)
+        raise Exception(e)
     
 def main():
     parser = argparse.ArgumentParser(description="E021 - 空き家学習機能")

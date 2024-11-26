@@ -433,7 +433,7 @@ def process_summarization(akiya_pred_file, spatial_file, output_dir, key_column,
         print("Exception", e)
         if task_id is not None:
             create_or_update_job_task(job_id, progress_percent="", preprocess_type="e032", error_code="e001", result=json.dumps({}), id= task_id, is_finish=True)
-
+        raise Exception(e)
 
 
 def main():

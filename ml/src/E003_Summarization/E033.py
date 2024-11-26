@@ -186,7 +186,7 @@ def processing(params, job_id=None, db_path=None):
             create_or_update_job_task(job_id, progress_percent="", preprocess_type="e033", error_code="e001", result=json.dumps({}), id= task_id, is_finish=True)
 
         logging.error(f"An error occurred: {str(e)}")
-        return f"An error occurred: {str(e)}"
+        raise Exception(e)
 
 
 
