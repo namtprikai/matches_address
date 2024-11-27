@@ -89,20 +89,7 @@ export function Dataset(): JSX.Element {
     e: ChangeEvent<HTMLInputElement>,
   ): Promise<void> => {
     const file = e.target.files?.[0];
-    void saveDataSetFile(file);
-    void mutateRaw();
-    e.target.value = ""; // ファイル選択をリセットする
-  };
-
-  const handleUploadButtonClickForNormalization = (): void => {
-    fileInputRef.current?.click();
-  };
-
-  const handleUploadForNormalization = async (
-    e: ChangeEvent<HTMLInputElement>,
-  ): Promise<void> => {
-    const file = e.target.files?.[0];
-    void saveDataSetFile(file, "normalization");
+    void saveDataSetFile(file, selectedValue);
     void mutateRaw();
     e.target.value = ""; // ファイル選択をリセットする
   };
@@ -214,7 +201,7 @@ export function Dataset(): JSX.Element {
       <Card className={styles.content}>
         <div className={styles.actions}>
           <div>
-            {selectedValue === "raw" ? (
+            {selectedValue === "raw" || selectedValue === "normalization" ? (
               <>
                 <input
                   ref={fileInputRef}
@@ -226,24 +213,6 @@ export function Dataset(): JSX.Element {
                   appearance="outline"
                   className={styles.uploadButton}
                   onClick={handleUploadButtonClick}
-                >
-                  <AddRegular />
-                  新規アップロード
-                </Button>
-              </>
-            ) : null}
-            {selectedValue === "normalization" ? (
-              <>
-                <input
-                  ref={fileInputRef}
-                  onChange={handleUploadForNormalization}
-                  style={{ display: "none" }}
-                  type="file"
-                />
-                <Button
-                  appearance="outline"
-                  className={styles.uploadButton}
-                  onClick={handleUploadButtonClickForNormalization}
                 >
                   <AddRegular />
                   新規アップロード

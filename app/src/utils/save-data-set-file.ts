@@ -2,7 +2,7 @@ import { type InsertRawDataSet } from "../schema";
 
 export async function saveDataSetFile(
   file: File | undefined,
-  target: "raw" | "normalization" = "raw",
+  target: "raw" | "normalization" | "result",
 ): Promise<{ insertedId: InsertRawDataSet["id"] } | undefined> {
   if (!file) return;
   const ext = file.name.split(".").pop();
@@ -28,6 +28,8 @@ export async function saveDataSetFile(
           file_name: file.name,
           file_path,
         });
+      case "result":
+        return undefined;
       default: {
         const _exhaustiveCheck: never = target;
         throw new Error(`Unhandled type: ${_exhaustiveCheck}`);
