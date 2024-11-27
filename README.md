@@ -21,6 +21,12 @@ npm install
 npm run dev
 ```
 
+ダミーデータを利用したい場合
+
+```
+cp app/public/dummy-data.csv app/database
+```
+
 ## build
 
 配布用のアプリをビルドする

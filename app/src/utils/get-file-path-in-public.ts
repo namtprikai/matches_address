@@ -1,5 +1,6 @@
 import path from "path";
 
+/** Publicフォルダのアセットにアクセスする・開発向けの関数 */
 export function getFilePathInPublic(...filePaths: string[]): string {
   const isDev = process.env.NODE_ENV === "development";
   const directoryName = "public";
