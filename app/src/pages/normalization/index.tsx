@@ -4,18 +4,15 @@ import {
   makeStyles,
   tokens,
 } from "@fluentui/react-components";
-import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Dismiss24Regular } from "@fluentui/react-icons";
 import { FormNormalization } from "../../components/form-normalization";
-import { defaultNormalizationParameters } from "../../utils/default-normalization-parameters";
 import { Button } from "../../components/ui/button";
 import { DialogSurface } from "../../components/ui/dialog-surface";
 import { DialogBody } from "../../components/ui/dialog-body";
 import { DialogTitle } from "../../components/ui/dialog-title";
 import { DialogContent } from "../../components/ui/dialog-content";
 import { DialogActions } from "../../components/ui/dialog-actions";
-import { type PreprocessParameters } from "../../@types/job-parameters";
 
 const useStyles = makeStyles({
   root: {
@@ -48,18 +45,11 @@ const useStyles = makeStyles({
   },
 });
 
+const formId = "normalization-form";
+
 export function Normalization(): JSX.Element {
   const styles = useStyles();
   const navigator = useNavigate();
-  const [parameters, setParameters] = useState<PreprocessParameters>(
-    defaultNormalizationParameters,
-  );
-
-  const handleClick = async (): Promise<void> => {
-    await window.ipcRenderer.invoke("execE001", {
-      parameters,
-    });
-  };
 
   return (
     <>
@@ -67,18 +57,18 @@ export function Normalization(): JSX.Element {
         <div className={styles.root}>
           <h2 className={styles.heading}>データ正規化処理</h2>
           <div>
-            <FormNormalization
-              onSave={(parameters) => {
-                setParameters(parameters);
-              }}
-              parameters={parameters}
-            />
+            <FormNormalization formId={formId} />
           </div>
         </div>
         <div className={styles.footerActions}>
           <Dialog>
             <DialogTrigger disableButtonEnhancement>
-              <Button appearance="primary" onClick={handleClick} size="medium">
+              <Button
+                appearance="primary"
+                form={formId}
+                size="medium"
+                type="submit"
+              >
                 開始する
               </Button>
             </DialogTrigger>
