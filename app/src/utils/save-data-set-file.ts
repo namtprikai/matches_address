@@ -28,6 +28,10 @@ export async function saveDataSetFile(
           file_name: file.name,
           file_path,
         });
+      default: {
+        const _exhaustiveCheck: never = target;
+        throw new Error(`Unhandled type: ${_exhaustiveCheck}`);
+      }
     }
   })();
 
