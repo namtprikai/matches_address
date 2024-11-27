@@ -1,18 +1,16 @@
 import { spawn } from "child_process";
-import { type NormalizationParameters } from "../../@types/normalization";
 import { getErrorMessage } from "../../utils/get-error-message";
 import { dbDirectory, dbPath } from "../../utils/db";
 import { binaryPath, type IpcMainListener } from "..";
 import { processLogger } from "../../utils/process-logger";
-
-export type ExecE001Args = NormalizationParameters;
+import { type PreprocessParameters } from "../../@types/job-parameters";
 
 export const execE001 = (async (
   _: unknown,
   {
     parameters,
   }: {
-    parameters: NormalizationParameters;
+    parameters: PreprocessParameters;
   },
 ): Promise<true | false> => {
   try {

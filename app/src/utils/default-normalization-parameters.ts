@@ -1,4 +1,4 @@
-import { type NormalizationParameters } from "../@types/normalization";
+import { type PreprocessParameters } from "../@types/job-parameters";
 
 /**
  * 前処理で利用するデフォルトのパラメータを作成するだけの関数
@@ -6,7 +6,7 @@ import { type NormalizationParameters } from "../@types/normalization";
  *
  * @returns デフォルトの前処理用パラメータ
  */
-export const defaultNormalizationParameters: NormalizationParameters = {
+export const defaultNormalizationParameters: PreprocessParameters = {
   settings: {
     reference_data: "water_status",
     reference_date: "2021-01-01",

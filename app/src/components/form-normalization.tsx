@@ -1,7 +1,7 @@
 import { Controller, useController, useForm } from "react-hook-form";
 import { makeStyles, tokens } from "@fluentui/react-components";
-import { type NormalizationParameters } from "../@types/normalization";
 import { LanguageMap } from "../metadata";
+import { type PreprocessParameters } from "../@types/job-parameters";
 import { FormDataset } from "./form-dataset";
 import { FormNormalizationSettings } from "./form-normalization-settings";
 
@@ -20,15 +20,15 @@ const useStyles = makeStyles({
 });
 
 type Props = {
-  parameters: NormalizationParameters;
-  onSave: (parameters: NormalizationParameters) => void;
+  parameters: PreprocessParameters;
+  onSave: (parameters: PreprocessParameters) => void;
 };
 
 export const FormNormalization = ({
   parameters,
   onSave,
 }: Props): JSX.Element => {
-  const { handleSubmit, control } = useForm<NormalizationParameters>({
+  const { handleSubmit, control } = useForm<PreprocessParameters>({
     defaultValues: parameters,
   });
 

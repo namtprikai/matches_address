@@ -1,4 +1,4 @@
-import { type NormalizationParameters } from "./@types/normalization";
+import { type PreprocessParameters } from "./@types/job-parameters";
 import { type result_views } from "./schema";
 
 type ResultViewsStyle = (typeof result_views.style.enumValues)[number];
@@ -21,14 +21,14 @@ const RESULT_VIEWS_UNIT: {
 };
 
 type NormalizationParameterLabelKey =
-  keyof (NormalizationParameters["data"]["resident_registry"]["columns"] &
-    NormalizationParameters["data"]["water_status"]["columns"] &
-    NormalizationParameters["data"]["water_usage"]["columns"] &
-    NormalizationParameters["data"]["land_registry"]["columns"] &
-    NormalizationParameters["data"]["vacant_house"]["columns"] &
-    NormalizationParameters["data"]["geocoding"]["columns"] &
-    NormalizationParameters["data"]["building_polygon"]["columns"] &
-    Omit<NormalizationParameters["settings"], "advanced">);
+  keyof (PreprocessParameters["data"]["resident_registry"]["columns"] &
+    PreprocessParameters["data"]["water_status"]["columns"] &
+    PreprocessParameters["data"]["water_usage"]["columns"] &
+    PreprocessParameters["data"]["land_registry"]["columns"] &
+    PreprocessParameters["data"]["vacant_house"]["columns"] &
+    PreprocessParameters["data"]["geocoding"]["columns"] &
+    PreprocessParameters["data"]["building_polygon"]["columns"] &
+    Omit<PreprocessParameters["settings"], "advanced">);
 
 type NormalizationParameterLabel = Record<
   NormalizationParameterLabelKey,
