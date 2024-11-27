@@ -56,19 +56,6 @@ export function Normalization(): JSX.Element {
   );
 
   const handleClick = async (): Promise<void> => {
-    // TODO: jobの登録はpython側で行うため後で削除する
-    await window.ipcRenderer.invoke("_debugInsertJobs", {
-      type: "preprocess",
-      parameters: {
-        ...parameters,
-        // TODO: 型エラーを直すために一時的に追加しただけ
-        database_path: "test.db",
-        input_path: "test.csv",
-      },
-      is_named: false,
-    });
-
-    // TODO: parametersが正しいかどうかのバリデーションを行う必要がある
     await window.ipcRenderer.invoke("execE001", {
       parameters,
     });
