@@ -2,6 +2,7 @@ import { type InsertRawDataSet } from "../schema";
 
 export async function saveDataSetFile(
   file: File | undefined,
+  target: "raw" | "normalization" | "result" = "raw",
 ): Promise<{ insertedId: InsertRawDataSet["id"] } | undefined> {
   if (!file) return;
   const ext = file.name.split(".").pop();
@@ -15,10 +16,26 @@ export async function saveDataSetFile(
     fileName: file_path,
   });
 
-  const result = await window.ipcRenderer.invoke("insertRawDatasets", {
-    file_name: file.name,
-    file_path,
-  });
+  const result = (async () => {
+    switch (target) {
+      case "raw":
+        return await window.ipcRenderer.invoke("insertRawDatasets", {
+          file_name: file.name,
+          file_path,
+        });
+      case "normalization":
+        return await window.ipcRenderer.invoke("insertNormalizedDatasets", {
+          file_name: file.name,
+          file_path,
+        });
+      case "result":
+        return undefined;
+      default: {
+        const _exhaustiveCheck: never = target;
+        throw new Error(`Unhandled type: ${_exhaustiveCheck}`);
+      }
+    }
+  })();
 
   return result;
 }

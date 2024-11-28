@@ -89,7 +89,7 @@ export function Dataset(): JSX.Element {
     e: ChangeEvent<HTMLInputElement>,
   ): Promise<void> => {
     const file = e.target.files?.[0];
-    void saveDataSetFile(file);
+    void saveDataSetFile(file, selectedValue);
     void mutateRaw();
     e.target.value = ""; // ファイル選択をリセットする
   };
@@ -201,7 +201,7 @@ export function Dataset(): JSX.Element {
       <Card className={styles.content}>
         <div className={styles.actions}>
           <div>
-            {selectedValue === "raw" ? (
+            {selectedValue === "raw" || selectedValue === "normalization" ? (
               <>
                 <input
                   ref={fileInputRef}

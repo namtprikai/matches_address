@@ -592,10 +592,7 @@ export const normalized_data_sets = sqliteTable("normalized_data_sets", {
   file_name: text("file_name"),
   // job_resultsの内部パス / NOT NULL
   file_path: text("file_path").notNull(),
-  job_results_id: integer("job_results_id")
-    .references(() => job_results.id)
-    .notNull(),
-
+  job_results_id: integer("job_results_id").references(() => job_results.id),
   created_at: text("created_at")
     .default(sql`(CURRENT_TIMESTAMP)`)
     .notNull(),
