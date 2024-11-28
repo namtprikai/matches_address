@@ -30,7 +30,7 @@ import { selectAreaGroups } from "./select-area-groups";
 import { updateResultViewsLayoutIndex } from "./update-result-views-layout-index";
 import { selectRawDatasets } from "./select-raw-datasets";
 import { insertRawDatasets } from "./insert-raw-datasets";
-import { writeDatasetFile } from "./write-dataset-file";
+import { saveFile } from "./save-file";
 import { selectNormalizedDataSets } from "./select-normalized-datasets";
 import { insertNormalizedDatasets } from "./insert-normalized-datasets";
 import { selectRawDataset } from "./select-raw-dataset";
@@ -60,6 +60,7 @@ import { _debugCreateJob } from "./_debug-create-job";
 import { selectJobResults } from "./select-job-results";
 import { createNormalizedDatasets } from "./create-normalized-datasets";
 import { createModelFiles } from "./create-model-files";
+import { insertModelFile } from "./insert-model-file";
 
 export const ipcMainListeners = {
   helloFromPython,
@@ -91,7 +92,7 @@ export const ipcMainListeners = {
   updateResultViewsLayoutIndex,
   selectRawDatasets,
   insertRawDatasets,
-  writeDatasetFile,
+  saveFile,
   selectNormalizedDataSets,
   insertNormalizedDatasets,
   selectRawDataset,
@@ -120,6 +121,7 @@ export const ipcMainListeners = {
   selectJobResults,
   createNormalizedDatasets,
   createModelFiles,
+  insertModelFile,
 };
 
 export const execFileAsync = promisify(execFile);

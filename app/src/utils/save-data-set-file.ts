@@ -11,7 +11,7 @@ export async function saveDataSetFile(
   const file_path = `${uuid}.${ext}`;
   const arrayBuffer = await file.arrayBuffer();
   // TODO: サイズが大きいファイルのためにパフォーマンス改善が必要かも
-  await window.ipcRenderer.invoke("writeDatasetFile", {
+  await window.ipcRenderer.invoke("saveFile", {
     data: arrayBuffer,
     fileName: file_path,
   });
