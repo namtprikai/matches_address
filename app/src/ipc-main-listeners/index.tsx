@@ -60,6 +60,7 @@ import { _debugCreateJob } from "./_debug-create-job";
 import { selectJobResults } from "./select-job-results";
 import { createNormalizedDatasets } from "./create-normalized-datasets";
 import { createModelFiles } from "./create-model-files";
+import { insertModelFile } from "./insert-model-file";
 
 export const ipcMainListeners = {
   helloFromPython,
@@ -120,6 +121,7 @@ export const ipcMainListeners = {
   selectJobResults,
   createNormalizedDatasets,
   createModelFiles,
+  insertModelFile,
 };
 
 export const execFileAsync = promisify(execFile);
