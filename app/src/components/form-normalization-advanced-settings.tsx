@@ -9,9 +9,9 @@ import {
 } from "@fluentui/react-components";
 import { useController, useForm } from "react-hook-form";
 import { Dismiss24Regular } from "@fluentui/react-icons";
-import { type NormalizationParameters } from "../@types/normalization";
 import { useDialogState } from "../hooks/use-dialog-state";
 import { defaultNormalizationParameters } from "../utils/default-normalization-parameters";
+import { type PreprocessParameters } from "../@types/job-parameters";
 import { DialogSurface } from "./ui/dialog-surface";
 import { DialogBody } from "./ui/dialog-body";
 import { DialogTitle } from "./ui/dialog-title";
@@ -56,8 +56,8 @@ const useStyles = makeStyles({
 });
 
 type Props = {
-  value: NormalizationParameters["settings"]["advanced"];
-  onChange: (value: NormalizationParameters["settings"]["advanced"]) => void;
+  value: PreprocessParameters["settings"]["advanced"];
+  onChange: (value: PreprocessParameters["settings"]["advanced"]) => void;
 };
 
 export const FormNormalizationAdvancedSettings = ({
@@ -66,7 +66,7 @@ export const FormNormalizationAdvancedSettings = ({
 }: Props): JSX.Element => {
   // Dialog内の状態管理のためでuseFormを導入
   const { reset, control, handleSubmit } = useForm<
-    NormalizationParameters["settings"]["advanced"]
+    PreprocessParameters["settings"]["advanced"]
   >({
     defaultValues: value,
   });

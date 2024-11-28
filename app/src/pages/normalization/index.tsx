@@ -8,7 +8,6 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Dismiss24Regular } from "@fluentui/react-icons";
 import { FormNormalization } from "../../components/form-normalization";
-import { type NormalizationParameters } from "../../@types/normalization";
 import { defaultNormalizationParameters } from "../../utils/default-normalization-parameters";
 import { Button } from "../../components/ui/button";
 import { DialogSurface } from "../../components/ui/dialog-surface";
@@ -16,6 +15,7 @@ import { DialogBody } from "../../components/ui/dialog-body";
 import { DialogTitle } from "../../components/ui/dialog-title";
 import { DialogContent } from "../../components/ui/dialog-content";
 import { DialogActions } from "../../components/ui/dialog-actions";
+import { type PreprocessParameters } from "../../@types/job-parameters";
 
 const useStyles = makeStyles({
   root: {
@@ -51,7 +51,7 @@ const useStyles = makeStyles({
 export function Normalization(): JSX.Element {
   const styles = useStyles();
   const navigator = useNavigate();
-  const [parameters, setParameters] = useState<NormalizationParameters>(
+  const [parameters, setParameters] = useState<PreprocessParameters>(
     defaultNormalizationParameters,
   );
 
