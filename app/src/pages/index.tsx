@@ -6,7 +6,7 @@ import {
 } from "@fluentui/react-components";
 import { Error } from "./error";
 import { Debug } from "./debug";
-import { Normalization } from "./normalization";
+import { NormalizationCreate } from "./normalization/create";
 import { Layout } from "./layout";
 import "../styles/global.css";
 import { Workbook } from "./analysis/workbook";
@@ -21,6 +21,7 @@ import { ModelCreate } from "./model/create";
 import { JobPreview } from "./job/detail/preview";
 import { JobEvaluation } from "./evaluation";
 import { MlDetail } from "./job/detail/ml";
+import { Normalization } from "./normalization";
 
 // クライアントだけで動作するアプリケーションのため`createHashRouter`を使用する
 const router = createHashRouter([
@@ -87,6 +88,10 @@ const router = createHashRouter([
         path: "model/create",
         element: <ModelCreate />,
       },
+      {
+        path: "normalization",
+        element: <Normalization />,
+      },
     ],
   },
   {
@@ -99,8 +104,8 @@ const router = createHashRouter([
         element: <EditWorkbook />,
       },
       {
-        path: "normalization",
-        element: <Normalization />,
+        path: "normalization/create",
+        element: <NormalizationCreate />,
       },
     ],
   },
