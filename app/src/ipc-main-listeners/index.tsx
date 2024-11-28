@@ -30,7 +30,7 @@ import { selectAreaGroups } from "./select-area-groups";
 import { updateResultViewsLayoutIndex } from "./update-result-views-layout-index";
 import { selectRawDatasets } from "./select-raw-datasets";
 import { insertRawDatasets } from "./insert-raw-datasets";
-import { writeDatasetFile } from "./write-dataset-file";
+import { saveFile } from "./save-file";
 import { selectNormalizedDataSets } from "./select-normalized-datasets";
 import { insertNormalizedDatasets } from "./insert-normalized-datasets";
 import { selectRawDataset } from "./select-raw-dataset";
@@ -91,7 +91,7 @@ export const ipcMainListeners = {
   updateResultViewsLayoutIndex,
   selectRawDatasets,
   insertRawDatasets,
-  writeDatasetFile,
+  saveFile,
   selectNormalizedDataSets,
   insertNormalizedDatasets,
   selectRawDataset,

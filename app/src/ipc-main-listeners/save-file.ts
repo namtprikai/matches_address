@@ -2,7 +2,7 @@ import path from "path";
 import { existsSync, mkdirSync, writeFile } from "fs";
 import { type IpcMainListener } from ".";
 
-export const writeDatasetFile = ((
+export const saveFile = ((
   _: unknown,
   {
     data,
