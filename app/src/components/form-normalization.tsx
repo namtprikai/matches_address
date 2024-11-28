@@ -43,7 +43,7 @@ export const FormNormalization = ({ formId, jobId }: Props): JSX.Element => {
         data: prevParameters.data,
       });
     }
-  }, [prevParameters, reset]);
+  }, [jobId, prevParameters, reset]);
 
   const onSubmit = handleSubmit(async (data) => {
     await window.ipcRenderer.invoke("execE001", {
