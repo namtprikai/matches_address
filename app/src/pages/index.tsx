@@ -102,6 +102,10 @@ const router = createHashRouter([
         path: "normalization",
         element: <Normalization />,
       },
+      {
+        path: "normalization/:id",
+        element: <Normalization />,
+      },
     ],
   },
 ]);
