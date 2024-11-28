@@ -28,8 +28,11 @@ export const ButtonCreateModel = (): JSX.Element => {
       );
       return;
     } else {
-      await saveModelFile(file);
-      await mutate();
+      await saveModelFile(file)
+        .then(() => {
+          void mutate();
+        })
+        .catch(console.error);
     }
     e.target.value = ""; // ファイル選択をリセットする
   };
