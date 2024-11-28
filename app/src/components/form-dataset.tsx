@@ -60,6 +60,7 @@ export const FormDataset = <
   onChange,
 }: {
   value: {
+    id: number;
     columns?: COLUMN_TYPE;
     path?: string;
   };
@@ -95,6 +96,7 @@ export const FormDataset = <
       }, {});
 
       onChange({
+        id: prevValue.id,
         path: prevValue.path,
         // reduceでは厳密な型推論ができないためasで型を指定
         columns: newColumns as COLUMN_TYPE,
@@ -182,6 +184,7 @@ export const FormDataset = <
           if (!onChange) return;
           onChange({
             ...prevValue,
+            id: data.id,
             path: data?.file_path,
           });
         }}
