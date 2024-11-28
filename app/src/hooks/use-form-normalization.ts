@@ -5,6 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 /** https://www.notion.so/eukarya/Python-40f49a4c1a3b498486dd0e13aaad5a4a */
 export const schema = z.object({
   settings: z.object({
+    // 設定値の変更
     reference_data: z.enum(["water_status", "resident_registry"]),
     reference_date: z.string(),
     advanced: z.object({
