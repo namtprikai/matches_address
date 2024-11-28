@@ -5,8 +5,8 @@ import {
   RadioGroup,
   tokens,
 } from "@fluentui/react-components";
-import { type NormalizationParameters } from "../@types/normalization";
 import { LanguageMap } from "../metadata";
+import { type PreprocessParameters } from "../@types/job-parameters";
 import { Field } from "./ui/field";
 import { Input } from "./ui/input";
 import { FormNormalizationAdvancedSettings } from "./form-normalization-advanced-settings";
@@ -29,8 +29,8 @@ const useStyles = makeStyles({
 });
 
 type Props = {
-  value: NormalizationParameters["settings"];
-  onChange: (value: NormalizationParameters["settings"]) => void;
+  value: PreprocessParameters["settings"];
+  onChange: (value: PreprocessParameters["settings"]) => void;
 };
 
 export const FormNormalizationSettings = ({
@@ -52,7 +52,7 @@ export const FormNormalizationSettings = ({
               onChange({
                 ...value,
                 reference_date:
-                  data.value as NormalizationParameters["settings"]["reference_date"],
+                  data.value as PreprocessParameters["settings"]["reference_date"],
               });
             }}
             type="date"
@@ -69,7 +69,7 @@ export const FormNormalizationSettings = ({
               onChange({
                 ...value,
                 reference_data:
-                  data.value as NormalizationParameters["settings"]["reference_data"],
+                  data.value as PreprocessParameters["settings"]["reference_data"],
               });
             }}
           >

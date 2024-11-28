@@ -4,12 +4,9 @@ import {
   makeStyles,
   tokens,
 } from "@fluentui/react-components";
-import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Dismiss24Regular } from "@fluentui/react-icons";
 import { FormNormalization } from "../../../components/form-normalization";
-import { type NormalizationParameters } from "../../../@types/normalization";
-import { defaultNormalizationParameters } from "../../../utils/default-normalization-parameters";
 import { Button } from "../../../components/ui/button";
 import { DialogSurface } from "../../../components/ui/dialog-surface";
 import { DialogBody } from "../../../components/ui/dialog-body";
@@ -48,31 +45,11 @@ const useStyles = makeStyles({
   },
 });
 
+const formId = "normalization-form";
+
 export function NormalizationCreate(): JSX.Element {
   const styles = useStyles();
   const navigator = useNavigate();
-  const [parameters, setParameters] = useState<NormalizationParameters>(
-    defaultNormalizationParameters,
-  );
-
-  const handleClick = async (): Promise<void> => {
-    // TODO: jobの登録はpython側で行うため後で削除する
-    await window.ipcRenderer.invoke("_debugInsertJobs", {
-      type: "preprocess",
-      parameters: {
-        ...parameters,
-        // TODO: 型エラーを直すために一時的に追加しただけ
-        database_path: "test.db",
-        input_path: "test.csv",
-      },
-      is_named: false,
-    });
-
-    // TODO: parametersが正しいかどうかのバリデーションを行う必要がある
-    await window.ipcRenderer.invoke("execE001", {
-      parameters,
-    });
-  };
 
   return (
     <>
@@ -80,18 +57,18 @@ export function NormalizationCreate(): JSX.Element {
         <div className={styles.root}>
           <h2 className={styles.heading}>データ正規化処理</h2>
           <div>
-            <FormNormalization
-              onSave={(parameters) => {
-                setParameters(parameters);
-              }}
-              parameters={parameters}
-            />
+            <FormNormalization formId={formId} />
           </div>
         </div>
         <div className={styles.footerActions}>
           <Dialog>
             <DialogTrigger disableButtonEnhancement>
-              <Button appearance="primary" onClick={handleClick} size="medium">
+              <Button
+                appearance="primary"
+                form={formId}
+                size="medium"
+                type="submit"
+              >
                 開始する
               </Button>
             </DialogTrigger>

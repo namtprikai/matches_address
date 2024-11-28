@@ -1,7 +1,7 @@
-import { Controller, useController, useForm } from "react-hook-form";
+import { Controller, useController } from "react-hook-form";
 import { makeStyles, tokens } from "@fluentui/react-components";
-import { type NormalizationParameters } from "../@types/normalization";
 import { LanguageMap } from "../metadata";
+import { useFormNormalization } from "../hooks/use-form-normalization";
 import { FormDataset } from "./form-dataset";
 import { FormNormalizationSettings } from "./form-normalization-settings";
 
@@ -20,20 +20,16 @@ const useStyles = makeStyles({
 });
 
 type Props = {
-  parameters: NormalizationParameters;
-  onSave: (parameters: NormalizationParameters) => void;
+  formId: string;
 };
 
-export const FormNormalization = ({
-  parameters,
-  onSave,
-}: Props): JSX.Element => {
-  const { handleSubmit, control } = useForm<NormalizationParameters>({
-    defaultValues: parameters,
-  });
+export const FormNormalization = ({ formId }: Props): JSX.Element => {
+  const { handleSubmit, control } = useFormNormalization();
 
-  const onSubmit = handleSubmit((data) => {
-    onSave(data);
+  const onSubmit = handleSubmit(async (data) => {
+    await window.ipcRenderer.invoke("execE001", {
+      parameters: data,
+    });
   });
 
   const styles = useStyles();
@@ -46,7 +42,7 @@ export const FormNormalization = ({
   });
 
   return (
-    <form className={styles.root} onSubmit={onSubmit}>
+    <form className={styles.root} id={formId} onSubmit={onSubmit}>
       <Controller
         control={control}
         name={"data.resident_registry"}
