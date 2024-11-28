@@ -2,7 +2,7 @@ import { type InsertRawDataSet } from "../schema";
 
 export async function saveDataSetFile(
   file: File | undefined,
-  target: "raw" | "normalization" | "result",
+  target: "raw" | "normalization" | "result" = "raw",
 ): Promise<{ insertedId: InsertRawDataSet["id"] } | undefined> {
   if (!file) return;
   const ext = file.name.split(".").pop();
