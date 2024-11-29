@@ -196,12 +196,12 @@ const mockE001: PreprocessParameters = {
       },
     },
     water_usage: {
-      id: 0,
-      path: "",
+      id: 2,
+      path: "ee71475f-2287-4a9e-8cb3-b41d70f6c610.csv",
       columns: {
-        water_supply_number: "",
-        water_usage: "",
-        water_recorded_date: "",
+        water_supply_number: "世帯コード",
+        water_usage: "世帯コード",
+        water_recorded_date: "世帯コード",
       },
     },
     land_registry: {
