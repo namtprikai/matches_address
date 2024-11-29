@@ -58,9 +58,9 @@ const menuItems = [
   },
   {
     icon: DocumentBulletListRegular,
-    label: "空き家判定",
+    label: "正規化処理",
     value: "2",
-    href: "#evaluation",
+    href: "#normalization",
   },
   {
     icon: DocumentBulletListRegular,
@@ -70,10 +70,11 @@ const menuItems = [
   },
   {
     icon: DocumentBulletListRegular,
-    label: "非同期処理",
+    label: "空き家判定",
     value: "4",
-    href: "#job",
+    href: "#evaluation",
   },
+
   {
     icon: DocumentBulletListRegular,
     label: "データセット",
@@ -81,9 +82,15 @@ const menuItems = [
     href: "#dataset",
   },
   {
+    icon: DocumentBulletListRegular,
+    label: "非同期処理",
+    value: "6",
+    href: "#job",
+  },
+  {
     icon: Bug16Filled,
     label: "(開発用)",
-    value: "6",
+    value: "7",
     href: "#debug",
   },
 ];
