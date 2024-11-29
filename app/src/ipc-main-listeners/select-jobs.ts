@@ -4,12 +4,21 @@ import { db } from "../utils/db";
 import { jobs, type SelectJob } from "../schema";
 import { type IpcMainListener } from ".";
 
+type Params = {
+  jobId?: SelectJob["id"];
+  type?: SelectJob["type"];
+};
 export const selectJobs = (async (
   _: IpcMainInvokeEvent,
-  jobId?: SelectJob["id"],
+  { jobId, type }: Params,
 ): Promise<SelectJob[]> => {
-  const result = jobId
-    ? await db.select().from(jobs).where(eq(jobs.id, jobId))
-    : await db.select().from(jobs);
+  let query = db.select().from(jobs).$dynamic();
+  if (jobId) {
+    query = query.where(eq(jobs.id, jobId));
+  }
+  if (type) {
+    query = query.where(eq(jobs.type, type));
+  }
+  const result = await query;
   return result;
 }) satisfies IpcMainListener;
