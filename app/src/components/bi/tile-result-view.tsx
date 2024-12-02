@@ -1,4 +1,8 @@
-import { DeleteRegular, Dismiss24Regular } from "@fluentui/react-icons";
+import {
+  DeleteRegular,
+  Dismiss24Regular,
+  ArrowDownloadRegular,
+} from "@fluentui/react-icons";
 import {
   Card,
   CardHeader,
@@ -41,6 +45,10 @@ const useStyles = makeStyles({
     // border分を引いている
     padding: `calc(${tokens.spacingHorizontalXXL} - 2px) calc(${tokens.spacingVerticalXXL} - 2px)`,
     gap: tokens.spacingVerticalXL,
+  },
+  cardHeaderActions: {
+    display: "flex",
+    gap: tokens.spacingHorizontalM,
   },
   cardHeaderSubtle: {
     padding: `${tokens.spacingHorizontalXXS} ${tokens.spacingVerticalXXS}`,
@@ -101,46 +109,10 @@ export const TileResultView = ({
     >
       <CardHeader
         action={
-          <Dialog>
-            <DialogTrigger disableButtonEnhancement>
-              <Button
-                appearance="subtle"
-                className={styles.cardHeaderSubtle}
-                icon={<DeleteRegular />}
-              />
-            </DialogTrigger>
-            <DialogSurface>
-              <DialogBody>
-                <DialogTitle
-                  action={
-                    <DialogTrigger action="close">
-                      <Button
-                        appearance="subtle"
-                        aria-label="close"
-                        icon={
-                          <Dismiss24Regular
-                            color={tokens.colorNeutralForeground1}
-                            strokeWidth={2}
-                          />
-                        }
-                      />
-                    </DialogTrigger>
-                  }
-                >
-                  タイルを削除しますか？
-                </DialogTitle>
-                <DialogContent>削除したタイルはもとに戻せません</DialogContent>
-                <DialogActions position="start">
-                  <Button>キャンセル</Button>
-                </DialogActions>
-                <DialogActions position="end">
-                  <Button appearance="primary" onClick={handleDelete}>
-                    削除
-                  </Button>
-                </DialogActions>
-              </DialogBody>
-            </DialogSurface>
-          </Dialog>
+          <div className={styles.cardHeaderActions}>
+            <DownloadDialog onDownload={() => {}} />
+            <DeleteDialog onDelete={handleDelete} />
+          </div>
         }
         header={
           <Subtitle2 className={styles.title}>
@@ -163,3 +135,97 @@ export const TileResultView = ({
     </Card>
   );
 };
+
+function DownloadDialog({ onDownload }: { onDownload: () => void }) {
+  const styles = useStyles();
+
+  return (
+    <Dialog>
+      <DialogTrigger disableButtonEnhancement>
+        <Button
+          appearance="subtle"
+          className={styles.cardHeaderSubtle}
+          icon={<ArrowDownloadRegular />}
+        />
+      </DialogTrigger>
+      <DialogSurface>
+        <DialogBody>
+          <DialogTitle
+            action={
+              <DialogTrigger action="close">
+                <Button
+                  appearance="subtle"
+                  aria-label="close"
+                  icon={
+                    <Dismiss24Regular
+                      color={tokens.colorNeutralForeground1}
+                      strokeWidth={2}
+                    />
+                  }
+                />
+              </DialogTrigger>
+            }
+          >
+            タイルを削除しますか？
+          </DialogTitle>
+          <DialogContent>削除したタイルはもとに戻せません</DialogContent>
+          <DialogActions position="start">
+            <Button>キャンセル</Button>
+          </DialogActions>
+          <DialogActions position="end">
+            <Button appearance="primary" onClick={onDownload}>
+              削除
+            </Button>
+          </DialogActions>
+        </DialogBody>
+      </DialogSurface>
+    </Dialog>
+  );
+}
+
+function DeleteDialog({ onDelete }: { onDelete: () => void }) {
+  const styles = useStyles();
+
+  return (
+    <Dialog>
+      <DialogTrigger disableButtonEnhancement>
+        <Button
+          appearance="subtle"
+          className={styles.cardHeaderSubtle}
+          icon={<DeleteRegular />}
+        />
+      </DialogTrigger>
+      <DialogSurface>
+        <DialogBody>
+          <DialogTitle
+            action={
+              <DialogTrigger action="close">
+                <Button
+                  appearance="subtle"
+                  aria-label="close"
+                  icon={
+                    <Dismiss24Regular
+                      color={tokens.colorNeutralForeground1}
+                      strokeWidth={2}
+                    />
+                  }
+                />
+              </DialogTrigger>
+            }
+          >
+            タイルを削除しますか？
+          </DialogTitle>
+          <DialogContent>削除したタイルはもとに戻せません</DialogContent>
+          <DialogActions position="start">
+            <Button>キャンセル</Button>
+          </DialogActions>
+          <DialogActions position="end">
+            <Button appearance="primary" onClick={onDelete}>
+              削除
+            </Button>
+          </DialogActions>
+        </DialogBody>
+      </DialogSurface>
+    </Dialog>
+  );
+}
