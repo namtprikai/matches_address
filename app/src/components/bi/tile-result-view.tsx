@@ -1,4 +1,8 @@
-import { DeleteRegular, Dismiss24Regular } from "@fluentui/react-icons";
+import {
+  DeleteRegular,
+  Dismiss24Regular,
+  ArrowDownloadRegular,
+} from "@fluentui/react-icons";
 import {
   Card,
   CardHeader,
@@ -9,8 +13,10 @@ import {
   mergeClasses,
   Subtitle2,
   tokens,
+  Option,
 } from "@fluentui/react-components";
 import { useAtom } from "jotai";
+import { useState } from "react";
 import { type SelectResultView } from "../../schema";
 import { THEME_COLORS } from "../../config/theme-colors";
 import { useFetchResultViews } from "../../hooks/use-fetch-result-views";
@@ -21,6 +27,7 @@ import { DialogTitle } from "../ui/dialog-title";
 import { DialogActions } from "../ui/dialog-actions";
 import { Button } from "../ui/button";
 import { DialogContent } from "../ui/dialog-content";
+import { Dropdown } from "../ui/dropdown";
 import { TileViewStyle } from "./tile-view-style";
 
 type Props = {
@@ -42,6 +49,10 @@ const useStyles = makeStyles({
     padding: `calc(${tokens.spacingHorizontalXXL} - 2px) calc(${tokens.spacingVerticalXXL} - 2px)`,
     gap: tokens.spacingVerticalXL,
   },
+  cardHeaderActions: {
+    display: "flex",
+    gap: tokens.spacingHorizontalM,
+  },
   cardHeaderSubtle: {
     padding: `${tokens.spacingHorizontalXXS} ${tokens.spacingVerticalXXS}`,
     border: "none",
@@ -50,6 +61,19 @@ const useStyles = makeStyles({
   },
   title: {
     minHeight: "22px",
+  },
+  dialogContent: {
+    display: "flex",
+    flexDirection: "column",
+    gap: tokens.spacingVerticalM,
+  },
+  dropdown: {
+    display: "flex",
+    flexDirection: "column",
+    gap: tokens.spacingVerticalXS,
+    "& > label": {
+      fontSize: "12px",
+    },
   },
 });
 
@@ -71,6 +95,10 @@ export const TileResultView = ({
     setSelectedResultViewId(resultView.id);
   };
 
+  const handleDownload = (): void => {
+    // TODO: ダウンロード処理
+  };
+
   const handleDelete = async (): Promise<void> => {
     if (!resultView.sheet_id) return;
     await window.ipcRenderer.invoke("deleteResultView", {
@@ -85,76 +113,10 @@ export const TileResultView = ({
   };
 
   const selected = resultView.id === selectedResultViewId;
-
-  if (
+  const isInvalidParameters =
     !resultView.style ||
     !resultView.unit ||
-    (resultView.style !== "map" && !resultView.parameters)
-  ) {
-    return (
-      <Card
-        className={mergeClasses(
-          styles.cardSurface,
-          selected && styles.selected,
-          className,
-        )}
-        onClick={focusable ? handleClick : undefined}
-      >
-        <CardHeader
-          action={
-            <Dialog>
-              <DialogTrigger disableButtonEnhancement>
-                <Button
-                  appearance="subtle"
-                  className={styles.cardHeaderSubtle}
-                  icon={<DeleteRegular />}
-                />
-              </DialogTrigger>
-              <DialogSurface>
-                <DialogBody>
-                  <DialogTitle
-                    action={
-                      <DialogTrigger action="close">
-                        <Button
-                          appearance="subtle"
-                          aria-label="close"
-                          icon={
-                            <Dismiss24Regular
-                              color={tokens.colorNeutralForeground1}
-                              strokeWidth={2}
-                            />
-                          }
-                        />
-                      </DialogTrigger>
-                    }
-                  >
-                    タイルを削除しますか？
-                  </DialogTitle>
-                  <DialogContent>
-                    削除したタイルはもとに戻せません
-                  </DialogContent>
-                  <DialogActions position="start">
-                    <Button>キャンセル</Button>
-                  </DialogActions>
-                  <DialogActions position="end">
-                    <Button appearance="primary" onClick={handleDelete}>
-                      削除
-                    </Button>
-                  </DialogActions>
-                </DialogBody>
-              </DialogSurface>
-            </Dialog>
-          }
-          header={
-            <Subtitle2 className={styles.title}>
-              {resultView.title ?? ""}
-            </Subtitle2>
-          }
-        />
-        <div>パラメーターの値を正しく設定してください</div>
-      </Card>
-    );
-  }
+    (resultView.style !== "map" && !resultView.parameters);
 
   return (
     <Card
@@ -167,46 +129,10 @@ export const TileResultView = ({
     >
       <CardHeader
         action={
-          <Dialog>
-            <DialogTrigger disableButtonEnhancement>
-              <Button
-                appearance="subtle"
-                className={styles.cardHeaderSubtle}
-                icon={<DeleteRegular />}
-              />
-            </DialogTrigger>
-            <DialogSurface>
-              <DialogBody>
-                <DialogTitle
-                  action={
-                    <DialogTrigger action="close">
-                      <Button
-                        appearance="subtle"
-                        aria-label="close"
-                        icon={
-                          <Dismiss24Regular
-                            color={tokens.colorNeutralForeground1}
-                            strokeWidth={2}
-                          />
-                        }
-                      />
-                    </DialogTrigger>
-                  }
-                >
-                  タイルを削除しますか？
-                </DialogTitle>
-                <DialogContent>削除したタイルはもとに戻せません</DialogContent>
-                <DialogActions position="start">
-                  <Button>キャンセル</Button>
-                </DialogActions>
-                <DialogActions position="end">
-                  <Button appearance="primary" onClick={handleDelete}>
-                    削除
-                  </Button>
-                </DialogActions>
-              </DialogBody>
-            </DialogSurface>
-          </Dialog>
+          <div className={styles.cardHeaderActions}>
+            <DownloadDialog onDownload={handleDownload} />
+            <DeleteDialog onDelete={handleDelete} />
+          </div>
         }
         header={
           <Subtitle2 className={styles.title}>
@@ -214,7 +140,9 @@ export const TileResultView = ({
           </Subtitle2>
         }
       />
-      {resultView.data_set_result_id ? (
+      {isInvalidParameters ? (
+        <div>パラメーターの値を正しく設定してください</div>
+      ) : resultView.unit && resultView.data_set_result_id ? (
         <TileViewStyle
           parameters={resultView.parameters}
           resultId={resultView.data_set_result_id}
@@ -227,3 +155,252 @@ export const TileResultView = ({
     </Card>
   );
 };
+
+function DownloadDialog({
+  onDownload,
+}: {
+  onDownload: () => void;
+}): JSX.Element {
+  const styles = useStyles();
+  const [selectedFileType, setSelectedFileType] = useState(
+    OUTPUT_FILE_TYPES[0].type,
+  );
+  const [selectedCoordinate, setSelectedCoordinate] = useState(
+    OUTPUT_COORDINATES[0].code,
+  );
+
+  // eslint-disable-next-line no-console -- TODO: ダウンロード処理
+  console.log(selectedFileType, selectedCoordinate);
+
+  return (
+    <Dialog>
+      <DialogTrigger disableButtonEnhancement>
+        <Button
+          appearance="subtle"
+          className={styles.cardHeaderSubtle}
+          icon={<ArrowDownloadRegular />}
+        />
+      </DialogTrigger>
+      <DialogSurface>
+        <DialogBody>
+          <DialogTitle
+            action={
+              <DialogTrigger action="close">
+                <Button
+                  appearance="subtle"
+                  aria-label="close"
+                  icon={
+                    <Dismiss24Regular
+                      color={tokens.colorNeutralForeground1}
+                      strokeWidth={2}
+                    />
+                  }
+                />
+              </DialogTrigger>
+            }
+          >
+            形式を選んでダウンロード
+          </DialogTitle>
+          <DialogContent className={styles.dialogContent}>
+            <div className={styles.dropdown}>
+              <label id="output-file-type">出力ファイル形式</label>
+              <Dropdown
+                aria-labelledby="output-file-type"
+                defaultSelectedOptions={[OUTPUT_FILE_TYPES[0].type]}
+                defaultValue={OUTPUT_FILE_TYPES[0].name}
+                onOptionSelect={(_, data) =>
+                  data.optionValue && setSelectedFileType(data.optionValue)
+                }
+              >
+                {OUTPUT_FILE_TYPES.map((option) => (
+                  <Option
+                    key={option.type}
+                    text={option.name}
+                    value={option.type}
+                  >
+                    {option.name}
+                  </Option>
+                ))}
+              </Dropdown>
+            </div>
+            <div className={styles.dropdown}>
+              <label id="output-coordinate">出力座標系</label>
+              <Dropdown
+                aria-labelledby="output-coordinate"
+                defaultSelectedOptions={[OUTPUT_COORDINATES[0].code]}
+                defaultValue={OUTPUT_COORDINATES[0].name}
+                onOptionSelect={(_, data) =>
+                  data.optionValue && setSelectedCoordinate(data.optionValue)
+                }
+              >
+                {OUTPUT_COORDINATES.map((option) => (
+                  <Option
+                    key={option.code}
+                    text={option.name}
+                    value={option.code}
+                  >
+                    {option.name}
+                  </Option>
+                ))}
+              </Dropdown>
+            </div>
+          </DialogContent>
+          <DialogActions position="end">
+            <Button appearance="primary" onClick={onDownload}>
+              ダウンロード
+            </Button>
+          </DialogActions>
+        </DialogBody>
+      </DialogSurface>
+    </Dialog>
+  );
+}
+
+function DeleteDialog({ onDelete }: { onDelete: () => void }): JSX.Element {
+  const styles = useStyles();
+
+  return (
+    <Dialog>
+      <DialogTrigger disableButtonEnhancement>
+        <Button
+          appearance="subtle"
+          className={styles.cardHeaderSubtle}
+          icon={<DeleteRegular />}
+        />
+      </DialogTrigger>
+      <DialogSurface>
+        <DialogBody>
+          <DialogTitle
+            action={
+              <DialogTrigger action="close">
+                <Button
+                  appearance="subtle"
+                  aria-label="close"
+                  icon={
+                    <Dismiss24Regular
+                      color={tokens.colorNeutralForeground1}
+                      strokeWidth={2}
+                    />
+                  }
+                />
+              </DialogTrigger>
+            }
+          >
+            タイルを削除しますか？
+          </DialogTitle>
+          <DialogContent>削除したタイルはもとに戻せません</DialogContent>
+          <DialogActions position="start">
+            <Button>キャンセル</Button>
+          </DialogActions>
+          <DialogActions position="end">
+            <Button appearance="primary" onClick={onDelete}>
+              削除
+            </Button>
+          </DialogActions>
+        </DialogBody>
+      </DialogSurface>
+    </Dialog>
+  );
+}
+
+const OUTPUT_FILE_TYPES = [
+  {
+    name: "CSV",
+    type: "csv",
+  },
+  {
+    name: "GeoJSON",
+    type: "geojson",
+  },
+  {
+    name: "GeoPackage",
+    type: "geopackage",
+  },
+];
+
+const OUTPUT_COORDINATES = [
+  {
+    name: "EPSG:4326 (WGS84)",
+    code: "4326",
+  },
+  {
+    name: "EPSG:3857 (Webメルカトル)",
+    code: "3857",
+  },
+  {
+    name: "EPSG:2443 (日本測地系2000 / 平面直角座標系 I)",
+    code: "2443",
+  },
+  {
+    name: "EPSG:2444 (日本測地系2000 / 平面直角座標系 II)",
+    code: "2444",
+  },
+  {
+    name: "EPSG:2445 (日本測地系2000 / 平面直角座標系 III)",
+    code: "2445",
+  },
+  {
+    name: "EPSG:2446 (日本測地系2000 / 平面直角座標系 IV)",
+    code: "2446",
+  },
+  {
+    name: "EPSG:2447 (日本測地系2000 / 平面直角座標系 V)",
+    code: "2447",
+  },
+  {
+    name: "EPSG:2448 (日本測地系2000 / 平面直角座標系 VI)",
+    code: "2448",
+  },
+  {
+    name: "EPSG:2449 (日本測地系2000 / 平面直角座標系 VII)",
+    code: "2449",
+  },
+  {
+    name: "EPSG:2450 (日本測地系2000 / 平面直角座標系 VIII)",
+    code: "2450",
+  },
+  {
+    name: "EPSG:2451 (日本測地系2000 / 平面直角座標系 IX)",
+    code: "2451",
+  },
+  {
+    name: "EPSG:2452 (日本測地系2000 / 平面直角座標系 X)",
+    code: "2452",
+  },
+  {
+    name: "EPSG:2453 (日本測地系2000 / 平面直角座標系 XI)",
+    code: "2453",
+  },
+  {
+    name: "EPSG:2454 (日本測地系2000 / 平面直角座標系 XII)",
+    code: "2454",
+  },
+  {
+    name: "EPSG:2455 (日本測地系2000 / 平面直角座標系 XIII)",
+    code: "2455",
+  },
+  {
+    name: "EPSG:2456 (日本測地系2000 / 平面直角座標系 XIV)",
+    code: "2456",
+  },
+  {
+    name: "EPSG:2457 (日本測地系2000 / 平面直角座標系 XV)",
+    code: "2457",
+  },
+  {
+    name: "EPSG:2458 (日本測地系2000 / 平面直角座標系 XVI)",
+    code: "2458",
+  },
+  {
+    name: "EPSG:2459 (日本測地系2000 / 平面直角座標系 XVII)",
+    code: "2459",
+  },
+  {
+    name: "EPSG:2460 (日本測地系2000 / 平面直角座標系 XVIII)",
+    code: "2460",
+  },
+  {
+    name: "EPSG:2461 (日本測地系2000 / 平面直角座標系 XIX)",
+    code: "2461",
+  },
+];
