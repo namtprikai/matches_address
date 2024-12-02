@@ -13,8 +13,10 @@ import {
   mergeClasses,
   Subtitle2,
   tokens,
+  Option,
 } from "@fluentui/react-components";
 import { useAtom } from "jotai";
+import { useState } from "react";
 import { type SelectResultView } from "../../schema";
 import { THEME_COLORS } from "../../config/theme-colors";
 import { useFetchResultViews } from "../../hooks/use-fetch-result-views";
@@ -25,6 +27,7 @@ import { DialogTitle } from "../ui/dialog-title";
 import { DialogActions } from "../ui/dialog-actions";
 import { Button } from "../ui/button";
 import { DialogContent } from "../ui/dialog-content";
+import { Dropdown } from "../ui/dropdown";
 import { TileViewStyle } from "./tile-view-style";
 
 type Props = {
@@ -59,6 +62,19 @@ const useStyles = makeStyles({
   title: {
     minHeight: "22px",
   },
+  dialogContent: {
+    display: "flex",
+    flexDirection: "column",
+    gap: tokens.spacingVerticalM,
+  },
+  dropdown: {
+    display: "flex",
+    flexDirection: "column",
+    gap: tokens.spacingVerticalXS,
+    "& > label": {
+      fontSize: "12px",
+    },
+  },
 });
 
 export const TileResultView = ({
@@ -77,6 +93,10 @@ export const TileResultView = ({
 
   const handleClick = (): void => {
     setSelectedResultViewId(resultView.id);
+  };
+
+  const handleDownload = (): void => {
+    // TODO: ダウンロード処理
   };
 
   const handleDelete = async (): Promise<void> => {
@@ -110,7 +130,7 @@ export const TileResultView = ({
       <CardHeader
         action={
           <div className={styles.cardHeaderActions}>
-            <DownloadDialog onDownload={() => {}} />
+            <DownloadDialog onDownload={handleDownload} />
             <DeleteDialog onDelete={handleDelete} />
           </div>
         }
@@ -142,6 +162,15 @@ function DownloadDialog({
   onDownload: () => void;
 }): JSX.Element {
   const styles = useStyles();
+  const [selectedFileType, setSelectedFileType] = useState(
+    OUTPUT_FILE_TYPES[0].type,
+  );
+  const [selectedCoordinate, setSelectedCoordinate] = useState(
+    OUTPUT_COORDINATES[0].code,
+  );
+
+  // eslint-disable-next-line no-console -- TODO: ダウンロード処理
+  console.log(selectedFileType, selectedCoordinate);
 
   return (
     <Dialog>
@@ -170,15 +199,55 @@ function DownloadDialog({
               </DialogTrigger>
             }
           >
-            タイルを削除しますか？
+            形式を選んでダウンロード
           </DialogTitle>
-          <DialogContent>削除したタイルはもとに戻せません</DialogContent>
-          <DialogActions position="start">
-            <Button>キャンセル</Button>
-          </DialogActions>
+          <DialogContent className={styles.dialogContent}>
+            <div className={styles.dropdown}>
+              <label id="output-file-type">出力ファイル形式</label>
+              <Dropdown
+                aria-labelledby="output-file-type"
+                defaultSelectedOptions={[OUTPUT_FILE_TYPES[0].type]}
+                defaultValue={OUTPUT_FILE_TYPES[0].name}
+                onOptionSelect={(_, data) =>
+                  data.optionValue && setSelectedFileType(data.optionValue)
+                }
+              >
+                {OUTPUT_FILE_TYPES.map((option) => (
+                  <Option
+                    key={option.type}
+                    text={option.name}
+                    value={option.type}
+                  >
+                    {option.name}
+                  </Option>
+                ))}
+              </Dropdown>
+            </div>
+            <div className={styles.dropdown}>
+              <label id="output-coordinate">出力座標系</label>
+              <Dropdown
+                aria-labelledby="output-coordinate"
+                defaultSelectedOptions={[OUTPUT_COORDINATES[0].code]}
+                defaultValue={OUTPUT_COORDINATES[0].name}
+                onOptionSelect={(_, data) =>
+                  data.optionValue && setSelectedCoordinate(data.optionValue)
+                }
+              >
+                {OUTPUT_COORDINATES.map((option) => (
+                  <Option
+                    key={option.code}
+                    text={option.name}
+                    value={option.code}
+                  >
+                    {option.name}
+                  </Option>
+                ))}
+              </Dropdown>
+            </div>
+          </DialogContent>
           <DialogActions position="end">
             <Button appearance="primary" onClick={onDownload}>
-              削除
+              ダウンロード
             </Button>
           </DialogActions>
         </DialogBody>
@@ -233,3 +302,105 @@ function DeleteDialog({ onDelete }: { onDelete: () => void }): JSX.Element {
     </Dialog>
   );
 }
+
+const OUTPUT_FILE_TYPES = [
+  {
+    name: "CSV",
+    type: "csv",
+  },
+  {
+    name: "GeoJSON",
+    type: "geojson",
+  },
+  {
+    name: "GeoPackage",
+    type: "geopackage",
+  },
+];
+
+const OUTPUT_COORDINATES = [
+  {
+    name: "EPSG:4326 (WGS84)",
+    code: "4326",
+  },
+  {
+    name: "EPSG:3857 (Webメルカトル)",
+    code: "3857",
+  },
+  {
+    name: "EPSG:2443 (日本測地系2000 / 平面直角座標系 I)",
+    code: "2443",
+  },
+  {
+    name: "EPSG:2444 (日本測地系2000 / 平面直角座標系 II)",
+    code: "2444",
+  },
+  {
+    name: "EPSG:2445 (日本測地系2000 / 平面直角座標系 III)",
+    code: "2445",
+  },
+  {
+    name: "EPSG:2446 (日本測地系2000 / 平面直角座標系 IV)",
+    code: "2446",
+  },
+  {
+    name: "EPSG:2447 (日本測地系2000 / 平面直角座標系 V)",
+    code: "2447",
+  },
+  {
+    name: "EPSG:2448 (日本測地系2000 / 平面直角座標系 VI)",
+    code: "2448",
+  },
+  {
+    name: "EPSG:2449 (日本測地系2000 / 平面直角座標系 VII)",
+    code: "2449",
+  },
+  {
+    name: "EPSG:2450 (日本測地系2000 / 平面直角座標系 VIII)",
+    code: "2450",
+  },
+  {
+    name: "EPSG:2451 (日本測地系2000 / 平面直角座標系 IX)",
+    code: "2451",
+  },
+  {
+    name: "EPSG:2452 (日本測地系2000 / 平面直角座標系 X)",
+    code: "2452",
+  },
+  {
+    name: "EPSG:2453 (日本測地系2000 / 平面直角座標系 XI)",
+    code: "2453",
+  },
+  {
+    name: "EPSG:2454 (日本測地系2000 / 平面直角座標系 XII)",
+    code: "2454",
+  },
+  {
+    name: "EPSG:2455 (日本測地系2000 / 平面直角座標系 XIII)",
+    code: "2455",
+  },
+  {
+    name: "EPSG:2456 (日本測地系2000 / 平面直角座標系 XIV)",
+    code: "2456",
+  },
+  {
+    name: "EPSG:2457 (日本測地系2000 / 平面直角座標系 XV)",
+    code: "2457",
+  },
+  {
+    name: "EPSG:2458 (日本測地系2000 / 平面直角座標系 XVI)",
+    code: "2458",
+  },
+  {
+    name: "EPSG:2459 (日本測地系2000 / 平面直角座標系 XVII)",
+    code: "2459",
+  },
+  {
+    name: "EPSG:2460 (日本測地系2000 / 平面直角座標系 XVIII)",
+    code: "2460",
+  },
+  {
+    name: "EPSG:2461 (日本測地系2000 / 平面直角座標系 XIX)",
+    code: "2461",
+  },
+];
