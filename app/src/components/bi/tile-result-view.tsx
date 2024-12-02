@@ -170,9 +170,6 @@ function DownloadDialog(): JSX.Element {
     });
   };
 
-  // eslint-disable-next-line no-console -- TODO: ダウンロード処理
-  console.log(selectedFileType, selectedCoordinate);
-
   return (
     <Dialog>
       <DialogTrigger disableButtonEnhancement>
