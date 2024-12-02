@@ -95,10 +95,6 @@ export const TileResultView = ({
     setSelectedResultViewId(resultView.id);
   };
 
-  const handleDownload = (): void => {
-    // TODO: ダウンロード処理
-  };
-
   const handleDelete = async (): Promise<void> => {
     if (!resultView.sheet_id) return;
     await window.ipcRenderer.invoke("deleteResultView", {
@@ -130,7 +126,7 @@ export const TileResultView = ({
       <CardHeader
         action={
           <div className={styles.cardHeaderActions}>
-            <DownloadDialog onDownload={handleDownload} />
+            <DownloadDialog />
             <DeleteDialog onDelete={handleDelete} />
           </div>
         }
@@ -156,11 +152,7 @@ export const TileResultView = ({
   );
 };
 
-function DownloadDialog({
-  onDownload,
-}: {
-  onDownload: () => void;
-}): JSX.Element {
+function DownloadDialog(): JSX.Element {
   const styles = useStyles();
   const [selectedFileType, setSelectedFileType] = useState(
     OUTPUT_FILE_TYPES[0].type,
@@ -168,6 +160,15 @@ function DownloadDialog({
   const [selectedCoordinate, setSelectedCoordinate] = useState(
     OUTPUT_COORDINATES[0].code,
   );
+
+  const handleDownload = async (): Promise<void> => {
+    await window.ipcRenderer.invoke("exportData", {
+      data: {
+        output_file_type: selectedFileType,
+        output_coordinate: selectedCoordinate,
+      },
+    });
+  };
 
   // eslint-disable-next-line no-console -- TODO: ダウンロード処理
   console.log(selectedFileType, selectedCoordinate);
@@ -246,7 +247,7 @@ function DownloadDialog({
             </div>
           </DialogContent>
           <DialogActions position="end">
-            <Button appearance="primary" onClick={onDownload}>
+            <Button appearance="primary" onClick={handleDownload}>
               ダウンロード
             </Button>
           </DialogActions>
