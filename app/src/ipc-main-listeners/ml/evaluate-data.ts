@@ -25,7 +25,7 @@ export const evaluateData = (async (
 
     // childProcessに入れてバックグラウンド実行
     const cp = spawn(
-      binaryPath("E022"),
+      binaryPath("IF003"),
       [
         "--parameters",
         JSON.stringify(
