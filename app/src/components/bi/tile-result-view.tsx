@@ -136,7 +136,11 @@ export const TileResultView = ({
   );
 };
 
-function DownloadDialog({ onDownload }: { onDownload: () => void }) {
+function DownloadDialog({
+  onDownload,
+}: {
+  onDownload: () => void;
+}): JSX.Element {
   const styles = useStyles();
 
   return (
@@ -183,7 +187,7 @@ function DownloadDialog({ onDownload }: { onDownload: () => void }) {
   );
 }
 
-function DeleteDialog({ onDelete }: { onDelete: () => void }) {
+function DeleteDialog({ onDelete }: { onDelete: () => void }): JSX.Element {
   const styles = useStyles();
 
   return (
