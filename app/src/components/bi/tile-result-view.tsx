@@ -85,76 +85,10 @@ export const TileResultView = ({
   };
 
   const selected = resultView.id === selectedResultViewId;
-
-  if (
+  const isInvalidParameters =
     !resultView.style ||
     !resultView.unit ||
-    (resultView.style !== "map" && !resultView.parameters)
-  ) {
-    return (
-      <Card
-        className={mergeClasses(
-          styles.cardSurface,
-          selected && styles.selected,
-          className,
-        )}
-        onClick={focusable ? handleClick : undefined}
-      >
-        <CardHeader
-          action={
-            <Dialog>
-              <DialogTrigger disableButtonEnhancement>
-                <Button
-                  appearance="subtle"
-                  className={styles.cardHeaderSubtle}
-                  icon={<DeleteRegular />}
-                />
-              </DialogTrigger>
-              <DialogSurface>
-                <DialogBody>
-                  <DialogTitle
-                    action={
-                      <DialogTrigger action="close">
-                        <Button
-                          appearance="subtle"
-                          aria-label="close"
-                          icon={
-                            <Dismiss24Regular
-                              color={tokens.colorNeutralForeground1}
-                              strokeWidth={2}
-                            />
-                          }
-                        />
-                      </DialogTrigger>
-                    }
-                  >
-                    タイルを削除しますか？
-                  </DialogTitle>
-                  <DialogContent>
-                    削除したタイルはもとに戻せません
-                  </DialogContent>
-                  <DialogActions position="start">
-                    <Button>キャンセル</Button>
-                  </DialogActions>
-                  <DialogActions position="end">
-                    <Button appearance="primary" onClick={handleDelete}>
-                      削除
-                    </Button>
-                  </DialogActions>
-                </DialogBody>
-              </DialogSurface>
-            </Dialog>
-          }
-          header={
-            <Subtitle2 className={styles.title}>
-              {resultView.title ?? ""}
-            </Subtitle2>
-          }
-        />
-        <div>パラメーターの値を正しく設定してください</div>
-      </Card>
-    );
-  }
+    (resultView.style !== "map" && !resultView.parameters);
 
   return (
     <Card
@@ -214,7 +148,9 @@ export const TileResultView = ({
           </Subtitle2>
         }
       />
-      {resultView.data_set_result_id ? (
+      {isInvalidParameters ? (
+        <div>パラメーターの値を正しく設定してください</div>
+      ) : resultView.unit && resultView.data_set_result_id ? (
         <TileViewStyle
           parameters={resultView.parameters}
           resultId={resultView.data_set_result_id}
