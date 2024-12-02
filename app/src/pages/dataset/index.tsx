@@ -105,11 +105,7 @@ export function Dataset(): JSX.Element {
           ),
         )
           .then(() => {
-            void mutateRaw(
-              (prev) =>
-                prev?.filter((item) => !selectedItemIds.includes(item.id)),
-              false,
-            );
+            void mutateRaw();
             setSelectedItemIds([]);
           })
           .catch(console.error);
@@ -124,11 +120,7 @@ export function Dataset(): JSX.Element {
           ),
         )
           .then(() => {
-            void mutateNormalized(
-              (prev) =>
-                prev?.filter((item) => !selectedItemIds.includes(item.id)),
-              false,
-            );
+            void mutateNormalized();
             setSelectedItemIds([]);
           })
           .catch(console.error);
@@ -143,11 +135,7 @@ export function Dataset(): JSX.Element {
           ),
         )
           .then(() => {
-            void mutateResult(
-              (prev) =>
-                prev?.filter((item) => !selectedItemIds.includes(item.id)),
-              false,
-            );
+            void mutateResult();
             setSelectedItemIds([]);
           })
           .catch(console.error);
