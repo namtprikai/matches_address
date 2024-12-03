@@ -64,13 +64,8 @@ export const createDummyDataSetResults = (async (
           `Area: Starting data insertion for year ${year}. Total areas: ${totalAreas}`,
         );
 
-        // eslint-disable-next-line @typescript-eslint/prefer-for-of -- indexを利用したいため
-        for (
-          let chunkIndex = 0;
-          chunkIndex < chunkedAreaFeatures.length;
-          chunkIndex++
-        ) {
-          const features = chunkedAreaFeatures[chunkIndex];
+        for (const chunk of chunkedAreaFeatures) {
+          const features = chunk;
 
           await Promise.all(
             features.map(async (feature, i) => {
@@ -103,12 +98,8 @@ export const createDummyDataSetResults = (async (
           `Buildings: Starting data insertion for year ${year}. Total buildings: ${totalBuildings}`,
         );
 
-        for (
-          let chunkIndex = 0;
-          chunkIndex < chunkedBuildingFeatures.length;
-          chunkIndex++
-        ) {
-          const features = chunkedBuildingFeatures[chunkIndex];
+        for (const [chunkIndex, chunk] of chunkedBuildingFeatures.entries()) {
+          const features = chunk;
 
           await Promise.all(
             features.map(async (feature, i) => {
