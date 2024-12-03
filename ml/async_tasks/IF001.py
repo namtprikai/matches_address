@@ -100,29 +100,60 @@ def main():
 
         connect_sqllite(params.get('db_path'))
         job_id = create_or_update_job(None ,"", "ml", os.getpid(), 0, args.parameters)
-
-        input_files = {
-            "suido_status": concatenate(params.get('output_path'), params.get('suido_status')),
-            "suido_use": concatenate(params.get('output_path'), params.get('suido_use')),
-            "juki": concatenate(params.get('output_path'), params.get('juki')),
-            "touki": concatenate(params.get('output_path'), params.get('touki')),
-            "akiya_result": concatenate(params.get('output_path'), params.get('akiya_result')),
-            "geocoding": concatenate(params.get('output_path'), params.get('geocoding'))
-        }
+        
         merge_base = 'suido_residence'
         main_data_type = 'suido_status'
+        main_csv = f"{output_directory}/suido_residence.csv"
         if params.get('reference_data') == 'resident_registry':
             merge_base = 'juki_residence'
             main_data_type = 'juki'
+            main_csv = f"{output_directory}/juki_residence.csv"
+        
+        suido_use_file = None
+        suido_status_file = None
+        juki_file = None
+        tatemono_file = None
+        input_source = []
+        input_source_jp = {
+            'juki': '住基',
+            'suido_status': '水道',
+            'touki': '登記',
+            'akiya_result': '空き家',
+            'geocoding': 'ジオコーディングデータ',
+        }
+
+        input_files = {
+            "akiya_result": concatenate(params.get('output_path'), params.get('akiya_result')),
+            "geocoding": concatenate(params.get('output_path'), params.get('geocoding'))
+        }
+        if params.get('suido_status'):
+            input_files['suido_status'] = concatenate(params.get('output_path'), params.get('suido_status'))
+            suido_status_file = f"{output_directory}/suido_status_cleaned.csv"
+            if main_data_type == 'juki':
+                input_source.append('suido_status')
+        if params.get('suido_use'):
+            input_files['suido_use'] = concatenate(params.get('output_path'), params.get('suido_use'))
+            suido_use_file = f"{output_directory}/suido_use_cleaned.csv"
+        if params.get('juki'):
+            input_files['juki'] = concatenate(params.get('output_path'), params.get('juki'))
+            juki_file = f"{output_directory}/juki_cleaned.csv"
+            if main_data_type == 'suido_status':
+                input_source.append('suido')
+        if params.get('touki'):
+            input_files['touki'] = concatenate(params.get('output_path'), params.get('touki'))
+            tatemono_file = f"{output_directory}/touki_cleaned.csv"
+            input_source.append('touki')
             
+        input_source.extend(["akiya_result", "geocoding"])
+        
         E012(input_files, output_directory, main_data_type, job_id, json.dumps(columns), params.get('db_path'))
         create_or_update_job(job_id, "25")
 
         E013(
-            f"{output_directory}/suido_use_cleaned.csv",
-            f"{output_directory}/suido_status_cleaned.csv",
-            f"{output_directory}/juki_cleaned.csv",
-            f"{output_directory}/touki_cleaned.csv",
+            suido_use_file,
+            suido_status_file,
+            juki_file,
+            tatemono_file,
             params.get("reference_date").replace("-", ""),
             search_period,
             output_directory,
@@ -132,19 +163,23 @@ def main():
         )
         create_or_update_job(job_id, "50")
 
-        E014(
-            f"{output_directory}/juki_residence.csv",
-            f"{output_directory}/akiya_result_cleaned.csv",
-            "正規化住所",
-            "正規化住所",
-            merge_base,
-            f"{output_directory}/matched_data.csv",
-            int(params.get('n_gram_size')),
-            float(params.get('similarity_threshold')),
-            1000,
-            str(job_id),
-            params.get('db_path')
-        )
+        output_e014 = f"{output_directory}/matched_data.csv"
+        for item in input_source:
+            E014(
+                main_csv,
+                f"{output_directory}/{item}_cleaned.csv",
+                "正規化住所",
+                "正規化住所",
+                merge_base,
+                output_e014,
+                int(params.get('n_gram_size')),
+                float(params.get('similarity_threshold')),
+                1000,
+                str(job_id),
+                params.get('db_path'),
+                [input_source_jp[main_data_type], input_source_jp[item]]
+            )
+            main_csv = output_e014
         create_or_update_job(job_id, "75")
 
         option = 0 if join_option == "交差結合" else 1
@@ -170,7 +205,8 @@ def main():
             output_path_e016,
             job_id,
             params.get('db_path'),
-            params.get('buidling_polygon_column', 'buildingID')
+            params.get('buidling_polygon_column', 'buildingID'),
+            ["merge_result(E14)","建物ポリゴン"]
         )
 
         create_or_update_job(job_id, "complete")

@@ -684,7 +684,6 @@ def process_data(input_files, output_directory, main_data_type, job_id, columns,
         progress_percent = 0
         if job_id:
             task_id = create_or_update_job_task(job_id, progress_percent="0", preprocess_type="e012", error_code=None, result=None)
-        input_paths = input_files
 
         if output_directory is None:
             output_directory = './E012/outputs'
@@ -693,16 +692,27 @@ def process_data(input_files, output_directory, main_data_type, job_id, columns,
         # 出力ファイルのパスを設定
         # 処理後のファイルの保存先パスを辞書形式で定義
         output_paths = {
-            "suido_status": f"{output_directory}/suido_status_cleaned.csv",
-            "suido_use": f"{output_directory}/suido_use_cleaned.csv",
-            "juki": f"{output_directory}/juki_cleaned.csv",
-            "touki": f"{output_directory}/touki_cleaned.csv",
             "akiya_result": f"{output_directory}/akiya_result_cleaned.csv",
             "geocoding": f"{output_directory}/geocoding_cleaned.csv"
         }
+        
+        if input_files.get('suido_status'):
+            output_paths['suido_status'] = f"{output_directory}/suido_status_cleaned.csv"
+        
+        if input_files.get('suido_use'):
+            output_paths['suido_use'] = f"{output_directory}/suido_use_cleaned.csv"
+        
+        if input_files.get('juki'):
+            output_paths['juki'] = f"{output_directory}/juki_cleaned.csv"
+            
+        if input_files.get('touki'):
+            output_paths['touki'] = f"{output_directory}/touki_cleaned.csv"
 
-        if input_paths.get('akiya_result') is None:
+        if input_files.get('akiya_result') is None:
             raise ValueError("空き家結果データは必須です。")
+        
+        if input_files.get('geocoding') is None:
+            raise ValueError("ジオコーディングデータは必須です。")
 
         if columns:
             columns = json.loads(columns)
@@ -714,33 +724,42 @@ def process_data(input_files, output_directory, main_data_type, job_id, columns,
         juki_address = INPUT_COLUMNS.get('juki').get('juki_address')
         # メインデータを決定
         if main_data_type == "suido_status":
-            main_df = read_file(input_paths.get('suido_status'), "suido_status")
+            main_df = read_file(input_files.get('suido_status'), "suido_status")
             main_address_col = suido_status_address
         elif main_data_type == "juki":
-            main_df = read_file(input_paths.get('juki'), "juki")
+            main_df = read_file(input_files.get('juki'), "juki")
             main_address_col = juki_address
 
-        suido_use_df = handle_optional_file(input_paths.get('suido_use'), "suido_use", main_df, main_address_col, INPUT_COLUMNS)
-        touki_df = handle_optional_file(input_paths.get('touki'), "touki", main_df, main_address_col, INPUT_COLUMNS)
-        akiya_result_df = handle_optional_file(input_paths.get('akiya_result'), "akiya_result", main_df, main_address_col, INPUT_COLUMNS)
-        geocoding_df = handle_optional_file(input_paths.get('geocoding'), "geocoding", main_df, main_address_col, INPUT_COLUMNS)
+        if input_files.get('suido_use'):
+            suido_use_df = handle_optional_file(input_files.get('suido_use'), "suido_use", main_df, main_address_col, INPUT_COLUMNS)
+        if input_files.get('touki'):
+            touki_df = handle_optional_file(input_files.get('touki'), "touki", main_df, main_address_col, INPUT_COLUMNS)
+        akiya_result_df = handle_optional_file(input_files.get('akiya_result'), "akiya_result", main_df, main_address_col, INPUT_COLUMNS)
+        geocoding_df = handle_optional_file(input_files.get('geocoding'), "geocoding", main_df, main_address_col, INPUT_COLUMNS)
 
         # ファイルを保存して、処理に反映
-        suido_use_df.to_csv(f"{output_directory}/processed_suido_use.csv", index=False)
-        touki_df.to_csv(f"{output_directory}/processed_touki.csv", index=False)
+        if input_files.get('suido_use'):
+            suido_use_df.to_csv(f"{output_directory}/processed_suido_use.csv", index=False)
+        if input_files.get('touki'):
+            touki_df.to_csv(f"{output_directory}/processed_touki.csv", index=False)
         geocoding_df.to_csv(f"{output_directory}/processed_geocoding.csv", index=False)
         akiya_result_df.to_csv(f"{output_directory}/processed_akiya_result.csv", index=False)
 
         # 入力ファイルのパスを設定
         input_paths = {
-            "suido_status": input_paths.get('suido_status'),
-            "suido_use": f"{output_directory}/processed_suido_use.csv",
-            "juki": input_paths.get('juki'),
-            "touki": f"{output_directory}/processed_touki.csv",
             "akiya_result": f"{output_directory}/processed_akiya_result.csv",
             "geocoding": f"{output_directory}/processed_geocoding.csv"
         }
         
+        if input_files.get('suido_status'):
+            input_paths['suido_status'] = input_files.get('suido_status')
+        if input_files.get('suido_use'):
+            input_paths['suido_use'] = f"{output_directory}/processed_suido_use.csv"
+        if input_files.get('juki'):
+            input_paths['juki'] = input_files.get('juki')
+        if input_files.get('touki'):
+            input_paths['touki'] = f"{output_directory}/processed_touki.csv"
+            
         # EachFileProcessorインスタンスを作成
         # 入力パスと出力パスを引数として、ファイル処理用のオブジェクトを生成
         processor = EachFileProcessor(input_paths, output_paths)

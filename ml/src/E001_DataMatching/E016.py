@@ -921,7 +921,7 @@ def process_plateaugml(input_zip_file, output_gpkg_file, buildings_gdf):
 
 
 
-def process_data(tatemono_path, water_supply_path, gpkg_path, ken, sikuchoson, option, output_type, input_zip_file=None, output_path=None, job_id=None, db_path=None, building_id='buildingID'):
+def process_data(tatemono_path, water_supply_path, gpkg_path, ken, sikuchoson, option, output_type, input_zip_file=None, output_path=None, job_id=None, db_path=None, building_id='buildingID', input_source=[]):
     """
     建物データと水道データを処理し、PLATEAU GMLデータも結合して結果を保存する
 
@@ -997,7 +997,8 @@ def process_data(tatemono_path, water_supply_path, gpkg_path, ken, sikuchoson, o
 
         if job_id:
             result = {
-                "joining_rate": join_ratio
+                "joining_rate": join_ratio,
+                "input_source": input_source
             }
             create_or_update_job_task(job_id, progress_percent="100", preprocess_type="e016", error_code=None, result=json.dumps(result), id= task_id, is_finish=True)
 

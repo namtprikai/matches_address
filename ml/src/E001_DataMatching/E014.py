@@ -135,7 +135,7 @@ def get_column_names(csv_file: str) -> List[str]:
         print(f"ファイル {csv_file} の読み込み中にエラーが発生しました: {e}")
         return []
 
-def embedding_address(main_csv: io.BytesIO, sub_csv: io.BytesIO, main_column: str, sub_column: str, merge_base: str, output_path:str, ngram: int = 2, threshold: float = 0.5, batch_size: int = 1000, job_id: str = None, db_path: str = None) -> Tuple[str, str]:   
+def embedding_address(main_csv: io.BytesIO | str, sub_csv: io.BytesIO | str, main_column: str, sub_column: str, merge_base: str, output_path:str, ngram: int = 2, threshold: float = 0.5, batch_size: int = 1000, job_id: str = None, db_path: str = None, input_source: list = []) -> Tuple[str, str]:   
     """
     住所名寄せ処理を行う
     
@@ -284,14 +284,19 @@ def embedding_address(main_csv: io.BytesIO, sub_csv: io.BytesIO, main_column: st
             create_or_update_job_task(job_id, progress_percent="90", preprocess_type="e014", error_code=None, result=None, id= task_id)
         # 結果をCSVファイルとして保存
         saved_file_path = save_csv(result_df, output_path)
-        unique_row = len(result_df[f'ID_{sub_csv_name}'].unique())
+        # unique_row = len(result_df[f'ID_{sub_csv_name}'].unique())
         # 結果の表示
         complete_match_ratio = f'結合元データとの完全一致割合: {merged_rows / data_rows * 100:.2f}%'
         threshold_match_ratio = f'結合元データとの閾値以上結合割合: {(merged_rows + ngram_rows) / data_rows * 100:.2f}%'
         sub_complete_match_ratio = f'結合先データとの完全一致割合: {merged_rows / sub_data_rows * 100:.2f}%'
-        sub_threshold_match_ratio = f'結合先データとの閾値以上結合割合: {(unique_row) / sub_data_rows * 100:.2f}%'
+        # sub_threshold_match_ratio = f'結合先データとの閾値以上結合割合: {(unique_row) / sub_data_rows * 100:.2f}%'
+        
+        res = {
+            'joining_rate': merged_rows + ngram_rows,
+            'input_source': input_source
+        }
         if job_id:
-            create_or_update_job_task(job_id, progress_percent="100", preprocess_type="e014", error_code=None, result=json.dumps({}), id= task_id, is_finish=True)
+            create_or_update_job_task(job_id, progress_percent="100", preprocess_type="e014", error_code=None, result=json.dumps(res), id= task_id, is_finish=True)
 
         return saved_file_path, f"{complete_match_ratio}\n{threshold_match_ratio}\n{sub_complete_match_ratio}"
     except Exception as e:
