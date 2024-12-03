@@ -89,28 +89,17 @@ export function Dataset(): JSX.Element {
     e: ChangeEvent<HTMLInputElement>,
   ): Promise<void> => {
     const file = e.target.files?.[0];
-    await saveDataSetFile(file, selectedValue)
-      .then(() => {
-        switch (selectedValue) {
-          case "raw": {
-            void mutateRaw();
-            break;
-          }
-          case "normalization": {
-            void mutateNormalized();
-            break;
-          }
-          case "result": {
-            // 判定結果データの場合はアップロードしないので何もしない
-            break;
-          }
-          default: {
-            const exhaustiveCheck: never = selectedValue;
-            throw new Error(`Unhandled type: ${exhaustiveCheck}`);
-          }
-        }
-      })
-      .catch(console.error);
+    try {
+      await saveDataSetFile(file, selectedValue);
+      if (selectedValue === "raw") {
+        await mutateRaw();
+      }
+      if (selectedValue === "normalization") {
+        await mutateNormalized();
+      }
+    } catch (error) {
+      console.error("Operation failed:", error);
+    }
     e.target.value = ""; // ファイル選択をリセットする
   };
 
