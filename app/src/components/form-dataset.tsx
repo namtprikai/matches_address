@@ -82,8 +82,8 @@ export const FormDataset = <
   const { data: prevDataset } = useFetchRawDataset({ id: prevValue.id });
   useEffect(() => {
     if (prevDataset) {
-      console.log({ prevDataset, prevValue });
-      setDataSet(prevDataset);
+      /** @fixme ここでセットするとうまくいきそうだがいかない */
+      // setDataSet(prevDataset);
     }
   }, [prevDataset, prevValue]);
 
