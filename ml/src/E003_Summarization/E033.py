@@ -143,13 +143,13 @@ def processing(params, job_id=None, db_path=None):
         output_path = params['output_path']
         task_id = None
         if job_id:
-            task_id = create_or_update_job_task(job_id, progress_percent="0", preprocess_type="e033", error_code=None, result=None)
+            task_id = create_or_update_job_task(job_id, progress_percent="0", preprocess_type=None, error_code=None, result=json.dumps({}))
 
         logging.info(f"Reading input data from {input_path}")
         gdf = read_input_data(input_path)
 
         if job_id:
-            create_or_update_job_task(job_id, progress_percent="20", preprocess_type="e033", error_code=None, result=None, id= task_id)
+            create_or_update_job_task(job_id, progress_percent="20", preprocess_type=None, error_code=None, result=json.dumps({}), id= task_id)
 
         if params.get('target_crs'):
             logging.info(f"Target CRS specified: {params['target_crs']}")
@@ -170,20 +170,20 @@ def processing(params, job_id=None, db_path=None):
             logging.info("No target CRS specified. Skipping conversion.")
 
         if job_id:
-            create_or_update_job_task(job_id, progress_percent="40", preprocess_type="e033", error_code=None, result=None, id= task_id)
+            create_or_update_job_task(job_id, progress_percent="40", preprocess_type=None, error_code=None, result=json.dumps({}), id= task_id)
         
         logging.info(f"Exporting data to {output_path}")
         output_file_path = export_data(gdf, output_path, params['output_format'])
 
         if job_id:
-            create_or_update_job_task(job_id, progress_percent="100", preprocess_type="e033", error_code=None, result=json.dumps({}), id= task_id, is_finish=True)
+            create_or_update_job_task(job_id, progress_percent="100", preprocess_type=None, error_code=None, result=json.dumps({}), id= task_id, is_finish=True)
 
         logging.info("Processing completed successfully")
         return output_file_path
     except Exception as e:
         print("Exception", e)
         if task_id is not None:
-            create_or_update_job_task(job_id, progress_percent="", preprocess_type="e033", error_code="e001", result=json.dumps({}), id= task_id, is_finish=True)
+            create_or_update_job_task(job_id, progress_percent="", preprocess_type=None, error_code="e001", result=json.dumps({}), id= task_id, is_finish=True)
 
         logging.error(f"An error occurred: {str(e)}")
         raise Exception(e)

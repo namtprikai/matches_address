@@ -273,7 +273,7 @@ def split_data(df, params):
 # - 出力：「D014　学習済みモデル【pkl】」
 
 @profile
-def train_lgb_with_optuna(train_df, params, citycode_value, targetyear_value, output_path):
+def train_lgb_with_optuna(train_df, params, citycode_value, targetyear_value, output_path, job_id=None, task_id=None):
     """
     K-Fold交差検証とOptunaによるハイパーパラメータチューニングを用いてLightGBMモデルを学習する
    
@@ -371,7 +371,9 @@ def train_lgb_with_optuna(train_df, params, citycode_value, targetyear_value, ou
             'bagging_freq': params['bagging_freq'],
             'min_data_in_leaf': params['min_data_in_leaf'],
         })
-
+    if job_id:
+        create_or_update_job_task(job_id, progress_percent="40", preprocess_type=None, error_code=None, result=json.dumps({}), id= task_id)
+        create_or_update_job(job_id , "40")
     # 最良のハイパーパラメータを表示
     print("Best Hyperparameters:", best_params)
     
@@ -427,6 +429,9 @@ def train_lgb_with_optuna(train_df, params, citycode_value, targetyear_value, ou
         # 学習済みモデルをリストに追加
         lgbm_models.append(model)
     
+    if job_id:
+        create_or_update_job_task(job_id, progress_percent="50", preprocess_type=None, error_code=None, result=json.dumps({}), id= task_id)
+        create_or_update_job(job_id , "50")
     # 全体の学習時間の終了
     end_total_time = time.time()
     total_time = end_total_time - start_total_time
@@ -445,6 +450,10 @@ def train_lgb_with_optuna(train_df, params, citycode_value, targetyear_value, ou
         output_file_path = f'{output_path}'
         model_zip_file_path = f'{output_path}.zip'
     os.makedirs(output_file_path, exist_ok=True)
+    
+    if job_id:
+        create_or_update_job_task(job_id, progress_percent="60", preprocess_type=None, error_code=None, result=json.dumps({}), id= task_id)
+        create_or_update_job(job_id , "60")
     # 各学習済みモデルをファイルに保存
     for i, model in enumerate(lgbm_models):
         if targetyear_value is not None:
@@ -462,6 +471,9 @@ def train_lgb_with_optuna(train_df, params, citycode_value, targetyear_value, ou
                     file_path = os.path.join(root, file)
                     # arcname をファイル名のみに設定して models/ フォルダを含めない
                     zipf.write(file_path, arcname=file)
+    if job_id:
+        create_or_update_job_task(job_id, progress_percent="70", preprocess_type=None, error_code=None, result=json.dumps({}), id= task_id)
+        create_or_update_job(job_id , "70")
     # 学習済みモデル、Out-of-fold予測、学習データの特徴量重要度を返す
     return lgbm_models, oof_pred, feature_importances_dict_train, model_zip_file_path
 
@@ -742,7 +754,7 @@ def train_and_evaluate(db_path, input_file, output_path, explanatory_variables, 
             connect_sqllite(db_path)
         task_id = None
         if job_id:
-            task_id = create_or_update_job_task(job_id, progress_percent="0", preprocess_type="e021", error_code=None, result=None)
+            task_id = create_or_update_job_task(job_id, progress_percent="0", preprocess_type=None, error_code=None, result=json.dumps({}))
             create_or_update_job(job_id , "0")
         file_path = input_file
         df = read_csv(file_path, low_memory=False)
@@ -750,7 +762,7 @@ def train_and_evaluate(db_path, input_file, output_path, explanatory_variables, 
             raise ValueError(f"ファイル {file_path} の読み込みに失敗しました。")
         
         if job_id:
-            create_or_update_job_task(job_id, progress_percent="10", preprocess_type="e021", error_code=None, result=None, id= task_id)
+            create_or_update_job_task(job_id, progress_percent="10", preprocess_type=None, error_code=None, result=json.dumps({}), id= task_id)
             create_or_update_job(job_id , "10")
         learning_data = prepare_learning_data(df, explanatory_variables)
         
@@ -771,22 +783,22 @@ def train_and_evaluate(db_path, input_file, output_path, explanatory_variables, 
             'min_data_in_leaf': int(min_data_in_leaf),
         }
         if job_id:
-            create_or_update_job_task(job_id, progress_percent="20", preprocess_type="e021", error_code=None, result=None, id= task_id)
+            create_or_update_job_task(job_id, progress_percent="20", preprocess_type=None, error_code=None, result=json.dumps({}), id= task_id)
             create_or_update_job(job_id , "20")
         train_df, test_df = split_data(learning_data, params)
         
         if job_id:
-            create_or_update_job_task(job_id, progress_percent="30", preprocess_type="e021", error_code=None, result=None, id= task_id)
+            create_or_update_job_task(job_id, progress_percent="30", preprocess_type=None, error_code=None, result=json.dumps({}), id= task_id)
             create_or_update_job(job_id , "30")
-        models, oof_pred, feature_importances_dict_train, model_zip_file_path = train_lgb_with_optuna(train_df, params, citycode_value, targetyear_value, output_path)
+        models, oof_pred, feature_importances_dict_train, model_zip_file_path = train_lgb_with_optuna(train_df, params, citycode_value, targetyear_value, output_path, job_id, task_id)
         
         if job_id:
-            create_or_update_job_task(job_id, progress_percent="80", preprocess_type="e021", error_code=None, result=None, id= task_id)
+            create_or_update_job_task(job_id, progress_percent="80", preprocess_type=None, error_code=None, result=json.dumps({}), id= task_id)
             create_or_update_job(job_id , "80")
         pred, score_dict, feature_importances_dict_test, feature_importance_plot = evaluate_models_on_test(test_df, models, params)
         
         if job_id:
-            create_or_update_job_task(job_id, progress_percent="90", preprocess_type="e021", error_code=None, result=None, id= task_id)
+            create_or_update_job_task(job_id, progress_percent="90", preprocess_type=None, error_code=None, result=json.dumps({}), id= task_id)
             create_or_update_job(job_id , "90")
         if citycode_value is not None:
             output_file = f'{output_path}/data/{citycode_value}/E021/outputs/D902.csv'
@@ -802,7 +814,7 @@ def train_and_evaluate(db_path, input_file, output_path, explanatory_variables, 
         data_zip_file_path = save_metrics_and_importances(score_dict, feature_importances_dict_train, citycode_value, targetyear_value, output_path)
 
         if job_id:
-            create_or_update_job_task(job_id, progress_percent="95", preprocess_type="e021", error_code=None, result=None, id= task_id)
+            create_or_update_job_task(job_id, progress_percent="95", preprocess_type=None, error_code=None, result=json.dumps({}), id= task_id)
             create_or_update_job(job_id , "95")
         # Create a string with the evaluation results
         result_str = (
@@ -831,14 +843,14 @@ def train_and_evaluate(db_path, input_file, output_path, explanatory_variables, 
         
         # Update progress to complete
         if job_id:
-            create_or_update_job_task(job_id, progress_percent="100", preprocess_type="e021", error_code=None, result=json.dumps(result), id= task_id, is_finish=True)
+            create_or_update_job_task(job_id, progress_percent="100", preprocess_type=None, error_code=None, result=json.dumps(result), id= task_id, is_finish=True)
             create_or_update_job(job_id , "complete")
 
         return result_str, feature_importance_plot, output_file, model_zip_file_path, data_zip_file_path
     except Exception as e:
         print("Error: ", e)
         if task_id is not None:
-            create_or_update_job_task(job_id, progress_percent="", preprocess_type="e021", error_code="e001", result=json.dumps({}), id= task_id, is_finish=True)
+            create_or_update_job_task(job_id, progress_percent="", preprocess_type=None, error_code="e001", result=json.dumps({}), id= task_id, is_finish=True)
         raise Exception(e)
     
 def main():

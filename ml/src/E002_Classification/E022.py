@@ -396,7 +396,7 @@ def process_and_predict(input_folder, input_file, model_directory, threshold, ou
             connect_sqllite(db_path)
         task_id = None
         if job_id:
-            task_id = create_or_update_job_task(job_id, progress_percent="0", preprocess_type="e022", error_code=None, result=None)
+            task_id = create_or_update_job_task(job_id, progress_percent="0", preprocess_type=None, error_code=None, result=json.dumps({}))
         # ディレクトリの設定
         print("ディレクトリを設定中...")
         # setup_directory(os.path.expanduser('~'))
@@ -406,7 +406,7 @@ def process_and_predict(input_folder, input_file, model_directory, threshold, ou
         input_path = os.path.join(input_folder, input_file)
         input_data = read_csv(input_path)
         if job_id:
-            create_or_update_job_task(job_id, progress_percent="20", preprocess_type="e022", error_code=None, result=None, id= task_id)
+            create_or_update_job_task(job_id, progress_percent="20", preprocess_type=None, error_code=None, result=json.dumps({}), id= task_id)
         # 予測用データ（REQUIRED_FEATURES）を準備するためのコピーを作成
         prediction_data = input_data.copy()
 
@@ -425,12 +425,12 @@ def process_and_predict(input_folder, input_file, model_directory, threshold, ou
         # 基準日からの経過日数を計算
         prediction_data['登記日付_touki_residence'] = (base_date - prediction_data['登記日付_touki_residence']).dt.days
         if job_id:
-            create_or_update_job_task(job_id, progress_percent="30", preprocess_type="e022", error_code=None, result=None, id= task_id)
+            create_or_update_job_task(job_id, progress_percent="30", preprocess_type=None, error_code=None, result=json.dumps({}), id= task_id)
         # 訓練済みモデルの読み込み
         print("訓練済みモデルを読み込み中...")
         models = load_models(model_directory)
         if job_id:
-            create_or_update_job_task(job_id, progress_percent="50", preprocess_type="e022", error_code=None, result=None, id= task_id)
+            create_or_update_job_task(job_id, progress_percent="50", preprocess_type=None, error_code=None, result=json.dumps({}), id= task_id)
         # 特徴量のチェック
         print("特徴量をチェック中...")
         prediction_data, features_match, message = check_features(prediction_data, required_features, outcome_variable)
@@ -441,7 +441,7 @@ def process_and_predict(input_folder, input_file, model_directory, threshold, ou
         print("予測中...")
         test_preds, test_preds_proba = predict(models, prediction_data, required_features, threshold)
         if job_id:
-            create_or_update_job_task(job_id, progress_percent="70", preprocess_type="e022", error_code=None, result=None, id= task_id)
+            create_or_update_job_task(job_id, progress_percent="70", preprocess_type=None, error_code=None, result=json.dumps({}), id= task_id)
         # 結果の保存
         print("結果を保存中...")
 
@@ -455,7 +455,7 @@ def process_and_predict(input_folder, input_file, model_directory, threshold, ou
         #insert SQLite
         insert_sqlite_and_export(input_data, job_id)
         if job_id:
-            create_or_update_job_task(job_id, progress_percent="90", preprocess_type="e022", error_code=None, result=None, id= task_id)
+            create_or_update_job_task(job_id, progress_percent="90", preprocess_type=None, error_code=None, result=json.dumps({}), id= task_id)
         # 試行するエンコーディングのリスト
         encodings = ['shift_jis', 'cp932', 'utf-8']
         for encoding in encodings:
@@ -465,7 +465,7 @@ def process_and_predict(input_folder, input_file, model_directory, threshold, ou
                 print(f"ファイルが {encoding} エンコーディングで正常に保存されました: {output_file}")
 
                 if job_id:
-                    create_or_update_job_task(job_id, progress_percent="100", preprocess_type="e022", error_code=None, result=json.dumps({}), id= task_id, is_finish=True)
+                    create_or_update_job_task(job_id, progress_percent="100", preprocess_type=None, error_code=None, result=json.dumps({}), id= task_id, is_finish=True)
                 return f"予測結果が {output_file} に保存されました", output_file
             except Exception as e:
                 # 保存中にエラーが発生した場合、エラーメッセージを表示して次のエンコーディングを試す
@@ -473,12 +473,12 @@ def process_and_predict(input_folder, input_file, model_directory, threshold, ou
 
         # すべてのエンコーディングで保存に失敗した場合のメッセージ
         if job_id:
-            create_or_update_job_task(job_id, progress_percent="", preprocess_type="e022", error_code="e001", result=json.dumps({}), id= task_id, is_finish=True)
+            create_or_update_job_task(job_id, progress_percent="", preprocess_type=None, error_code="e001", result=json.dumps({}), id= task_id, is_finish=True)
         return f"{output_file} への予測結果の保存に失敗しました", None
     except Exception as e:
         print("Exception", e)
         if task_id is not None:
-            create_or_update_job_task(job_id, progress_percent="", preprocess_type="e022", error_code="e001", result=json.dumps({}), id= task_id, is_finish=True)
+            create_or_update_job_task(job_id, progress_percent="", preprocess_type=None, error_code="e001", result=json.dumps({}), id= task_id, is_finish=True)
         raise Exception(e)
 
 def main():

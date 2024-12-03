@@ -78,7 +78,7 @@ def create_or_update_job(job_id: int, status: str, job_type: str = "", process_i
         CONNECTION.rollback()
         return None
     
-def create_or_update_job_task(job_id: int, progress_percent: str, preprocess_type: str, error_code: str, result, id: int = None, is_finish: bool = False) -> int:
+def create_or_update_job_task(job_id: int, progress_percent: str, preprocess_type: str|None, error_code: str, result, id: int = None, is_finish: bool = False) -> int:
     try:
         finished_at = None
         if is_finish:
