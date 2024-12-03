@@ -108,8 +108,8 @@ const router = createHashRouter([
         element: <NormalizationCreate />,
       },
       {
-        path: "normalization/:id",
-        element: <Normalization />,
+        path: "normalization/create/:id",
+        element: <NormalizationCreate />,
       },
     ],
   },

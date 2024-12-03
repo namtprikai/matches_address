@@ -248,7 +248,7 @@ export function PreprocessDetail(): JSX.Element {
       <div className={styles.restartButtonWrapper}>
         <Button
           appearance="primary"
-          onClick={() => navigate(`/normalization/${id}`)}
+          onClick={() => navigate(`/normalization/create/${id}`)}
         >
           再実行へ
         </Button>
