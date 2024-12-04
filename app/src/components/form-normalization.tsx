@@ -30,7 +30,8 @@ export const FormNormalization = ({ formId, jobId }: Props): JSX.Element => {
   const { handleSubmit, control, reset } = useFormNormalization();
   const { data } = useFetchJobs(jobId ? Number(jobId) : undefined);
 
-  const prevParameters = data ? data[0].parameters : undefined;
+  const prevParameters =
+    data && data.length > 0 ? data[0].parameters : undefined;
 
   useEffect(() => {
     if (prevParameters && jobId) {
