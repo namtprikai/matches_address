@@ -1,6 +1,6 @@
 import { NavDrawer, NavDrawerBody, NavItem } from "@fluentui/react-nav-preview";
 
-import { makeStyles, tokens } from "@fluentui/react-components";
+import { makeStyles, mergeClasses, tokens } from "@fluentui/react-components";
 import {
   ArrowTrendingLinesRegular,
   HomeRegular,
@@ -9,6 +9,7 @@ import {
   ArrowSyncCircleRegular,
   TableSwitchRegular,
 } from "@fluentui/react-icons";
+import { useState } from "react";
 
 const useStyles = makeStyles({
   navDrawer: {
@@ -26,7 +27,7 @@ const useStyles = makeStyles({
     backgroundColor: tokens.colorTransparentBackground,
     color: tokens.colorNeutralForegroundInverted,
     "&:hover": {
-      backgroundColor: tokens.colorSubtleBackgroundLightAlphaHover,
+      color: tokens.colorBrandBackground,
     },
     ":after": {
       content: "none",
@@ -46,6 +47,11 @@ const useStyles = makeStyles({
   },
   label: {
     fontSize: tokens.fontSizeBase100,
+  },
+  isActive: {
+    backgroundColor: tokens.colorNeutralBackground1,
+    color: tokens.colorBrandBackground,
+    fontWeight: tokens.fontWeightSemibold,
   },
 });
 
@@ -95,28 +101,38 @@ const menuItems = [
 export const Sidebar = (): JSX.Element => {
   const styles = useStyles();
 
+  const [selectedValue, setSelectedValue] = useState("1");
+
   return (
     <NavDrawer
       className={styles.navDrawer}
       defaultSelectedCategoryValue="1"
       defaultSelectedValue="1"
+      onNavItemSelect={(_, data) => setSelectedValue(data.value as string)}
       open
+      selectedValue={selectedValue}
       type="inline"
     >
       <NavDrawerBody className={styles.navDrawerBody}>
-        {menuItems.map((item) => (
-          <NavItem
-            key={item.value}
-            className={styles.navItem}
-            href={item.href}
-            value={item.value}
-          >
-            <div className={styles.menuItem}>
-              <item.icon className={styles.icon} />
-              <div className={styles.label}>{item.label}</div>
-            </div>
-          </NavItem>
-        ))}
+        {menuItems.map((item) => {
+          const isActive = selectedValue === item.value;
+          return (
+            <NavItem
+              key={item.value}
+              className={mergeClasses(
+                styles.navItem,
+                isActive ? styles.isActive : "",
+              )}
+              href={item.href}
+              value={item.value}
+            >
+              <div className={styles.menuItem}>
+                <item.icon className={styles.icon} />
+                <div className={styles.label}>{item.label}</div>
+              </div>
+            </NavItem>
+          );
+        })}
       </NavDrawerBody>
     </NavDrawer>
   );
