@@ -104,10 +104,9 @@ export const Sidebar = (): JSX.Element => {
 
   const [selectedValue, setSelectedValue] = useState("");
 
-  /** グローバルナビ以外をクリックして画面遷移したときのための処理 */
+  /** グローバルナビ以外をクリックして画面遷移することもあるのでstateを直接書き換える必要がある */
   const { pathname } = useLocation();
   useEffect(() => {
-    if (selectedValue !== "") return; // selectedValueが空のときだけ実行
     const value = menuItems.find((item) =>
       pathname.replace("/", "").includes(item.href.replace("#", "")),
     )?.value;
@@ -122,7 +121,6 @@ export const Sidebar = (): JSX.Element => {
       defaultSelectedValue="1"
       onNavItemSelect={(_, data) => setSelectedValue(data.value as string)}
       open
-      selectedValue={selectedValue}
       type="inline"
     >
       <NavDrawerBody className={styles.navDrawerBody}>
