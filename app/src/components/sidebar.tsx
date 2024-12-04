@@ -3,8 +3,11 @@ import { NavDrawer, NavDrawerBody, NavItem } from "@fluentui/react-nav-preview";
 import { makeStyles, tokens } from "@fluentui/react-components";
 import {
   ArrowTrendingLinesRegular,
-  DocumentBulletListRegular,
-  Bug16Filled,
+  HomeRegular,
+  DatabaseRegular,
+  FolderRegular,
+  ArrowSyncCircleRegular,
+  TableSwitchRegular,
 } from "@fluentui/react-icons";
 
 const useStyles = makeStyles({
@@ -57,41 +60,35 @@ const menuItems = [
     href: "#analysis/workbook",
   },
   {
-    icon: DocumentBulletListRegular,
+    icon: TableSwitchRegular,
     label: "正規化処理",
     value: "2",
     href: "#normalization",
   },
   {
-    icon: DocumentBulletListRegular,
+    icon: DatabaseRegular,
     label: "モデル管理",
     value: "3",
     href: "#model",
   },
   {
-    icon: DocumentBulletListRegular,
+    icon: HomeRegular,
     label: "空き家判定",
     value: "4",
     href: "#evaluation",
   },
 
   {
-    icon: DocumentBulletListRegular,
+    icon: FolderRegular,
     label: "データセット",
     value: "5",
     href: "#dataset",
   },
   {
-    icon: DocumentBulletListRegular,
+    icon: ArrowSyncCircleRegular,
     label: "非同期処理",
     value: "6",
     href: "#job",
-  },
-  {
-    icon: Bug16Filled,
-    label: "(開発用)",
-    value: "7",
-    href: "#debug",
   },
 ];
 
