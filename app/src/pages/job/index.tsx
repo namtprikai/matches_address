@@ -47,8 +47,6 @@ export function Job(): JSX.Element {
     <div className={styles.root}>
       <h2 className={styles.heading}>非同期処理一覧</h2>
 
-      <DebugCreateButtons />
-
       <Card className={styles.content}>
         {hasData ? (
           <Table className={styles.table}>
@@ -65,6 +63,8 @@ export function Job(): JSX.Element {
           </div>
         )}
       </Card>
+
+      <DebugCreateButtons />
     </div>
   );
 }
