@@ -111,6 +111,7 @@ function AddView(): JSX.Element {
     startCreating();
     const response = await fetch("/D902_workshop.csv");
     const text = await response.text();
+    // eslint-disable-next-line no-console -- TODO: 後で消す
     console.log(text);
     await finishCreating();
   };
