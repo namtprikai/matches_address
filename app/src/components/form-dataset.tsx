@@ -12,6 +12,7 @@ import { type SelectRawDataSet } from "../schema";
 import { LanguageMap } from "../metadata";
 import { useDialogState } from "../hooks/use-dialog-state";
 import { useFetchDatasetColumns } from "../hooks/use-fetch-dataset-columns";
+import { useFetchRawDataset } from "../hooks/use-fetch-raw-dataset";
 import { Dropdown } from "./ui/dropdown";
 import { Field } from "./ui/field";
 import { DialogImportDataset } from "./dialog-import-dataset";
@@ -77,6 +78,14 @@ export const FormDataset = <
     filename: dataSet?.file_path,
   });
   const { setIsOpen } = dialogState;
+
+  const { data: prevDataset } = useFetchRawDataset({ id: prevValue.id });
+  useEffect(() => {
+    if (prevDataset) {
+      /** @fixme ここでセットするとうまくいきそうだがいかない */
+      // setDataSet(prevDataset);
+    }
+  }, [prevDataset, prevValue]);
 
   useEffect(() => {
     if (onChange && dataSetColumns) {

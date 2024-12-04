@@ -246,7 +246,10 @@ export function PreprocessDetail(): JSX.Element {
         </Card>
       </div>
       <div className={styles.restartButtonWrapper}>
-        <Button appearance="primary" onClick={() => navigate("/job/restart")}>
+        <Button
+          appearance="primary"
+          onClick={() => navigate(`/normalization/create/${id}`)}
+        >
           再実行へ
         </Button>
       </div>

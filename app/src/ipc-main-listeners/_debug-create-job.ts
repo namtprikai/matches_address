@@ -164,7 +164,7 @@ const createmockResult = (type: InsertJob["type"]): InsertJobTask["result"] => {
 /** 型推論が通じないので指定。モックなので一旦気にしない・・ */
 const mockE001: PreprocessParameters = {
   settings: {
-    reference_data: "water_status",
+    reference_data: "resident_registry",
     reference_date: "2021-01-01",
     advanced: {
       similarity_threshold: 0.95,
@@ -174,34 +174,34 @@ const mockE001: PreprocessParameters = {
   },
   data: {
     resident_registry: {
-      id: 0,
-      path: "",
+      id: 1,
+      path: "ee71475f-2287-4a9e-8cb3-b41d70f6c610.csv",
       columns: {
-        household_code: "",
-        address: "",
-        birth_date: "",
-        gender: "",
-        resident_date: "",
+        household_code: "15歳未満人数",
+        gender: "世帯コード",
+        address: "世帯コード",
+        birth_date: "世帯コード",
+        resident_date: "15歳以上64歳以下構成比",
       },
     },
     water_status: {
-      id: 0,
-      path: "",
+      id: 1,
+      path: "ee71475f-2287-4a9e-8cb3-b41d70f6c610.csv",
       columns: {
-        water_supply_number: "",
-        water_disconnection_date: "",
-        water_connection_date: "",
-        water_disconnection_flag: "",
-        address: "",
+        water_supply_number: "世帯コード",
+        water_disconnection_date: "世帯コード",
+        water_connection_date: "世帯コード",
+        water_disconnection_flag: "世帯コード",
+        address: "世帯コード",
       },
     },
     water_usage: {
-      id: 0,
-      path: "",
+      id: 2,
+      path: "ee71475f-2287-4a9e-8cb3-b41d70f6c610.csv",
       columns: {
-        water_supply_number: "",
-        water_usage: "",
-        water_recorded_date: "",
+        water_supply_number: "世帯コード",
+        water_usage: "世帯コード",
+        water_recorded_date: "世帯コード",
       },
     },
     land_registry: {
@@ -239,8 +239,14 @@ const mockE001: PreprocessParameters = {
         building_id: "",
       },
     },
-    urban_planning: { id: 0, path: "" },
-    census: { id: 0, path: "" },
+    urban_planning: {
+      id: 0,
+      path: "",
+    },
+    census: {
+      id: 0,
+      path: "",
+    },
   },
 };
 

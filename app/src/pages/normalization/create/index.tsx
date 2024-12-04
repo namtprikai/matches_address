@@ -4,7 +4,7 @@ import {
   makeStyles,
   tokens,
 } from "@fluentui/react-components";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { Dismiss24Regular } from "@fluentui/react-icons";
 import { FormNormalization } from "../../../components/form-normalization";
 import { Button } from "../../../components/ui/button";
@@ -51,13 +51,15 @@ export function NormalizationCreate(): JSX.Element {
   const styles = useStyles();
   const navigator = useNavigate();
 
+  const { id } = useParams<{ id: string }>();
+
   return (
     <>
       <div className={styles.stickyWrapper}>
         <div className={styles.root}>
           <h2 className={styles.heading}>データ正規化処理</h2>
           <div>
-            <FormNormalization formId={formId} />
+            <FormNormalization formId={formId} jobId={id} />
           </div>
         </div>
         <div className={styles.footerActions}>

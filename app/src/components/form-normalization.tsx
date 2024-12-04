@@ -1,7 +1,9 @@
 import { Controller, useController } from "react-hook-form";
 import { makeStyles, tokens } from "@fluentui/react-components";
+import { useEffect } from "react";
 import { LanguageMap } from "../metadata";
 import { useFormNormalization } from "../hooks/use-form-normalization";
+import { useFetchJobs } from "../hooks/use-fetch-jobs";
 import { FormDataset } from "./form-dataset";
 import { FormNormalizationSettings } from "./form-normalization-settings";
 
@@ -21,10 +23,27 @@ const useStyles = makeStyles({
 
 type Props = {
   formId: string;
+  jobId?: string;
 };
 
-export const FormNormalization = ({ formId }: Props): JSX.Element => {
-  const { handleSubmit, control } = useFormNormalization();
+export const FormNormalization = ({ formId, jobId }: Props): JSX.Element => {
+  const { handleSubmit, control, reset } = useFormNormalization();
+  const { data } = useFetchJobs(jobId ? Number(jobId) : undefined);
+
+  const prevParameters = data ? data[0].parameters : undefined;
+
+  useEffect(() => {
+    if (prevParameters && jobId) {
+      reset({
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment -- ignore
+        // @ts-ignore
+        settings: prevParameters.settings,
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment -- ignore
+        // @ts-ignore
+        data: prevParameters.data,
+      });
+    }
+  }, [jobId, prevParameters, reset]);
 
   const onSubmit = handleSubmit(async (data) => {
     await window.ipcRenderer.invoke("execE001", {
