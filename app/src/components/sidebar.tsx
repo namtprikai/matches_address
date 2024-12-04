@@ -9,7 +9,8 @@ import {
   ArrowSyncCircleRegular,
   TableSwitchRegular,
 } from "@fluentui/react-icons";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useLocation } from "react-router-dom";
 
 const useStyles = makeStyles({
   navDrawer: {
@@ -101,12 +102,23 @@ const menuItems = [
 export const Sidebar = (): JSX.Element => {
   const styles = useStyles();
 
-  const [selectedValue, setSelectedValue] = useState("1");
+  const [selectedValue, setSelectedValue] = useState("");
+
+  /** グローバルナビ以外をクリックして画面遷移したときのための処理 */
+  const { pathname } = useLocation();
+  useEffect(() => {
+    if (selectedValue !== "") return; // selectedValueが空のときだけ実行
+    const value = menuItems.find((item) =>
+      pathname.replace("/", "").includes(item.href.replace("#", "")),
+    )?.value;
+    if (value) {
+      setSelectedValue(value);
+    }
+  }, [pathname, selectedValue]);
 
   return (
     <NavDrawer
       className={styles.navDrawer}
-      defaultSelectedCategoryValue="1"
       defaultSelectedValue="1"
       onNavItemSelect={(_, data) => setSelectedValue(data.value as string)}
       open
