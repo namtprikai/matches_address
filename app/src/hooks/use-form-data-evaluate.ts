@@ -4,7 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 
 export const schema = z.object({
   model_path: z.string(),
-  dataset_path: z.string(),
+  dataset_path: z.array(z.string()),
   spatial_file: z.string(),
   settings: z.object({
     threshold: z.number(),
@@ -25,7 +25,7 @@ export const useFormDataEvaluation = (): UseFormReturn<FormType> => {
     resolver: zodResolver(schema),
     defaultValues: {
       model_path: "",
-      dataset_path: "",
+      dataset_path: [],
       spatial_file: "",
       settings: {
         threshold: 0,
