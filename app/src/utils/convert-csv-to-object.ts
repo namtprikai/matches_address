@@ -24,8 +24,6 @@ export async function convertCsvToObject(filePath: string): Promise<Result> {
           columns: true, // 1行目をヘッダーとして扱う
           skip_empty_lines: true, // 空行をスキップ
           trim: true, // 値の前後の空白を削除
-          cast: true, // 自動的に型を変換
-          cast_date: true, // 日付文字列を Date オブジェクトに変換
           bom: true, // BOMを自動的に処理
         });
 
