@@ -95,6 +95,21 @@ export const TileResultView = ({
     setSelectedResultViewId(resultView.id);
   };
 
+  const handleDownload = async (
+    fileType: string,
+    coordinate: string,
+  ): Promise<void> => {
+    if (!resultView.data_set_result_id || !resultView.unit) return;
+    await window.ipcRenderer.invoke("exportData", {
+      data: {
+        output_file_type: fileType,
+        output_coordinate: coordinate,
+        data_set_results_id: resultView.data_set_result_id,
+        target_unit: resultView.unit,
+      },
+    });
+  };
+
   const handleDelete = async (): Promise<void> => {
     if (!resultView.sheet_id) return;
     await window.ipcRenderer.invoke("deleteResultView", {
@@ -126,7 +141,7 @@ export const TileResultView = ({
       <CardHeader
         action={
           <div className={styles.cardHeaderActions}>
-            <DownloadDialog />
+            <DownloadDialog onDownload={handleDownload} />
             <DeleteDialog onDelete={handleDelete} />
           </div>
         }
@@ -152,7 +167,11 @@ export const TileResultView = ({
   );
 };
 
-function DownloadDialog(): JSX.Element {
+function DownloadDialog({
+  onDownload,
+}: {
+  onDownload: (fileType: string, coordinate: string) => void;
+}): JSX.Element {
   const styles = useStyles();
   const [selectedFileType, setSelectedFileType] = useState(
     OUTPUT_FILE_TYPES[0].type,
@@ -161,13 +180,8 @@ function DownloadDialog(): JSX.Element {
     OUTPUT_COORDINATES[0].code,
   );
 
-  const handleDownload = async (): Promise<void> => {
-    await window.ipcRenderer.invoke("exportData", {
-      data: {
-        output_file_type: selectedFileType,
-        output_coordinate: selectedCoordinate,
-      },
-    });
+  const handleDownload = (): void => {
+    onDownload(selectedFileType, selectedCoordinate);
   };
 
   return (

@@ -1,5 +1,5 @@
 import { spawn } from "child_process";
-import { dbDirectory } from "../../utils/db";
+import { dbDirectory, dbPath } from "../../utils/db";
 import { binaryPath, type IpcMainListener } from "..";
 import { getErrorMessage } from "../../utils/get-error-message";
 import { processLogger } from "../../utils/process-logger";
@@ -8,6 +8,8 @@ type Params = {
   data: {
     output_file_type: string;
     output_coordinate: string;
+    target_unit: "building" | "area";
+    data_set_results_id: number;
   };
 };
 
@@ -22,6 +24,7 @@ export const exportData = (async (
 
   try {
     const output_path = dbDirectory;
+    const database_path = dbPath;
 
     // childProcessに入れてバックグラウンド実行
     const cp = spawn(
@@ -32,6 +35,7 @@ export const exportData = (async (
           JSON.stringify({
             ...data,
             output_path,
+            database_path,
           }),
         ),
       ],
