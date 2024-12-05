@@ -99,8 +99,8 @@ function AddView(): JSX.Element {
   const numberOfDataSets = dataSetResults?.length || 0;
   const [isLoading, setIsLoading] = useState(false);
   const startCreating = (): void => {
-    setIsLoading(true);
     console.info("Start creating dummy data set results!");
+    setIsLoading(true);
   };
   const finishCreating = async (): Promise<void> => {
     console.info("Finish creating dummy data set results🎉");
