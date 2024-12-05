@@ -18,7 +18,7 @@ export const exportData = (async (
   const { data } = params;
 
   // eslint-disable-next-line no-console -- for debug @todo remove
-  console.log("--- start evaluateData ---", data);
+  console.log("--- start exportData ---", data);
 
   try {
     const output_path = dbDirectory;
