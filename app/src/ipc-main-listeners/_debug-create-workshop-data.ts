@@ -27,7 +27,8 @@ export const _debugCreateWorkshopData = (async (
 
   await Promise.all(
     buildings.map(
-      async ({ id, created_at, updated_at, data_set_result_id, ...rest }) => {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars -- idや作成日時はをinsertしないようにする
+      async ({ id, created_at, updated_at, ...rest }) => {
         await db
           .insert(data_set_detail_buildings)
           .values({
@@ -47,7 +48,8 @@ export const _debugCreateWorkshopData = (async (
 
   await Promise.all(
     areas.map(
-      async ({ id, created_at, updated_at, data_set_result_id, ...rest }) => {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars -- idや作成日時はをinsertしないようにする
+      async ({ id, created_at, updated_at, ...rest }) => {
         await db
           .insert(data_set_detail_areas)
           .values({
