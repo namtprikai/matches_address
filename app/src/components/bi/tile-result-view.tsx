@@ -141,8 +141,8 @@ export const TileResultView = ({
       <CardHeader
         action={
           <div className={styles.cardHeaderActions}>
-            <DownloadDialog onDownload={handleDownload} />
-            <DeleteDialog onDelete={handleDelete} />
+            <DownloadDialog onSubmit={handleDownload} />
+            <DeleteDialog onSubmit={handleDelete} />
           </div>
         }
         header={
@@ -168,9 +168,9 @@ export const TileResultView = ({
 };
 
 function DownloadDialog({
-  onDownload,
+  onSubmit,
 }: {
-  onDownload: (fileType: string, coordinate: string) => void;
+  onSubmit: (fileType: string, coordinate: string) => void;
 }): JSX.Element {
   const styles = useStyles();
   const [selectedFileType, setSelectedFileType] = useState(
@@ -179,10 +179,6 @@ function DownloadDialog({
   const [selectedCoordinate, setSelectedCoordinate] = useState(
     OUTPUT_COORDINATES[0].code,
   );
-
-  const handleDownload = (): void => {
-    onDownload(selectedFileType, selectedCoordinate);
-  };
 
   return (
     <Dialog>
@@ -258,7 +254,12 @@ function DownloadDialog({
             </div>
           </DialogContent>
           <DialogActions position="end">
-            <Button appearance="primary" onClick={handleDownload}>
+            <Button
+              appearance="primary"
+              onClick={() => {
+                onSubmit(selectedFileType, selectedCoordinate);
+              }}
+            >
               ダウンロード
             </Button>
           </DialogActions>
@@ -268,7 +269,7 @@ function DownloadDialog({
   );
 }
 
-function DeleteDialog({ onDelete }: { onDelete: () => void }): JSX.Element {
+function DeleteDialog({ onSubmit }: { onSubmit: () => void }): JSX.Element {
   const styles = useStyles();
 
   return (
@@ -305,7 +306,7 @@ function DeleteDialog({ onDelete }: { onDelete: () => void }): JSX.Element {
             <Button>キャンセル</Button>
           </DialogActions>
           <DialogActions position="end">
-            <Button appearance="primary" onClick={onDelete}>
+            <Button appearance="primary" onClick={onSubmit}>
               削除
             </Button>
           </DialogActions>
