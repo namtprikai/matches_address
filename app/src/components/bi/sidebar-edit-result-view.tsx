@@ -109,10 +109,9 @@ function AddView(): JSX.Element {
   };
   const handleImportingWorkshopData = async (): Promise<void> => {
     startCreating();
-    const response = await fetch("/D902_workshop.csv");
-    const text = await response.text();
-    // eslint-disable-next-line no-console -- TODO: 後で消す
-    console.log(text);
+    await window.ipcRenderer.invoke("_debugCreateWorkshopData", {
+      title: `分析結果(ワークショップ)-${numberOfDataSets + 1}`,
+    });
     await finishCreating();
   };
 
