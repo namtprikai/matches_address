@@ -6,6 +6,7 @@ import { useFormNormalization } from "../hooks/use-form-normalization";
 import { useFetchJobs } from "../hooks/use-fetch-jobs";
 import { FormDataset } from "./form-dataset";
 import { FormNormalizationSettings } from "./form-normalization-settings";
+import { ErrorMessage } from "./error-message";
 
 const useStyles = makeStyles({
   root: {
@@ -24,10 +25,23 @@ const useStyles = makeStyles({
 type Props = {
   formId: string;
   jobId?: string;
+  afterSubmit: () => void;
 };
 
-export const FormNormalization = ({ formId, jobId }: Props): JSX.Element => {
-  const { handleSubmit, control, reset } = useFormNormalization();
+export const FormNormalization = ({
+  formId,
+  jobId,
+  afterSubmit,
+}: Props): JSX.Element => {
+  const {
+    handleSubmit,
+    control,
+    reset,
+    formState: { errors },
+  } = useFormNormalization();
+
+  const hasErrors = Object.keys(errors).length > 0;
+
   const { data } = useFetchJobs(jobId ? Number(jobId) : undefined);
 
   const prevParameters =
@@ -50,6 +64,7 @@ export const FormNormalization = ({ formId, jobId }: Props): JSX.Element => {
     await window.ipcRenderer.invoke("execE001", {
       parameters: data,
     });
+    afterSubmit();
   });
 
   const styles = useStyles();
@@ -63,6 +78,9 @@ export const FormNormalization = ({ formId, jobId }: Props): JSX.Element => {
 
   return (
     <form className={styles.root} id={formId} onSubmit={onSubmit}>
+      {hasErrors && (
+        <ErrorMessage msg="エラーが発生しました。フォームの内容を確認してください。" />
+      )}
       <Controller
         control={control}
         name={"data.resident_registry"}
