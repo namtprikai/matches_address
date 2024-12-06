@@ -20,6 +20,7 @@ export const _debugCreateWorkshopData = (async (
     .get();
 
   const buildings = await (async () => {
+    // TODO: 建物データは大きそうなので分割してインサートしないとメモリリークするかも
     const filePath = getFilePathInPublic("D902_workshop.csv");
     const converted = await convertCsvToObject(filePath);
     return converted.data;
