@@ -1,24 +1,19 @@
-import {
-  type InsertNormalizedDataSet,
-  normalized_data_sets,
-  result_views,
-} from "../schema";
+import { type InsertNormalizedDataSet, normalized_data_sets } from "../schema";
 import { db } from "../utils/db";
 import { type IpcMainListener } from ".";
 
 export const insertNormalizedDatasets = (async (
   _: unknown,
-  { file_name, file_path, job_results_id }: InsertNormalizedDataSet,
+  { file_name, file_path }: InsertNormalizedDataSet,
 ): Promise<{ insertedId: number }> => {
   const res = db
     .insert(normalized_data_sets)
     .values({
       file_name,
       file_path,
-      job_results_id,
     })
     .returning({
-      insertedId: result_views.id,
+      insertedId: normalized_data_sets.id,
     })
     .get();
 

@@ -276,31 +276,25 @@ const _dummyNormalizedDataSets: InsertNormalizedDataSet[] = [
   {
     file_name: "正規化済みデータ",
     file_path: "dummy-data.csv",
-    job_results_id: 1,
   },
   {
     file_name: "水道メーター1.shp",
     file_path: "dummy-data.csv",
-    job_results_id: 2,
   },
   {
     file_name: "前処理住民台帳1.csv",
     file_path: "dummy-data.csv",
-    job_results_id: 3,
   },
   {
     file_name: "前処理住民台帳2.csv",
     file_path: "dummy-data.csv",
-    job_results_id: 4,
   },
   {
     file_name: "前処理住民台帳3.csv",
     file_path: "dummy-data.csv",
-    job_results_id: 5,
   },
   {
     file_name: "水道メーター2.shp",
     file_path: "dummy-data.csv",
-    job_results_id: 6,
   },
 ];
