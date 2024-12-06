@@ -107,13 +107,6 @@ function AddView(): JSX.Element {
     await mutate();
     setIsLoading(false);
   };
-  const handleImportingWorkshopData = async (): Promise<void> => {
-    startCreating();
-    await window.ipcRenderer.invoke("_debugCreateWorkshopData", {
-      title: `分析結果(ワークショップ)-${numberOfDataSets + 1}`,
-    });
-    await finishCreating();
-  };
 
   return (
     <>
@@ -179,13 +172,6 @@ function AddView(): JSX.Element {
           size="small"
         >
           軽量版のデータセットを追加
-        </Button>
-        <Button
-          disabled={isLoading}
-          onClick={handleImportingWorkshopData}
-          size="small"
-        >
-          ワークショップ用のデータセットを追加
         </Button>
         {isLoading ? (
           <div>
