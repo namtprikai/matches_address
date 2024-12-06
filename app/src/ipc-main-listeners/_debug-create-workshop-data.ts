@@ -5,6 +5,7 @@ import {
   data_set_detail_areas,
   data_set_detail_buildings,
   data_set_results,
+  type InsertDataSetDetailArea,
   type InsertDataSetDetailBuilding,
 } from "../schema";
 import { type IpcMainListener } from ".";
@@ -28,12 +29,12 @@ export const _debugCreateWorkshopData = (async (
 
   await Promise.all(
     buildings.map(
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars -- idや作成日時はをinsertしないようにする
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars -- idや作成日時はinsertしないようにする
       async ({ id, created_at, updated_at, ...rest }) => {
         await db
           .insert(data_set_detail_buildings)
           .values({
-            ...(rest as unknown as InsertDataSetDetailBuilding),
+            ...(rest as unknown as InsertDataSetDetailBuilding), // 想定通りのデータがくるので型エラーを無視する
             data_set_result_id: dataSetResultsId,
           })
           .execute();
@@ -49,12 +50,12 @@ export const _debugCreateWorkshopData = (async (
 
   await Promise.all(
     areas.map(
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars -- idや作成日時はをinsertしないようにする
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars -- idや作成日時はinsertしないようにする
       async ({ id, created_at, updated_at, ...rest }) => {
         await db
           .insert(data_set_detail_areas)
           .values({
-            ...(rest as unknown as InsertDataSetDetailBuilding),
+            ...(rest as unknown as InsertDataSetDetailArea), // 想定通りのデータがくるので型エラーを無視する
             data_set_result_id: dataSetResultsId,
           })
           .execute();
