@@ -1,23 +1,26 @@
 import { spawn } from "child_process";
-import { type z } from "zod";
 import { dbDirectory, dbPath } from "../../utils/db";
-import { binaryPath, type IpcMainListener } from "../";
-import { type schema } from "../../hooks/use-form-data-evaluate";
+import { binaryPath, type IpcMainListener } from "..";
 import { getErrorMessage } from "../../utils/get-error-message";
 import { processLogger } from "../../utils/process-logger";
 
 type Params = {
-  data: z.infer<typeof schema>;
+  data: {
+    output_file_type: string;
+    output_coordinate: string;
+    target_unit: "building" | "area";
+    data_set_results_id: number;
+  };
 };
 
-export const evaluateData = (async (
+export const exportData = (async (
   _: unknown,
   params: Params,
 ): Promise<boolean> => {
   const { data } = params;
 
   // eslint-disable-next-line no-console -- for debug @todo remove
-  console.log("--- start evaluateData ---", data);
+  console.log("--- start exportData ---", data);
 
   try {
     const output_path = dbDirectory;
@@ -25,7 +28,7 @@ export const evaluateData = (async (
 
     // childProcessに入れてバックグラウンド実行
     const cp = spawn(
-      binaryPath("IF003"),
+      binaryPath("IF004"),
       [
         "--parameters",
         JSON.stringify(

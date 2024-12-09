@@ -13,6 +13,7 @@ import { DialogBody } from "../../../components/ui/dialog-body";
 import { DialogTitle } from "../../../components/ui/dialog-title";
 import { DialogContent } from "../../../components/ui/dialog-content";
 import { DialogActions } from "../../../components/ui/dialog-actions";
+import { useDialogState } from "../../../hooks/use-dialog-state";
 
 const useStyles = makeStyles({
   root: {
@@ -53,27 +54,33 @@ export function NormalizationCreate(): JSX.Element {
 
   const { id } = useParams<{ id: string }>();
 
+  const { isOpen, setIsOpen } = useDialogState();
+
   return (
     <>
       <div className={styles.stickyWrapper}>
         <div className={styles.root}>
           <h2 className={styles.heading}>データ正規化処理</h2>
           <div>
-            <FormNormalization formId={formId} jobId={id} />
+            <FormNormalization
+              afterSubmit={() => {
+                setIsOpen(true);
+              }}
+              formId={formId}
+              jobId={id}
+            />
           </div>
         </div>
         <div className={styles.footerActions}>
-          <Dialog>
-            <DialogTrigger disableButtonEnhancement>
-              <Button
-                appearance="primary"
-                form={formId}
-                size="medium"
-                type="submit"
-              >
-                開始する
-              </Button>
-            </DialogTrigger>
+          <Button
+            appearance="primary"
+            form={formId}
+            size="medium"
+            type="submit"
+          >
+            開始する
+          </Button>
+          <Dialog onOpenChange={(_, { open }) => setIsOpen(open)} open={isOpen}>
             <DialogSurface>
               <DialogBody>
                 <DialogTitle

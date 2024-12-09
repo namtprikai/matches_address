@@ -89,8 +89,17 @@ export function Dataset(): JSX.Element {
     e: ChangeEvent<HTMLInputElement>,
   ): Promise<void> => {
     const file = e.target.files?.[0];
-    void saveDataSetFile(file, selectedValue);
-    void mutateRaw();
+    try {
+      await saveDataSetFile(file, selectedValue);
+      if (selectedValue === "raw") {
+        await mutateRaw();
+      }
+      if (selectedValue === "normalization") {
+        await mutateNormalized();
+      }
+    } catch (error) {
+      console.error("Operation failed:", error);
+    }
     e.target.value = ""; // ファイル選択をリセットする
   };
 
@@ -105,11 +114,7 @@ export function Dataset(): JSX.Element {
           ),
         )
           .then(() => {
-            void mutateRaw(
-              (prev) =>
-                prev?.filter((item) => !selectedItemIds.includes(item.id)),
-              false,
-            );
+            void mutateRaw();
             setSelectedItemIds([]);
           })
           .catch(console.error);
@@ -124,11 +129,7 @@ export function Dataset(): JSX.Element {
           ),
         )
           .then(() => {
-            void mutateNormalized(
-              (prev) =>
-                prev?.filter((item) => !selectedItemIds.includes(item.id)),
-              false,
-            );
+            void mutateNormalized();
             setSelectedItemIds([]);
           })
           .catch(console.error);
@@ -143,11 +144,7 @@ export function Dataset(): JSX.Element {
           ),
         )
           .then(() => {
-            void mutateResult(
-              (prev) =>
-                prev?.filter((item) => !selectedItemIds.includes(item.id)),
-              false,
-            );
+            void mutateResult();
             setSelectedItemIds([]);
           })
           .catch(console.error);
@@ -279,31 +276,25 @@ const _dummyNormalizedDataSets: InsertNormalizedDataSet[] = [
   {
     file_name: "正規化済みデータ",
     file_path: "dummy-data.csv",
-    job_results_id: 1,
   },
   {
     file_name: "水道メーター1.shp",
     file_path: "dummy-data.csv",
-    job_results_id: 2,
   },
   {
     file_name: "前処理住民台帳1.csv",
     file_path: "dummy-data.csv",
-    job_results_id: 3,
   },
   {
     file_name: "前処理住民台帳2.csv",
     file_path: "dummy-data.csv",
-    job_results_id: 4,
   },
   {
     file_name: "前処理住民台帳3.csv",
     file_path: "dummy-data.csv",
-    job_results_id: 5,
   },
   {
     file_name: "水道メーター2.shp",
     file_path: "dummy-data.csv",
-    job_results_id: 6,
   },
 ];

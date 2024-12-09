@@ -95,8 +95,19 @@ export const TileResultView = ({
     setSelectedResultViewId(resultView.id);
   };
 
-  const handleDownload = (): void => {
-    // TODO: ダウンロード処理
+  const handleDownload = async (
+    fileType: string,
+    coordinate: string,
+  ): Promise<void> => {
+    if (!resultView.data_set_result_id || !resultView.unit) return;
+    await window.ipcRenderer.invoke("exportData", {
+      data: {
+        output_file_type: fileType,
+        output_coordinate: coordinate,
+        data_set_results_id: resultView.data_set_result_id,
+        target_unit: resultView.unit,
+      },
+    });
   };
 
   const handleDelete = async (): Promise<void> => {
@@ -130,8 +141,8 @@ export const TileResultView = ({
       <CardHeader
         action={
           <div className={styles.cardHeaderActions}>
-            <DownloadDialog onDownload={handleDownload} />
-            <DeleteDialog onDelete={handleDelete} />
+            <DownloadDialog onSubmit={handleDownload} />
+            <DeleteDialog onSubmit={handleDelete} />
           </div>
         }
         header={
@@ -157,9 +168,9 @@ export const TileResultView = ({
 };
 
 function DownloadDialog({
-  onDownload,
+  onSubmit,
 }: {
-  onDownload: () => void;
+  onSubmit: (fileType: string, coordinate: string) => void;
 }): JSX.Element {
   const styles = useStyles();
   const [selectedFileType, setSelectedFileType] = useState(
@@ -168,9 +179,6 @@ function DownloadDialog({
   const [selectedCoordinate, setSelectedCoordinate] = useState(
     OUTPUT_COORDINATES[0].code,
   );
-
-  // eslint-disable-next-line no-console -- TODO: ダウンロード処理
-  console.log(selectedFileType, selectedCoordinate);
 
   return (
     <Dialog>
@@ -246,7 +254,12 @@ function DownloadDialog({
             </div>
           </DialogContent>
           <DialogActions position="end">
-            <Button appearance="primary" onClick={onDownload}>
+            <Button
+              appearance="primary"
+              onClick={() => {
+                onSubmit(selectedFileType, selectedCoordinate);
+              }}
+            >
               ダウンロード
             </Button>
           </DialogActions>
@@ -256,7 +269,7 @@ function DownloadDialog({
   );
 }
 
-function DeleteDialog({ onDelete }: { onDelete: () => void }): JSX.Element {
+function DeleteDialog({ onSubmit }: { onSubmit: () => void }): JSX.Element {
   const styles = useStyles();
 
   return (
@@ -293,7 +306,7 @@ function DeleteDialog({ onDelete }: { onDelete: () => void }): JSX.Element {
             <Button>キャンセル</Button>
           </DialogActions>
           <DialogActions position="end">
-            <Button appearance="primary" onClick={onDelete}>
+            <Button appearance="primary" onClick={onSubmit}>
               削除
             </Button>
           </DialogActions>

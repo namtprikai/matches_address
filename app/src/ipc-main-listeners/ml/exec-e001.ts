@@ -23,6 +23,9 @@ export const execE001 = (async (
       database_path,
     };
 
+    // eslint-disable-next-line no-console -- for debug @todo remove
+    console.log("--- start execE001 ---", postParameters);
+
     // childProcessに入れてバックグラウンド実行
     const cp = spawn(
       binaryPath("IF001"),

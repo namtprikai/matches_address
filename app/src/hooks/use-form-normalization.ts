@@ -9,7 +9,7 @@ export const schema = z.object({
     reference_data: z.enum(["water_status", "resident_registry"]),
     reference_date: z.string(),
     advanced: z.object({
-      similarity_threshold: z.number().default(0.95),
+      similarity_threshold: z.coerce.number().default(0.95),
       n_gram_size: z.number().default(2),
       joining_method: z
         .enum(["intersection", "nearest"])
