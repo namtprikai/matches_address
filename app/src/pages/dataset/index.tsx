@@ -5,6 +5,7 @@ import {
   Tab,
   TabList,
   tokens,
+  Button as FUIButton,
 } from "@fluentui/react-components";
 import { AddRegular } from "@fluentui/react-icons";
 import { useTabs } from "../../hooks/use-tabs";
@@ -157,17 +158,6 @@ export function Dataset(): JSX.Element {
     }
   };
 
-  async function _handleAddDummyDataSets(): Promise<void> {
-    for (const seed of _dummyRawDataSets) {
-      await window.ipcRenderer.invoke("insertRawDatasets", seed);
-    }
-    for (const normalized of _dummyNormalizedDataSets) {
-      await window.ipcRenderer.invoke("insertNormalizedDatasets", normalized);
-    }
-    void mutateRaw();
-    void mutateNormalized();
-  }
-
   return (
     <div className={styles.root}>
       <div className={styles.header}>
@@ -191,9 +181,6 @@ export function Dataset(): JSX.Element {
             </Tab>
           ))}
         </TabList>
-        <Button onClick={_handleAddDummyDataSets}>
-          ダミーデータを追加する
-        </Button>
       </div>
       <Card className={styles.content}>
         <div className={styles.actions}>
@@ -241,6 +228,47 @@ export function Dataset(): JSX.Element {
           }
         </div>
       </Card>
+      <DummyDataButtons />
+    </div>
+  );
+}
+
+function DummyDataButtons(): JSX.Element {
+  const { mutate: mutateRaw } = useFetchRawDatasets();
+  const { mutate: mutateNormalized } = useFetchNormalizedDatasets();
+  const { mutate: mutateResult } = useFetchDataSetResults();
+
+  async function handleAddRawAndNormalized(): Promise<void> {
+    for (const seed of _dummyRawDataSets) {
+      await window.ipcRenderer.invoke("insertRawDatasets", seed);
+    }
+    for (const normalized of _dummyNormalizedDataSets) {
+      await window.ipcRenderer.invoke("insertNormalizedDatasets", normalized);
+    }
+    await mutateRaw();
+    await mutateNormalized();
+  }
+
+  const handleAddResult = async (): Promise<void> => {
+    await window.ipcRenderer.invoke("_debugCreateWorkshopData", {
+      title: `判定結果データ`,
+    });
+    await mutateResult();
+  };
+
+  return (
+    <div
+      style={{
+        display: "flex",
+        gap: "8px",
+      }}
+    >
+      <FUIButton onClick={handleAddRawAndNormalized} size="small">
+        シード・正規化済みデータを追加する
+      </FUIButton>
+      <FUIButton onClick={handleAddResult} size="small">
+        判定結果データを追加する
+      </FUIButton>
     </div>
   );
 }
