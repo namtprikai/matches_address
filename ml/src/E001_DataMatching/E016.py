@@ -21,9 +21,7 @@ import argparse
 import sys
 import chardet
 import geopandas as gpd
-import numpy as np
 import pandas as pd
-import tempfile
 import zipfile
 import shutil
 import subprocess
@@ -31,7 +29,6 @@ import xml.etree.ElementTree as ET
 import glob
 from tqdm import tqdm
 from concurrent.futures import ThreadPoolExecutor
-from pyproj import Transformer
 from shapely import wkt, wkb
 from shapely.geometry import MultiPolygon, Point, Polygon
 
@@ -223,7 +220,7 @@ def detect_encoding(file_path):
     """
     # ファイルの内容を読み込む
     with open(file_path, 'rb') as file:
-        raw_data = file.read()
+        raw_data = file.read(100)
     # エンコーディングを検出して返す
     result = chardet.detect(raw_data)
     return result['encoding']
@@ -253,7 +250,7 @@ def read_csv(path: str, **kwargs) -> pd.DataFrame:
             raise ValueError(f"CSVファイル以外は対応していません: {file_extension}")
         
         # 複数のエンコーディングを試行                
-        encodings = ['shift_jis', 'cp932', 'utf-8', 'utf-16']
+        encodings = ['utf-8-sig']
         for encoding in encodings:
             try:
                 # 各エンコーディングでファイルの読み込みを試みる
@@ -574,8 +571,23 @@ def assign_points_to_buildings(buildings_gdf, points_gdf, mul, crs, point_select
         joined = joined.drop(columns=[col for col in columns_to_drop if col in joined.columns])
         combined_gdf = joined
         # Z次元を削除した2次元ジオメトリに変換
-        _drop_z = lambda geom: wkb.loads(wkb.dumps(geom, output_dimension=2))
-        combined_gdf['geometry_plateau'] = combined_gdf['geometry_plateau'].transform(_drop_z)
+        def _drop_z(geom):
+            try:
+                if geom is None or geom.is_empty:
+                    return geom  # 無効なジオメトリはそのまま返す
+                # Z次元を持つ場合は 2D に変換
+                if geom.has_z:
+                    return wkb.loads(wkb.dumps(geom, output_dimension=2))
+                return geom  # すでに 2D の場合はそのまま返す
+            except Exception as e:
+                print(f"Error processing geometry: {e}")
+                return geom
+
+
+        # geometry_plateauに対して有効なジオメトリのみ変換を適用
+        combined_gdf = combined_gdf[combined_gdf['geometry_plateau'].notnull()]
+        # geometry_plateau を GeoSeries として扱う
+        combined_gdf['geometry_plateau'] = gpd.GeoSeries(combined_gdf['geometry_plateau']).apply(_drop_z)
         combined_gdf = gpd.GeoDataFrame(combined_gdf, geometry='geometry')
     else:
         # 空間結合(交差)の実行（ここで、水道のデータが2つ以上結合されている場合があるので、最も近いもののみを残す）
@@ -603,11 +615,20 @@ def assign_points_to_buildings(buildings_gdf, points_gdf, mul, crs, point_select
             combined_gdf = combined_gdf.merge(buildings_gdf[['right_geometry']], left_on='index_right', right_index=True, how='left')
         # ここでgeometry_plateauのZ次元を削除した2次元ジオメトリに変換
         def _drop_z(geom):
-            if geom is not None and not geom.is_empty:
+            try:
+                # MultiPolygon または Polygon で Z 次元がない場合はそのまま返す
+                if isinstance(geom, (MultiPolygon, Polygon)) and geom.has_z is False:
+                    return geom
+                # Z 次元がある場合のみ 2D に変換
                 return wkb.loads(wkb.dumps(geom, output_dimension=2))
-            return None
+            except Exception as e:
+                print(f"Geometry processing error: {e}")
+                return geom  # エラー時はそのまま返す
 
         # geometry_plateauに対して有効なジオメトリのみ変換を適用
+        combined_gdf = combined_gdf[combined_gdf['geometry_plateau'].notnull()]
+        combined_gdf = combined_gdf[~combined_gdf['geometry_plateau'].is_empty]
+        
         combined_gdf['geometry_plateau'] = combined_gdf['geometry_plateau'].apply(_drop_z)
 
         # 建物のジオメトリに設定しなおして、GeoDataFrameに変換
@@ -693,7 +714,7 @@ def save_geodataframe(gdf, output_path, output_type):
     ValueError
         サポートされていない出力形式が指定された場合
     """
-    encodings = ['shift_jis', 'cp932', 'utf-8']
+    encodings = ['utf-8-sig']
 
     if output_type == 'gpkg':
         # GeoPackage形式で保存
@@ -781,7 +802,7 @@ def filter_elements(gml_file, output_file):
             root.remove(building)
 
     # 結果を一時ファイルに保存
-    tree.write(output_file, encoding="utf-8", xml_declaration=True)
+    tree.write(output_file, encoding="utf-8-sig", xml_declaration=True)
 
 def convert_gml_to_gpkg(gml_file):
     """
