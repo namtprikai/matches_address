@@ -145,70 +145,9 @@ class DataProcessor:
         path : str
             保存先のファイルパス
         """
-        def shift_jis_compatible(text):
-            """
-            テキストをShift-JISエンコーディングと互換性のある形式に変換する。
-
-            Parameters
-            ----------
-            text : str or any
-                変換するテキスト。文字列でない場合はそのまま返す。
-
-            Returns
-            -------
-            str or any
-                Shift-JIS互換の文字列、または元の値（文字列でない場合）
-            """
-            # 入力が文字列でない場合、変換せずにそのまま返す
-            if not isinstance(text, str):
-                return text
-            
-            # CJK互換漢字の変換マップ
-            cjk_compat_chars = {
-                '\ufa11': '\u5d0e',      # CJK互換漢字の「﨑」を通常の「崎」に変換
-                '\U000219c3': '\u5b87',  # CJK互換漢字の「𡧃」を通常の「宇」に変換
-                '\u9ad9': '\u9ad8',      # CJK互換漢字の「髙」を通常の「高」に変換
-                '\u7028': '\u702c',      # CJK互換漢字の「瀨」を通常の「瀬」に変換
-                '\u66fb': '\u6607',      # CJK互換漢字の「曻」を通常の「昇」に変換
-                '\u5fb7': '\u5fb3',      # CJK互換漢字の「德」を通常の「徳」に変換
-                '\uf9dc': '\u9686',      # CJK互換漢字の「隆」を通常の「隆」に変換
-                '\u6801': '\u67f3',      # CJK互換漢字の「栁」を通常の「柳」に変換
-                '\ufa1a': '\u7965',      # CJK互換漢字の「祥」を通常の「祥」に変換
-                '\uf929': '\u6717'       # CJK互換漢字の「朗」を通常の「朗」に変換
-            }
-            # CJK互換漢字を通常の漢字に置換
-            for compat, normal in cjk_compat_chars.items():
-                text = text.replace(compat, normal)
-            
-            # Shift-JISで表現できない文字の置換マップ
-            replace_map = {
-                '①': '(1)', '②': '(2)', '③': '(3)', '④': '(4)', '⑤': '(5)',
-                '⑥': '(6)', '⑦': '(7)', '⑧': '(8)', '⑨': '(9)', '⑩': '(10)'
-            }
-            
-            # Shift-JISで表現できない文字を置換
-            for k, v in replace_map.items():
-                text = text.replace(k, v)
-            
-            # Shift-JISに変換できない文字を「?」に置き換える
-            encoded_text = ''
-            for char in text:
-                try:
-                    # 文字をShift-JISでエンコードしてみる
-                    char.encode('shift_jis')
-                    # エンコードできた場合はそのまま追加
-                    encoded_text += char
-                except UnicodeEncodeError:
-                    # エンコードできなかった場合は「?」に置き換え
-                    encoded_text += '?'
-            
-            return encoded_text
-
-        # データフレームの各列にShift-JIS互換処理を適用
-        df = df.applymap(shift_jis_compatible)
 
         # エンコーディングの優先順位リスト
-        encodings = ['shift_jis', 'cp932', 'utf-8']
+        encodings = ['utf-8-sig']
 
         # 各エンコーディングで保存を試みる
         for encoding in encodings:
@@ -528,7 +467,7 @@ def detect_encoding(file_path):
     """
     # ファイルの内容を読み込む
     with open(file_path, 'rb') as file:
-        raw_data = file.read()
+        raw_data = file.read(100)
     # エンコーディングを検出して返す
     result = chardet.detect(raw_data)
     return result['encoding']
@@ -558,7 +497,7 @@ def read_file(path, key, **kwargs):
         
         if file_extension == '.csv':
             # CSVファイルの場合の処理
-            encodings = ['shift_jis', 'cp932', 'utf-8', 'utf-16']
+            encodings = ['utf-8-sig']
             for encoding in encodings:
                 try:
                     # 各エンコーディングでファイルの読み込みを試みる
@@ -736,7 +675,10 @@ def process_data(input_files, output_directory, main_data_type, job_id, columns,
             touki_df = handle_optional_file(input_files.get('touki'), "touki", main_df, main_address_col, INPUT_COLUMNS)
         akiya_result_df = handle_optional_file(input_files.get('akiya_result'), "akiya_result", main_df, main_address_col, INPUT_COLUMNS)
         geocoding_df = handle_optional_file(input_files.get('geocoding'), "geocoding", main_df, main_address_col, INPUT_COLUMNS)
-
+        
+        if job_id:
+            create_or_update_job(job_id, "5")
+            
         # ファイルを保存して、処理に反映
         if input_files.get('suido_use'):
             suido_use_df.to_csv(f"{output_directory}/processed_suido_use.csv", index=False)
@@ -759,21 +701,24 @@ def process_data(input_files, output_directory, main_data_type, job_id, columns,
             input_paths['juki'] = input_files.get('juki')
         if input_files.get('touki'):
             input_paths['touki'] = f"{output_directory}/processed_touki.csv"
-            
+        if job_id:
+            create_or_update_job(job_id, "10")
         # EachFileProcessorインスタンスを作成
         # 入力パスと出力パスを引数として、ファイル処理用のオブジェクトを生成
         processor = EachFileProcessor(input_paths, output_paths)
-        
+        progress_percent_job = 10
         # 各データファイルを順番に処理
         for file_key in input_paths.keys():
             progress_percent += 16
+            progress_percent_job += 2
             # 処理中のファイル名を表示
             print(f"{file_key}データを処理中...")
             # EachFileProcessorのprocess_fileメソッドを呼び出して各ファイルを処理
             processor.process_file(file_key)
             if job_id:
                 create_or_update_job_task(job_id, progress_percent=str(progress_percent), preprocess_type="e012", error_code=None, result=None, id= task_id)
-
+                create_or_update_job(job_id, progress_percent_job)
+                
         print("すべての処理が完了しました!")
         if job_id:
             create_or_update_job_task(job_id, progress_percent="100", preprocess_type="e012", error_code=None, result=json.dumps({}), id= task_id, is_finish=True)

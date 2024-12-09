@@ -13,6 +13,8 @@ from src.E001_DataMatching.E013 import process_all_data as E013
 from src.E001_DataMatching.E014 import embedding_address as E014
 from src.E001_DataMatching.E016 import process_data as E016
 
+sys.stdin = open(sys.stdin.fileno(), mode='r', encoding='utf-8')
+sys.stdout = open(sys.stdout.fileno(), mode='w', encoding='utf-8')
 
 def main():
 
@@ -29,8 +31,8 @@ def main():
         'output_path': json_dict.get('output_path', '.'),
         'suido_status': json_dict.get('data', {}).get('water_status', {}).get('path', None),
         'suido_status_columns': json_dict.get('data', {}).get('water_status', {}).get('columns', {}),
-        'suido_use': json_dict.get('data', {}).get('water_supply_usage', {}).get('path', None),
-        'suido_use_columns': json_dict.get('data', {}).get('water_supply_usage', {}).get('columns', {}),
+        'suido_use': json_dict.get('data', {}).get('water_usage', {}).get('path', None),
+        'suido_use_columns': json_dict.get('data', {}).get('water_usage', {}).get('columns', {}),
         'juki': json_dict.get('data', {}).get('resident_registry', {}).get('path', None),
         'juki_columns': json_dict.get('data', {}).get('resident_registry', {}).get('columns', {}),
         'touki': json_dict.get('data', {}).get('land_registry', {}).get('path', None),
@@ -38,9 +40,10 @@ def main():
         'akiya_result': json_dict.get('data', {}).get('vacant_house', {}).get('path', None),
         'akiya_result_columns': json_dict.get('data', {}).get('vacant_house', {}).get('columns', {}),
         'geocoding': json_dict.get('data', {}).get('geocoding', {}).get('path', None),
+        'geocoding_columns': json_dict.get('data', {}).get('geocoding', {}).get('columns', {}),
         'census': json_dict.get('data', {}).get('census', {}).get('path', None),
-        'buidling_polygon': json_dict.get('data', {}).get('buidling_polygon', {}).get('path', None),
-        'buidling_polygon_column': json_dict.get('data', {}).get('buidling_polygon', {}).get('columns', {}).get('building_id', None),
+        'building_polygon': json_dict.get('data', {}).get('building_polygon', {}).get('path', None),
+        'building_polygon_column': json_dict.get('data', {}).get('building_polygon', {}).get('columns', {}).get('building_id', None),
         'urban_planning': json_dict.get('data', {}).get('urban_planning', {}).get('path', None),
         'n_gram_size': json_dict.get('settings', {}).get('advanced', {}).get('n_gram_size', "2"),
         'similarity_threshold': json_dict.get('settings', {}).get('advanced', {}).get('similarity_threshold', "0.95"),
@@ -54,7 +57,7 @@ def main():
             "suido_number": params.get("suido_status_columns", {}).get("water_supply_number"),
             "usage_status": params.get("suido_status_columns", {}).get("water_disconnection_flag"),
             "suido_status_address": params.get("suido_status_columns", {}).get("address"),
-            "usage_start_date": params.get("suido_status_columns", {}).get("water_connection_flag"),
+            "usage_start_date": params.get("suido_status_columns", {}).get("water_connection_date"),
             "usage_end_date": params.get("suido_status_columns", {}).get("water_disconnection_date"),
         },
         "suido_use": {
@@ -65,7 +68,7 @@ def main():
         "juki": {
             "setai_code": params.get("juki_columns", {}).get("household_code"),
             "juki_address": params.get("juki_columns", {}).get("address"),
-            "birth": params.get("juki_columns", {}).get("birthdate"),
+            "birth": params.get("juki_columns", {}).get("birth_date"),
             "gender": params.get("juki_columns", {}).get("gender"),
             "move_date": params.get("juki_columns", {}).get("resident_date"),
         },
@@ -81,9 +84,9 @@ def main():
             "akiya_result_lon": params.get("akiya_result_columns", {}).get("longitude")
         },
         "geocoding": {
-            "geocoding_address": "住所",
-            "geocoding_lat": "lat",
-            "geocofing_lon": "long",
+            "geocoding_address": params.get("geocoding_columns", {}).get("address", "住所"),
+            "geocoding_lat": params.get("geocoding_columns", {}).get("latitude", "lat"),
+            "geocoding_lon": params.get("geocoding_columns", {}).get("longitude", "long"),
         }
     }
 
@@ -101,18 +104,11 @@ def main():
         connect_sqllite(params.get('db_path'))
         job_id = create_or_update_job(None ,"", "ml", os.getpid(), 0, args.parameters)
         
-        merge_base = 'suido_residence'
-        main_data_type = 'suido_status'
-        main_csv = f"{output_directory}/suido_residence.csv"
-        if params.get('reference_data') == 'resident_registry':
-            merge_base = 'juki_residence'
-            main_data_type = 'juki'
-            main_csv = f"{output_directory}/juki_residence.csv"
-        
         suido_use_file = None
         suido_status_file = None
         juki_file = None
         tatemono_file = None
+        main_input_source = 'juki' if params.get('juki') else 'suido_status'
         input_source = []
         input_source_jp = {
             'juki': '住基',
@@ -126,25 +122,37 @@ def main():
             "akiya_result": concatenate(params.get('output_path'), params.get('akiya_result')),
             "geocoding": concatenate(params.get('output_path'), params.get('geocoding'))
         }
+            
         if params.get('suido_status'):
             input_files['suido_status'] = concatenate(params.get('output_path'), params.get('suido_status'))
             suido_status_file = f"{output_directory}/suido_status_cleaned.csv"
-            if main_data_type == 'juki':
+            if main_input_source == 'juki':
                 input_source.append('suido_status')
+                
         if params.get('suido_use'):
             input_files['suido_use'] = concatenate(params.get('output_path'), params.get('suido_use'))
             suido_use_file = f"{output_directory}/suido_use_cleaned.csv"
+            
         if params.get('juki'):
             input_files['juki'] = concatenate(params.get('output_path'), params.get('juki'))
             juki_file = f"{output_directory}/juki_cleaned.csv"
-            if main_data_type == 'suido_status':
-                input_source.append('suido')
+            if main_input_source == 'suido_status':
+                input_source.append('juki')
+      
         if params.get('touki'):
             input_files['touki'] = concatenate(params.get('output_path'), params.get('touki'))
             tatemono_file = f"{output_directory}/touki_cleaned.csv"
             input_source.append('touki')
             
         input_source.extend(["akiya_result", "geocoding"])
+        
+        merge_base = 'suido_residence'
+        main_data_type = 'suido_status'
+        main_csv = f"{output_directory}/suido_residence.csv"
+        if params.get('reference_data') == 'resident_registry' and params.get('juki'):
+            merge_base = 'juki_residence'
+            main_data_type = 'juki'
+            main_csv = f"{output_directory}/juki_residence.csv"
         
         E012(input_files, output_directory, main_data_type, job_id, json.dumps(columns), params.get('db_path'))
         create_or_update_job(job_id, "25")
@@ -163,8 +171,8 @@ def main():
         )
         create_or_update_job(job_id, "50")
 
-        output_e014 = f"{output_directory}/matched_data.csv"
         for item in input_source:
+            output_e014 = f"{output_directory}/{item}_matched_data.csv"
             E014(
                 main_csv,
                 f"{output_directory}/{item}_cleaned.csv",
@@ -177,7 +185,7 @@ def main():
                 1000,
                 str(job_id),
                 params.get('db_path'),
-                [input_source_jp[main_data_type], input_source_jp[item]]
+                [input_source_jp[main_input_source], input_source_jp[item]]
             )
             main_csv = output_e014
         create_or_update_job(job_id, "75")
@@ -187,15 +195,15 @@ def main():
         output_path_e016 = f"{output_path_e016}/{random_str}.csv"
 
         gpkg_path = params.get("urban_planning", None)
-        if gpkg_path is None:
+        if not gpkg_path:
             gpkg_path = params.get("census", None)
         gpkg_path = concatenate(params.get('output_path'), gpkg_path)
         
-        tatemono_path = concatenate(params.get('output_path'), params.get('buidling_polygon'))
-        
+        tatemono_path = concatenate(params.get('output_path'), params.get('building_polygon'))
+
         E016(
             tatemono_path,
-            f"{output_directory}/matched_data.csv",
+            main_csv,
             gpkg_path,
             "愛知県",
             "豊田市",
@@ -205,7 +213,7 @@ def main():
             output_path_e016,
             job_id,
             params.get('db_path'),
-            params.get('buidling_polygon_column', 'buildingID'),
+            params.get('building_polygon_column', 'buildingID'),
             ["merge_result(E14)","建物ポリゴン"]
         )
 

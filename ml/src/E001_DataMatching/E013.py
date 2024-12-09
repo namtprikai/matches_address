@@ -6,7 +6,6 @@
 import json
 import os
 import sys
-import tempfile
 from datetime import datetime, timedelta
 import argparse
 import chardet
@@ -98,7 +97,7 @@ class DataProcessor:
         """
         # ファイルの内容を読み込む
         with open(file_path, 'rb') as file:
-            raw_data = file.read()
+            raw_data = file.read(100)
         # エンコーディングを検出して返す
         result = chardet.detect(raw_data)
         return result['encoding']
@@ -126,7 +125,7 @@ class DataProcessor:
                 raise ValueError(f"CSVファイルまたはテキストファイル以外は対応していません: {file_extension}")
             
             # 複数のエンコーディングを試行                
-            encodings = ['shift_jis', 'cp932', 'utf-8', 'utf-16']
+            encodings = ['utf-8-sig']
             for encoding in encodings:
                 try:
                     # 各エンコーディングでファイルの読み込みを試みる
@@ -160,7 +159,7 @@ class DataProcessor:
             保存先のファイルパス
         """
         # 試行するエンコーディングのリスト
-        encodings = ['shift_jis', 'cp932', 'utf-8']
+        encodings = ['utf-8-sig']
         for encoding in encodings:
             try:
                 # 各エンコーディングでCSVファイルとして保存を試みる
@@ -241,7 +240,10 @@ class SuidoProcessor(DataProcessor):
         """
         # BASE_DATEとSTART_DATEを初期化
         if isinstance(self.BASE_DATE, str):
-            self.BASE_DATE = datetime.strptime(self.BASE_DATE, "%Y%m%d")
+            try:
+                self.BASE_DATE = datetime.strptime(self.BASE_DATE, "%Y%m%d")
+            except:
+                self.BASE_DATE = datetime.strptime(self.BASE_DATE, "%Y-%m")
         
         self.START_DATE = (self.BASE_DATE - relativedelta(years=self.SEARCH_PERIOD)).strftime("%Y-%m")
         self.BASE_DATE = self.BASE_DATE.strftime("%Y-%m")
@@ -320,84 +322,88 @@ class SuidoProcessor(DataProcessor):
         pandas.DataFrame
             統計量と変化率が追加された水道データ
         """
-        suido_use = suido_use.copy()
-        suido_status = suido_status.copy()
-        cols_use = self.COLUMNS["suido_use"]
-        cols_status = self.COLUMNS["suido_status"]
-        base_date = pd.to_datetime(self.BASE_DATE).strftime('%Y-%m')
-        # base_date = (self.BASE_DATE)
-        start_date = pd.to_datetime(self.START_DATE)
+        try:
+            suido_use = suido_use.copy()
+            suido_status = suido_status.copy()
+            cols_use = COLUMNS["suido_use"]
+            cols_status = COLUMNS["suido_status"]
+            base_date = pd.to_datetime(self.BASE_DATE).strftime('%Y-%m')
+            # base_date = (self.BASE_DATE)
+            start_date = pd.to_datetime(self.START_DATE)
 
-        # suido_useでデータがない年月の特定
-        date_columns = [ col for col in suido_use.columns if col[:2] in ['19', '20'] ]
-        min_year = pd.to_datetime(min(date_columns)).year
-        min_month = pd.to_datetime(min(date_columns)).month
-        max_year = pd.to_datetime(max(date_columns)).year
-        max_month = pd.to_datetime(max(date_columns)).month
-        basic_list = []
-        for year in range(min_year,max_year+1 ):
-            for month in range(1,13):
-                basic_list.append(str(pd.to_datetime(f"{year}-{month}").strftime('%Y-%m')))
-        basic_list = [ ym for ym in basic_list if pd.to_datetime(ym) >= pd.to_datetime(f"{min_year}-{min_month}") ]      
-        basic_list = [ ym for ym in basic_list if pd.to_datetime(ym) <= pd.to_datetime(f"{max_year}-{max_month}") ]  
-        missing_month = [ ym for ym in basic_list if ym not in date_columns ]
+            # suido_useでデータがない年月の特定
+            date_columns = [ col for col in suido_use.columns if col[:2] in ['19', '20'] ]
+            min_year = pd.to_datetime(min(date_columns)).year
+            min_month = pd.to_datetime(min(date_columns)).month
+            max_year = pd.to_datetime(max(date_columns)).year
+            max_month = pd.to_datetime(max(date_columns)).month
+            basic_list = []
+            for year in range(min_year,max_year+1 ):
+                for month in range(1,13):
+                    basic_list.append(str(pd.to_datetime(f"{year}-{month}").strftime('%Y-%m')))
+            basic_list = [ ym for ym in basic_list if pd.to_datetime(ym) >= pd.to_datetime(f"{min_year}-{min_month}") ]      
+            basic_list = [ ym for ym in basic_list if pd.to_datetime(ym) <= pd.to_datetime(f"{max_year}-{max_month}") ]  
+            missing_month = [ ym for ym in basic_list if ym not in date_columns ]
+
+            suido_status_pre = suido_status.loc[:,[cols_status['suido_number'],cols_status['usage_start_date'],cols_status['usage_end_date']]]
+            suido_status_pre = normalize_dates(suido_status, cols_status["usage_start_date"])
+            suido_status_pre.drop(columns=[f'{cols_status["usage_start_date"]}_normalized'], inplace=True)
+            suido_status_pre = normalize_dates(suido_status, cols_status["usage_end_date"])
+            suido_status_pre.drop(columns=[f'{cols_status["usage_end_date"]}_normalized'], inplace=True)
+
+            suido_status_pre[cols_status['usage_start_date']] = suido_status_pre[cols_status['usage_start_date']].dt.strftime('%Y-%m')
+            suido_status_pre[cols_status['usage_end_date']] = suido_status_pre[cols_status['usage_end_date']].dt.strftime('%Y-%m')
+
+            # nullへデータを挿入（ffill)
+            suido_pre_merged = suido_status_pre.merge(suido_use, on=cols_use['suido_number'],how='inner').reset_index(drop=True)
+            suido_pre_merged.loc[:,min(date_columns):max(date_columns)] = suido_pre_merged.loc[:,min(date_columns):max(date_columns)].ffill(axis=1)    
+
+            # 使用終了後のカラムの数値をNullにする
+            # suido_pre_merged = suido_pre_merged.apply(lambda x:fixing_nums_aft_end_date(x, cols_status, base_date, missing_month), axis=1)
+
+            # dfの日付を対象期間のみにしぼる
+            non_date_columns = [ col for col in suido_pre_merged.columns if col not in date_columns ]
+            new_date_columns = [ ym for ym in date_columns if pd.to_datetime(ym) >=  start_date ]
+            new_date_columns = [ ym for ym in new_date_columns if pd.to_datetime(ym) <=  pd.to_datetime(base_date) ]
+            suido_pre_merged = suido_pre_merged[non_date_columns+new_date_columns].reset_index(drop=True)
+
+            suido_pre_merged['null_num'] = suido_pre_merged[new_date_columns].sum(axis=1)
+            suido_pre_merged['start_date_水道使用量'] = 0
+            suido_pre_merged['base_date_水道使用量'] = 0
+
+            for row in suido_pre_merged.loc[suido_pre_merged['null_num']!=0].index:
+                try:
+                    tar_ym = suido_pre_merged.loc[row,new_date_columns].dropna().idxmin()
+                    suido_pre_merged.loc[row, 'start_date_水道使用量'] = float(suido_pre_merged.loc[row,tar_ym])
+                except:
+                    suido_pre_merged.loc[row, 'start_date_水道使用量'] = 0
+                try:
+                    tar_ym = suido_pre_merged.loc[row,new_date_columns].dropna().idxmax()
+                    suido_pre_merged.loc[row, 'base_date_水道使用量'] = float(suido_pre_merged.loc[row,tar_ym])
+                except:
+                    suido_pre_merged.loc[row, 'base_date_水道使用量'] = 0
+
+            if len(new_date_columns) < 1:
+                raise Exception("基準日が不正です。正シリフォーマットになっているか、もしくは正しい日付となっているかかご確認ください 。")
+            # suido_useに欠損年月がある場合に開始日、終了日の日付を修正(そのほかもデータ期間中の期間に修正)
+            df_use = suido_pre_merged.apply(lambda x:get_start_base_value(self,x,missing_month,new_date_columns), axis=1)
         
-        suido_status_pre = suido_status.loc[:,[cols_status['suido_number'],cols_status['usage_start_date'],cols_status['usage_end_date'],'id_suido']]
-        suido_status_pre = normalize_dates(suido_status, cols_status["usage_start_date"])
-        suido_status_pre.drop(columns=[f'{cols_status["usage_start_date"]}_normalized'], inplace=True)
-        suido_status_pre = normalize_dates(suido_status, cols_status["usage_end_date"])
-        suido_status_pre.drop(columns=[f'{cols_status["usage_end_date"]}_normalized'], inplace=True)
-        
-        suido_status_pre[cols_status['usage_start_date']] = suido_status_pre[cols_status['usage_start_date']].dt.strftime('%Y-%m')
-        suido_status_pre[cols_status['usage_end_date']] = suido_status_pre[cols_status['usage_end_date']].dt.strftime('%Y-%m')
+            # 統計量の計算
+            df_use["最大使用水量"] = df_use[new_date_columns].max(axis=1)
+            df_use["平均使用水量"] = df_use[new_date_columns].mean(axis=1)
+            df_use["最小使用水量"] = df_use[new_date_columns].min(axis=1)
+            df_use["合計使用水量"] = df_use[new_date_columns].sum(axis=1)
 
-        # nullへデータを挿入（ffill)
-        suido_pre_merged = suido_status_pre.merge(suido_use, on=cols_use['suido_number'],how='inner').reset_index(drop=True)
-        suido_pre_merged.loc[:,min(date_columns):max(date_columns)] = suido_pre_merged.loc[:,min(date_columns):max(date_columns)].ffill(axis=1)    
-
-        # 使用終了後のカラムの数値をNullにする
-        suido_pre_merged = suido_pre_merged.apply(lambda x:fixing_nums_aft_end_date(x, cols_status, base_date, missing_month), axis=1)
-
-        # dfの日付を対象期間のみにしぼる
-        non_date_columns = [ col for col in suido_pre_merged.columns if col not in date_columns ]
-        new_date_columns = [ ym for ym in date_columns if pd.to_datetime(ym) >=  start_date ]
-        new_date_columns = [ ym for ym in new_date_columns if pd.to_datetime(ym) <=  pd.to_datetime(base_date) ]
-        suido_pre_merged = suido_pre_merged[non_date_columns+new_date_columns].reset_index(drop=True)
-
-        suido_pre_merged['null_num'] = suido_pre_merged[new_date_columns].sum(axis=1)
-        suido_pre_merged['start_date_水道使用量'] = 0
-        suido_pre_merged['base_date_水道使用量'] = 0
-
-        for row in suido_pre_merged.loc[suido_pre_merged['null_num']!=0].index:
-            try:
-                tar_ym = suido_pre_merged.loc[row,new_date_columns].dropna().idxmin()
-                suido_pre_merged.loc[row, 'start_date_水道使用量'] = float(suido_pre_merged.loc[row,tar_ym])
-            except:
-                suido_pre_merged.loc[row, 'start_date_水道使用量'] = 0
-            try:
-                tar_ym = suido_pre_merged.loc[row,new_date_columns].dropna().idxmax()
-                suido_pre_merged.loc[row, 'base_date_水道使用量'] = float(suido_pre_merged.loc[row,tar_ym])
-            except:
-                suido_pre_merged.loc[row, 'base_date_水道使用量'] = 0
-        
-        
-        # suido_useに欠損年月がある場合に開始日、終了日の日付を修正(そのほかもデータ期間中の期間に修正)
-        df_use = suido_pre_merged.apply(lambda x:get_start_base_value(self,x,missing_month,new_date_columns), axis=1)
-    
-        # 統計量の計算
-        df_use["最大使用水量"] = df_use[new_date_columns].max(axis=1)
-        df_use["平均使用水量"] = df_use[new_date_columns].mean(axis=1)
-        df_use["最小使用水量"] = df_use[new_date_columns].min(axis=1)
-        df_use["合計使用水量"] = df_use[new_date_columns].sum(axis=1)
-    
-        # 変化率の計算 (基準日の使用量 / 開始日の使用量)
-        df_use["水道使用量変化率"] = df_use.apply(
-            lambda row: row["base_date_水道使用量"] / row["start_date_水道使用量"]
-            if pd.notnull(row["start_date_水道使用量"]) and row["start_date_水道使用量"] != 0
-            else 0, axis=1)
-        
-        # 出力するカラムを選択
-        return df_use[[cols_use["suido_number"], "最大使用水量", "平均使用水量", "最小使用水量", "合計使用水量", "水道使用量変化率"]]
+            # 変化率の計算 (基準日の使用量 / 開始日の使用量)
+            df_use["水道使用量変化率"] = df_use.apply(
+                lambda row: (row["start_date_水道使用量"] - row["base_date_水道使用量"])
+                if row["start_date_水道使用量"] == 0
+                else (row["start_date_水道使用量"] - row["base_date_水道使用量"])/row["start_date_水道使用量"] , axis=1)
+            
+            # 出力するカラムを選択
+            return df_use[[cols_use["suido_number"], "最大使用水量", "平均使用水量", "最小使用水量", "合計使用水量", "水道使用量変化率"]]
+        except Exception as e:
+            raise Exception(e)
     
     def value_operation_flg(self, df):
         """
@@ -417,7 +423,9 @@ class SuidoProcessor(DataProcessor):
         df["閉栓フラグ"] = df[cols["usage_end_date"]].notnull()
         
         # base_dateとusage_end_dateを比較して、usage_end_dateがbase_dateより新しい場合はFalseに設定
-        df["usage_end_date"] = pd.to_datetime(df[cols["usage_end_date"]])  # usage_end_dateを日付に変換
+        df_temp = normalize_dates(df.copy(), cols["usage_end_date"])
+        df["usage_end_date"] = df_temp[cols["usage_end_date"]]  # usage_end_dateを日付に変換
+        # df["usage_end_date"] = pd.to_datetime(df[cols["usage_end_date"]])  # usage_end_dateを日付に変換
         df["閉栓フラグ"] = np.where(
             (df["閉栓フラグ"]) & (df["usage_end_date"] > self.BASE_DATE),  # 閉栓フラグがTrueかつ usage_end_date > base_date
             False,  # 閉栓フラグをFalseに変更
@@ -427,37 +435,40 @@ class SuidoProcessor(DataProcessor):
         return df
 
     def process(self):
-        # データの読み込み
-        df_suido_use = self.read_csv(self.INPUT_PATHS["suido_use"])
-        df_suido_status = self.read_csv(self.INPUT_PATHS["suido_status"])
+        try:
+            # データの読み込み
+            df_suido_use = self.read_csv(self.INPUT_PATHS["suido_use"])
+            df_suido_status = self.read_csv(self.INPUT_PATHS["suido_status"])
 
-        if df_suido_use is None or df_suido_status is None:
-            return
-        
-        # 住戸単位にする
-        df_suido_use_cleaned = self.preprocess_suido_use(df_suido_use)
-        df_suido_use_pt = self.pivot_table(df_suido_use_cleaned)
-        # 基準日からさかのぼって指定期間の水道使用量のみを抽出
-        df_suido_use_processed = self.preprocess_suido_data(df_suido_use_pt)
-        # 水道使用量の統計量を計算
-        df_suido_stats = self.calculate_suido_stats(df_suido_use_processed, df_suido_status)
-        # 閉栓フラグを付与
-        df_suido_operation = self.value_operation_flg(df_suido_status)
+            if df_suido_use is None or df_suido_status is None:
+                return
+            
+            # 住戸単位にする
+            df_suido_use_cleaned = self.preprocess_suido_use(df_suido_use)
+            df_suido_use_pt = self.pivot_table(df_suido_use_cleaned)
+            # 基準日からさかのぼって指定期間の水道使用量のみを抽出
+            df_suido_use_processed = self.preprocess_suido_data(df_suido_use_pt)
+            # 水道使用量の統計量を計算
+            df_suido_stats = self.calculate_suido_stats(df_suido_use_processed, df_suido_status)
+            # 閉栓フラグを付与
+            df_suido_operation = self.value_operation_flg(df_suido_status)
 
-        # データの結合と整形
-        cols_status = COLUMNS["suido_status"]
-        df_suido = pd.merge(df_suido_operation[[cols_status["suido_number"], cols_status["suido_address"], "閉栓フラグ"]], 
-                            df_suido_stats, on=cols_status["suido_number"], how="inner")
-        
-        # 重複データを削除
-        df_suido = self.drop_duplicates(df_suido.sort_values(by="最大使用水量", ascending=False), 
-                                        subset=cols_status["suido_address"])
-        
-        # 出力カラムの選択
-        df_suido = df_suido[self.OUTPUT_COLUMNS["suido"]]
+            # データの結合と整形
+            cols_status = COLUMNS["suido_status"]
+            df_suido = pd.merge(df_suido_operation[[cols_status["suido_number"], cols_status["suido_address"], "閉栓フラグ"]], 
+                                df_suido_stats, on=cols_status["suido_number"], how="inner")
+            
+            # 重複データを削除
+            df_suido = self.drop_duplicates(df_suido.sort_values(by="最大使用水量", ascending=False), 
+                                            subset=cols_status["suido_address"])
+            
+            # 出力カラムの選択
+            df_suido = df_suido[self.OUTPUT_COLUMNS["suido"]]
 
-        # 出力
-        self.save_csv(df_suido, self.OUTPUT_PATHS["suido"])
+            # 出力
+            self.save_csv(df_suido, self.OUTPUT_PATHS["suido"])
+        except Exception as e:
+            raise Exception(e)
 
 def get_two_month_period(date):
     """
@@ -481,7 +492,7 @@ def get_two_month_period(date):
         new_date = date.replace(month=two_month_period_month, day=1)
         last_day_of_new_month = (new_date + relativedelta(months=1) - relativedelta(days=1)).day
         return new_date.replace(day=min(date.day, last_day_of_new_month)).strftime("%Y-%m")
-
+    
 def fixing_nums_aft_end_date(row,cols, oldest_date, missing_month):
     """
     getting a value to fill the missing data on 使用中止日
@@ -489,33 +500,44 @@ def fixing_nums_aft_end_date(row,cols, oldest_date, missing_month):
     if not pd.isnull(row[cols["usage_end_date"]]):
         try:
             col = row.index.get_loc(row[cols["usage_end_date"]]) + 1
+            row[col:-2] = np.nan
         except:
-            col = row.index.get_loc((pd.to_datetime(max(missing_month)) + timedelta(days=31)).strftime('%Y-%m'))
-        row[col:-2] = np.nan
+            if len(missing_month) > 0:
+                col = row.index.get_loc((pd.to_datetime(max(missing_month)) + timedelta(days=31)).strftime('%Y-%m'))
+                row[col:-2] = np.nan   
     return row
 
 def get_start_base_value(self, row, missing_month, date_columns):
-    cols_use = self.COLUMNS["suido_use"]
-    cols_status = self.COLUMNS["suido_status"]
+    cols_use = COLUMNS["suido_use"]
+    cols_status = COLUMNS["suido_status"]
     base_date = self.BASE_DATE
     search_period = self.SEARCH_PERIOD
 
     search_term = search_period * 365 + 1
     term_start = (pd.to_datetime(base_date) - timedelta(days=search_term)).strftime('%Y-%m')
 
-    
-    
-    if pd.isnull(row[cols_status["usage_start_date"]]):
-        start_day = min(date_columns)
-    elif row[cols_status["usage_start_date"]] < min(date_columns):
-        start_day = min(date_columns)
-    elif (row[cols_status["usage_start_date"]] >= min(missing_month) )&(row[cols_status["usage_start_date"]] <= max(missing_month)):
-        start_day = (pd.to_datetime(max(missing_month)) + timedelta(days=31)).strftime('%Y-%m')
-    elif row[cols_status["usage_start_date"]] > base_date:
-        start_day = base_date
+    if len(missing_month)>0:
+        if pd.isnull(row[cols_status["usage_start_date"]]):
+            start_day = min(date_columns)
+        elif row[cols_status["usage_start_date"]] < min(date_columns):
+            start_day = min(date_columns)
+        elif (row[cols_status["usage_start_date"]] >= min(missing_month) )&(row[cols_status["usage_start_date"]] <= max(missing_month)):
+            start_day = (pd.to_datetime(max(missing_month)) + timedelta(days=31)).strftime('%Y-%m')
+        elif row[cols_status["usage_start_date"]] > base_date:
+            start_day = base_date
+        else:
+            start_day = row[cols_status["usage_start_date"]]
+
     else:
-        start_day = row[cols_status["usage_start_date"]]
-        
+        if pd.isnull(row[cols_status["usage_start_date"]]):
+            start_day = min(date_columns)
+        elif row[cols_status["usage_start_date"]] < min(date_columns):
+            start_day = min(date_columns)
+        elif row[cols_status["usage_start_date"]] > base_date:
+            start_day = base_date
+        else:
+            start_day = row[cols_status["usage_start_date"]]
+
     if pd.isnull(row[start_day]):
         searching = True
         col = row.index.get_loc(start_day)
@@ -528,12 +550,13 @@ def get_start_base_value(self, row, missing_month, date_columns):
             else:
                 row['start_date_水道使用量'] = row.iloc[col]
                 searching = False
-        
+
     else:
         row['start_date_水道使用量'] = row[start_day]
-        
+
     row['base_date_水道使用量'] = 0 if pd.isnull(row[base_date]) else row[base_date]
     return row
+
 
 # 住基データの世帯単位の集計
 class JukiProcessor(DataProcessor):
@@ -553,10 +576,10 @@ class JukiProcessor(DataProcessor):
         cols = COLUMNS["juki"]
         
         # 複数のフォーマットを試して生年月日を変換
-        df = normalize_dates(df, cols["birth"])
-        df.drop(columns=[f'{cols["birth"]}_normalized'], inplace=True)
-        df = normalize_dates(df, cols["move_date"])
-        df.drop(columns=[f'{cols["move_date"]}_normalized'], inplace=True)
+        # df = normalize_dates(df, cols["birth"])
+        # df.drop(columns=[f'{cols["birth"]}_normalized'], inplace=True)
+        # df = normalize_dates(df, cols["move_date"])
+        # df.drop(columns=[f'{cols["move_date"]}_normalized'], inplace=True)
 
                 
         # 無効な生年月日データがある場合、警告を出力
@@ -692,6 +715,17 @@ class JukiProcessor(DataProcessor):
         
         if df_juki is None:
             return
+        
+        # 基準日以降の誕生と移動者を除外
+        cols = COLUMNS["juki"]
+        df_juki = normalize_dates(df_juki, cols["birth"])
+        df_juki.drop(columns=[f'{cols["birth"]}_normalized'], inplace=True)
+        df_juki = normalize_dates(df_juki, cols["move_date"])
+        df_juki.drop(columns=[f'{cols["move_date"]}_normalized'], inplace=True)
+
+        base_date = pd.to_datetime(self.BASE_DATE, format='%Y/%m/%d')
+
+        df_juki = df_juki.loc[(pd.to_datetime(df_juki[cols["birth"]])<=base_date)&(pd.to_datetime(df_juki[cols["move_date"]])<=base_date)].reset_index(drop=True)
         
         # 年齢グループの計算と最大年齢・最小年齢の追加
         df_juki = self.calculate_age_groups(df_juki)
@@ -879,6 +913,7 @@ def process_all_data(suido_use_file, suido_status_file, juki_file, tatemono_file
             input_paths['tatemono'] = tatemono_file
             output_paths['tatemono'] = f"{output_directory}/touki_residence.csv"
             processors['tatemono'] = TatemonoProcessor
+        
         if output_directory is None:
             output_directory = './E013/outputs'
 
@@ -889,10 +924,13 @@ def process_all_data(suido_use_file, suido_status_file, juki_file, tatemono_file
             all_values = [value for sub_dict in columns.values() for value in sub_dict.values()]
             set_columns(*all_values)
         
+        progress_percent_job = 25
         for file_key, processor_class in processors.items():
             if job_id:
                 progress_percent += 30
+                progress_percent_job += 8
                 create_or_update_job_task(job_id, progress_percent=progress_percent, preprocess_type="e013", error_code=None, result=None, id= task_id)
+                create_or_update_job(job_id, progress_percent_job)
             print(f"{file_key}データを処理中...")
             processor_class(input_paths, output_paths, base_date, search_period).process()
             

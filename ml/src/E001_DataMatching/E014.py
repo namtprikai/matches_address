@@ -60,7 +60,7 @@ def detect_encoding(file_path):
     """
     # ファイルの内容を読み込む
     with open(file_path, 'rb') as file:
-        raw_data = file.read()
+        raw_data = file.read(100)
     # エンコーディングを検出して返す
     result = chardet.detect(raw_data)
     return result['encoding']
@@ -90,7 +90,7 @@ def read_csv(path: str, **kwargs) -> pd.DataFrame:
             raise ValueError(f"CSVファイル以外は対応していません: {file_extension}")
         
         # 複数のエンコーディングを試行                
-        encodings = ['shift_jis', 'cp932', 'utf-8', 'utf-16']
+        encodings = ['utf-8-sig']
         for encoding in encodings:
             try:
                 # 各エンコーディングでファイルの読み込みを試みる
@@ -234,39 +234,47 @@ def embedding_address(main_csv: io.BytesIO | str, sub_csv: io.BytesIO | str, mai
         sub_df = sub_df.reset_index(drop=True)
         if job_id:
             create_or_update_job_task(job_id, progress_percent="40", preprocess_type="e014", error_code=None, result=None, id= task_id)
-        # N-gramで類似度を計算する準備
-        vectorizer = CountVectorizer(analyzer='char', ngram_range=(ngram, ngram))
-        main_df_ngram_matrix = vectorizer.fit_transform(main_df[main_column].astype(str))
-        sub_df_ngram_matrix = vectorizer.transform(sub_df[main_column].astype(str))
-
-        # 疎行列に変換してメモリ効率を改善
-        main_df_ngram_matrix = csr_matrix(main_df_ngram_matrix)
-        sub_df_ngram_matrix = csr_matrix(sub_df_ngram_matrix)
-        if job_id:
-            create_or_update_job_task(job_id, progress_percent="60", preprocess_type="e014", error_code=None, result=None, id= task_id)
         # N-gramで名寄せできた行数をカウント
         ngram_rows = 0
-        # バッチ処理による類似度計算
-        for start in range(0, main_df_ngram_matrix.shape[0], batch_size):
-            end = min(start + batch_size, main_df_ngram_matrix.shape[0])
+        similarity_scores = []  # 類似度スコアを保存するリスト
+        # N-gramで類似度を計算する準備
+        if len(main_df) != 0:
+            vectorizer = CountVectorizer(analyzer='char', ngram_range=(ngram, ngram))
+            main_df_ngram_matrix = vectorizer.fit_transform(main_df[main_column].astype(str))
+            sub_df_ngram_matrix = vectorizer.transform(sub_df[main_column].astype(str))
 
-            # バッチ単位で類似度を計算
-            batch_similarities = cosine_similarity(main_df_ngram_matrix[start:end], sub_df_ngram_matrix)
+            # 疎行列に変換してメモリ効率を改善
+            main_df_ngram_matrix = csr_matrix(main_df_ngram_matrix)
+            sub_df_ngram_matrix = csr_matrix(sub_df_ngram_matrix)
+            if job_id:
+                create_or_update_job_task(job_id, progress_percent="60", preprocess_type="e014", error_code=None, result=None, id= task_id)
             
-            # バッチ内の各行ごとに処理
-            for i, similarities in enumerate(batch_similarities):
-                top_indices = similarities.argsort()[-3:][::-1]  # 上位3件を取得
+            # バッチ処理による類似度計算
+            for start in range(0, main_df_ngram_matrix.shape[0], batch_size):
+                end = min(start + batch_size, main_df_ngram_matrix.shape[0])
 
-                if similarities[top_indices[0]] >= threshold:
-                    row_index = start + i  # バッチの中での行番号をグローバルに変換
-                    for col in sub_df.columns:
-                        main_df.at[row_index, col] = sub_df.iloc[top_indices[0]][col]
-                    ngram_rows += 1  # この行が正しく名寄せされた場合にカウント
-                else:
-                    row_index = start + i
-                    main_df.at[row_index, f'名寄せ元情報_{sub_csv_name}'] = ""
-                    main_df.at[row_index, f'{sub_flag_name}'] = 0
+                # バッチ単位で類似度を計算
+                batch_similarities = cosine_similarity(main_df_ngram_matrix[start:end], sub_df_ngram_matrix)
                 
+                # バッチ内の各行ごとに処理
+                for i, similarities in enumerate(batch_similarities):
+                    top_indices = similarities.argsort()[-3:][::-1]  # 上位3件を取得
+
+                    if similarities[top_indices[0]] >= threshold:
+                        row_index = start + i  # バッチの中での行番号をグローバルに変換
+                        for col in sub_df.columns:
+                            main_df.at[row_index, col] = sub_df.iloc[top_indices[0]][col]
+                        ngram_rows += 1  # この行が正しく名寄せされた場合にカウント
+                        similarity_scores.append(similarities[top_indices[0]])  # 類似度スコアを追加
+                    else:
+                        row_index = start + i
+                        main_df.at[row_index, f'名寄せ元情報_{sub_csv_name}'] = ""
+                        main_df.at[row_index, f'{sub_flag_name}'] = 0
+                        similarity_scores.append(similarities[top_indices[0]])  # 閾値未満の場合スコアは0
+
+        # 類似度スコアを結果データフレームに追加
+        main_df['similarity_score'] = similarity_scores
+
         # 結果のデータフレームを作成
         result_df = pd.concat([df_merge, main_df], axis=0, ignore_index=True)
 
@@ -284,7 +292,7 @@ def embedding_address(main_csv: io.BytesIO | str, sub_csv: io.BytesIO | str, mai
             create_or_update_job_task(job_id, progress_percent="90", preprocess_type="e014", error_code=None, result=None, id= task_id)
         # 結果をCSVファイルとして保存
         saved_file_path = save_csv(result_df, output_path)
-        # unique_row = len(result_df[f'ID_{sub_csv_name}'].unique())
+        
         # 結果の表示
         complete_match_ratio = f'結合元データとの完全一致割合: {merged_rows / data_rows * 100:.2f}%'
         threshold_match_ratio = f'結合元データとの閾値以上結合割合: {(merged_rows + ngram_rows) / data_rows * 100:.2f}%'
@@ -292,7 +300,7 @@ def embedding_address(main_csv: io.BytesIO | str, sub_csv: io.BytesIO | str, mai
         # sub_threshold_match_ratio = f'結合先データとの閾値以上結合割合: {(unique_row) / sub_data_rows * 100:.2f}%'
         
         res = {
-            'joining_rate': merged_rows + ngram_rows,
+            'joining_rate': (merged_rows + ngram_rows) / data_rows,
             'input_source': input_source
         }
         if job_id:
@@ -320,7 +328,7 @@ def save_csv(df, path):
     abs_path = os.path.abspath(path)
     
     # 試行するエンコーディングのリスト
-    encodings = ['shift_jis', 'cp932', 'utf-8']
+    encodings = ['utf-8-sig']
     for encoding in encodings:
         try:
             # 各エンコーディングでCSVファイルとして保存を試みる
