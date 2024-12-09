@@ -11,7 +11,6 @@ import {
 } from "@fluentui/react-components";
 import { DeleteRegular, Dismiss24Regular } from "@fluentui/react-icons";
 import { useNavigate } from "react-router-dom";
-import { type SubmitHandler } from "react-hook-form";
 import { type z } from "zod";
 import { DialogSurface } from "../../components/ui/dialog-surface";
 import { DialogBody } from "../../components/ui/dialog-body";
@@ -36,6 +35,7 @@ import { useFetchModelFiles } from "../../hooks/use-fetch-model-files";
 import { useFetchNormalizedDatasets } from "../../hooks/use-fetch-normalized-datasets";
 import { useFetchRawDatasets } from "../../hooks/use-fetch-raw-datasets";
 import { useFetchDatasetColumns } from "../../hooks/use-fetch-dataset-columns";
+import { ErrorMessage } from "../../components/error-message";
 
 const useStyles = makeStyles({
   root: {
@@ -123,7 +123,13 @@ export const JobEvaluation = (): JSX.Element => {
   const form = useFormDataEvaluation();
 
   // フォームのメソッドを取得
-  const { handleSubmit, setValue, watch } = form;
+  const {
+    handleSubmit,
+    setValue,
+    watch,
+    formState: { errors },
+  } = form;
+  const hasErrors = Object.keys(errors).length > 0;
 
   // ダイアログの状態管理
   const importModelDatasetDialogState = useDialogState();
@@ -185,6 +191,9 @@ export const JobEvaluation = (): JSX.Element => {
         <h2 className={styles.heading}>空き家判定</h2>
 
         <div className={styles.contents}>
+          {hasErrors && (
+            <ErrorMessage msg="エラーが発生しました。フォームの内容を確認してください。" />
+          )}
           {/* モデルファイルの選択 */}
           <Card>
             <Subtitle2>① 利用するモデルを選択</Subtitle2>
