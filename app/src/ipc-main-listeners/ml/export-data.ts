@@ -10,6 +10,7 @@ type Params = {
     output_coordinate: string;
     target_unit: "building" | "area";
     data_set_results_id: number;
+    reference_date: string;
   };
 };
 
