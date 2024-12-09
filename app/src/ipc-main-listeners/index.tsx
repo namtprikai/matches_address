@@ -62,6 +62,7 @@ import { createNormalizedDatasets } from "./create-normalized-datasets";
 import { createModelFiles } from "./create-model-files";
 import { insertModelFile } from "./insert-model-file";
 import { _debugCreateWorkshopData } from "./_debug-create-workshop-data";
+import { exportData } from "./ml/export-data";
 
 export const ipcMainListeners = {
   helloFromPython,
@@ -124,6 +125,7 @@ export const ipcMainListeners = {
   createModelFiles,
   insertModelFile,
   _debugCreateWorkshopData,
+  exportData,
 };
 
 export const execFileAsync = promisify(execFile);
