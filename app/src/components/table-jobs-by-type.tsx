@@ -5,6 +5,7 @@ import {
   tokens,
 } from "@fluentui/react-components";
 import { useFetchJobs } from "../hooks/use-fetch-jobs";
+import { type SelectJob } from "../schema";
 import { TableHeaderJobs } from "./table-header-jobs";
 import { TableRowJobs } from "./table-rows-jobs";
 
@@ -38,10 +39,14 @@ const useStyles = makeStyles({
   },
 });
 
-export const TableNormalizationJobs = (): JSX.Element => {
+type Props = {
+  jobType: SelectJob["type"];
+};
+
+export const TableJobsByType = ({ jobType }: Props): JSX.Element => {
   const styles = useStyles();
 
-  const { data } = useFetchJobs(undefined, "preprocess");
+  const { data } = useFetchJobs(undefined, jobType);
 
   if (data === undefined) return <></>;
 

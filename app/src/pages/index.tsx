@@ -19,9 +19,10 @@ import { Job } from "./job";
 import { PreprocessDetail } from "./job/detail/preprocess";
 import { ModelCreate } from "./model/create";
 import { JobPreview } from "./job/detail/preview";
-import { JobEvaluation } from "./evaluation";
+import { JobEvaluationCreate } from "./evaluation/create";
 import { MlDetail } from "./job/detail/ml";
 import { Normalization } from "./normalization";
+import { JobEvaluation } from "./evaluation";
 
 // クライアントだけで動作するアプリケーションのため`createHashRouter`を使用する
 const router = createHashRouter([
@@ -91,6 +92,10 @@ const router = createHashRouter([
       {
         path: "normalization",
         element: <Normalization />,
+      },
+      {
+        path: "evaluation/create",
+        element: <JobEvaluationCreate />,
       },
     ],
   },

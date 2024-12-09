@@ -2,7 +2,7 @@ import { Card, makeStyles, tokens } from "@fluentui/react-components";
 import { AddFilled } from "@fluentui/react-icons";
 import { useNavigate } from "react-router-dom";
 import { Button } from "../../components/ui/button";
-import { TableNormalizationJobs } from "../../components/table-normalization-jobs";
+import { TableJobsByType } from "../../components/table-jobs-by-type";
 
 const useStyles = makeStyles({
   root: {
@@ -50,7 +50,7 @@ export function Normalization(): JSX.Element {
         </Button>
 
         <h4>実行中の処理</h4>
-        <TableNormalizationJobs />
+        <TableJobsByType jobType="preprocess" />
       </Card>
     </div>
   );

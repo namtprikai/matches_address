@@ -1,11 +1,16 @@
 import { NavDrawer, NavDrawerBody, NavItem } from "@fluentui/react-nav-preview";
 
-import { makeStyles, tokens } from "@fluentui/react-components";
+import { makeStyles, mergeClasses, tokens } from "@fluentui/react-components";
 import {
   ArrowTrendingLinesRegular,
-  DocumentBulletListRegular,
-  Bug16Filled,
+  HomeRegular,
+  DatabaseRegular,
+  FolderRegular,
+  ArrowSyncCircleRegular,
+  TableSwitchRegular,
 } from "@fluentui/react-icons";
+import { useEffect, useState } from "react";
+import { useLocation } from "react-router-dom";
 
 const useStyles = makeStyles({
   navDrawer: {
@@ -23,7 +28,7 @@ const useStyles = makeStyles({
     backgroundColor: tokens.colorTransparentBackground,
     color: tokens.colorNeutralForegroundInverted,
     "&:hover": {
-      backgroundColor: tokens.colorSubtleBackgroundLightAlphaHover,
+      color: tokens.colorBrandBackground,
     },
     ":after": {
       content: "none",
@@ -44,6 +49,11 @@ const useStyles = makeStyles({
   label: {
     fontSize: tokens.fontSizeBase100,
   },
+  isActive: {
+    backgroundColor: tokens.colorNeutralBackground1,
+    color: tokens.colorBrandBackground,
+    fontWeight: tokens.fontWeightSemibold,
+  },
 });
 
 /**
@@ -57,69 +67,82 @@ const menuItems = [
     href: "#analysis/workbook",
   },
   {
-    icon: DocumentBulletListRegular,
+    icon: TableSwitchRegular,
     label: "正規化処理",
     value: "2",
     href: "#normalization",
   },
   {
-    icon: DocumentBulletListRegular,
+    icon: DatabaseRegular,
     label: "モデル管理",
     value: "3",
     href: "#model",
   },
   {
-    icon: DocumentBulletListRegular,
+    icon: HomeRegular,
     label: "空き家判定",
     value: "4",
     href: "#evaluation",
   },
 
   {
-    icon: DocumentBulletListRegular,
+    icon: FolderRegular,
     label: "データセット",
     value: "5",
     href: "#dataset",
   },
   {
-    icon: DocumentBulletListRegular,
+    icon: ArrowSyncCircleRegular,
     label: "非同期処理",
     value: "6",
     href: "#job",
-  },
-  {
-    icon: Bug16Filled,
-    label: "(開発用)",
-    value: "7",
-    href: "#debug",
   },
 ];
 
 export const Sidebar = (): JSX.Element => {
   const styles = useStyles();
 
+  const [selectedValue, setSelectedValue] = useState("");
+
+  /** グローバルナビ以外をクリックして画面遷移することもあるのでstateを直接書き換える必要がある */
+  const { pathname } = useLocation();
+  useEffect(() => {
+    const value = menuItems.find((item) =>
+      pathname.replace("/", "").includes(item.href.replace("#", "")),
+    )?.value;
+    if (value) {
+      setSelectedValue(value);
+    }
+  }, [pathname, selectedValue]);
+
   return (
     <NavDrawer
       className={styles.navDrawer}
-      defaultSelectedCategoryValue="1"
       defaultSelectedValue="1"
+      onNavItemSelect={(_, data) => setSelectedValue(data.value as string)}
       open
       type="inline"
     >
       <NavDrawerBody className={styles.navDrawerBody}>
-        {menuItems.map((item) => (
-          <NavItem
-            key={item.value}
-            className={styles.navItem}
-            href={item.href}
-            value={item.value}
-          >
-            <div className={styles.menuItem}>
-              <item.icon className={styles.icon} />
-              <div className={styles.label}>{item.label}</div>
-            </div>
-          </NavItem>
-        ))}
+        {menuItems.map((item) => {
+          const isActive = selectedValue === item.value;
+          return (
+            <NavItem
+              key={item.value}
+              className={mergeClasses(
+                styles.navItem,
+                isActive ? styles.isActive : "",
+              )}
+              href={item.href}
+              value={item.value}
+            >
+              <div className={styles.menuItem}>
+                <item.icon className={styles.icon} />
+                <div className={styles.label}>{item.label}</div>
+              </div>
+            </NavItem>
+          );
+        })}
       </NavDrawerBody>
     </NavDrawer>
   );

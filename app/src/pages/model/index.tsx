@@ -2,6 +2,7 @@ import { Card, makeStyles, tokens } from "@fluentui/react-components";
 import { ButtonCreateModel } from "../../components/button-create-model";
 import { TableModel } from "../../components/table-model";
 import { Button } from "../../components/ui/button";
+import { TableJobsByType } from "../../components/table-jobs-by-type";
 
 const useStyles = makeStyles({
   root: {
@@ -30,6 +31,15 @@ export function Model(): JSX.Element {
     <div className={styles.root}>
       <h2 className={styles.heading}>モデル管理</h2>
 
+      <Card className={styles.content}>
+        <ButtonCreateModel />
+
+        <TableModel />
+
+        <h4>実行中の処理</h4>
+        <TableJobsByType jobType="ml" />
+      </Card>
+
       <div>
         <Button
           onClick={() => {
@@ -42,12 +52,6 @@ export function Model(): JSX.Element {
           作成(debug)
         </Button>
       </div>
-
-      <Card className={styles.content}>
-        <ButtonCreateModel />
-
-        <TableModel />
-      </Card>
     </div>
   );
 }

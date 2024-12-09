@@ -59,7 +59,7 @@ export const ButtonCreateModel = (): JSX.Element => {
           <MenuList>
             <MenuItem
               onClick={() => {
-                navigator("/normalization");
+                navigator("/normalization/create");
               }}
             >
               正規化処理から始める
