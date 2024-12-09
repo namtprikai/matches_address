@@ -7,6 +7,7 @@ import {
   DrawerHeaderTitle,
   DrawerHeader,
   DrawerBody,
+  Spinner,
 } from "@fluentui/react-components";
 import { useAtom } from "jotai";
 import { Suspense, useEffect, useState } from "react";
@@ -96,9 +97,15 @@ function AddView(): JSX.Element {
   const styles = useStyles();
   const { data: dataSetResults, mutate } = useFetchDataSetResults();
   const numberOfDataSets = dataSetResults?.length || 0;
-  const finishCreating = (): void => {
+  const [isLoading, setIsLoading] = useState(false);
+  const startCreating = (): void => {
+    console.info("Start creating dummy data set results!");
+    setIsLoading(true);
+  };
+  const finishCreating = async (): Promise<void> => {
     console.info("Finish creating dummy data set results🎉");
-    void mutate();
+    await mutate();
+    setIsLoading(false);
   };
 
   return (
@@ -123,8 +130,9 @@ function AddView(): JSX.Element {
           <small>※実際には表示されません</small>
         </div>
         <Button
+          disabled={isLoading}
           onClick={async () => {
-            console.info("Start creating dummy data set results!");
+            startCreating();
             await window.ipcRenderer
               .invoke("createDummyDataSetResults", {
                 full: true,
@@ -137,8 +145,9 @@ function AddView(): JSX.Element {
           32万件のデータセットを追加(最大)
         </Button>
         <Button
+          disabled={isLoading}
           onClick={async () => {
-            console.info("Start creating dummy data set results!");
+            startCreating();
             await window.ipcRenderer
               .invoke("createDummyDataSetResults", {
                 full: false,
@@ -151,8 +160,9 @@ function AddView(): JSX.Element {
           3.2万件のデータセットを追加
         </Button>
         <Button
+          disabled={isLoading}
           onClick={async () => {
-            console.info("Start creating dummy data set results!");
+            startCreating();
             await window.ipcRenderer
               .invoke("createDataSetResults", {
                 title: `分析結果(軽量版)-${numberOfDataSets + 1}`,
@@ -163,6 +173,14 @@ function AddView(): JSX.Element {
         >
           軽量版のデータセットを追加
         </Button>
+        {isLoading ? (
+          <div>
+            <Spinner />
+            データセットをインポート中...
+            <br />
+            読み込みが終わるまでお待ちください
+          </div>
+        ) : null}
       </div>
     </>
   );
