@@ -174,8 +174,9 @@ export function MlDetail(): JSX.Element {
 
   const dialogState = useDialogState();
 
-  if (!data || !data[0].result) return <></>;
-  if (data[0].result.taskResultType === "preprocess") return <></>;
+  if (!data || !data[0].result) return <>データが存在しません</>;
+  if (data[0].result.taskResultType === "preprocess")
+    return <>データ形式が正しくありません</>;
 
   /** @see https://project-links.slack.com/archives/C074TSBS7PW/p1731043911917709?thread_ts=1730328973.471009&cid=C074TSBS7PW */
   const isLowAccuracy = data && Number(data[0].result.accuracy) < 51;
