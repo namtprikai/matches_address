@@ -11,6 +11,7 @@ import {
   mergeClasses,
   typographyStyles,
   DialogTrigger,
+  Checkbox,
 } from "@fluentui/react-components";
 import {
   ArrowSortRegular,
@@ -193,20 +194,19 @@ export function DialogSelectDataset<T extends Dataset>({
     dataset.file_name?.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
-  const handleRowClick = (dataset: T): void => {
-    if (multiple) {
-      // 複数選択モード
-      setSelectedDataSets((prev) => {
-        const exists = prev.some((d) => d.id === dataset.id);
-        if (exists) {
-          return prev.filter((d) => d.id !== dataset.id);
-        } else {
-          return [...prev, dataset];
-        }
-      });
-    } else {
-      setSelectedDataSets([dataset]);
-    }
+  const handleRowClick = (dataset: T, newState?: boolean): void => {
+    setSelectedDataSets((prev) => {
+      const isCurrentlySelected = prev.some((d) => d.id === dataset.id);
+      const shouldSelect = newState ?? !isCurrentlySelected;
+
+      if (shouldSelect && !isCurrentlySelected) {
+        return [...prev, dataset];
+      } else if (!shouldSelect && isCurrentlySelected) {
+        return prev.filter((d) => d.id !== dataset.id);
+      }
+
+      return prev;
+    });
   };
 
   const handleClick = (): void => {
@@ -309,12 +309,17 @@ export function DialogSelectDataset<T extends Dataset>({
                           )}
                         >
                           {multiple && (
-                            <input
+                            <Checkbox
                               checked={isSelected}
                               className={styles.checkbox}
-                              placeholder="checkbox"
-                              readOnly
-                              type="checkbox"
+                              onChange={(ev, data) => {
+                                ev.stopPropagation();
+                                const checkedValue =
+                                  data.checked === "mixed"
+                                    ? false
+                                    : data.checked;
+                                handleRowClick(dataset, checkedValue);
+                              }}
                             />
                           )}
                           {dataset.file_name ?? "名称未設定"}
