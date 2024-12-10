@@ -6,8 +6,10 @@ import {
 } from "@fluentui/react-components";
 import { ArrowLeftRegular } from "@fluentui/react-icons";
 import { useState } from "react";
+import { useParams } from "react-router-dom";
 import { Table, type ColumnDefinition } from "../../../../components/ui/table";
 import { Pagination } from "../../../../components/ui/pagination";
+import { useFetchBuildingPreview } from "../../../../hooks/use-fetch-preview-data";
 
 const useStyles = makeStyles({
   root: {
@@ -58,30 +60,11 @@ const useStyles = makeStyles({
   },
 });
 
-// サンプルデータ
-const data: PreviewData[] = [
-  {
-    address: "東京都千代田区丸の内1-1",
-    waterNumber: "123456",
-    meterNumber: "654321",
-    townArea: "丸の内1丁目",
-    vacantHouseProbability: 0.2,
-  },
-  {
-    address: "東京都渋谷区渋谷2-2",
-    waterNumber: "789012",
-    meterNumber: "210987",
-    townArea: "渋谷2丁目",
-    vacantHouseProbability: 0.5,
-  },
-];
-
 interface PreviewData {
-  address: string;
-  waterNumber: string;
-  meterNumber: string;
-  townArea: string;
-  vacantHouseProbability: number;
+  normalized_address: string;
+  water_supply_number: string;
+  area_group: string;
+  predicted_probability: number;
 }
 
 export function JobPreview(): JSX.Element {
@@ -92,6 +75,11 @@ export function JobPreview(): JSX.Element {
   const [page, setPage] = useState(1);
   const [limitPerPage, setLimitPerPage] = useState(10);
 
+  const { id } = useParams<{ id: string }>();
+  const dataSetResultId = Number(id);
+
+  const { data } = useFetchBuildingPreview(dataSetResultId);
+
   const handlePageChange = (newPage: number): void => {
     setPage(newPage);
   };
@@ -101,7 +89,7 @@ export function JobPreview(): JSX.Element {
     setPage(1);
   };
 
-  const paginatedData = data.slice(
+  const paginatedData = data?.slice(
     (page - 1) * limitPerPage,
     page * limitPerPage,
   );
@@ -109,50 +97,25 @@ export function JobPreview(): JSX.Element {
   // カラム定義
   const columns: ColumnDefinition<PreviewData>[] = [
     {
-      key: "address",
+      key: "normalized_address",
       name: "住所",
       className: useStyles().headerColumn,
     },
     {
-      key: "waterNumber",
+      key: "water_supply_number",
       name: "水道番号",
       className: useStyles().headerColumn,
     },
     {
-      key: "meterNumber",
-      name: "メーター番号",
-      className: useStyles().headerColumn,
-    },
-    {
-      key: "townArea",
+      key: "area_group",
       name: "町丁目",
       className: useStyles().headerColumn,
     },
     {
-      key: "vacantHouseProbability",
+      key: "predicted_probability",
       name: "空き家確率",
       className: useStyles().headerColumn,
-      onRender: (item) => `${(item.vacantHouseProbability * 100).toFixed(2)}%`,
-    },
-    {
-      key: "address",
-      name: "アドレス",
-      className: useStyles().headerColumn,
-    },
-    {
-      key: "address",
-      name: "アドレス",
-      className: useStyles().headerColumn,
-    },
-    {
-      key: "address",
-      name: "アドレス",
-      className: useStyles().headerColumn,
-    },
-    {
-      key: "address",
-      name: "アドレス",
-      className: useStyles().headerColumn,
+      onRender: (item) => `${item.predicted_probability.toFixed(2)}%`,
     },
   ];
 
@@ -173,7 +136,7 @@ export function JobPreview(): JSX.Element {
         </div>
 
         <div className={styles.tableContainer}>
-          <Table columns={columns} items={paginatedData} />
+          <Table columns={columns} items={paginatedData ?? []} />
         </div>
         <div className={styles.pagenation}>
           <Pagination
