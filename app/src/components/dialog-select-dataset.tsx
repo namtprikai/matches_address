@@ -195,18 +195,23 @@ export function DialogSelectDataset<T extends Dataset>({
   );
 
   const handleRowClick = (dataset: T, newState?: boolean): void => {
-    setSelectedDataSets((prev) => {
-      const isCurrentlySelected = prev.some((d) => d.id === dataset.id);
-      const shouldSelect = newState ?? !isCurrentlySelected;
+    if (multiple) {
+      setSelectedDataSets((prev) => {
+        const isCurrentlySelected = prev.some((d) => d.id === dataset.id);
+        const shouldSelect = newState ?? !isCurrentlySelected;
 
-      if (shouldSelect && !isCurrentlySelected) {
-        return [...prev, dataset];
-      } else if (!shouldSelect && isCurrentlySelected) {
-        return prev.filter((d) => d.id !== dataset.id);
-      }
+        if (shouldSelect && !isCurrentlySelected) {
+          return [...prev, dataset];
+        } else if (!shouldSelect && isCurrentlySelected) {
+          return prev.filter((d) => d.id !== dataset.id);
+        }
 
-      return prev;
-    });
+        return prev;
+      });
+    } else {
+      // 単数選択モード: 常にクリックした行のみ選択
+      setSelectedDataSets([dataset]);
+    }
   };
 
   const handleClick = (): void => {
