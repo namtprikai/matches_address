@@ -168,7 +168,7 @@ export const JobEvaluationCreate = (): JSX.Element => {
 
   // 分析対象のデータの削除
   const handleRemoveFile = (): void => {
-    setValue("dataset_path", "");
+    setValue("dataset_path", []);
   };
 
   // モデルファイルの削除
@@ -225,7 +225,7 @@ export const JobEvaluationCreate = (): JSX.Element => {
             emptyMessage="現在表示できるモデルはありません"
             isModel
             onSelected={(data) => {
-              setValue("model_path", data.file_path ?? "");
+              setValue("model_path", data[0].file_name ?? "");
             }}
             placeholder="モデル名"
             title="利用するモデルを選択"
@@ -236,9 +236,11 @@ export const JobEvaluationCreate = (): JSX.Element => {
           <Card>
             <Subtitle2>② 分析対象のデータを選択</Subtitle2>
             <div className={styles.file}>
-              {datasetPath ? (
+              {datasetPath && datasetPath.length > 0 ? (
                 <div className={styles.fileItem}>
-                  <span className={styles.fileName}>{datasetPath}</span>
+                  <span className={styles.fileName}>
+                    {datasetPath.join(",")}
+                  </span>
                   <span
                     className={styles.deleteIconWrapper}
                     onClick={handleRemoveFile}
@@ -263,8 +265,10 @@ export const JobEvaluationCreate = (): JSX.Element => {
           <DialogSelectDataset<SelectNormalizedDataSet>
             dialogState={importAnalysisDatasetDialogState}
             emptyMessage="現在表示できるデータセットはありません"
-            onSelected={(data) => {
-              setValue("dataset_path", data.file_path);
+            multiple={true}
+            onSelected={(selectedDatasets) => {
+              const filePaths = selectedDatasets.map((d) => d.file_name || "");
+              setValue("dataset_path", filePaths);
             }}
             placeholder="データ名"
             title="分析対象のデータを選択"
@@ -345,8 +349,8 @@ export const JobEvaluationCreate = (): JSX.Element => {
             dialogState={importAreaDatasetDialogState}
             emptyMessage="現在表示できるデータセットはありません"
             onSelected={(data) => {
-              setValue("area_grouping.path", data.file_path);
-              setValue("spatial_file", data.file_path);
+              setValue("area_grouping.path", data[0].file_name || "");
+              setValue("spatial_file", data[0].file_name || "");
             }}
             placeholder="データ名"
             title="地域集計用データを選択"

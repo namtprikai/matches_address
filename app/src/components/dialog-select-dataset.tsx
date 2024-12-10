@@ -11,6 +11,7 @@ import {
   mergeClasses,
   typographyStyles,
   DialogTrigger,
+  Checkbox,
 } from "@fluentui/react-components";
 import {
   ArrowSortRegular,
@@ -148,6 +149,9 @@ const useStyles = makeStyles({
   input: {
     width: "100%",
   },
+  checkbox: {
+    marginRight: tokens.spacingHorizontalS,
+  },
 });
 
 type Dataset = {
@@ -159,11 +163,12 @@ type Dataset = {
 type Props<T extends Dataset> = {
   dialogState: ReturnUseDialogState;
   isModel?: boolean;
-  onSelected?: (data: T) => void;
+  onSelected?: (data: T[]) => void;
   useFetchDatasets: () => { data: T[] | undefined };
   title: string;
   placeholder: string;
   emptyMessage: string;
+  multiple?: boolean;
 };
 
 export function DialogSelectDataset<T extends Dataset>({
@@ -174,26 +179,42 @@ export function DialogSelectDataset<T extends Dataset>({
   title,
   placeholder,
   emptyMessage,
+  multiple = false,
 }: Props<T>): JSX.Element {
   const styles = useStyles();
-  const [selectedDataSet, setSelectedDataSet] = useState<T | null>(null);
-
   const { isOpen: isDialogOpen, setIsOpen: setIsDialogOpen } = dialogState;
 
   const { data: datasets } = useFetchDatasets();
   const dataItems = datasets ?? [];
 
-  const [searchQuery, setSearchQuery] = useState<string>("");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedDataSets, setSelectedDataSets] = useState<T[]>([]);
 
   const filteredDataItems = dataItems.filter((dataset) =>
     dataset.file_name?.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
+  const handleRowClick = (dataset: T, newState?: boolean): void => {
+    setSelectedDataSets((prev) => {
+      const isCurrentlySelected = prev.some((d) => d.id === dataset.id);
+      const shouldSelect = newState ?? !isCurrentlySelected;
+
+      if (shouldSelect && !isCurrentlySelected) {
+        return [...prev, dataset];
+      } else if (!shouldSelect && isCurrentlySelected) {
+        return prev.filter((d) => d.id !== dataset.id);
+      }
+
+      return prev;
+    });
+  };
+
   const handleClick = (): void => {
-    if (selectedDataSet !== null) {
-      onSelected?.(selectedDataSet);
+    if (selectedDataSets.length > 0) {
+      onSelected?.(selectedDataSets);
       setIsDialogOpen(false);
       setSearchQuery("");
+      setSelectedDataSets([]);
     }
   };
 
@@ -201,10 +222,8 @@ export function DialogSelectDataset<T extends Dataset>({
     <Dialog
       onOpenChange={(_, { open }) => {
         setIsDialogOpen(open);
-
         if (!open) {
-          // ダイアログが閉じられたときに状態をリセット
-          setSelectedDataSet(null);
+          setSelectedDataSets([]);
           setSearchQuery("");
         }
       }}
@@ -268,30 +287,49 @@ export function DialogSelectDataset<T extends Dataset>({
               </TableHeader>
               {filteredDataItems.length > 0 ? (
                 <TableBody className={styles.tableBody}>
-                  {filteredDataItems.map((dataset) => (
-                    <TableRow
-                      key={dataset.id}
-                      className={mergeClasses(
-                        styles.datasetTable,
-                        selectedDataSet?.id === dataset.id
-                          ? styles.selectedDatasetTable
-                          : styles.borderBottom,
-                      )}
-                      onClick={() => setSelectedDataSet(dataset)}
-                    >
-                      <TableCell
+                  {filteredDataItems.map((dataset) => {
+                    const isSelected = selectedDataSets.some(
+                      (d) => d.id === dataset.id,
+                    );
+                    return (
+                      <TableRow
+                        key={dataset.id}
                         className={mergeClasses(
-                          styles.datasetCell,
-                          styles.dataName,
+                          styles.datasetTable,
+                          isSelected
+                            ? styles.selectedDatasetTable
+                            : styles.borderBottom,
                         )}
+                        onClick={() => handleRowClick(dataset)}
                       >
-                        {dataset.file_name ?? "名称未設定"}
-                      </TableCell>
-                      <TableCell className={styles.datasetCell}>
-                        {dataset.created_at}
-                      </TableCell>
-                    </TableRow>
-                  ))}
+                        <TableCell
+                          className={mergeClasses(
+                            styles.datasetCell,
+                            styles.dataName,
+                          )}
+                        >
+                          {multiple && (
+                            <Checkbox
+                              checked={isSelected}
+                              className={styles.checkbox}
+                              onChange={(ev, data) => {
+                                ev.stopPropagation();
+                                const checkedValue =
+                                  data.checked === "mixed"
+                                    ? false
+                                    : data.checked;
+                                handleRowClick(dataset, checkedValue);
+                              }}
+                            />
+                          )}
+                          {dataset.file_name ?? "名称未設定"}
+                        </TableCell>
+                        <TableCell className={styles.datasetCell}>
+                          {dataset.created_at}
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
                 </TableBody>
               ) : (
                 <div className={styles.noDatasetWrap}>
@@ -318,9 +356,11 @@ export function DialogSelectDataset<T extends Dataset>({
             <Button
               appearance="primary"
               className={
-                selectedDataSet === null ? styles.disabledButton : undefined
+                selectedDataSets.length === 0
+                  ? styles.disabledButton
+                  : undefined
               }
-              disabled={selectedDataSet === null}
+              disabled={selectedDataSets.length === 0}
               onClick={handleClick}
             >
               データを決定
