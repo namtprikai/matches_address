@@ -142,7 +142,7 @@ export const JobEvaluationCreate = (): JSX.Element => {
 
   // 選択された値を取得
   const modelPath = watch("model_path");
-  const datasetPath = watch("dataset_path");
+  const datasetPath = watch("normalized_dataset_paths");
   const spatialFile = watch("spatial_file");
   const threshold = watch("settings.threshold");
   const areaGroupIdColumn = watch("area_grouping.columns.area_group_id");
@@ -168,7 +168,7 @@ export const JobEvaluationCreate = (): JSX.Element => {
 
   // 分析対象のデータの削除
   const handleRemoveFile = (): void => {
-    setValue("dataset_path", []);
+    setValue("normalized_dataset_paths", []);
   };
 
   // モデルファイルの削除
@@ -268,7 +268,7 @@ export const JobEvaluationCreate = (): JSX.Element => {
             multiple={true}
             onSelected={(selectedDatasets) => {
               const filePaths = selectedDatasets.map((d) => d.file_name || "");
-              setValue("dataset_path", filePaths);
+              setValue("normalized_dataset_paths", filePaths);
             }}
             placeholder="データ名"
             title="分析対象のデータを選択"
