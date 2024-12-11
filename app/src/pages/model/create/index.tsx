@@ -9,6 +9,7 @@ import {
 import { ArrowLeftFilled } from "@fluentui/react-icons";
 import { Fragment, useState } from "react";
 import { type z } from "zod";
+import { useParams } from "react-router-dom";
 import { Button } from "../../../components/ui/button";
 import { useDialogState } from "../../../hooks/use-dialog-state";
 import { DialogImportNormalizedDataset } from "../../../components/dialog-import-normalized-dataset";
@@ -21,6 +22,7 @@ import {
 } from "../../../hooks/use-form-model-create";
 import { DialogModelMessage } from "../../../components/dialog-model-message";
 import { useFetchDatasetColumns } from "../../../hooks/use-fetch-dataset-columns";
+import { useFetchJob } from "../../../hooks/use-fetch-job";
 
 const useStyles = makeStyles({
   root: {
@@ -54,6 +56,12 @@ type FormType = z.infer<typeof schema>;
 
 export const ModelCreate = (): JSX.Element => {
   const styles = useStyles();
+
+  const { id } = useParams<{ id: string }>();
+  const { data } = useFetchJob({ id: Number(id) });
+
+  // eslint-disable-next-line no-console -- TODO: あとで消す
+  console.log(data);
 
   const modelMessageDialogState = useDialogState();
 

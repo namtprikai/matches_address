@@ -90,6 +90,10 @@ const router = createHashRouter([
         element: <ModelCreate />,
       },
       {
+        path: "model/create/:id",
+        element: <ModelCreate />,
+      },
+      {
         path: "normalization",
         element: <Normalization />,
       },
