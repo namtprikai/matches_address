@@ -63,6 +63,7 @@ import { createModelFiles } from "./create-model-files";
 import { insertModelFile } from "./insert-model-file";
 import { _debugCreateWorkshopData } from "./_debug-create-workshop-data";
 import { exportData } from "./ml/export-data";
+import { selectJob } from "./select-job";
 
 export const ipcMainListeners = {
   helloFromPython,
@@ -126,6 +127,7 @@ export const ipcMainListeners = {
   insertModelFile,
   _debugCreateWorkshopData,
   exportData,
+  selectJob,
 };
 
 export const execFileAsync = promisify(execFile);
