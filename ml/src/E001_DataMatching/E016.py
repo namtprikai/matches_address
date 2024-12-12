@@ -1021,7 +1021,7 @@ def process_data(tatemono_path, water_supply_path, gpkg_path, ken, sikuchoson, o
                 "joining_rate": join_ratio,
                 "input_source": input_source
             }
-            create_or_update_job_task(job_id, progress_percent="100", preprocess_type="e016", error_code=None, result=json.dumps(result), id= task_id, is_finish=True)
+            create_or_update_job_task(job_id, progress_percent="100", preprocess_type="e016", error_code=None, result=json.dumps(result, ensure_ascii=False), id= task_id, is_finish=True)
 
         return output_path, join_ratio
     except Exception as e:
