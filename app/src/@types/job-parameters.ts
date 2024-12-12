@@ -18,5 +18,20 @@ export type ResultParameters = { parameterType: "result" } & z.infer<
   typeof resultSchema
 >;
 
+export type ExportParameters = {
+  parameterType: "export";
+} & {
+  output_file_type: string;
+  output_coordinate: string;
+  target_unit: "building" | "area";
+  data_set_results_id: number;
+  reference_date: string;
+};
+
 export type JobParameters = BaseParameters &
-  (PreprocessParameters | ModelCreateParameters | ResultParameters);
+  (
+    | PreprocessParameters
+    | ModelCreateParameters
+    | ResultParameters
+    | ExportParameters
+  );

@@ -3,20 +3,13 @@ import { dbDirectory, dbPath } from "../../utils/db";
 import { binaryPath, type IpcMainListener } from "..";
 import { getErrorMessage } from "../../utils/get-error-message";
 import { processLogger } from "../../utils/process-logger";
-
-type Params = {
-  data: {
-    output_file_type: string;
-    output_coordinate: string;
-    target_unit: "building" | "area";
-    data_set_results_id: number;
-    reference_date: string;
-  };
-};
+import { type ExportParameters } from "../../@types/job-parameters";
 
 export const exportData = (async (
   _: unknown,
-  params: Params,
+  params: {
+    data: ExportParameters;
+  },
 ): Promise<boolean> => {
   const { data } = params;
 

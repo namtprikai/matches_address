@@ -4,6 +4,8 @@ import { useNavigate, useParams } from "react-router-dom";
 import { downloadFile } from "../../../../utils/download-file";
 import { useFetchJobResults } from "../../../../hooks/use-fetch-job-results";
 import { Button } from "../../../../components/ui/button";
+import { useFetchJobs } from "../../../../hooks/use-fetch-jobs";
+import { useFetchDataSetResultItem } from "../../../../hooks/use-fetch-data-set-result-item";
 
 const useStyles = makeStyles({
   root: {
@@ -55,6 +57,15 @@ export function ExportDetail(): JSX.Element {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
   const { data: jobResultsData } = useFetchJobResults({ jobId: Number(id) });
+  const { data: job } = useFetchJobs(Number(id));
+
+  const dataSetResultId =
+    job && job.length > 0 && job[0].parameters.parameterType === "export"
+      ? job[0].parameters.data_set_results_id
+      : null;
+  const { data: dataSetResult } = useFetchDataSetResultItem({
+    dataSetResultId,
+  });
 
   const handleBack = (): void => {
     navigate(-1);
@@ -74,6 +85,9 @@ export function ExportDetail(): JSX.Element {
 
         <div className={styles.result}>
           <span className={styles.message}>
+            {dataSetResult &&
+              dataSetResult.length > 0 &&
+              `${dataSetResult[0].title}の`}
             判定結果のダウンロード準備が完了しました。
           </span>
           <div className={styles.buttonWrapper}>
