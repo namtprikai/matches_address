@@ -49,20 +49,22 @@ export const FormNormalization = ({
 
   useEffect(() => {
     if (prevParameters && jobId) {
-      reset({
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment -- ignore
-        // @ts-ignore
-        settings: prevParameters.settings,
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment -- ignore
-        // @ts-ignore
-        data: prevParameters.data,
-      });
+      if (prevParameters.parameterType === "preprocess") {
+        reset({
+          settings: prevParameters.settings,
+          data: prevParameters.data,
+        });
+      }
     }
   }, [jobId, prevParameters, reset]);
 
   const onSubmit = handleSubmit(async (data) => {
     await window.ipcRenderer.invoke("execE001", {
-      parameters: data,
+      parameters: {
+        parameterType: "preprocess",
+        settings: data.settings,
+        data: data.data,
+      },
     });
     afterSubmit();
   });

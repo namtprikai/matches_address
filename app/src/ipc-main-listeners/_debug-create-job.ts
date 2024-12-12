@@ -121,7 +121,7 @@ const createmock = (
     case "preprocess":
       return mockE001;
     case "ml":
-      return mockBuildModel;
+      return { parameterType: "ml", ...mockBuildModel };
     default:
       return mockE001;
   }
@@ -163,6 +163,7 @@ const createmockResult = (type: InsertJob["type"]): InsertJobTask["result"] => {
 
 /** 型推論が通じないので指定。モックなので一旦気にしない・・ */
 const mockE001: PreprocessParameters = {
+  parameterType: "preprocess",
   settings: {
     reference_data: "resident_registry",
     reference_date: "2021-01-01",
