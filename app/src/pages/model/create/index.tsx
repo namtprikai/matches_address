@@ -119,9 +119,7 @@ export const ModelCreate = (): JSX.Element => {
       <div className={styles.contents}>
         <Card>
           <Subtitle2>① ファイルをインポート</Subtitle2>
-          <div>
-            {normalizedDataSet && <div>{normalizedDataSet.file_name}</div>}
-          </div>
+          <div>{normalizedDataSet?.file_name}</div>
           <div>
             <Button
               appearance="primary"
