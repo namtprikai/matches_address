@@ -4,7 +4,7 @@ import { binaryPath, type IpcMainListener } from "..";
 import { getErrorMessage } from "../../utils/get-error-message";
 import { processLogger } from "../../utils/process-logger";
 
-type Params = {
+export type Params = {
   data: {
     output_file_type: string;
     output_coordinate: string;
