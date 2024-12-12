@@ -65,7 +65,7 @@ def detect_encoding(file_path):
     result = chardet.detect(raw_data)
     return result['encoding']
 
-def read_csv(path: str, **kwargs) -> pd.DataFrame:
+def read_data(path: str, **kwargs) -> pd.DataFrame:
     """
     CSVファイルを読み込む
     
@@ -127,7 +127,7 @@ def get_column_names(csv_file: str) -> List[str]:
     """
     try:
         # CSVファイルを読み込む
-        df = read_csv(csv_file)
+        df = read_data(csv_file)
         # 列名のリストを返す
         return df.columns.tolist()
     except Exception as e:
@@ -178,14 +178,14 @@ def embedding_address(main_csv: io.BytesIO | str, sub_csv: io.BytesIO | str, mai
 
         # CSVファイルを読み込む
         if hasattr(main_csv, 'name'):
-            main_df = read_csv(main_csv.name)
+            main_df = read_data(main_csv.name)
         else:
-            main_df = read_csv(main_csv)
+            main_df = read_data(main_csv)
 
         if hasattr(sub_csv, 'name'):
-            sub_df = read_csv(sub_csv.name)
+            sub_df = read_data(sub_csv.name)
         else:
-            sub_df = read_csv(sub_csv)
+            sub_df = read_data(sub_csv)
 
         # 結合元のファイルがmain, 結合対象のファイルがsub、初めに読み込んだファイルを一旦mainにしているので、結合基準をsubにしてたら入れ替える
         if hasattr(sub_csv, 'name') and merge_base == os.path.basename(sub_csv.name):
@@ -198,11 +198,6 @@ def embedding_address(main_csv: io.BytesIO | str, sub_csv: io.BytesIO | str, mai
         sub_data_rows = len(sub_df)
 
         # アップロードされた元のファイル名を使用して拡張子を除去
-        if hasattr(main_csv, 'name'):
-            main_csv_name = os.path.splitext(os.path.basename(main_csv.name))[0]
-        else:
-            main_csv_name = os.path.splitext(os.path.basename(main_csv))[0]
-
         if hasattr(sub_csv, 'name'):
             sub_csv_name = os.path.splitext(os.path.basename(sub_csv.name))[0]
         else:
@@ -212,7 +207,7 @@ def embedding_address(main_csv: io.BytesIO | str, sub_csv: io.BytesIO | str, mai
         sub_df.columns = [f"{col}_{sub_csv_name}" if col != sub_column else col for col in sub_df.columns]
         
         # 名寄せが判断できるflagを設定
-        main_flag_name = f'{main_csv_name}_flag'
+        main_flag_name = f'matched_data_flag'
         sub_flag_name = f'{sub_csv_name}_flag'
         # 初期値は全て1
         main_df[main_flag_name] = 1
@@ -304,7 +299,7 @@ def embedding_address(main_csv: io.BytesIO | str, sub_csv: io.BytesIO | str, mai
             'input_source': input_source
         }
         if job_id:
-            create_or_update_job_task(job_id, progress_percent="100", preprocess_type="e014", error_code=None, result=json.dumps(res), id= task_id, is_finish=True)
+            create_or_update_job_task(job_id, progress_percent="100", preprocess_type="e014", error_code=None, result=json.dumps(res, ensure_ascii=False), id= task_id, is_finish=True)
 
         return saved_file_path, f"{complete_match_ratio}\n{threshold_match_ratio}\n{sub_complete_match_ratio}"
     except Exception as e:

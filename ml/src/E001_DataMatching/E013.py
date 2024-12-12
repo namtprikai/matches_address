@@ -74,7 +74,7 @@ class DataProcessor:
                 "15歳未満人数", "15歳未満構成比",
                 "15歳以上64歳以下人数", "15歳以上64歳以下構成比",
                 "65歳以上人数", "65歳以上構成比", "最大年齢", "最小年齢",
-                "男女比", "住定期間"
+                "男女比", "住定期間", "基準日"
             ],
             "tatemono": ["正規化住所", "構造名称", "登記日付"]
         }
@@ -384,7 +384,7 @@ class SuidoProcessor(DataProcessor):
                     suido_pre_merged.loc[row, 'base_date_水道使用量'] = 0
 
             if len(new_date_columns) < 1:
-                raise Exception("基準日が不正です。正シリフォーマットになっているか、もしくは正しい日付となっているかかご確認ください 。")
+                raise ValueError("基準日が不正です。正シリフォーマットになっているか、もしくは正しい日付となっているかかご確認ください 。")
             # suido_useに欠損年月がある場合に開始日、終了日の日付を修正(そのほかもデータ期間中の期間に修正)
             df_use = suido_pre_merged.apply(lambda x:get_start_base_value(self,x,missing_month,new_date_columns), axis=1)
         
@@ -402,6 +402,8 @@ class SuidoProcessor(DataProcessor):
             
             # 出力するカラムを選択
             return df_use[[cols_use["suido_number"], "最大使用水量", "平均使用水量", "最小使用水量", "合計使用水量", "水道使用量変化率"]]
+        except ValueError as e:
+            raise ValueError(e)
         except Exception as e:
             raise Exception(e)
     
@@ -749,7 +751,7 @@ class JukiProcessor(DataProcessor):
         
         # 重複を削除
         df_juki_processed = df_juki_processed.drop_duplicates(subset=["世帯コード", "正規化住所"])
-
+        df_juki_processed["基準日"] = base_date
 
         # 出力カラムの選択
         df_juki_processed = df_juki_processed[self.OUTPUT_COLUMNS["juki"]]
@@ -946,6 +948,10 @@ def process_all_data(suido_use_file, suido_status_file, juki_file, tatemono_file
             create_or_update_job_task(job_id, progress_percent="100", preprocess_type="e013", error_code=None, result=json.dumps({}), id= task_id, is_finish=True)
         
         return [path for path in output_paths.values() if os.path.exists(path)]
+    except ValueError as e:
+        if task_id is not None:
+            create_or_update_job_task(job_id, progress_percent="", preprocess_type="e013", error_code="e001", result=json.dumps({}), id= task_id, is_finish=True)
+        raise Exception(e)
     except Exception as e:
         if task_id is not None:
             create_or_update_job_task(job_id, progress_percent="", preprocess_type="e013", error_code="e001", result=json.dumps({}), id= task_id, is_finish=True)

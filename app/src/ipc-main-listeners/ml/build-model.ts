@@ -1,13 +1,12 @@
 import { spawn } from "child_process";
-import { type z } from "zod";
 import { dbDirectory, dbPath } from "../../utils/db";
 import { binaryPath, type IpcMainListener } from "../";
-import { type schema } from "../../hooks/use-form-model-create";
 import { getErrorMessage } from "../../utils/get-error-message";
 import { processLogger } from "../../utils/process-logger";
+import { type ModelCreateParameters } from "../../@types/job-parameters";
 
 type Params = {
-  data: z.infer<typeof schema>;
+  data: ModelCreateParameters;
 };
 
 export const buildModel = (async (

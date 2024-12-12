@@ -48,9 +48,12 @@ def main():
     random_str = str(uuid.uuid4())
     output_directory = concatenate(params.get('output_path'), random_str)
     
+    job_id = None
     try:
-        connect_sqllite(params.get('db_path'))
+        if not params.get('db_path'):
+            raise Exception("Error: database_path field is required")
 
+        connect_sqllite(params.get('db_path'))
         job_id = create_or_update_job(None ,"", "ml", os.getpid(), 0, args.parameters)
         params['input_path'] = concatenate(params.get('output_path'), json_dict.get('input_path'))
         params['output_path'] = output_directory

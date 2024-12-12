@@ -99,7 +99,10 @@ def main():
     search_period = "1"
     input_zip_file = None
 
+    job_id = None
     try:
+        if not params.get('db_path'):
+            raise Exception("Error: database_path field is required")
 
         connect_sqllite(params.get('db_path'))
         job_id = create_or_update_job(None ,"", "preprocess", os.getpid(), 0, args.parameters)

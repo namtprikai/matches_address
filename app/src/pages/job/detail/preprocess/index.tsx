@@ -8,6 +8,7 @@ import {
   TableBody,
   TableRow,
   TableCell,
+  mergeClasses,
 } from "@fluentui/react-components";
 import { ErrorCircleFilled, ArrowLeftRegular } from "@fluentui/react-icons";
 import { useNavigate, useParams } from "react-router-dom";
@@ -73,11 +74,15 @@ const useStyles = makeStyles({
     flexDirection: "column",
     gap: tokens.spacingVerticalS,
     padding: `${tokens.spacingVerticalM} ${tokens.spacingHorizontalL}`,
-    backgroundColor: "#ecf2ef",
     borderRadius: tokens.borderRadiusSmall,
   },
-  message: {
+  info: {
+    backgroundColor: "#ecf2ef",
     color: "#09583B",
+  },
+  error: {
+    backgroundColor: "rgba(196, 49, 75, 0.08)",
+    color: "rgb(196, 49, 75)",
   },
   buttonWrapper: {
     display: "flex",
@@ -121,6 +126,11 @@ const PreprocessTypeMap: {
   e016: "e016",
 };
 
+const MESSAGE = {
+  info: "処理が完了しました。",
+  error: "処理に失敗しました。",
+};
+
 export function PreprocessDetail(): JSX.Element {
   const styles = useStyles();
   const navigate = useNavigate();
@@ -143,6 +153,8 @@ export function PreprocessDetail(): JSX.Element {
 
   const isNamed = job && job[0].is_named;
 
+  const isError = job && job[0].status === "error";
+
   return (
     <div className={styles.pageContainer}>
       <div className={styles.root}>
@@ -155,44 +167,51 @@ export function PreprocessDetail(): JSX.Element {
           処理結果
         </h2>
 
-        <div className={styles.result}>
-          <span className={styles.message}>処理が完了しました。</span>
-          <div className={styles.buttonWrapper}>
-            <Button
-              className={isNamed ? "" : styles.saveWithNameButton}
-              disabled={isNamed}
-              onClick={() => {
-                dialogState.setIsOpen(true);
-              }}
-            >
-              名前をつけて保存
-            </Button>
-            <DialogSaveWithName
-              dialogState={dialogState}
-              onSave={async (inputValue: string) => {
-                if (!jobResultsData) return;
-                await window.ipcRenderer.invoke("createNormalizedDatasets", {
-                  jobId: jobResultsData.job_id,
-                  insertParams: {
-                    file_name: inputValue,
-                    file_path: jobResultsData.file_path,
-                    job_results_id: jobResultsData.id,
-                  },
-                });
-                await mutate();
-              }}
-            />
+        <div
+          className={mergeClasses(
+            styles.result,
+            isError ? styles.error : styles.info,
+          )}
+        >
+          <span>{MESSAGE[isError ? "error" : "info"]}</span>
+          {!isError && (
+            <div className={styles.buttonWrapper}>
+              <Button
+                className={isNamed ? "" : styles.saveWithNameButton}
+                disabled={isNamed}
+                onClick={() => {
+                  dialogState.setIsOpen(true);
+                }}
+              >
+                名前をつけて保存
+              </Button>
+              <DialogSaveWithName
+                dialogState={dialogState}
+                onSave={async (inputValue: string) => {
+                  if (!jobResultsData) return;
+                  await window.ipcRenderer.invoke("createNormalizedDatasets", {
+                    jobId: jobResultsData.job_id,
+                    insertParams: {
+                      file_name: inputValue,
+                      file_path: jobResultsData.file_path,
+                      job_results_id: jobResultsData.id,
+                    },
+                  });
+                  await mutate();
+                }}
+              />
 
-            <Button onClick={handlePreviewClick}>プレビューを見る</Button>
-            <Button
-              onClick={async () => {
-                if (!jobResultsData) return;
-                await downloadFile(jobResultsData.file_path);
-              }}
-            >
-              ダウンロード
-            </Button>
-          </div>
+              <Button onClick={handlePreviewClick}>プレビューを見る</Button>
+              <Button
+                onClick={async () => {
+                  if (!jobResultsData) return;
+                  await downloadFile(jobResultsData.file_path);
+                }}
+              >
+                ダウンロード
+              </Button>
+            </div>
+          )}
         </div>
 
         <Card className={styles.content}>
