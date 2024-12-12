@@ -2,6 +2,7 @@ import { Dialog, makeStyles, DialogTrigger } from "@fluentui/react-components";
 import { DismissFilled } from "@fluentui/react-icons";
 import { useForm, type FieldPath } from "react-hook-form";
 import { type z } from "zod";
+import { useEffect } from "react";
 import { type ReturnUseDialogState } from "../hooks/use-dialog-state";
 import { type schema as formModelCreateSchema } from "../hooks/use-form-model-create";
 import { Button } from "./ui/button";
@@ -157,9 +158,15 @@ export const DialogModelAdvanced = ({
   const { isOpen: isDialogOpen, setIsOpen: setIsDialogOpen } = dialogState;
 
   /** メインのstateへの反映のタイミングを切り分けるためにformを上流とは別に再作成している */
-  const { register, handleSubmit } = useForm<FormType["settings"]["advanced"]>({
+  const { register, handleSubmit, reset } = useForm<
+    FormType["settings"]["advanced"]
+  >({
     defaultValues: initialValues,
   });
+
+  useEffect(() => {
+    reset(initialValues);
+  }, [initialValues, reset]);
 
   const handleClick = handleSubmit((data): void => {
     onSelected(data);

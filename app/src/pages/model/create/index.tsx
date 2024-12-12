@@ -60,24 +60,18 @@ export const ModelCreate = (): JSX.Element => {
   const styles = useStyles();
 
   const { id } = useParams<{ id: string }>();
-  const { data: job } = useFetchJob({ id: Number(id) });
+  const { data: job } = useFetchJob({
+    id: Number(id),
+  });
   const { data: currentNormalizedDataset } =
     useFetchNormalizedDatasetWithFilePath({
-      filePath: job?.parameters
-        ? validateModelCreateParameters(job.parameters).input_path
-        : undefined,
+      filePath: validateModelCreateParameters(job?.parameters)?.input_path,
     });
-
-  useEffect(
-    function setCurrentNormalizedDataset() {
-      if (currentNormalizedDataset) {
-        setNormalizedDataSet(currentNormalizedDataset);
-      }
-    },
-    [currentNormalizedDataset],
+  const [normalizedDataSet, setNormalizedDataSet] =
+    useState<SelectNormalizedDataSet>();
+  const [explanatoryVariables, setExplanatoryVariables] = useState<string[]>(
+    [],
   );
-
-  const modelMessageDialogState = useDialogState();
 
   const form = useFormModelCreate();
   const {
@@ -87,19 +81,40 @@ export const ModelCreate = (): JSX.Element => {
     watch,
   } = form;
 
+  useEffect(
+    function setCurrentValues() {
+      // 外でvalidatedParametersを定義すると無限ループしてしまうので、useEffect内で定義している
+      const validatedParameters = validateModelCreateParameters(
+        job?.parameters,
+      );
+
+      if (!validatedParameters) return;
+
+      if (currentNormalizedDataset) {
+        setNormalizedDataSet(currentNormalizedDataset);
+      }
+      if (validatedParameters.settings.explanatory_variables) {
+        setExplanatoryVariables(
+          validatedParameters.settings.explanatory_variables,
+        );
+      }
+      if (validatedParameters.settings.advanced) {
+        setValue("settings.advanced", validatedParameters.settings.advanced);
+      }
+    },
+    [currentNormalizedDataset, job?.parameters, setValue],
+  );
+
+  const modelMessageDialogState = useDialogState();
+
   const onSubmit = handleSubmit(async (data: FormType) => {
     await window.ipcRenderer.invoke("buildModel", { data });
     modelMessageDialogState.setIsOpen(true);
   });
 
   const importNormalizedDatasetDialogState = useDialogState();
-  const [normalizedDataSet, setNormalizedDataSet] =
-    useState<SelectNormalizedDataSet>();
 
   const explanatoryVariablesDialogState = useDialogState();
-  const [explanatoryVariables, setExplanatoryVariables] = useState<string[]>(
-    [],
-  );
   const { data: datasetColumns } = useFetchDatasetColumns({
     filename: normalizedDataSet?.file_path,
   });
