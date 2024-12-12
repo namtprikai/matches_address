@@ -66,7 +66,12 @@ export const ModelCreate = (): JSX.Element => {
   } = form;
 
   const onSubmit = handleSubmit(async (data: FormType) => {
-    await window.ipcRenderer.invoke("buildModel", { data });
+    await window.ipcRenderer.invoke("buildModel", {
+      data: {
+        parameterType: "ml",
+        ...data,
+      },
+    });
     modelMessageDialogState.setIsOpen(true);
   });
 

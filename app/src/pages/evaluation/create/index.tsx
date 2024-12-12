@@ -163,7 +163,12 @@ export const JobEvaluationCreate = (): JSX.Element => {
 
   // フォーム送信時の処理
   const onSubmit = handleSubmit(async (data: FormType) => {
-    await window.ipcRenderer.invoke("evaluateData", { data });
+    await window.ipcRenderer.invoke("evaluateData", {
+      data: {
+        parameterType: "result",
+        ...data,
+      },
+    });
   });
 
   // 分析対象のデータの削除
