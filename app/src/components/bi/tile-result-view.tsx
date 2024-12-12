@@ -104,12 +104,14 @@ export const TileResultView = ({
     if (!resultView.data_set_result_id || !resultView.unit || !reference_date)
       return;
     await window.ipcRenderer.invoke("exportData", {
-      parameterType: "export",
-      output_file_type: fileType,
-      output_coordinate: coordinate,
-      data_set_results_id: resultView.data_set_result_id,
-      target_unit: resultView.unit,
-      reference_date,
+      data: {
+        parameterType: "export",
+        output_file_type: fileType,
+        output_coordinate: coordinate,
+        data_set_results_id: resultView.data_set_result_id,
+        target_unit: resultView.unit,
+        reference_date,
+      },
     });
   };
 

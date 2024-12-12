@@ -7,9 +7,11 @@ import { type ExportParameters } from "../../@types/job-parameters";
 
 export const exportData = (async (
   _: unknown,
-  params: ExportParameters,
+  params: {
+    data: ExportParameters;
+  },
 ): Promise<boolean> => {
-  const data = params;
+  const { data } = params;
 
   // eslint-disable-next-line no-console -- for debug @todo remove
   console.log("--- start exportData ---", data);
