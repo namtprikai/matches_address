@@ -2,7 +2,7 @@ import useSWR, { type SWRResponse } from "swr";
 import { type SelectNormalizedDataSet } from "../schema";
 
 type Params = {
-  filePath: SelectNormalizedDataSet["file_path"];
+  filePath: SelectNormalizedDataSet["file_path"] | undefined;
 };
 
 type Response = SelectNormalizedDataSet | undefined;

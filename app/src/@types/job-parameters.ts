@@ -1,5 +1,5 @@
 import { type z } from "zod";
-import { type schema as modelCreateSchema } from "../hooks/use-form-model-create";
+import { schema as modelCreateSchema } from "../hooks/use-form-model-create";
 import { type schema as normalizationSchema } from "../hooks/use-form-normalization";
 
 type BaseParameters = {
@@ -15,3 +15,9 @@ export type ResultParameters = z.infer<
 
 export type JobParameters = BaseParameters &
   (PreprocessParameters | ModelCreateParameters);
+
+export function validateModelCreateParameters(
+  jobParameters: JobParameters,
+): ModelCreateParameters {
+  return modelCreateSchema.parse(jobParameters);
+}

@@ -5,7 +5,7 @@ import { type IpcMainListener } from ".";
 
 export const selectNormalizedDatasetWithFilePath = (async (
   _: unknown,
-  { filePath }: { filePath: SelectNormalizedDataSet["file_path"] },
+  { filePath }: { filePath: SelectNormalizedDataSet["file_path"] | undefined },
 ): Promise<SelectNormalizedDataSet | undefined> => {
   if (!filePath) return undefined;
 

@@ -7,7 +7,7 @@ import {
   tokens,
 } from "@fluentui/react-components";
 import { ArrowLeftFilled } from "@fluentui/react-icons";
-import { Fragment, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import { type z } from "zod";
 import { useParams } from "react-router-dom";
 import { Button } from "../../../components/ui/button";
@@ -23,6 +23,8 @@ import {
 import { DialogModelMessage } from "../../../components/dialog-model-message";
 import { useFetchDatasetColumns } from "../../../hooks/use-fetch-dataset-columns";
 import { useFetchJob } from "../../../hooks/use-fetch-job";
+import { useFetchNormalizedDatasetWithFilePath } from "../../../hooks/use-fetch-normalized-dataset-with-file-name";
+import { validateModelCreateParameters } from "../../../@types/job-parameters";
 
 const useStyles = makeStyles({
   root: {
@@ -58,10 +60,22 @@ export const ModelCreate = (): JSX.Element => {
   const styles = useStyles();
 
   const { id } = useParams<{ id: string }>();
-  const { data } = useFetchJob({ id: Number(id) });
+  const { data: job } = useFetchJob({ id: Number(id) });
+  const { data: currentNormalizedDataset } =
+    useFetchNormalizedDatasetWithFilePath({
+      filePath: job?.parameters
+        ? validateModelCreateParameters(job.parameters).input_path
+        : undefined,
+    });
 
-  // eslint-disable-next-line no-console -- TODO: あとで消す
-  console.log(data);
+  useEffect(
+    function setCurrentNormalizedDataset() {
+      if (currentNormalizedDataset) {
+        setNormalizedDataSet(currentNormalizedDataset);
+      }
+    },
+    [currentNormalizedDataset],
+  );
 
   const modelMessageDialogState = useDialogState();
 
