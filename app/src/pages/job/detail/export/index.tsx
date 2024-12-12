@@ -61,7 +61,7 @@ export function ExportDetail(): JSX.Element {
 
   const dataSetResultId =
     job && job.length > 0 && job[0].parameters.parameterType === "export"
-      ? job[0].parameters.data.data_set_results_id
+      ? job[0].parameters.data_set_results_id
       : null;
   const { data: dataSetResult } = useFetchDataSetResultItem({
     dataSetResultId,

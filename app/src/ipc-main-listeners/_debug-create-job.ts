@@ -126,13 +126,11 @@ const createmock = (
     case "export":
       return {
         parameterType: "export",
-        data: {
-          output_file_type: "csv",
-          output_coordinate: "4326",
-          data_set_results_id: 1,
-          target_unit: "building",
-          reference_date: "2022-01-01",
-        },
+        output_file_type: "csv",
+        output_coordinate: "4326",
+        data_set_results_id: 1,
+        target_unit: "building",
+        reference_date: "2022-01-01",
       };
     default:
       return mockE001;
