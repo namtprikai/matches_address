@@ -17,7 +17,8 @@ export type JobParameters = BaseParameters &
   (PreprocessParameters | ModelCreateParameters);
 
 export function validateModelCreateParameters(
-  jobParameters: JobParameters,
-): ModelCreateParameters {
+  jobParameters: JobParameters | undefined,
+): ModelCreateParameters | undefined {
+  if (!jobParameters) return undefined;
   return modelCreateSchema.parse(jobParameters);
 }
