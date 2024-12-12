@@ -2,28 +2,28 @@ import useSWR, { type SWRResponse } from "swr";
 import { type SelectNormalizedDataSet } from "../schema";
 
 type Params = {
-  fileName: SelectNormalizedDataSet["file_name"];
+  filePath: SelectNormalizedDataSet["file_path"];
 };
 
 type Response = SelectNormalizedDataSet | undefined;
 
-const fetcher = ({ fileName }: Params): Promise<Response> => {
+const fetcher = ({ filePath }: Params): Promise<Response> => {
   const result = window.ipcRenderer.invoke(
-    "selectNormalizedDatasetWithFileName",
+    "selectNormalizedDatasetWithFilePath",
     {
-      fileName,
+      filePath,
     },
   );
   return result;
 };
 
-export const useFetchNormalizedDatasetWithFileName = ({
-  fileName,
+export const useFetchNormalizedDatasetWithFilePath = ({
+  filePath,
 }: Params): SWRResponse<Response> => {
   const swr = useSWR(
     {
-      fileName,
-      key: useFetchNormalizedDatasetWithFileName.name,
+      filePath,
+      key: useFetchNormalizedDatasetWithFilePath.name,
     },
     fetcher,
   );

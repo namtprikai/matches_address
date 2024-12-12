@@ -64,7 +64,7 @@ import { insertModelFile } from "./insert-model-file";
 import { _debugCreateWorkshopData } from "./_debug-create-workshop-data";
 import { exportData } from "./ml/export-data";
 import { selectJob } from "./select-job";
-import { selectNormalizedDatasetWithFileName } from "./select-normalized-dataset-with-file-name";
+import { selectNormalizedDatasetWithFilePath } from "./select-normalized-dataset-with-file-path";
 
 export const ipcMainListeners = {
   helloFromPython,
@@ -129,7 +129,7 @@ export const ipcMainListeners = {
   _debugCreateWorkshopData,
   exportData,
   selectJob,
-  selectNormalizedDatasetWithFileName,
+  selectNormalizedDatasetWithFilePath,
 };
 
 export const execFileAsync = promisify(execFile);
