@@ -41,7 +41,7 @@ type FormType = z.infer<typeof formModelCreateSchema>;
 type Props = {
   dialogState: ReturnUseDialogState;
   onSelected: (selected: FormType["settings"]["advanced"]) => void;
-  initialValues: FormType["settings"]["advanced"];
+  initialValues: FormType["settings"]["advanced"] | undefined;
 };
 
 /**
@@ -158,15 +158,9 @@ export const DialogModelAdvanced = ({
   const { isOpen: isDialogOpen, setIsOpen: setIsDialogOpen } = dialogState;
 
   /** メインのstateへの反映のタイミングを切り分けるためにformを上流とは別に再作成している */
-  const { register, handleSubmit, reset } = useForm<
-    FormType["settings"]["advanced"]
-  >({
+  const { register, handleSubmit } = useForm<FormType["settings"]["advanced"]>({
     defaultValues: initialValues,
   });
-
-  useEffect(() => {
-    reset(initialValues);
-  }, [initialValues, reset]);
 
   const handleClick = handleSubmit((data): void => {
     onSelected(data);

@@ -60,7 +60,7 @@ export const ModelCreate = (): JSX.Element => {
   const styles = useStyles();
 
   const { id } = useParams<{ id: string }>();
-  const { data: job } = useFetchJob({
+  const { data: job, isLoading: isJobLoading } = useFetchJob({
     id: Number(id),
   });
   const { data: currentNormalizedDataset } =
@@ -181,15 +181,20 @@ export const ModelCreate = (): JSX.Element => {
             <Text>{errors.settings?.explanatory_variables?.message}</Text>
           </div>
         </Card>
-        <DialogExplanatoryVariables
-          columnOptions={datasetColumns || []}
-          dialogState={explanatoryVariablesDialogState}
-          onSelected={(data) => {
-            setExplanatoryVariables(data);
-            setValue("settings.explanatory_variables", data);
-          }}
-        />
-
+        {!isJobLoading ? (
+          <DialogExplanatoryVariables
+            columnOptions={datasetColumns || []}
+            dialogState={explanatoryVariablesDialogState}
+            initialValues={
+              validateModelCreateParameters(job?.parameters)?.settings
+                .explanatory_variables
+            }
+            onSelected={(data) => {
+              setExplanatoryVariables(data);
+              setValue("settings.explanatory_variables", data);
+            }}
+          />
+        ) : null}
         <Card>
           <Subtitle2>③ パラメーターを変更</Subtitle2>
           {modelAdvanced && (
@@ -213,11 +218,15 @@ export const ModelCreate = (): JSX.Element => {
             <Text>{errors.settings?.advanced?.message}</Text>
           </div>
         </Card>
-        <DialogModelAdvanced
-          dialogState={modelAdvancedDialogState}
-          initialValues={modelAdvanced}
-          onSelected={(data) => setValue("settings.advanced", data)}
-        />
+        {!isJobLoading ? (
+          <DialogModelAdvanced
+            dialogState={modelAdvancedDialogState}
+            initialValues={
+              validateModelCreateParameters(job?.parameters)?.settings.advanced
+            }
+            onSelected={(data) => setValue("settings.advanced", data)}
+          />
+        ) : null}
       </div>
 
       <div className={styles.footer}>
