@@ -11,6 +11,7 @@ import { Table, type ColumnDefinition } from "../../../../components/ui/table";
 import { Pagination } from "../../../../components/ui/pagination";
 import { useFetchBuildingPreview } from "../../../../hooks/use-fetch-preview-data";
 import { useFetchModelFiles } from "../../../../hooks/use-fetch-model-files";
+import { type PreviewData } from "../../../../ipc-main-listeners/select-building-preview";
 
 const useStyles = makeStyles({
   root: {
@@ -60,13 +61,6 @@ const useStyles = makeStyles({
     width: "150px",
   },
 });
-
-interface PreviewData {
-  normalized_address: string;
-  water_supply_number: string;
-  area_group: string;
-  predicted_probability: number;
-}
 
 export function JobPreview(): JSX.Element {
   const styles = useStyles();

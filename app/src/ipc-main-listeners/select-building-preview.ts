@@ -10,7 +10,7 @@ export interface PreviewData {
   predicted_probability: number;
 }
 
-export type SelectBuildingPreviewResponse = PreviewData[];
+type SelectBuildingPreviewResponse = PreviewData[];
 
 export const selectBuildingPreview = (async (
   _: unknown,
