@@ -123,6 +123,46 @@ export const DebugCreateButtons = (): JSX.Element => {
         >
           判定失敗
         </Button>
+        <Button
+          onClick={() => {
+            window.ipcRenderer
+              .invoke("_debugCreateJob", {
+                job: "処理開始",
+                jobType: "export",
+                // parameters:,
+              })
+              .catch(console.error);
+          }}
+          size="small"
+        >
+          判定結果ダウンロード準備開始
+        </Button>
+        <Button
+          onClick={() => {
+            window.ipcRenderer
+              .invoke("_debugCreateJob", {
+                job: "処理完了",
+                jobType: "export",
+              })
+              .catch(console.error);
+          }}
+          size="small"
+        >
+          判定結果ダウンロード準備完了
+        </Button>
+        <Button
+          onClick={() => {
+            window.ipcRenderer
+              .invoke("_debugCreateJob", {
+                job: "処理失敗",
+                jobType: "export",
+              })
+              .catch(console.error);
+          }}
+          size="small"
+        >
+          判定結果ダウンロード準備失敗
+        </Button>
       </div>
     </div>
   );
