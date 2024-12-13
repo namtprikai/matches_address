@@ -114,7 +114,6 @@ def main():
         suido_status_file = None
         juki_file = None
         tatemono_file = None
-        main_input_source = 'juki' if params.get('juki') else 'suido_status'
         input_source = []
         input_source_jp = {
             'juki': '住基',
@@ -124,6 +123,14 @@ def main():
             'geocoding': 'ジオコーディングデータ',
         }
 
+        merge_base = 'suido_residence'
+        main_data_type = 'suido_status'
+        main_csv = f"{output_directory}/suido_residence.csv"
+        if params.get('reference_data') == 'resident_registry' and params.get('juki'):
+            merge_base = 'juki_residence'
+            main_data_type = 'juki'
+            main_csv = f"{output_directory}/juki_residence.csv"
+
         input_files = {
             "akiya_result": concatenate(params.get('output_path'), params.get('akiya_result')),
             "geocoding": concatenate(params.get('output_path'), params.get('geocoding'))
@@ -132,7 +139,7 @@ def main():
         if params.get('suido_status'):
             input_files['suido_status'] = concatenate(params.get('output_path'), params.get('suido_status'))
             suido_status_file = f"{output_directory}/suido_status_cleaned.csv"
-            if main_input_source == 'juki':
+            if main_data_type == 'juki':
                 input_source.append('suido_status')
                 
         if params.get('suido_use'):
@@ -142,7 +149,7 @@ def main():
         if params.get('juki'):
             input_files['juki'] = concatenate(params.get('output_path'), params.get('juki'))
             juki_file = f"{output_directory}/juki_cleaned.csv"
-            if main_input_source == 'suido_status':
+            if main_data_type == 'suido_status':
                 input_source.append('juki')
       
         if params.get('touki'):
@@ -151,14 +158,6 @@ def main():
             input_source.append('touki')
             
         input_source.extend(["akiya_result", "geocoding"])
-        
-        merge_base = 'suido_residence'
-        main_data_type = 'suido_status'
-        main_csv = f"{output_directory}/suido_residence.csv"
-        if params.get('reference_data') == 'resident_registry' and params.get('juki'):
-            merge_base = 'juki_residence'
-            main_data_type = 'juki'
-            main_csv = f"{output_directory}/juki_residence.csv"
         
         E012(input_files, output_directory, main_data_type, job_id, json.dumps(columns), params.get('db_path'))
         create_or_update_job(job_id, "25")
@@ -196,7 +195,7 @@ def main():
                 1000,
                 str(job_id),
                 params.get('db_path'),
-                [input_source_jp[main_input_source], input_source_jp[item]]
+                [input_source_jp[main_data_type], input_source_jp[item]]
             )
             main_csv = output_e014
         create_or_update_job(job_id, "75")

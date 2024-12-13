@@ -241,7 +241,7 @@ def predict(models, new_data, required_features, threshold):
 
     return test_preds, test_preds_proba
 
-def insert_sqlite_and_export(input_data):
+def insert_sqlite_and_export(input_data, data_set_result_id):
     """
     指定されたデータをSQLiteデータベースに挿入し、同時にインポート可能な形式でファイルを出力する
 
@@ -358,12 +358,11 @@ def insert_sqlite_and_export(input_data):
         input_data = input_data[mapped_columns]
         input_data = drop_duplicates(input_data, mapped_columns)
         
-        # SQLiteにデータを挿入
-        data_set_result_id = create_data_set_results()
-        
+        # SQLiteにデータを挿入        
         input_data['data_set_result_id'] = data_set_result_id 
         if 'reference_date' not in input_data.columns:
             input_data['reference_date'] = ""
+        input_data['reference_date'] = input_data['reference_date'].fillna('')
         is_success = create_data_set_detail_buildings_or_area(input_data)
         if not is_success:
             raise
@@ -391,7 +390,7 @@ def drop_duplicates(df, subset, keep="first"):
         """
         return df.drop_duplicates(subset=subset, keep=keep)
     
-def process_and_predict(input_folder, input_file, model_directory, threshold, output_file, required_features, outcome_variable, job_id=None, db_path=None, process=0):
+def process_and_predict(input_folder, input_file, model_directory, threshold, output_file, required_features, outcome_variable, job_id=None, db_path=None, process=0, data_set_result_id=0):
     """
     入力データを処理し、予測を行い、結果を保存する
     """
@@ -468,7 +467,7 @@ def process_and_predict(input_folder, input_file, model_directory, threshold, ou
         os.makedirs(output_dir, exist_ok=True)
 
         #insert SQLite
-        insert_sqlite_and_export(input_data)
+        insert_sqlite_and_export(input_data, data_set_result_id)
         if job_id:
             create_or_update_job_task(job_id, progress_percent="90", preprocess_type=None, error_code=None, result=json.dumps({}), id= task_id)
             create_or_update_job(job_id, process)
@@ -495,6 +494,7 @@ def process_and_predict(input_folder, input_file, model_directory, threshold, ou
             create_or_update_job_task(job_id, progress_percent="", preprocess_type=None, error_code="e001", result=json.dumps({}), id= task_id, is_finish=True)
         return f"{output_file} への予測結果の保存に失敗しました", None
     except Exception as e:
+        print(e)
         if task_id is not None:
             create_or_update_job_task(job_id, progress_percent="", preprocess_type=None, error_code="e001", result=json.dumps({}), id= task_id, is_finish=True)
         raise Exception("Error: Vacant house classification process encountered an issue")

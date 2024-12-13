@@ -955,6 +955,7 @@ def process_all_data(suido_use_file, suido_status_file, juki_file, tatemono_file
             create_or_update_job_task(job_id, progress_percent="", preprocess_type="e013", error_code="e001", result=json.dumps({}), id= task_id, is_finish=True)
         raise Exception(e)
     except Exception as e:
+        print(e)
         if task_id is not None:
             create_or_update_job_task(job_id, progress_percent="", preprocess_type="e013", error_code="e001", result=json.dumps({}), id= task_id, is_finish=True)
         raise Exception("Error: The issue occurred during the Housing Unit Data Creation function process")
