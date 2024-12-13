@@ -218,7 +218,7 @@ def embedding_address(main_csv: io.BytesIO | str, sub_csv: io.BytesIO | str, mai
         # 初期値は全て1
         main_df[main_flag_name] = 1
         main_df[sub_flag_name] = 1
-        print(222)
+
         # 名寄せ対象になる行を元情報として残す
         sub_df[f'名寄せ元情報_{sub_csv_name}'] = sub_df[sub_column]
         sub_df.rename(columns={sub_column: main_column}, inplace=True)
