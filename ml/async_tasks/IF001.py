@@ -168,7 +168,7 @@ def main():
             suido_status_file,
             juki_file,
             tatemono_file,
-            params.get("reference_date").replace("-", ""),
+            params.get("reference_date"),
             search_period,
             output_directory,
             job_id,
@@ -178,10 +178,15 @@ def main():
         create_or_update_job(job_id, "50")
 
         for item in input_source:
-            output_e014 = f"{output_directory}/{item}_matched_data.csv"
+            output_e014 = f"{output_directory}/matched_data.csv"
+            sub_csv = f"{output_directory}/{item}_cleaned.csv"
+            if item == 'suido_status':
+                sub_csv = f"{output_directory}/suido_residence.csv"
+            if item in ['juki', 'touki']:
+                sub_csv = f"{output_directory}/{item}_residence.csv"
             E014(
                 main_csv,
-                f"{output_directory}/{item}_cleaned.csv",
+                sub_csv,
                 "正規化住所",
                 "正規化住所",
                 merge_base,

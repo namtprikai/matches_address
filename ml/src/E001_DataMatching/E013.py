@@ -54,13 +54,13 @@ COLUMNS = {
         }
 
 class DataProcessor:
-    def __init__(self, input_paths, output_paths, base_date, search_period):
+    def __init__(self, input_paths, output_paths, reference_date, search_period):
         # 入力ファイルのパスを設定
         self.INPUT_PATHS = input_paths
         # 出力ファイルのパスを設定
         self.OUTPUT_PATHS = output_paths
         # 空き家予測の基準日
-        self.BASE_DATE = datetime.strptime(str(base_date), "%Y%m%d")
+        self.reference_date = datetime.strptime(str(reference_date), "%Y-%m-%d")
         # 検索期間
         self.SEARCH_PERIOD = int(search_period)
         # データごとの出力するカラムを定義
@@ -74,7 +74,7 @@ class DataProcessor:
                 "15歳未満人数", "15歳未満構成比",
                 "15歳以上64歳以下人数", "15歳以上64歳以下構成比",
                 "65歳以上人数", "65歳以上構成比", "最大年齢", "最小年齢",
-                "男女比", "住定期間", "基準日"
+                "男女比", "住定期間"
             ],
             "tatemono": ["正規化住所", "構造名称", "登記日付"]
         }
@@ -238,22 +238,22 @@ class SuidoProcessor(DataProcessor):
         pandas.DataFrame
             最古の使用量と最新の使用量が追加されたデータ
         """
-        # BASE_DATEとSTART_DATEを初期化
-        if isinstance(self.BASE_DATE, str):
+        # reference_dateとSTART_DATEを初期化
+        if isinstance(self.reference_date, str):
             try:
-                self.BASE_DATE = datetime.strptime(self.BASE_DATE, "%Y%m%d")
+                self.reference_date = datetime.strptime(self.reference_date, "%Y%m%d")
             except:
-                self.BASE_DATE = datetime.strptime(self.BASE_DATE, "%Y-%m")
+                self.reference_date = datetime.strptime(self.reference_date, "%Y-%m")
         
-        self.START_DATE = (self.BASE_DATE - relativedelta(years=self.SEARCH_PERIOD)).strftime("%Y-%m")
-        self.BASE_DATE = self.BASE_DATE.strftime("%Y-%m")
+        self.START_DATE = (self.reference_date - relativedelta(years=self.SEARCH_PERIOD)).strftime("%Y-%m")
+        self.reference_date = self.reference_date.strftime("%Y-%m")
 
         # start_date_水道使用量に対して次の月の値を確認するロジック
         start_date = pd.to_datetime(self.START_DATE)
         found_start = False  # 値が見つかったかを示すフラグ
 
         # 繰り返して次の月の値を探す
-        while start_date <= pd.to_datetime(self.BASE_DATE):
+        while start_date <= pd.to_datetime(self.reference_date):
             next_month_str = start_date.strftime("%Y-%m")
             if next_month_str in df.columns:
                 # 値が見つかった場合はその月の値を設定
@@ -266,15 +266,15 @@ class SuidoProcessor(DataProcessor):
         if not found_start:
             df["start_date_水道使用量"] = 0  # 最後まで見つからなかった場合は0を設定
 
-        # base_date_水道使用量に対して前の月の値を確認するロジック
-        if self.BASE_DATE not in df.columns:
-            prev_month = (pd.to_datetime(self.BASE_DATE) - relativedelta(months=1)).strftime("%Y-%m")
+        # reference_date_水道使用量に対して前の月の値を確認するロジック
+        if self.reference_date not in df.columns:
+            prev_month = (pd.to_datetime(self.reference_date) - relativedelta(months=1)).strftime("%Y-%m")
             if prev_month in df.columns:
-                df["base_date_水道使用量"] = df[prev_month].fillna(0)
+                df["reference_date_水道使用量"] = df[prev_month].fillna(0)
             else:
-                df["base_date_水道使用量"] = 0  # NaNの場合、0に設定
+                df["reference_date_水道使用量"] = 0  # NaNの場合、0に設定
         else:
-            df["base_date_水道使用量"] = df[self.BASE_DATE].fillna(0)  # NaNを0に置換
+            df["reference_date_水道使用量"] = df[self.reference_date].fillna(0)  # NaNを0に置換
 
         return df
 
@@ -327,7 +327,7 @@ class SuidoProcessor(DataProcessor):
             suido_status = suido_status.copy()
             cols_use = COLUMNS["suido_use"]
             cols_status = COLUMNS["suido_status"]
-            base_date = pd.to_datetime(self.BASE_DATE).strftime('%Y-%m')
+            reference_date = pd.to_datetime(self.reference_date).strftime('%Y-%m')
             # base_date = (self.BASE_DATE)
             start_date = pd.to_datetime(self.START_DATE)
 
@@ -364,12 +364,12 @@ class SuidoProcessor(DataProcessor):
             # dfの日付を対象期間のみにしぼる
             non_date_columns = [ col for col in suido_pre_merged.columns if col not in date_columns ]
             new_date_columns = [ ym for ym in date_columns if pd.to_datetime(ym) >=  start_date ]
-            new_date_columns = [ ym for ym in new_date_columns if pd.to_datetime(ym) <=  pd.to_datetime(base_date) ]
+            new_date_columns = [ ym for ym in new_date_columns if pd.to_datetime(ym) <=  pd.to_datetime(reference_date) ]
             suido_pre_merged = suido_pre_merged[non_date_columns+new_date_columns].reset_index(drop=True)
 
             suido_pre_merged['null_num'] = suido_pre_merged[new_date_columns].sum(axis=1)
             suido_pre_merged['start_date_水道使用量'] = 0
-            suido_pre_merged['base_date_水道使用量'] = 0
+            suido_pre_merged['reference_date_水道使用量'] = 0
 
             for row in suido_pre_merged.loc[suido_pre_merged['null_num']!=0].index:
                 try:
@@ -379,9 +379,9 @@ class SuidoProcessor(DataProcessor):
                     suido_pre_merged.loc[row, 'start_date_水道使用量'] = 0
                 try:
                     tar_ym = suido_pre_merged.loc[row,new_date_columns].dropna().idxmax()
-                    suido_pre_merged.loc[row, 'base_date_水道使用量'] = float(suido_pre_merged.loc[row,tar_ym])
+                    suido_pre_merged.loc[row, 'reference_date_水道使用量'] = float(suido_pre_merged.loc[row,tar_ym])
                 except:
-                    suido_pre_merged.loc[row, 'base_date_水道使用量'] = 0
+                    suido_pre_merged.loc[row, 'reference_date_水道使用量'] = 0
 
             if len(new_date_columns) < 1:
                 raise ValueError("基準日が不正です。正シリフォーマットになっているか、もしくは正しい日付となっているかかご確認ください 。")
@@ -396,9 +396,9 @@ class SuidoProcessor(DataProcessor):
 
             # 変化率の計算 (基準日の使用量 / 開始日の使用量)
             df_use["水道使用量変化率"] = df_use.apply(
-                lambda row: (row["start_date_水道使用量"] - row["base_date_水道使用量"])
-                if row["start_date_水道使用量"] == 0
-                else (row["start_date_水道使用量"] - row["base_date_水道使用量"])/row["start_date_水道使用量"] , axis=1)
+            lambda row: row["reference_date_水道使用量"] / row["start_date_水道使用量"]
+            if pd.notnull(row["start_date_水道使用量"]) and row["start_date_水道使用量"] != 0
+            else 0, axis=1)
             
             # 出力するカラムを選択
             return df_use[[cols_use["suido_number"], "最大使用水量", "平均使用水量", "最小使用水量", "合計使用水量", "水道使用量変化率"]]
@@ -424,12 +424,12 @@ class SuidoProcessor(DataProcessor):
         # 閉栓フラグの初期設定：usage_end_dateがnullでない場合にTrue
         df["閉栓フラグ"] = df[cols["usage_end_date"]].notnull()
         
-        # base_dateとusage_end_dateを比較して、usage_end_dateがbase_dateより新しい場合はFalseに設定
+        # reference_dateとusage_end_dateを比較して、usage_end_dateがreference_dateより新しい場合はFalseに設定
         df_temp = normalize_dates(df.copy(), cols["usage_end_date"])
         df["usage_end_date"] = df_temp[cols["usage_end_date"]]  # usage_end_dateを日付に変換
         # df["usage_end_date"] = pd.to_datetime(df[cols["usage_end_date"]])  # usage_end_dateを日付に変換
         df["閉栓フラグ"] = np.where(
-            (df["閉栓フラグ"]) & (df["usage_end_date"] > self.BASE_DATE),  # 閉栓フラグがTrueかつ usage_end_date > base_date
+            (df["閉栓フラグ"]) & (df["usage_end_date"] > self.reference_date),  # 閉栓フラグがTrueかつ usage_end_date > reference_date
             False,  # 閉栓フラグをFalseに変更
             df["閉栓フラグ"]  # それ以外は元の値を保持
         )
@@ -466,6 +466,7 @@ class SuidoProcessor(DataProcessor):
             
             # 出力カラムの選択
             df_suido = df_suido[self.OUTPUT_COLUMNS["suido"]]
+            df_suido["reference_date"] = self.reference_date
 
             # 出力
             self.save_csv(df_suido, self.OUTPUT_PATHS["suido"])
@@ -512,11 +513,11 @@ def fixing_nums_aft_end_date(row,cols, oldest_date, missing_month):
 def get_start_base_value(self, row, missing_month, date_columns):
     cols_use = COLUMNS["suido_use"]
     cols_status = COLUMNS["suido_status"]
-    base_date = self.BASE_DATE
+    reference_date = self.reference_date
     search_period = self.SEARCH_PERIOD
 
     search_term = search_period * 365 + 1
-    term_start = (pd.to_datetime(base_date) - timedelta(days=search_term)).strftime('%Y-%m')
+    term_start = (pd.to_datetime(reference_date) - timedelta(days=search_term)).strftime('%Y-%m')
 
     if len(missing_month)>0:
         if pd.isnull(row[cols_status["usage_start_date"]]):
@@ -525,8 +526,8 @@ def get_start_base_value(self, row, missing_month, date_columns):
             start_day = min(date_columns)
         elif (row[cols_status["usage_start_date"]] >= min(missing_month) )&(row[cols_status["usage_start_date"]] <= max(missing_month)):
             start_day = (pd.to_datetime(max(missing_month)) + timedelta(days=31)).strftime('%Y-%m')
-        elif row[cols_status["usage_start_date"]] > base_date:
-            start_day = base_date
+        elif row[cols_status["usage_start_date"]] > reference_date:
+            start_day = reference_date
         else:
             start_day = row[cols_status["usage_start_date"]]
 
@@ -535,8 +536,8 @@ def get_start_base_value(self, row, missing_month, date_columns):
             start_day = min(date_columns)
         elif row[cols_status["usage_start_date"]] < min(date_columns):
             start_day = min(date_columns)
-        elif row[cols_status["usage_start_date"]] > base_date:
-            start_day = base_date
+        elif row[cols_status["usage_start_date"]] > reference_date:
+            start_day = reference_date
         else:
             start_day = row[cols_status["usage_start_date"]]
 
@@ -544,7 +545,7 @@ def get_start_base_value(self, row, missing_month, date_columns):
         searching = True
         col = row.index.get_loc(start_day)
         while searching:
-            if row.index[col] >= base_date :
+            if row.index[col] >= reference_date :
                 row['start_date_水道使用量'] = 0
                 searching = False
             elif pd.isnull(row.iloc[col]):
@@ -556,7 +557,7 @@ def get_start_base_value(self, row, missing_month, date_columns):
     else:
         row['start_date_水道使用量'] = row[start_day]
 
-    row['base_date_水道使用量'] = 0 if pd.isnull(row[base_date]) else row[base_date]
+    row['reference_date_水道使用量'] = 0 if pd.isnull(row[reference_date]) else row[reference_date]
     return row
 
 
@@ -589,7 +590,7 @@ class JukiProcessor(DataProcessor):
             print("無効な生年月日データが含まれています。")
         
         # 年齢を計算
-        df["年齢"] = (self.BASE_DATE - df[cols["birth"]]).dt.days // 365
+        df["年齢"] = (self.reference_date - df[cols["birth"]]).dt.days // 365
 
         # 年齢別グループを作成
         age_groups = {
@@ -706,7 +707,7 @@ class JukiProcessor(DataProcessor):
             print("無効な日付が含まれています。")
         
         # 住定期間を計算（基準日から住定異動年月日を引く）
-        df["住定期間"] = (self.BASE_DATE - df[cols["move_date"]]).dt.days
+        df["住定期間"] = (self.reference_date - df[cols["move_date"]]).dt.days
         
         # 各世帯で最大の住定期間を取得
         return df.groupby([cols["setai_code"], cols["juki_address"]])["住定期間"].max().reset_index()
@@ -725,9 +726,9 @@ class JukiProcessor(DataProcessor):
         df_juki = normalize_dates(df_juki, cols["move_date"])
         df_juki.drop(columns=[f'{cols["move_date"]}_normalized'], inplace=True)
 
-        base_date = pd.to_datetime(self.BASE_DATE, format='%Y/%m/%d')
+        reference_date = pd.to_datetime(self.reference_date, format='%Y/%m/%d')
 
-        df_juki = df_juki.loc[(pd.to_datetime(df_juki[cols["birth"]])<=base_date)&(pd.to_datetime(df_juki[cols["move_date"]])<=base_date)].reset_index(drop=True)
+        df_juki = df_juki.loc[(pd.to_datetime(df_juki[cols["birth"]])<=reference_date)&(pd.to_datetime(df_juki[cols["move_date"]])<=reference_date)].reset_index(drop=True)
         
         # 年齢グループの計算と最大年齢・最小年齢の追加
         df_juki = self.calculate_age_groups(df_juki)
@@ -751,10 +752,10 @@ class JukiProcessor(DataProcessor):
         
         # 重複を削除
         df_juki_processed = df_juki_processed.drop_duplicates(subset=["世帯コード", "正規化住所"])
-        df_juki_processed["基準日"] = base_date
 
         # 出力カラムの選択
         df_juki_processed = df_juki_processed[self.OUTPUT_COLUMNS["juki"]]
+        df_juki_processed["reference_date"] = self.reference_date
 
         # 出力
         self.save_csv(df_juki_processed, self.OUTPUT_PATHS["juki"])
@@ -831,6 +832,7 @@ class TatemonoProcessor(DataProcessor):
  
         # 出力カラムの選択      
         df_tatemono = df_tatemono[self.OUTPUT_COLUMNS["tatemono"]]
+        df_tatemono["reference_date"] = self.reference_date
 
         # 出力
         self.save_csv(df_tatemono, self.OUTPUT_PATHS["tatemono"])
@@ -861,7 +863,7 @@ def set_columns(
 
     
 # すべてのデータを処理する関数を作成
-def process_all_data(suido_use_file, suido_status_file, juki_file, tatemono_file, base_date, search_period, output_directory, job_id, columns, db_path=None):
+def process_all_data(suido_use_file, suido_status_file, juki_file, tatemono_file, reference_date, search_period, output_directory, job_id, columns, db_path=None):
     """
     すべてのデータファイルを処理する
     Parameters
@@ -874,7 +876,7 @@ def process_all_data(suido_use_file, suido_status_file, juki_file, tatemono_file
         住民基本台帳データファイル
     tatemono_file : file
         建物データファイル
-    base_date : int
+    reference_date : int
         基準日（YYYYMMDD形式）
     search_period : int
         検索期間（年）
@@ -934,7 +936,7 @@ def process_all_data(suido_use_file, suido_status_file, juki_file, tatemono_file
                 create_or_update_job_task(job_id, progress_percent=progress_percent, preprocess_type="e013", error_code=None, result=None, id= task_id)
                 create_or_update_job(job_id, progress_percent_job)
             print(f"{file_key}データを処理中...")
-            processor_class(input_paths, output_paths, base_date, search_period).process()
+            processor_class(input_paths, output_paths, reference_date, search_period).process()
             
             # 処理後のファイルが存在するかを確認
             output_file = output_paths[file_key]
@@ -981,7 +983,7 @@ def main():
     parser.add_argument("--suido_status", required=True, help="水道状況データファイルのパス")
     parser.add_argument("--juki", required=True, help="住民基本台帳データファイルのパス")
     parser.add_argument("--tatemono_file", required=True, help="建物データファイル")
-    parser.add_argument("--base_date", type=int, required=True, help="基準日 (YYYYMMDD形式)")
+    parser.add_argument("--reference_date", type=int, required=True, help="基準日 (YYYY-MM-DD)")
     parser.add_argument("--search_period", type=int, required=True, help="検索期間（年）")
     parser.add_argument("--output_directory", help="出力ファイルのパス", default=None)
     parser.add_argument("--job_id", default=None)
@@ -995,7 +997,7 @@ def main():
         args.suido_status,
         args.juki,
         args.tatemono_file,
-        args.base_date,
+        args.reference_date,
         args.search_period,
         args.output_directory,
         args.job_id,

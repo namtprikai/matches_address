@@ -1,6 +1,7 @@
 
-from datetime import datetime
+from datetime import datetime, timezone
 import sqlite3
+import pandas as pd
 
 
 CONNECTION = None
@@ -82,7 +83,7 @@ def create_or_update_job_task(job_id: int, progress_percent: str, preprocess_typ
     try:
         finished_at = None
         if is_finish:
-            finished_at = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            finished_at = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
         if id is None:
             CURSOR.execute("""
             INSERT INTO job_tasks(job_id, progress_percent, preprocess_type, error_code, result)
@@ -121,3 +122,45 @@ def concatenate(path_1: str, path_2: str):
         return f"{path_1}/{path_2}".replace("//", "/")
     except:
         return path_2
+    
+def create_data_set_detail_buildings_or_area(input_data, table_name="data_set_detail_buildings"):
+    try:
+        input_data.to_sql(table_name, CONNECTION, if_exists='append', index=False)
+        return True
+    except sqlite3.Error as e:
+        print(f"An error occurred: {e}")
+        return False
+        
+def create_data_set_results(title: str = ""):
+    try:
+        current_date = datetime.now().strftime('%m%d')
+        base_title = f"空き家判定結果_{current_date}"
+        title = base_title
+
+        sql_check = f'SELECT COUNT(*) FROM data_set_results WHERE title LIKE "{base_title}%"'
+        CURSOR.execute(sql_check)
+        count = CURSOR.fetchone()[0]
+        
+        if count > 0:
+            title = f"{base_title}_{count + 1}"
+                    
+        sql = f'INSERT INTO data_set_results (title) VALUES ("{title}")'
+        CURSOR.execute(sql)
+        CONNECTION.commit()
+        id = CURSOR.lastrowid
+        return id
+    except sqlite3.Error as e:
+        print(f"An error occurred: {e}")
+        CONNECTION.rollback()
+        return None
+    
+def get_data_set_detail_buildings_or_area(data_set_result_id, reference_date=None, table_name="data_set_detail_buildings"):
+    try:
+        if not reference_date:
+            return pd.read_sql(f"SELECT * FROM {table_name} where data_set_result_id = {data_set_result_id}", CONNECTION)
+        else:
+            return pd.read_sql(f"SELECT * FROM {table_name} where data_set_result_id = {data_set_result_id} and reference_date = '{reference_date}'", CONNECTION)
+            
+    except sqlite3.Error as e:
+        print(f"An error occurred: {e}")
+        return None
