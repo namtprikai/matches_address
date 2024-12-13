@@ -176,6 +176,7 @@ export const JobEvaluationCreate = (): JSX.Element => {
         ...data,
       },
     });
+    analysisStartDialogState.setIsOpen(true);
   });
 
   // 分析対象のデータの削除
