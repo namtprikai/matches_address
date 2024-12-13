@@ -6,7 +6,6 @@
 
 import json
 import sys
-import numpy
 import pandas as pd
 import geopandas as gpd
 import os
@@ -230,6 +229,50 @@ class Summarization:
 
             if conn:
                 conn.close()
+           
+    def insert_data_set_detail_areas(self, summerized_df):
+        """
+        集計結果をSQLiteデータベースに挿入する関数。
+    
+        Parameters:
+        -----------
+        summerized_df : DataFrame
+            SQLiteデータベースに挿入するための集計済みデータ。
+        """
+        try:
+            # カラム名の日本語を英語に変換
+            mapping_header = {
+                '住戸数': 'total_building_count',
+                '空き家数': 'vacant_house_count',
+                '若年層率': 'young_population_ratio',
+                '高齢者率': 'elderly_population_ratio',
+                # '空き家率': 'vacant_house_ratio',
+                'KEY_CODE': 'key_code',
+                'reference_date': 'reference_date',
+                'AREA': 'area',
+                'predicted_probability': 'predicted_probability',
+                'S_NAME': 'area_group',
+                'geometry': 'geometry'
+            }
+
+            summerized_df['geometry'] = summerized_df['geometry'].apply(lambda x: x.wkt if x else None)
+            summerized_df = summerized_df.rename(columns=mapping_header)
+            
+            summerized_df.to_csv("E032.csv", index=False, encoding='utf-8-sig')
+            existing_columns = summerized_df.columns.tolist()
+            mapped_columns = [col for col in mapping_header.values() if col in existing_columns]
+            summerized_df = summerized_df[mapped_columns]
+            # SQLiteに接続し、データを挿入
+            data_set_result_id = create_data_set_results()
+            
+            summerized_df['data_set_result_id'] = data_set_result_id 
+            if 'reference_date' not in summerized_df.columns:
+                summerized_df['reference_date'] = ""
+            
+            create_data_set_detail_buildings_or_area(summerized_df, 'data_set_detail_areas')
+            
+        except Exception as e:
+            print(f"Error when insert SQLite: {e}")
     
     def process(self):
         # データを読み込む
@@ -237,7 +280,7 @@ class Summarization:
         
         # detected_encoding = detect_encoding(self.INPUT_PATHS["akiya_pred"])
         print(f'{self.INPUT_PATHS["akiya_pred"]}を{detect_encoding}で読み込みます')
-        residence_gdf = pd.read_csv(self.INPUT_PATHS["akiya_pred"], encoding='cp932')
+        residence_gdf = pd.read_csv(self.INPUT_PATHS["akiya_pred"], encoding='utf-8-sig')
         print('csvを読み込みました')
         # 'geometry'列をWKT形式からジオメトリに変換
         residence_gdf['geometry'] = residence_gdf['geometry'].apply(wkt.loads)
@@ -250,13 +293,13 @@ class Summarization:
         # city_block のファイル形式に応じて読み込み
         if "shp" in self.INPUT_PATHS["city_block"]:
             print("Reading shapefile...")
-            city_block_gdf = gpd.read_file(self.INPUT_PATHS["city_block"])
+            city_block_gdf = gpd.read_file(self.INPUT_PATHS["city_block"], encoding="Shift-JIS")
         elif "gpkg" in self.INPUT_PATHS["city_block"]:
             print("Reading GeoPackage...")
             city_block_gdf = gpd.read_file(self.INPUT_PATHS["city_block"])
         elif "geojson" in self.INPUT_PATHS["city_block"]:
             print("Reading GeoJSON...")
-            city_block_gdf = gpd.read_file(self.INPUT_PATHS["city_block"])
+            city_block_gdf = gpd.read_file(self.INPUT_PATHS["city_block"], encoding="Shift-JIS")
         elif "csv" in self.INPUT_PATHS["city_block"]:
             print("Reading CSV with WKT...")
             city_block_df = pd.read_csv(self.INPUT_PATHS["city_block"])
@@ -283,20 +326,19 @@ class Summarization:
 
         # 小地域に集計
         summerized_gdf = self.summarize_city_block(spatial_join_gdf)
-        print(summerized_gdf.head(5),summerized_gdf.columns.values)
 
         # 小地域ポリゴンに集計結果を結合
         summerized_gdf = pd.merge(city_block_gdf, summerized_gdf, how="left", right_on=self.key_column, left_on=self.key_column)
-
+        summerized_gdf_for_db = summerized_gdf
         summerized_gdf = summerized_gdf[self.OUTPUT_COLUMNS]
 
         # 出力
         #summerized_gdf.to_file(self.OUTPUT_PATH)
-        summerized_gdf.to_csv(self.OUTPUT_PATH, encoding="Shift-JIS", index=False)
+        # summerized_gdf.to_csv(self.OUTPUT_PATH, encoding="utf-8-sig", index=False)
 
         # insert sqlite
         # 今は一時的に停止
-        #self.insert_sqlite(summerized_df)
+        self.insert_data_set_detail_areas(summerized_gdf_for_db)
 
 
 @staticmethod
@@ -354,11 +396,12 @@ def extract_zip(zip_file, extract_to):
 
 
 
-def process_summarization(akiya_pred_file, spatial_file, output_dir, key_column, job_id=None, db_path=None):
+def process_summarization(akiya_pred_file, spatial_file, output_dir, key_column, job_id=None, db_path=None, process=0):
     try:
         if db_path:
             connect_sqllite(db_path)
         task_id = None
+        process = (process/3)
         if job_id:
             task_id = create_or_update_job_task(job_id, progress_percent="0", preprocess_type=None, error_code=None, result=json.dumps({}))
 
@@ -380,6 +423,8 @@ def process_summarization(akiya_pred_file, spatial_file, output_dir, key_column,
 
         if job_id:
             create_or_update_job_task(job_id, progress_percent="20", preprocess_type=None, error_code=None, result=json.dumps({}), id= task_id)
+            create_or_update_job(job_id, process)
+            process += process
         # ファイル拡張子を取得
         file_ext = os.path.splitext(spatial_file)[1].lower()
      
@@ -421,19 +466,21 @@ def process_summarization(akiya_pred_file, spatial_file, output_dir, key_column,
         
         if job_id:
             create_or_update_job_task(job_id, progress_percent="40", preprocess_type=None, error_code=None, result=json.dumps({}), id= task_id)
-
+            create_or_update_job(job_id, process)
+            process += process
 
         # 集計に使用するカラム名も引数として渡す
         Summarization(input_paths, output_path, key_column).process()
         if job_id:
             create_or_update_job_task(job_id, progress_percent="100", preprocess_type=None, error_code=None, result=json.dumps({}), id= task_id, is_finish=True)
-
+            create_or_update_job(job_id, process)
+            process += process
+            
         return output_path
     except Exception as e:
-        print("Exception", e)
         if task_id is not None:
             create_or_update_job_task(job_id, progress_percent="", preprocess_type=None, error_code="e001", result=json.dumps({}), id= task_id, is_finish=True)
-        raise Exception(e)
+        raise Exception("Error: Area aggregation process encountered an issue")
 
 
 def main():

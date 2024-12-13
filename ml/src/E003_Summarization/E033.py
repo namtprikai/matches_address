@@ -1,13 +1,11 @@
 import argparse
-import json
 import logging
 import os
 import sys
-import chardet
 import geopandas as gpd
-import pandas as pd
 from shapely import wkt
 from shapely.geometry import MultiPolygon, Polygon
+import json
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
 async_tasks_path = os.path.join(current_dir, '..', 'async_tasks')
@@ -62,32 +60,12 @@ def remove_z_coordinate(geometry):
     else:
         return geometry
 
-def read_input_data(input_path):
+def read_input_data(data_set_results_id, reference_date, table_name):
     try:
-        # ファイルの最初の数キロバイトのみを読み込む（大きなファイルでの効率化）
-        with open(input_path, 'rb') as file:
-            raw_data = file.read(4096)  # 最初の4KBだけ読み込む
+        df = get_data_set_detail_buildings_or_area(data_set_results_id, reference_date, table_name)
         
-        # chardetを使って推測する（ただしデータの一部のみ）
-        detected_encoding = chardet.detect(raw_data)['encoding']
-        logging.info(f"Detected encoding: {detected_encoding}")
-
-        # 既知のエンコーディングを優先的に試す
-        encodings = ['shift-jis', 'cp932', 'utf-8']
-        if detected_encoding:
-            encodings.insert(0, detected_encoding)  # 推測されたエンコーディングを先頭に追加
-
-        for encoding in encodings:
-            try:
-                logging.info(f"Trying to read the file with {encoding} encoding")
-                df = pd.read_csv(input_path, encoding=encoding)
-                logging.info(f"Successfully read the file using {encoding} encoding")
-                break
-            except UnicodeDecodeError as e:
-                logging.warning(f"Failed to read with {encoding} encoding: {e}")
-        else:
-            raise ValueError("Unable to read the file with any of the attempted encodings")
-
+        if df is None:
+            raise Exception("No data found")
         if 'geometry' not in df.columns:
             raise ValueError("'geometry' column is missing in the input data")
 
@@ -113,7 +91,7 @@ def export_data(gdf, output_path, output_format):
     """
     try:
         if output_format.lower() == 'csv':
-            encodings = ['shift_jis', 'cp932', 'utf-8']
+            encodings = ['utf-8-sig']
             for encoding in encodings:
                 try:
                     gdf.to_csv(output_path, index=False, encoding=encoding)
@@ -125,9 +103,15 @@ def export_data(gdf, output_path, output_format):
         elif output_format.lower() == 'geojson':
             gdf.to_file(output_path, driver='GeoJSON')
             logging.info("GeoJSON exported successfully.")
+        elif output_format.lower() == 'geopackage':
+            gdf['fid'] = range(1, len(gdf) + 1)
+            gdf.to_file(output_path, driver='GPKG')
+            logging.info("GPKG exported successfully.")
         else:
-            raise ValueError("Unsupported output format. Use 'csv' or 'geojson'.")
+            raise ValueError("Unsupported output format. Use 'csv' or 'geopackage' or 'geojson'.")
         return output_path
+    except ValueError as e:
+        raise
     except Exception as e:
         logging.error(f"An error occurred during export: {str(e)}")
         raise
@@ -139,18 +123,20 @@ def processing(params, job_id=None, db_path=None):
     try:
         if db_path:
             connect_sqllite(db_path)
-        input_path = params['input_file']
+        data_set_results_id = params['data_set_results_id']
+        table_name = "data_set_detail_buildings"
+        target_unit = params['target_unit']
+        if (target_unit == 'area'):
+            table_name = 'data_set_detail_areas'
+            
         output_path = params['output_path']
         task_id = None
         if job_id:
             task_id = create_or_update_job_task(job_id, progress_percent="0", preprocess_type=None, error_code=None, result=json.dumps({}))
 
-        logging.info(f"Reading input data from {input_path}")
-        gdf = read_input_data(input_path)
-
+        gdf = read_input_data(data_set_results_id, params.get("reference_date"), table_name)
         if job_id:
             create_or_update_job_task(job_id, progress_percent="20", preprocess_type=None, error_code=None, result=json.dumps({}), id= task_id)
-
         if params.get('target_crs'):
             logging.info(f"Target CRS specified: {params['target_crs']}")
             target_crs = params['target_crs']
@@ -181,12 +167,11 @@ def processing(params, job_id=None, db_path=None):
         logging.info("Processing completed successfully")
         return output_file_path
     except Exception as e:
-        print("Exception", e)
         if task_id is not None:
             create_or_update_job_task(job_id, progress_percent="", preprocess_type=None, error_code="e001", result=json.dumps({}), id= task_id, is_finish=True)
 
         logging.error(f"An error occurred: {str(e)}")
-        raise Exception(e)
+        raise Exception("Error: CRS conversion process encountered an issue")
 
 
 

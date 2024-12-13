@@ -9,6 +9,8 @@ from utils import *
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../')))
 from src.E003_Summarization.E033 import processing as E033
 
+sys.stdin = open(sys.stdin.fileno(), mode='r', encoding='utf-8')
+sys.stdout = open(sys.stdout.fileno(), mode='w', encoding='utf-8')
 
 def main():
 
@@ -21,27 +23,39 @@ def main():
         json_dict = json.loads(json_dict)
 
     params = {
-        'db_path': json_dict.get('dataset_path'),
+        'db_path': json_dict.get('database_path'),
         'output_path': json_dict.get('output_path'),
-        'input_file': json_dict.get('input_file', None),
         'output_format': json_dict.get('ouput_file_type', 'csv'),
-        'target_crs': json_dict.get('output_coordinate', 'EPSG:4326 (WGS84)')
+        'target_crs': json_dict.get('output_coordinate', 'EPSG:4326 (WGS84)'),
+        'target_unit': json_dict.get('target_unit', 'building'),
+        'reference_date': json_dict.get('reference_date', None),
+        'data_set_results_id': json_dict.get('data_set_results_id', '')
     }
 
     random_str = str(uuid.uuid4())
     output_directory = concatenate(params.get('output_path'), random_str)
-
+    job_id = None
     try:
+        if not params.get('db_path'):
+            raise Exception("Error: database_path field is required")
+        
         connect_sqllite(params.get('db_path'))
 
         job_id = create_or_update_job(None ,"", "ml", os.getpid(), 0, args.parameters)
-        file_path = f"{output_directory}.{params.get('output_format')}"
-        input_file = concatenate(params.get('output_path'), params.get('input_file'))
+        if params.get('output_format') == 'geopackage':
+            file_path = f"{output_directory}.gpkg"
+        else:
+            file_path = f"{output_directory}.{params.get('output_format')}"
+        
+        if not params.get('data_set_results_id') or not params.get('target_unit'):
+            raise Exception("Error: data_set_results_id and target_unit field is required")
         
         params = {
-            'input_file': input_file,
+            'data_set_results_id': params.get('data_set_results_id'),
+            'target_unit': params.get('target_unit'),
             'output_format': params.get('output_format'),
             'target_crs': params.get('target_crs'),
+            'reference_date': params.get('reference_date'),
             'output_path': file_path
         }
         E033(params, job_id, params.get('db_path'))

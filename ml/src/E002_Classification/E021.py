@@ -440,8 +440,8 @@ def train_lgb_with_optuna(train_df, params, citycode_value, targetyear_value, ou
         output_file_path = f'{output_path}/data/{citycode_value}/E021/outputs/{str(uuid.uuid4())}'
         model_zip_file_path = f'{output_file_path}.zip'
     else:
-        output_file_path = f'{output_path}'
-        model_zip_file_path = f'{output_path}.zip'
+        output_file_path = f'{output_path}/models'
+        model_zip_file_path = f'{output_path}/models.zip'
     os.makedirs(output_file_path, exist_ok=True)
     
     if job_id:
@@ -618,7 +618,7 @@ def merge_and_save_results(df, pred, output_file):
     merged_df.loc[merged_df['test_flg'] != 1, 'test_flg'] = 0
     
     # 試行するエンコーディングのリスト
-    encodings = ['shift_jis', 'cp932', 'utf-8']
+    encodings = ['utf-8-sig']
     for encoding in encodings:
         try:
             # 各エンコーディングでCSVファイルとして保存を試みる
@@ -840,6 +840,20 @@ def train_and_evaluate(db_path, input_file, output_path, explanatory_variables, 
             'recall': score_dict['recall'] * 100,
             'important_columns': converted_data,
         }
+        
+        if citycode_value is not None:
+            output_file_path = f'{output_path}/data/{citycode_value}/E021/outputs/{str(uuid.uuid4())}'
+            zip_file_path = f'{output_file_path}.zip'
+        else:
+            output_file_path = f'{output_path}'
+            zip_file_path = f'{output_path}.zip'
+            
+        with zipfile.ZipFile(zip_file_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
+            for root, dirs, files in os.walk(output_file_path):
+                for file in files:
+                    file_path = os.path.join(root, file)
+                    # arcname をファイル名のみに設定して models/ フォルダを含めない
+                    zipf.write(file_path, arcname=file)
         
         # Update progress to complete
         if job_id:
