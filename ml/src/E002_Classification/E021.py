@@ -59,7 +59,7 @@ CONSTANTS = {
         'gml_id', '世帯コード', '世帯人数', '15歳未満人数', '15歳以上64歳以下人数', 
         '65歳以上人数', '15歳未満構成比', '15歳以上64歳以下構成比', '65歳以上構成比', '男女比', 
         '住定期間', '水道番号_suido_residence', '最大使用水量_suido_residence', '閉栓フラグ_suido_residence', '構造名称_touki_residence', 
-        '登記日付_touki_residence', 'akiya_result_cleaned_flag', 'juki_suido_touki_akiya_flag'
+        '登記日付_touki_residence', 'akiya_result_cleaned_flag', 'matched_data_flag'
     ],
     'outcome_variable': 'akiya_result_cleaned_flag'
     }
@@ -104,12 +104,12 @@ def detect_encoding(file_path):
     """
     # ファイルの内容を読み込む
     with open(file_path, 'rb') as file:
-        raw_data = file.read()
+        raw_data = file.read(100)
     # エンコーディングを検出して返す
     result = chardet.detect(raw_data)
     return result['encoding']
 
-def read_csv(path: str, **kwargs) -> pd.DataFrame:
+def read_data(path: str, **kwargs) -> pd.DataFrame:
     """
     CSVファイルを読み込む
     
@@ -134,7 +134,7 @@ def read_csv(path: str, **kwargs) -> pd.DataFrame:
             raise ValueError(f"CSVファイル以外は対応していません: {file_extension}")
         
         # 複数のエンコーディングを試行                
-        encodings = ['shift_jis', 'cp932', 'utf-8', 'utf-16']
+        encodings = ['utf-8-sig']
         for encoding in encodings:
             try:
                 # 各エンコーディングでファイルの読み込みを試みる
@@ -154,13 +154,6 @@ def read_csv(path: str, **kwargs) -> pd.DataFrame:
         # 何らかの例外が発生した場合、エラーメッセージを表示してNoneを返す
         print(f"ファイル {path} の読み込み中にエラーが発生しました: {e}")
         return None
-
-def generate_file_paths(citycode_value, targetyear_value):
-    """
-    市区町村コードと対象年度に基づいてファイルパスを生成する
-    """
-    df = f'./data/{citycode_value}/E021/inputs/D901.csv'
-    return df
 
 def prepare_learning_data(df, explanatory_variables):
     """
@@ -199,8 +192,8 @@ def prepare_learning_data(df, explanatory_variables):
     else:
         learning_data = learning_data[CONSTANTS['explanatory_variables']]
 
-    learning_data = learning_data[learning_data['juki_suido_touki_akiya_flag'] == 1]
-    learning_data.drop(columns=['juki_suido_touki_akiya_flag'], inplace=True)
+    learning_data = learning_data[learning_data['matched_data_flag'] == 1]
+    learning_data.drop(columns=['matched_data_flag'], inplace=True)
     learning_data.reset_index(drop=True, inplace=True)
     return learning_data
 
@@ -447,8 +440,8 @@ def train_lgb_with_optuna(train_df, params, citycode_value, targetyear_value, ou
         output_file_path = f'{output_path}/data/{citycode_value}/E021/outputs/{str(uuid.uuid4())}'
         model_zip_file_path = f'{output_file_path}.zip'
     else:
-        output_file_path = f'{output_path}'
-        model_zip_file_path = f'{output_path}.zip'
+        output_file_path = f'{output_path}/models'
+        model_zip_file_path = f'{output_path}/models.zip'
     os.makedirs(output_file_path, exist_ok=True)
     
     if job_id:
@@ -625,7 +618,7 @@ def merge_and_save_results(df, pred, output_file):
     merged_df.loc[merged_df['test_flg'] != 1, 'test_flg'] = 0
     
     # 試行するエンコーディングのリスト
-    encodings = ['shift_jis', 'cp932', 'utf-8']
+    encodings = ['utf-8-sig']
     for encoding in encodings:
         try:
             # 各エンコーディングでCSVファイルとして保存を試みる
@@ -757,9 +750,16 @@ def train_and_evaluate(db_path, input_file, output_path, explanatory_variables, 
             task_id = create_or_update_job_task(job_id, progress_percent="0", preprocess_type=None, error_code=None, result=json.dumps({}))
             create_or_update_job(job_id , "0")
         file_path = input_file
-        df = read_csv(file_path, low_memory=False)
+        df = read_data(file_path, low_memory=False)
         if df is None:
             raise ValueError(f"ファイル {file_path} の読み込みに失敗しました。")
+        
+        # 異常値除去
+        condition = (df['akiya_result_cleaned_flag'] == 1) & (df['最小使用水量_suido_residence'] > 20)
+        df = df[~condition].reset_index(drop=True)
+
+        condition = (df['akiya_result_cleaned_flag'] == 0) & (df['最小使用水量_suido_residence'] < 2)
+        df = df[~condition].reset_index(drop=True)
         
         if job_id:
             create_or_update_job_task(job_id, progress_percent="10", preprocess_type=None, error_code=None, result=json.dumps({}), id= task_id)
@@ -841,17 +841,30 @@ def train_and_evaluate(db_path, input_file, output_path, explanatory_variables, 
             'important_columns': converted_data,
         }
         
+        if citycode_value is not None:
+            output_file_path = f'{output_path}/data/{citycode_value}/E021/outputs/{str(uuid.uuid4())}'
+            zip_file_path = f'{output_file_path}.zip'
+        else:
+            output_file_path = f'{output_path}'
+            zip_file_path = f'{output_path}.zip'
+            
+        with zipfile.ZipFile(zip_file_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
+            for root, dirs, files in os.walk(output_file_path):
+                for file in files:
+                    file_path = os.path.join(root, file)
+                    # arcname をファイル名のみに設定して models/ フォルダを含めない
+                    zipf.write(file_path, arcname=file)
+        
         # Update progress to complete
         if job_id:
-            create_or_update_job_task(job_id, progress_percent="100", preprocess_type=None, error_code=None, result=json.dumps(result), id= task_id, is_finish=True)
+            create_or_update_job_task(job_id, progress_percent="100", preprocess_type=None, error_code=None, result=json.dumps(result, ensure_ascii=False), id= task_id, is_finish=True)
             create_or_update_job(job_id , "complete")
 
         return result_str, feature_importance_plot, output_file, model_zip_file_path, data_zip_file_path
     except Exception as e:
-        print("Error: ", e)
         if task_id is not None:
             create_or_update_job_task(job_id, progress_percent="", preprocess_type=None, error_code="e001", result=json.dumps({}), id= task_id, is_finish=True)
-        raise Exception(e)
+        raise Exception("Error: Vacant house learning process encountered an issue")
     
 def main():
     parser = argparse.ArgumentParser(description="E021 - 空き家学習機能")

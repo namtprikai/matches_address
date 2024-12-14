@@ -105,6 +105,7 @@ export const TileResultView = ({
       return;
     await window.ipcRenderer.invoke("exportData", {
       data: {
+        parameterType: "export",
         output_file_type: fileType,
         output_coordinate: coordinate,
         data_set_results_id: resultView.data_set_result_id,

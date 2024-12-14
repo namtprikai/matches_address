@@ -142,11 +142,18 @@ export const JobEvaluationCreate = (): JSX.Element => {
 
   // 選択された値を取得
   const modelPath = watch("model_path");
-  const datasetPath = watch("dataset_path");
-  const spatialFile = watch("spatial_file");
+  const normalizedDatasetPaths = watch("normalized_dataset_paths");
   const threshold = watch("settings.threshold");
   const areaGroupIdColumn = watch("area_grouping.columns.area_group_id");
   const areaGroupNameColumn = watch("area_grouping.columns.area_group_name");
+  const spatialFile = watch("area_grouping.path");
+
+  // 表示用のステート
+  const [modelName, setModelName] = useState<string>("");
+  const [normalizedDatasetNames, setNormalizedDatasetNames] = useState<
+    string[]
+  >([]);
+  const [spatialFileName, setSpatialFileName] = useState<string>("");
 
   // カラム情報を取得するフック
   const { data: areaFileColumns } = useFetchDatasetColumns({
@@ -163,23 +170,31 @@ export const JobEvaluationCreate = (): JSX.Element => {
 
   // フォーム送信時の処理
   const onSubmit = handleSubmit(async (data: FormType) => {
-    await window.ipcRenderer.invoke("evaluateData", { data });
+    await window.ipcRenderer.invoke("evaluateData", {
+      data: {
+        parameterType: "result",
+        ...data,
+      },
+    });
+    analysisStartDialogState.setIsOpen(true);
   });
 
   // 分析対象のデータの削除
   const handleRemoveFile = (): void => {
-    setValue("dataset_path", []);
+    setValue("normalized_dataset_paths", []);
+    setNormalizedDatasetNames([]);
   };
 
   // モデルファイルの削除
   const handleRemoveModelFile = (): void => {
     setValue("model_path", "");
+    setModelName("");
   };
 
   // 地域集計用データの削除
   const handleRemoveAreaFile = (): void => {
     setValue("area_grouping.path", "");
-    setValue("spatial_file", "");
+    setSpatialFileName("");
     setAreaColumns([]);
     setValue("area_grouping.columns.area_group_id", "");
     setValue("area_grouping.columns.area_group_name", "");
@@ -198,9 +213,9 @@ export const JobEvaluationCreate = (): JSX.Element => {
           <Card>
             <Subtitle2>① 利用するモデルを選択</Subtitle2>
             <div className={styles.file}>
-              {modelPath ? (
+              {modelName ? (
                 <>
-                  <span className={styles.fileName}>{modelPath}</span>
+                  <span className={styles.fileName}>{modelName}</span>
                   <span
                     className={styles.deleteIconWrapper}
                     onClick={handleRemoveModelFile}
@@ -225,7 +240,8 @@ export const JobEvaluationCreate = (): JSX.Element => {
             emptyMessage="現在表示できるモデルはありません"
             isModel
             onSelected={(data) => {
-              setValue("model_path", data[0].file_name ?? "");
+              setValue("model_path", data[0].file_path ?? "");
+              setModelName(data[0].file_name ?? "");
             }}
             placeholder="モデル名"
             title="利用するモデルを選択"
@@ -236,10 +252,10 @@ export const JobEvaluationCreate = (): JSX.Element => {
           <Card>
             <Subtitle2>② 分析対象のデータを選択</Subtitle2>
             <div className={styles.file}>
-              {datasetPath && datasetPath.length > 0 ? (
+              {normalizedDatasetNames && normalizedDatasetNames.length > 0 ? (
                 <div className={styles.fileItem}>
                   <span className={styles.fileName}>
-                    {datasetPath.join(",")}
+                    {normalizedDatasetNames.join(",")}
                   </span>
                   <span
                     className={styles.deleteIconWrapper}
@@ -267,8 +283,11 @@ export const JobEvaluationCreate = (): JSX.Element => {
             emptyMessage="現在表示できるデータセットはありません"
             multiple={true}
             onSelected={(selectedDatasets) => {
-              const filePaths = selectedDatasets.map((d) => d.file_name || "");
-              setValue("dataset_path", filePaths);
+              const filePaths = selectedDatasets.map((d) => d.file_path || "");
+              setValue("normalized_dataset_paths", filePaths);
+              setNormalizedDatasetNames(
+                selectedDatasets.map((d) => d.file_name || ""),
+              );
             }}
             placeholder="データ名"
             title="分析対象のデータを選択"
@@ -279,9 +298,9 @@ export const JobEvaluationCreate = (): JSX.Element => {
           <Card>
             <Subtitle2>③ 地域集計用データをアップロード</Subtitle2>
             <div className={styles.file}>
-              {spatialFile ? (
+              {spatialFileName ? (
                 <div className={styles.fileItem}>
-                  <span className={styles.fileName}>{spatialFile}</span>
+                  <span className={styles.fileName}>{spatialFileName}</span>
                   <span
                     className={styles.deleteIconWrapper}
                     onClick={handleRemoveAreaFile}
@@ -349,8 +368,8 @@ export const JobEvaluationCreate = (): JSX.Element => {
             dialogState={importAreaDatasetDialogState}
             emptyMessage="現在表示できるデータセットはありません"
             onSelected={(data) => {
-              setValue("area_grouping.path", data[0].file_name || "");
-              setValue("spatial_file", data[0].file_name || "");
+              setValue("area_grouping.path", data[0].file_path || "");
+              setSpatialFileName(data[0].file_name || "");
             }}
             placeholder="データ名"
             title="地域集計用データを選択"
@@ -377,7 +396,7 @@ export const JobEvaluationCreate = (): JSX.Element => {
             className={styles.restartButton}
             disabled={
               !modelPath ||
-              !datasetPath ||
+              !normalizedDatasetPaths ||
               !spatialFile ||
               !areaGroupIdColumn ||
               !areaGroupNameColumn

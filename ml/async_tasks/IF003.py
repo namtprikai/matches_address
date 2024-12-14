@@ -10,6 +10,10 @@ from utils import *
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../')))
 from src.E002_Classification.E022 import process_and_predict as E022
 from src.E003_Summarization.E032 import process_summarization as E032
+
+sys.stdin = open(sys.stdin.fileno(), mode='r', encoding='utf-8')
+sys.stdout = open(sys.stdout.fileno(), mode='w', encoding='utf-8')
+
 def main():
 
     parser = argparse.ArgumentParser(description="E022,E032 空き家分析(判定)")
@@ -21,27 +25,30 @@ def main():
         json_dict = json.loads(json_dict)
 
     params = {
-        'db_path': json_dict.get('dataset_path'),
-        'output_path': json_dict.get('output_path'),
+        'db_path': json_dict.get('database_path', None),
+        'output_path': json_dict.get('output_path', ''),
         'model_path': json_dict.get('model_path', None),
         'threshold': json_dict.get('settings', {}).get('threshold', "0.3"),
         'area_grouping': json_dict.get('area_grouping', {}).get('path', None),
         'area_grouping_columns': json_dict.get('area_grouping', {}).get('columns', {}),
-        'spatial_file': json_dict.get('spatial_file', None)
+        'normalized_dataset_paths': json_dict.get('normalized_dataset_paths', [])
     }
 
     random_str = str(uuid.uuid4())
     output_directory = concatenate(params.get('output_path'), random_str)
 
+    job_id = None
     try:
+        if not params.get('db_path'):
+            raise Exception("Error: database_path field is required")
+
         connect_sqllite(params.get('db_path'))
 
-        job_id = create_or_update_job(None ,"", "ml", os.getpid(), 0, args.parameters)
+        job_id = create_or_update_job(None ,"", "result", os.getpid(), 0, args.parameters)
         file_path = f"{output_directory}/D902.csv"
-
-        area_grouping = concatenate(params.get('output_path'), params.get('area_grouping'))
-        input_folder = os.path.dirname(area_grouping)
-        input_file = os.path.basename(area_grouping)
+        
+        if not params.get('area_grouping') or not params.get('normalized_dataset_paths'):
+            raise Exception("Error: area_grouping or normalized_dataset_paths field is required")
 
         model_path = concatenate(params.get('output_path'), params.get('model_path'))
         
@@ -51,20 +58,6 @@ def main():
             '閉栓フラグ_suido_residence', '構造名称_touki_residence', '登記日付_touki_residence'
         ]
         OUTCOME_VARIABLE = 'akiya_result_cleaned_flag'
-
-        E022(
-            input_folder, 
-            input_file,
-            model_path,
-            float(params.get('threshold')),
-            file_path,
-            REQUIRED_FEATURES,
-            OUTCOME_VARIABLE,
-            str(job_id),
-            params.get('db_path')
-        )
-        create_or_update_job(job_id, "50")
-
         columns = params.get('area_grouping_columns', None)
         key_column = []
         if columns:
@@ -72,17 +65,40 @@ def main():
         else:
             key_column = 'KEY_CODE'
             
-        spatial_file = concatenate(params.get('output_path'), params.get('spatial_file'))
-        E032(
-            file_path,
-            spatial_file,
-            output_directory,
-            key_column,
-            str(job_id),
-            params.get('db_path')
-        )
+        spatial_file = concatenate(params.get('output_path'), params.get('area_grouping'))
+        process = 0
+        total = len(params.get('normalized_dataset_paths'))
+        for item in params.get('normalized_dataset_paths'):
+            area_grouping = concatenate(params.get('output_path'), item)
+            input_folder = os.path.dirname(area_grouping)
+            input_file = os.path.basename(area_grouping)
+            process = process + (100 / total)
+            E022(
+                input_folder, 
+                input_file,
+                model_path,
+                float(params.get('threshold')),
+                file_path,
+                REQUIRED_FEATURES,
+                OUTCOME_VARIABLE,
+                str(job_id),
+                params.get('db_path'),
+                (process/2)
+            )
+            create_or_update_job(job_id, (process/2))
+
+            E032(
+                file_path,
+                spatial_file,
+                output_directory,
+                key_column,
+                str(job_id),
+                params.get('db_path'),
+                process
+            )
+            create_or_update_job(job_id, process)
+        
         create_or_update_job(job_id, "complete")
-        create_job_results(job_id, f"{random_str}.csv")
 
     except Exception as e:
         print(e)

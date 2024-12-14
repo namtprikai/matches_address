@@ -65,7 +65,7 @@ def detect_encoding(file_path):
     result = chardet.detect(raw_data)
     return result['encoding']
 
-def read_csv(path: str, **kwargs) -> pd.DataFrame:
+def read_data(path: str, **kwargs) -> pd.DataFrame:
     """
     CSVファイルを読み込む
     
@@ -127,7 +127,7 @@ def get_column_names(csv_file: str) -> List[str]:
     """
     try:
         # CSVファイルを読み込む
-        df = read_csv(csv_file)
+        df = read_data(csv_file)
         # 列名のリストを返す
         return df.columns.tolist()
     except Exception as e:
@@ -178,14 +178,14 @@ def embedding_address(main_csv: io.BytesIO | str, sub_csv: io.BytesIO | str, mai
 
         # CSVファイルを読み込む
         if hasattr(main_csv, 'name'):
-            main_df = read_csv(main_csv.name)
+            main_df = read_data(main_csv.name)
         else:
-            main_df = read_csv(main_csv)
+            main_df = read_data(main_csv)
 
         if hasattr(sub_csv, 'name'):
-            sub_df = read_csv(sub_csv.name)
+            sub_df = read_data(sub_csv.name)
         else:
-            sub_df = read_csv(sub_csv)
+            sub_df = read_data(sub_csv)
 
         # 結合元のファイルがmain, 結合対象のファイルがsub、初めに読み込んだファイルを一旦mainにしているので、結合基準をsubにしてたら入れ替える
         if hasattr(sub_csv, 'name') and merge_base == os.path.basename(sub_csv.name):
@@ -196,13 +196,14 @@ def embedding_address(main_csv: io.BytesIO | str, sub_csv: io.BytesIO | str, mai
         # データの行数、完全一致割合の計算に使用
         data_rows = len(main_df)
         sub_data_rows = len(sub_df)
-
+        
         # アップロードされた元のファイル名を使用して拡張子を除去
         if hasattr(main_csv, 'name'):
             main_csv_name = os.path.splitext(os.path.basename(main_csv.name))[0]
         else:
             main_csv_name = os.path.splitext(os.path.basename(main_csv))[0]
 
+        # アップロードされた元のファイル名を使用して拡張子を除去
         if hasattr(sub_csv, 'name'):
             sub_csv_name = os.path.splitext(os.path.basename(sub_csv.name))[0]
         else:
@@ -217,7 +218,7 @@ def embedding_address(main_csv: io.BytesIO | str, sub_csv: io.BytesIO | str, mai
         # 初期値は全て1
         main_df[main_flag_name] = 1
         main_df[sub_flag_name] = 1
-        
+
         # 名寄せ対象になる行を元情報として残す
         sub_df[f'名寄せ元情報_{sub_csv_name}'] = sub_df[sub_column]
         sub_df.rename(columns={sub_column: main_column}, inplace=True)
@@ -234,46 +235,44 @@ def embedding_address(main_csv: io.BytesIO | str, sub_csv: io.BytesIO | str, mai
         sub_df = sub_df.reset_index(drop=True)
         if job_id:
             create_or_update_job_task(job_id, progress_percent="40", preprocess_type="e014", error_code=None, result=None, id= task_id)
+        # N-gramで類似度を計算する準備
+        vectorizer = CountVectorizer(analyzer='char', ngram_range=(ngram, ngram))
+        main_df_ngram_matrix = vectorizer.fit_transform(main_df[main_column].astype(str))
+        sub_df_ngram_matrix = vectorizer.transform(sub_df[main_column].astype(str))
+
+        # 疎行列に変換してメモリ効率を改善
+        main_df_ngram_matrix = csr_matrix(main_df_ngram_matrix)
+        sub_df_ngram_matrix = csr_matrix(sub_df_ngram_matrix)
+
         # N-gramで名寄せできた行数をカウント
         ngram_rows = 0
         similarity_scores = []  # 類似度スコアを保存するリスト
-        # N-gramで類似度を計算する準備
-        if len(main_df) != 0:
-            vectorizer = CountVectorizer(analyzer='char', ngram_range=(ngram, ngram))
-            main_df_ngram_matrix = vectorizer.fit_transform(main_df[main_column].astype(str))
-            sub_df_ngram_matrix = vectorizer.transform(sub_df[main_column].astype(str))
 
-            # 疎行列に変換してメモリ効率を改善
-            main_df_ngram_matrix = csr_matrix(main_df_ngram_matrix)
-            sub_df_ngram_matrix = csr_matrix(sub_df_ngram_matrix)
-            if job_id:
-                create_or_update_job_task(job_id, progress_percent="60", preprocess_type="e014", error_code=None, result=None, id= task_id)
+        # バッチ処理による類似度計算
+        for start in range(0, main_df_ngram_matrix.shape[0], batch_size):
+            end = min(start + batch_size, main_df_ngram_matrix.shape[0])
+
+            # バッチ単位で類似度を計算
+            batch_similarities = cosine_similarity(main_df_ngram_matrix[start:end], sub_df_ngram_matrix)
             
-            # バッチ処理による類似度計算
-            for start in range(0, main_df_ngram_matrix.shape[0], batch_size):
-                end = min(start + batch_size, main_df_ngram_matrix.shape[0])
+            # バッチ内の各行ごとに処理
+            for i, similarities in enumerate(batch_similarities):
+                top_indices = similarities.argsort()[-3:][::-1]  # 上位3件を取得
 
-                # バッチ単位で類似度を計算
-                batch_similarities = cosine_similarity(main_df_ngram_matrix[start:end], sub_df_ngram_matrix)
+                if similarities[top_indices[0]] >= threshold:
+                    row_index = start + i  # バッチの中での行番号をグローバルに変換
+                    for col in sub_df.columns:
+                        main_df.at[row_index, col] = sub_df.iloc[top_indices[0]][col]
+                    similarity_scores.append(similarities[top_indices[0]])  # 類似度スコアを追加
+                    ngram_rows += 1  # この行が正しく名寄せされた場合にカウント
+                else:
+                    row_index = start + i
+                    main_df.at[row_index, f'名寄せ元情報_{sub_csv_name}'] = ""
+                    main_df.at[row_index, f'{sub_flag_name}'] = 0
+                    similarity_scores.append(similarities[top_indices[0]])  # 閾値未満の場合スコアは0
                 
-                # バッチ内の各行ごとに処理
-                for i, similarities in enumerate(batch_similarities):
-                    top_indices = similarities.argsort()[-3:][::-1]  # 上位3件を取得
-
-                    if similarities[top_indices[0]] >= threshold:
-                        row_index = start + i  # バッチの中での行番号をグローバルに変換
-                        for col in sub_df.columns:
-                            main_df.at[row_index, col] = sub_df.iloc[top_indices[0]][col]
-                        ngram_rows += 1  # この行が正しく名寄せされた場合にカウント
-                        similarity_scores.append(similarities[top_indices[0]])  # 類似度スコアを追加
-                    else:
-                        row_index = start + i
-                        main_df.at[row_index, f'名寄せ元情報_{sub_csv_name}'] = ""
-                        main_df.at[row_index, f'{sub_flag_name}'] = 0
-                        similarity_scores.append(similarities[top_indices[0]])  # 閾値未満の場合スコアは0
-
         # 類似度スコアを結果データフレームに追加
-        main_df['similarity_score'] = similarity_scores
+        main_df[f'similarity_score_{sub_csv_name}'] = similarity_scores
 
         # 結果のデータフレームを作成
         result_df = pd.concat([df_merge, main_df], axis=0, ignore_index=True)
@@ -304,14 +303,13 @@ def embedding_address(main_csv: io.BytesIO | str, sub_csv: io.BytesIO | str, mai
             'input_source': input_source
         }
         if job_id:
-            create_or_update_job_task(job_id, progress_percent="100", preprocess_type="e014", error_code=None, result=json.dumps(res), id= task_id, is_finish=True)
+            create_or_update_job_task(job_id, progress_percent="100", preprocess_type="e014", error_code=None, result=json.dumps(res, ensure_ascii=False), id= task_id, is_finish=True)
 
         return saved_file_path, f"{complete_match_ratio}\n{threshold_match_ratio}\n{sub_complete_match_ratio}"
     except Exception as e:
-        print("Exception", e)
         if task_id is not None:
             create_or_update_job_task(job_id, progress_percent="", preprocess_type="e014", error_code="e001", result=json.dumps({}), id= task_id, is_finish=True)
-        raise Exception(e)
+        raise Exception("Error: There was an issue during the Text Matching process")
 
 def save_csv(df, path):
     """

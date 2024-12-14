@@ -1021,14 +1021,13 @@ def process_data(tatemono_path, water_supply_path, gpkg_path, ken, sikuchoson, o
                 "joining_rate": join_ratio,
                 "input_source": input_source
             }
-            create_or_update_job_task(job_id, progress_percent="100", preprocess_type="e016", error_code=None, result=json.dumps(result), id= task_id, is_finish=True)
+            create_or_update_job_task(job_id, progress_percent="100", preprocess_type="e016", error_code=None, result=json.dumps(result, ensure_ascii=False), id= task_id, is_finish=True)
 
         return output_path, join_ratio
     except Exception as e:
-        print("Exception", e)
         if task_id is not None:
             create_or_update_job_task(job_id, progress_percent="", preprocess_type="e016", error_code="e001", result=json.dumps({}), id= task_id, is_finish=True)
-        raise Exception(e)
+        raise Exception("Error: There was an issue during the Spatial join process")
 
 def main():
     parser = argparse.ArgumentParser(description="E016 - 空間結合機能")

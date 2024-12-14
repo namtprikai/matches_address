@@ -11,6 +11,7 @@ import { db, dbDirectory, dbPath } from "../utils/db";
 import {
   type PreprocessParameters,
   type ModelCreateParameters,
+  type ExportParameters,
 } from "../@types/job-parameters";
 import { type IpcMainListener } from ".";
 
@@ -116,12 +117,21 @@ export const _debugCreateJob = (async (
 
 const createmock = (
   type: InsertJob["type"],
-): PreprocessParameters | ModelCreateParameters => {
+): PreprocessParameters | ModelCreateParameters | ExportParameters => {
   switch (type) {
     case "preprocess":
       return mockE001;
     case "ml":
-      return mockBuildModel;
+      return { parameterType: "ml", ...mockBuildModel };
+    case "export":
+      return {
+        parameterType: "export",
+        output_file_type: "csv",
+        output_coordinate: "4326",
+        data_set_results_id: 1,
+        target_unit: "building",
+        reference_date: "2022-01-01",
+      };
     default:
       return mockE001;
   }
@@ -163,6 +173,7 @@ const createmockResult = (type: InsertJob["type"]): InsertJobTask["result"] => {
 
 /** 型推論が通じないので指定。モックなので一旦気にしない・・ */
 const mockE001: PreprocessParameters = {
+  parameterType: "preprocess",
   settings: {
     reference_data: "resident_registry",
     reference_date: "2021-01-01",

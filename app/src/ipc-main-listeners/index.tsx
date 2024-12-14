@@ -65,6 +65,7 @@ import { _debugCreateWorkshopData } from "./_debug-create-workshop-data";
 import { exportData } from "./ml/export-data";
 import { selectJob } from "./select-job";
 import { selectNormalizedDatasetWithFilePath } from "./select-normalized-dataset-with-file-path";
+import { selectBuildingPreview } from "./select-building-preview";
 
 export const ipcMainListeners = {
   helloFromPython,
@@ -127,6 +128,7 @@ export const ipcMainListeners = {
   createModelFiles,
   insertModelFile,
   _debugCreateWorkshopData,
+  selectBuildingPreview,
   exportData,
   selectJob,
   selectNormalizedDatasetWithFilePath,

@@ -3,21 +3,16 @@
 判定用データをインプットとして建物単位で空き家を確率的に判定するための分類用機械学習アルゴリズム（トレーニング済み）を実行する機能。
 """
 
-import glob
 import json
 import os
 import pickle
 import shutil
-import sqlite3
 import argparse
 import sys
 import chardet
-import tempfile
 import zipfile 
 import numpy as np
 import pandas as pd
-from sklearn.metrics import accuracy_score, confusion_matrix, precision_score, recall_score, f1_score
-from datetime import datetime
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
 async_tasks_path = os.path.join(current_dir, '..', 'async_tasks')
@@ -77,7 +72,7 @@ def detect_encoding(file_path):
     """
     # ファイルの内容を読み込む
     with open(file_path, 'rb') as file:
-        raw_data = file.read()
+        raw_data = file.read(100)
     # エンコーディングを検出して返す
     result = chardet.detect(raw_data)
     return result['encoding']
@@ -105,7 +100,7 @@ def read_csv(path: str) -> pd.DataFrame:
             raise ValueError(f"CSVファイル以外は対応していません: {file_extension}")
 
         # 複数のエンコーディングを試行
-        encodings = ['utf-8', 'utf-16', 'shift_jis', 'cp932']
+        encodings = ['utf-8-sig']
         for encoding in encodings:
             try:
                 # 各エンコーディングでファイルの読み込みを試みる
@@ -246,7 +241,7 @@ def predict(models, new_data, required_features, threshold):
 
     return test_preds, test_preds_proba
 
-def insert_sqlite_and_export(input_data, job_id=None):
+def insert_sqlite_and_export(input_data):
     """
     指定されたデータをSQLiteデータベースに挿入し、同時にインポート可能な形式でファイルを出力する
 
@@ -267,16 +262,13 @@ def insert_sqlite_and_export(input_data, job_id=None):
     - 処理中にエラーが発生した場合、そのエラーメッセージが表示され、接続は必ず閉じられる
     """
 
-    global conn
     try:
         # カラム名のマッピング
         mapping_header = {
-            'residenceID': 'residence_id',
-            'keycode': 'KEY_CODE',
-            '基準日(データ正規化時に設定する値)': 'reference_date',
-            '正規化住所': 'normalized_address',
-            '正規化町字住所': 'S_NAME',
+            'data_set_result_id': 'data_set_result_id',
             '世帯コード': 'household_code',
+            '正規化住所': 'normalized_address',
+            'reference_date': 'reference_date',
             '世帯人数': 'household_size',
             '15歳未満人数': 'members_under_15',
             '15歳未満構成比': 'percentage_under_15',
@@ -290,19 +282,35 @@ def insert_sqlite_and_export(input_data, job_id=None):
             '閉栓フラグ_suido_residence': 'water_disconnection_flag',
             '最大使用水量_suido_residence': 'max_water_usage',
             '平均使用水量_suido_residence': 'avg_water_usage',
-            '最小使用水量_suido_residence': 'min_water_usage',
             '合計使用水量_suido_residence': 'total_water_usage',
+            '最小使用水量_suido_residence': 'min_water_usage',
             '名寄せ元情報_suido_residence': 'water_supply_source_info',
             '構造名称_touki_residence': 'structure_name',
             '登記日付_touki_residence': 'registration_date',
             '名寄せ元情報_touki_residence': 'registration_source_info',
-            'geometry': 'geometry',
-            'usage': 'usage',
+            'ID_akiya_result_cleaned': 'vacant_house_id',
+            '住所_akiya_result_cleaned': 'vacant_house_address',
+            '経度_akiya_result_cleaned': 'vacant_house_longitude',
+            '緯度_akiya_result_cleaned': 'vacant_house_latitude',
+            '名寄せ元情報_akiya_result_cleaned': 'vacant_house_source_info',
+            '住所_geocoding_cleaned': 'geocoded_address',
+            'lat_geocoding_cleaned': 'geocoded_latitude',
+            'lon_geocoding_cleaned': 'geocoded_longitude',
+            '名寄せ元情報_geocoding_cleaned': 'geocoding_source_info',
+            'suido_residence_flag': 'has_water_supply',
+            'juki_residence_flag': 'has_juki_registry',
+            'touki_residence_flag': 'has_touki_registry',
+            'juki_suido_flag': 'has_juki_and_water',
+            'akiya_result_cleaned_flag': 'has_vacant_result',
+            'juki_suido_touki_flag': 'has_juki_water_property',
+            'geocoding_cleaned_flag': 'has_geocoding',
+            'juki_suido_touki_akiya_flag': 'has_juki_water_property_vacant',
             'fid': 'fid',
-            'class': 'class',
             'gml_id': 'gml_id',
-            'measuredHeight': 'measured_height',
-            'measuredHeight_uom': 'measured_height_uom',
+            'class': 'class',
+            'geometry': 'geometry',
+            'measuredHeight': 'measuredheight',
+            'measuredHeight_uom': 'measuredheight_uom',
             'srcScale': 'src_scale',
             'geometrySrcDesc': 'geometry_src_desc',
             'thematicSrcDesc': 'thematic_src_desc',
@@ -327,8 +335,6 @@ def insert_sqlite_and_export(input_data, job_id=None):
             'buildingDisasterRiskAttribute|BuildingInlandFloodingRiskAttribute|rank': 'inland_flooding_risk_rank',
             'buildingDisasterRiskAttribute|BuildingInlandFloodingRiskAttribute|depth': 'inland_flooding_risk_depth',
             'buildingDisasterRiskAttribute|BuildingInlandFloodingRiskAttribute|depth_uom': 'inland_flooding_risk_depth_uom',
-            'name': 'name',
-            'areaType': 'area_type',
             'buildingDisasterRiskAttribute|BuildingRiverFloodingRiskAttribute|description': 'river_flooding_risk_desc',
             'buildingDisasterRiskAttribute|BuildingRiverFloodingRiskAttribute|rank': 'river_flooding_risk_rank',
             'buildingDisasterRiskAttribute|BuildingRiverFloodingRiskAttribute|depth': 'river_flooding_risk_depth',
@@ -336,67 +342,68 @@ def insert_sqlite_and_export(input_data, job_id=None):
             'buildingDisasterRiskAttribute|BuildingLandSlideRiskAttribute|description': 'landslide_risk_desc',
             '大規模店舗名称': 'large_store_name',
             'appearanceSrcDesc': 'appearance_src_desc',
-            'theme': 'theme',
-            'imageURI': 'imageURI',
-            'mimeType': 'mimeType',
-            'textureCoordinates': '',
             'branchID': 'branch_id',
+            'residenceID': 'residence_id',
             'test_flg': 'is_test',
-            'pred': 'predicted_label?',
+            'name': 'name',
+            'areaType': 'area_type',
+            'pred': 'predicted_label',
             'pred_proba': 'predicted_probability',
-            'ID_akiya_result_cleaned': 'vacant_house_id',
-            '住所_akiya_result_cleaned': 'vacant_house_address',
-            '経度_akiya_result_cleaned': 'vacant_house_longitude',
-            '緯度_akiya_result_cleaned': 'vacant_house_latitude',
-            '名寄せ元情報_akiya_result_cleaned': 'vacant_house_source_info',
-            '住所_geocoding_cleaned': 'geocoded_address',
-            'lat_geocoding_cleaned': 'geocoded_latitude',
-            'lon_geocoding_cleaned': 'geocoded_longitude',
-            '名寄せ元情報_geocoding_cleaned': 'geocoding_source_info',
-            'suido_residence_flag': 'has_water_supply',
-            'juki_residence_flag': 'has_juki_registry',
-            'touki_residence_flag': 'has_touki_registry',
-            'juki_suido_flag': 'has_juki_and_water',
-            'akiya_result_cleaned_flag': 'has_vacant_result',
-            'juki_suido_touki_flag': 'has_juki_water_property',
-            'geocoding_cleaned_flag': 'has_geocoding',
-            'juki_suido_touki_akiya_flag': 'has_juki_water_property_vacant'
+            'S_NAME': 'area_group'
         }
         # カラム名を変換
         input_data = input_data.rename(columns=mapping_header)
-        current_year = datetime.now().year
-        table_name = f"D902_akiyaresult_{current_year}"
-
-        if job_id is None:
-            # SQLiteにデータを挿入
-            conn = sqlite3.connect('akiya_database.db')
-            input_data.to_sql(table_name, conn, if_exists='replace', index=False)
-            print(f"Inserted data into table {table_name}")
-
-        # CSV形式でデータをファイルに保存
-        output_file = f"{table_name}.csv"
-        input_data.to_csv(output_file, index=False, encoding='utf-8-sig')
-        print(f"Data exported to CSV file {output_file}")
+        existing_columns = input_data.columns.tolist()
+        mapped_columns = [col for col in mapping_header.values() if col in existing_columns]
+        input_data = input_data[mapped_columns]
+        input_data = drop_duplicates(input_data, mapped_columns)
+        
+        # SQLiteにデータを挿入
+        data_set_result_id = create_data_set_results()
+        
+        input_data['data_set_result_id'] = data_set_result_id 
+        if 'reference_date' not in input_data.columns:
+            input_data['reference_date'] = ""
+        is_success = create_data_set_detail_buildings_or_area(input_data)
+        if not is_success:
+            raise
 
     except Exception as e:
         # エラー時の処理
-        print("sql failed...")
-        #print(f"Error when inserting to SQLite or exporting file: {e}")
+        print("Insert sql failed...", e)
+        raise
 
-    finally:
-        if job_id is None and conn:
-            conn.close()
-
-def process_and_predict(input_folder, input_file, model_directory, threshold, output_file, required_features, outcome_variable, job_id=None , db_path=None):
+def drop_duplicates(df, subset, keep="first"):
+        """
+        データフレームから重複行を削除する
+        Parameters
+        ----------
+        df : pandas.DataFrame
+            重複を削除するデータフレーム
+        subset : list
+            重複を判定するカラムのリスト
+        keep : str, optional
+            残す行を指定（'first', 'last', False）
+        Returns
+        -------
+        pandas.DataFrame
+            重複が削除されたデータフレーム
+        """
+        return df.drop_duplicates(subset=subset, keep=keep)
+    
+def process_and_predict(input_folder, input_file, model_directory, threshold, output_file, required_features, outcome_variable, job_id=None, db_path=None, process=0):
     """
     入力データを処理し、予測を行い、結果を保存する
     """
     try:
+        process = (process/7)
         if db_path:
             connect_sqllite(db_path)
         task_id = None
         if job_id:
             task_id = create_or_update_job_task(job_id, progress_percent="0", preprocess_type=None, error_code=None, result=json.dumps({}))
+            create_or_update_job(job_id, process)
+            process += process
         # ディレクトリの設定
         print("ディレクトリを設定中...")
         # setup_directory(os.path.expanduser('~'))
@@ -407,6 +414,8 @@ def process_and_predict(input_folder, input_file, model_directory, threshold, ou
         input_data = read_csv(input_path)
         if job_id:
             create_or_update_job_task(job_id, progress_percent="20", preprocess_type=None, error_code=None, result=json.dumps({}), id= task_id)
+            create_or_update_job(job_id, process)
+            process += process
         # 予測用データ（REQUIRED_FEATURES）を準備するためのコピーを作成
         prediction_data = input_data.copy()
 
@@ -426,11 +435,15 @@ def process_and_predict(input_folder, input_file, model_directory, threshold, ou
         prediction_data['登記日付_touki_residence'] = (base_date - prediction_data['登記日付_touki_residence']).dt.days
         if job_id:
             create_or_update_job_task(job_id, progress_percent="30", preprocess_type=None, error_code=None, result=json.dumps({}), id= task_id)
+            create_or_update_job(job_id, process)
+            process += process
         # 訓練済みモデルの読み込み
         print("訓練済みモデルを読み込み中...")
         models = load_models(model_directory)
         if job_id:
             create_or_update_job_task(job_id, progress_percent="50", preprocess_type=None, error_code=None, result=json.dumps({}), id= task_id)
+            create_or_update_job(job_id, process)
+            process += process
         # 特徴量のチェック
         print("特徴量をチェック中...")
         prediction_data, features_match, message = check_features(prediction_data, required_features, outcome_variable)
@@ -442,6 +455,8 @@ def process_and_predict(input_folder, input_file, model_directory, threshold, ou
         test_preds, test_preds_proba = predict(models, prediction_data, required_features, threshold)
         if job_id:
             create_or_update_job_task(job_id, progress_percent="70", preprocess_type=None, error_code=None, result=json.dumps({}), id= task_id)
+            create_or_update_job(job_id, process)
+            process += process
         # 結果の保存
         print("結果を保存中...")
 
@@ -453,11 +468,13 @@ def process_and_predict(input_folder, input_file, model_directory, threshold, ou
         os.makedirs(output_dir, exist_ok=True)
 
         #insert SQLite
-        insert_sqlite_and_export(input_data, job_id)
+        insert_sqlite_and_export(input_data)
         if job_id:
             create_or_update_job_task(job_id, progress_percent="90", preprocess_type=None, error_code=None, result=json.dumps({}), id= task_id)
+            create_or_update_job(job_id, process)
+            process += process
         # 試行するエンコーディングのリスト
-        encodings = ['shift_jis', 'cp932', 'utf-8']
+        encodings = ['utf-8-sig']
         for encoding in encodings:
             try:
                 # 各エンコーディングでCSVファイルとして保存を試みる
@@ -466,6 +483,8 @@ def process_and_predict(input_folder, input_file, model_directory, threshold, ou
 
                 if job_id:
                     create_or_update_job_task(job_id, progress_percent="100", preprocess_type=None, error_code=None, result=json.dumps({}), id= task_id, is_finish=True)
+                    create_or_update_job(job_id, process)
+                    process += process
                 return f"予測結果が {output_file} に保存されました", output_file
             except Exception as e:
                 # 保存中にエラーが発生した場合、エラーメッセージを表示して次のエンコーディングを試す
@@ -476,17 +495,17 @@ def process_and_predict(input_folder, input_file, model_directory, threshold, ou
             create_or_update_job_task(job_id, progress_percent="", preprocess_type=None, error_code="e001", result=json.dumps({}), id= task_id, is_finish=True)
         return f"{output_file} への予測結果の保存に失敗しました", None
     except Exception as e:
-        print("Exception", e)
         if task_id is not None:
             create_or_update_job_task(job_id, progress_percent="", preprocess_type=None, error_code="e001", result=json.dumps({}), id= task_id, is_finish=True)
-        raise Exception(e)
+        raise Exception("Error: Vacant house classification process encountered an issue")
 
 def main():
     # !!!!!! 引数で指定に要変更
     REQUIRED_FEATURES = [
         '世帯人数', '15歳未満人数', '15歳以上64歳以下人数', '65歳以上人数', '15歳未満構成比', 
-        '15歳以上64歳以下構成比', '65歳以上構成比', '男女比', '住定期間', '最大使用水量_suido_residence', 
-        '閉栓フラグ_suido_residence', '構造名称_touki_residence', '登記日付_touki_residence'
+        '15歳以上64歳以下構成比', '65歳以上構成比', '最大年齢', '最小年齢', '男女比',
+        '住定期間', '水道使用量変化率_suido_residence', '最大使用水量_suido_residence',
+        '合計使用水量_suido_residence', '閉栓フラグ_suido_residence', '構造名称_touki_residence', '登記日付_touki_residence'
     ]
     # !!!!!! 引数で指定に要変更
     OUTCOME_VARIABLE = 'akiya_result_cleaned_flag'

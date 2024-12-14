@@ -1,4 +1,5 @@
-import { type PreprocessParameters } from "../@types/job-parameters";
+import { type z } from "zod";
+import { type schema as normalizationSchema } from "../hooks/use-form-normalization";
 
 /**
  * 前処理で利用するデフォルトのパラメータを作成するだけの関数
@@ -6,7 +7,9 @@ import { type PreprocessParameters } from "../@types/job-parameters";
  *
  * @returns デフォルトの前処理用パラメータ
  */
-export const defaultNormalizationParameters: PreprocessParameters = {
+export const defaultNormalizationParameters: z.infer<
+  typeof normalizationSchema
+> = {
   settings: {
     reference_data: "water_status",
     reference_date: "2021-01-01",

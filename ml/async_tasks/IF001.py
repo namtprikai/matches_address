@@ -99,10 +99,16 @@ def main():
     search_period = "1"
     input_zip_file = None
 
+    job_id = None
     try:
+        if not params.get('db_path'):
+            raise Exception("Error: database_path field is required")
 
         connect_sqllite(params.get('db_path'))
-        job_id = create_or_update_job(None ,"", "ml", os.getpid(), 0, args.parameters)
+        job_id = create_or_update_job(None ,"", "preprocess", os.getpid(), 0, args.parameters)
+        
+        if not params.get('akiya_result') or not params.get('geocoding') or ((not params.get('suido_status') or not params.get('suido_use')) and not params.get('juki')) or not params.get('building_polygon'):
+            raise Exception("Error: juki (or suido), akiya_result, geocoding, building_polygon field is required")
         
         suido_use_file = None
         suido_status_file = None
@@ -162,7 +168,7 @@ def main():
             suido_status_file,
             juki_file,
             tatemono_file,
-            params.get("reference_date").replace("-", ""),
+            params.get("reference_date"),
             search_period,
             output_directory,
             job_id,
@@ -172,10 +178,15 @@ def main():
         create_or_update_job(job_id, "50")
 
         for item in input_source:
-            output_e014 = f"{output_directory}/{item}_matched_data.csv"
+            output_e014 = f"{output_directory}/matched_data.csv"
+            sub_csv = f"{output_directory}/{item}_cleaned.csv"
+            if item == 'suido_status':
+                sub_csv = f"{output_directory}/suido_residence.csv"
+            if item in ['juki', 'touki']:
+                sub_csv = f"{output_directory}/{item}_residence.csv"
             E014(
                 main_csv,
-                f"{output_directory}/{item}_cleaned.csv",
+                sub_csv,
                 "正規化住所",
                 "正規化住所",
                 merge_base,
@@ -197,6 +208,10 @@ def main():
         gpkg_path = params.get("urban_planning", None)
         if not gpkg_path:
             gpkg_path = params.get("census", None)
+            
+        if not gpkg_path:
+            raise Exception("Error: urban_planning or census field is required")
+        
         gpkg_path = concatenate(params.get('output_path'), gpkg_path)
         
         tatemono_path = concatenate(params.get('output_path'), params.get('building_polygon'))
