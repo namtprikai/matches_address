@@ -24,7 +24,6 @@ import { DialogModelMessage } from "../../../components/dialog-model-message";
 import { useFetchDatasetColumns } from "../../../hooks/use-fetch-dataset-columns";
 import { useFetchJob } from "../../../hooks/use-fetch-job";
 import { useFetchNormalizedDatasetWithFilePath } from "../../../hooks/use-fetch-normalized-dataset-with-file-name";
-import { validateModelCreateParameters } from "../../../@types/job-parameters";
 
 const useStyles = makeStyles({
   root: {
@@ -63,9 +62,11 @@ export const ModelCreate = (): JSX.Element => {
   const { data: job, isLoading: isJobLoading } = useFetchJob({
     id: Number(id),
   });
+  const modelCreateParameters =
+    job?.parameters.parameterType === "ml" ? job.parameters : undefined;
   const { data: currentNormalizedDataset } =
     useFetchNormalizedDatasetWithFilePath({
-      filePath: validateModelCreateParameters(job?.parameters)?.input_path,
+      filePath: modelCreateParameters?.input_path,
     });
   const [normalizedDataSet, setNormalizedDataSet] =
     useState<SelectNormalizedDataSet>();
@@ -83,26 +84,15 @@ export const ModelCreate = (): JSX.Element => {
 
   useEffect(
     function setCurrentValues() {
-      // 外でvalidatedParametersを定義すると無限ループしてしまうので、useEffect内で定義している
-      const validatedParameters = validateModelCreateParameters(
-        job?.parameters,
+      if (!modelCreateParameters || !currentNormalizedDataset) return;
+
+      setNormalizedDataSet(currentNormalizedDataset);
+      setExplanatoryVariables(
+        modelCreateParameters.settings.explanatory_variables,
       );
-
-      if (!validatedParameters) return;
-
-      if (currentNormalizedDataset) {
-        setNormalizedDataSet(currentNormalizedDataset);
-      }
-      if (validatedParameters.settings.explanatory_variables) {
-        setExplanatoryVariables(
-          validatedParameters.settings.explanatory_variables,
-        );
-      }
-      if (validatedParameters.settings.advanced) {
-        setValue("settings.advanced", validatedParameters.settings.advanced);
-      }
+      setValue("settings.advanced", modelCreateParameters.settings.advanced);
     },
-    [currentNormalizedDataset, job?.parameters, setValue],
+    [currentNormalizedDataset, modelCreateParameters, setValue],
   );
 
   const modelMessageDialogState = useDialogState();
@@ -191,8 +181,7 @@ export const ModelCreate = (): JSX.Element => {
             columnOptions={datasetColumns || []}
             dialogState={explanatoryVariablesDialogState}
             initialValues={
-              validateModelCreateParameters(job?.parameters)?.settings
-                .explanatory_variables
+              modelCreateParameters?.settings.explanatory_variables
             }
             onSelected={(data) => {
               setExplanatoryVariables(data);
@@ -226,9 +215,7 @@ export const ModelCreate = (): JSX.Element => {
         {!isJobLoading ? (
           <DialogModelAdvanced
             dialogState={modelAdvancedDialogState}
-            initialValues={
-              validateModelCreateParameters(job?.parameters)?.settings.advanced
-            }
+            initialValues={modelCreateParameters?.settings.advanced}
             onSelected={(data) => setValue("settings.advanced", data)}
           />
         ) : null}
