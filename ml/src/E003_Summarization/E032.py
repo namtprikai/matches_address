@@ -253,7 +253,7 @@ class Summarization:
                 'KEY_CODE': 'key_code',
                 'reference_date': 'reference_date',
                 'AREA': 'area',
-                'predicted_probability': 'predicted_probability',
+                '空き家率': 'predicted_probability',
                 'S_NAME': 'area_group',
                 'geometry': 'geometry'
             }
@@ -270,7 +270,17 @@ class Summarization:
             if 'reference_date' not in summerized_df.columns:
                 summerized_df['reference_date'] = ""
             
-            summerized_df['reference_date'] = summerized_df['reference_date'].fillna('')
+            # Find the first valid reference_date that is not NaN, None, or empty
+            reference_date_value = summerized_df.loc[
+                summerized_df['reference_date'].notna() & (summerized_df['reference_date'] != ''), 
+                'reference_date'
+            ].iloc[0] if not summerized_df.loc[
+                summerized_df['reference_date'].notna() & (summerized_df['reference_date'] != ''), 
+                'reference_date'
+            ].empty else ''
+
+            # Replace NaN, None, and empty values with the found value (or leave it empty if no valid value is found)
+            summerized_df['reference_date'] = summerized_df['reference_date'].replace([None, '', pd.NA], reference_date_value)
             
             create_data_set_detail_buildings_or_area(summerized_df, 'data_set_detail_areas')
             
@@ -332,7 +342,6 @@ class Summarization:
         # 小地域ポリゴンに集計結果を結合
         summerized_gdf = pd.merge(city_block_gdf, summerized_gdf, how="left", right_on=self.key_column, left_on=self.key_column)
         # summerized_gdf = summerized_gdf[self.OUTPUT_COLUMNS]
-
         # 出力
         #summerized_gdf.to_file(self.OUTPUT_PATH)
         # summerized_gdf.to_csv(self.OUTPUT_PATH, encoding="utf-8-sig", index=False)

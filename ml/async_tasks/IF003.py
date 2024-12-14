@@ -70,10 +70,11 @@ def main():
         total = len(params.get('normalized_dataset_paths'))
         data_set_result_id = create_data_set_results()
         for item in params.get('normalized_dataset_paths'):
-            area_grouping = concatenate(params.get('output_path'), item)
-            input_folder = os.path.dirname(area_grouping)
-            input_file = os.path.basename(area_grouping)
+            normalized = concatenate(params.get('output_path'), item)
+            input_folder = os.path.dirname(normalized)
+            input_file = os.path.basename(normalized)
             process = process + (100 / total)
+
             E022(
                 input_folder, 
                 input_file,

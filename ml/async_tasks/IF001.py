@@ -126,8 +126,10 @@ def main():
         merge_base = 'suido_residence'
         main_data_type = 'suido_status'
         main_csv = f"{output_directory}/suido_residence.csv"
-        if params.get('reference_data') == 'resident_registry' and params.get('juki'):
+        if params.get('reference_data') == 'resident_registry':
             merge_base = 'juki_residence'
+            
+        if params.get('juki'):
             main_data_type = 'juki'
             main_csv = f"{output_directory}/juki_residence.csv"
 

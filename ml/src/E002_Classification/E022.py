@@ -362,7 +362,19 @@ def insert_sqlite_and_export(input_data, data_set_result_id):
         input_data['data_set_result_id'] = data_set_result_id 
         if 'reference_date' not in input_data.columns:
             input_data['reference_date'] = ""
-        input_data['reference_date'] = input_data['reference_date'].fillna('')
+        
+        # Find the first valid reference_date that is not NaN, None, or empty
+        reference_date_value = input_data.loc[
+            input_data['reference_date'].notna() & (input_data['reference_date'] != ''), 
+            'reference_date'
+        ].iloc[0] if not input_data.loc[
+            input_data['reference_date'].notna() & (input_data['reference_date'] != ''), 
+                'reference_date'
+            ].empty else ''
+
+        # Replace NaN, None, and empty values with the found value (or leave it empty if no valid value is found)
+        input_data['reference_date'] = input_data['reference_date'].replace([None, '', pd.NA], reference_date_value)
+        
         is_success = create_data_set_detail_buildings_or_area(input_data)
         if not is_success:
             raise
