@@ -862,6 +862,7 @@ def train_and_evaluate(db_path, input_file, output_path, explanatory_variables, 
 
         return result_str, feature_importance_plot, output_file, model_zip_file_path, data_zip_file_path
     except Exception as e:
+        print(e)
         if task_id is not None:
             create_or_update_job_task(job_id, progress_percent="", preprocess_type=None, error_code="e001", result=json.dumps({}), id= task_id, is_finish=True)
         raise Exception("Error: Vacant house learning process encountered an issue")

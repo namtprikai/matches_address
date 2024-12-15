@@ -68,11 +68,13 @@ def main():
         spatial_file = concatenate(params.get('output_path'), params.get('area_grouping'))
         process = 0
         total = len(params.get('normalized_dataset_paths'))
+        data_set_result_id = create_data_set_results()
         for item in params.get('normalized_dataset_paths'):
-            area_grouping = concatenate(params.get('output_path'), item)
-            input_folder = os.path.dirname(area_grouping)
-            input_file = os.path.basename(area_grouping)
+            normalized = concatenate(params.get('output_path'), item)
+            input_folder = os.path.dirname(normalized)
+            input_file = os.path.basename(normalized)
             process = process + (100 / total)
+
             E022(
                 input_folder, 
                 input_file,
@@ -83,7 +85,8 @@ def main():
                 OUTCOME_VARIABLE,
                 str(job_id),
                 params.get('db_path'),
-                (process/2)
+                (process/2),
+                data_set_result_id
             )
             create_or_update_job(job_id, (process/2))
 
@@ -94,7 +97,8 @@ def main():
                 key_column,
                 str(job_id),
                 params.get('db_path'),
-                process
+                process,
+                data_set_result_id
             )
             create_or_update_job(job_id, process)
         

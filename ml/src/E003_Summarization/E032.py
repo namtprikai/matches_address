@@ -32,7 +32,7 @@ except ImportError:
     from async_tasks.utils import *
 
 class Summarization:
-    def __init__(self, input_paths, output_path, key_column):
+    def __init__(self, input_paths, output_path, key_column, data_set_result_id):
         # 入力ファイルのパスを設定
         self.INPUT_PATHS = input_paths
         # 出力ファイルのパスを設定
@@ -43,11 +43,12 @@ class Summarization:
         if isinstance(key_code, list):
             key_code = key_column[0]
 
+        self.data_set_result_id = data_set_result_id
         # 各データで使用するカラムを定義
         self.INPUT_COLUMNS = {
             "akiya_pred": {
                 "setai_code": "世帯コード",
-                "pred": "pred",
+                "predicted_label": "predicted_label",
                 "akiya_geometry": "geometry",
                 "世帯人数": "世帯人数",  # '世帯人数' カラムを追加
                 "15歳未満構成比": "15歳未満構成比",
@@ -91,14 +92,16 @@ class Summarization:
             地域ごとの住戸数、空き家数、空き家率、若年層率、高齢者率を集計したGeoDataFrame。
         """
         akiya_pred_cols = self.INPUT_COLUMNS["akiya_pred"]
+        gdf[akiya_pred_cols["predicted_label"]] = gdf[akiya_pred_cols["predicted_label"]].map({"true": 1, "false": 0})
 
         # 各市区町村ブロックごとに集計を行う
         summerized_gdf = gdf.groupby(self.key_column).agg(
             住戸数=(akiya_pred_cols["setai_code"], "count"),
-            空き家数=(akiya_pred_cols["pred"], "sum"),
+            空き家数=(akiya_pred_cols["predicted_label"], "sum"),
             人口=(akiya_pred_cols["世帯人数"], "sum"),  
             若年人口=(akiya_pred_cols["15歳未満構成比"], "sum"), 
-            高齢者人口=(akiya_pred_cols["65歳以上人数"], "sum")  
+            高齢者人口=(akiya_pred_cols["65歳以上人数"], "sum"),
+            reference_date=("reference_date", "first")   
         )
         summerized_gdf.reset_index(inplace=True)
 
@@ -147,7 +150,7 @@ class Summarization:
         空間インデックスを利用し、residence_gdfのジオメトリの重心（centroid）で空間結合を行います。
         """
 
-        residence_gdf = residence_gdf[["世帯コード","正規化住所","世帯人数","15歳未満人数","15歳未満構成比","15歳以上64歳以下人数","15歳以上64歳以下構成比","65歳以上人数","65歳以上構成比","男女比","住定期間","geometry","pred"]]
+        residence_gdf = residence_gdf[["世帯コード","正規化住所","世帯人数","15歳未満人数","15歳未満構成比","15歳以上64歳以下人数","15歳以上64歳以下構成比","65歳以上人数","65歳以上構成比","男女比","住定期間","geometry","predicted_label", "reference_date"]]
         
         # 重心（centroid）を計算する前に、投影座標系（EPSG:4326）に変換
         residence_gdf_projected = residence_gdf.to_crs(epsg=4326)
@@ -230,7 +233,7 @@ class Summarization:
             if conn:
                 conn.close()
            
-    def insert_data_set_detail_areas(self, summerized_df):
+    def insert_data_set_detail_areas(self, summerized_df, data_set_result_id):
         """
         集計結果をSQLiteデータベースに挿入する関数。
     
@@ -250,7 +253,7 @@ class Summarization:
                 'KEY_CODE': 'key_code',
                 'reference_date': 'reference_date',
                 'AREA': 'area',
-                'predicted_probability': 'predicted_probability',
+                '空き家率': 'predicted_probability',
                 'S_NAME': 'area_group',
                 'geometry': 'geometry'
             }
@@ -262,12 +265,22 @@ class Summarization:
             existing_columns = summerized_df.columns.tolist()
             mapped_columns = [col for col in mapping_header.values() if col in existing_columns]
             summerized_df = summerized_df[mapped_columns]
-            # SQLiteに接続し、データを挿入
-            data_set_result_id = create_data_set_results()
-            
+            # SQLiteに接続し、データを挿入            
             summerized_df['data_set_result_id'] = data_set_result_id 
             if 'reference_date' not in summerized_df.columns:
                 summerized_df['reference_date'] = ""
+            
+            # Find the first valid reference_date that is not NaN, None, or empty
+            reference_date_value = summerized_df.loc[
+                summerized_df['reference_date'].notna() & (summerized_df['reference_date'] != ''), 
+                'reference_date'
+            ].iloc[0] if not summerized_df.loc[
+                summerized_df['reference_date'].notna() & (summerized_df['reference_date'] != ''), 
+                'reference_date'
+            ].empty else ''
+
+            # Replace NaN, None, and empty values with the found value (or leave it empty if no valid value is found)
+            summerized_df['reference_date'] = summerized_df['reference_date'].replace([None, '', pd.NA], reference_date_value)
             
             create_data_set_detail_buildings_or_area(summerized_df, 'data_set_detail_areas')
             
@@ -322,23 +335,20 @@ class Summarization:
  
         # 空間結合
         spatial_join_gdf = self.spatial_join(residence_gdf, city_block_gdf)
-        print(spatial_join_gdf.head(5), spatial_join_gdf.columns.values)
 
         # 小地域に集計
         summerized_gdf = self.summarize_city_block(spatial_join_gdf)
 
         # 小地域ポリゴンに集計結果を結合
         summerized_gdf = pd.merge(city_block_gdf, summerized_gdf, how="left", right_on=self.key_column, left_on=self.key_column)
-        summerized_gdf_for_db = summerized_gdf
-        summerized_gdf = summerized_gdf[self.OUTPUT_COLUMNS]
-
+        # summerized_gdf = summerized_gdf[self.OUTPUT_COLUMNS]
         # 出力
         #summerized_gdf.to_file(self.OUTPUT_PATH)
         # summerized_gdf.to_csv(self.OUTPUT_PATH, encoding="utf-8-sig", index=False)
 
         # insert sqlite
         # 今は一時的に停止
-        self.insert_data_set_detail_areas(summerized_gdf_for_db)
+        self.insert_data_set_detail_areas(summerized_gdf, self.data_set_result_id)
 
 
 @staticmethod
@@ -396,12 +406,13 @@ def extract_zip(zip_file, extract_to):
 
 
 
-def process_summarization(akiya_pred_file, spatial_file, output_dir, key_column, job_id=None, db_path=None, process=0):
+def process_summarization(akiya_pred_file, spatial_file, output_dir, key_column, job_id=None, db_path=None, process=0, data_set_result_id=0):
     try:
         if db_path:
             connect_sqllite(db_path)
         task_id = None
         process = (process/3)
+        process_init = process
         if job_id:
             task_id = create_or_update_job_task(job_id, progress_percent="0", preprocess_type=None, error_code=None, result=json.dumps({}))
 
@@ -424,7 +435,7 @@ def process_summarization(akiya_pred_file, spatial_file, output_dir, key_column,
         if job_id:
             create_or_update_job_task(job_id, progress_percent="20", preprocess_type=None, error_code=None, result=json.dumps({}), id= task_id)
             create_or_update_job(job_id, process)
-            process += process
+            process += process_init
         # ファイル拡張子を取得
         file_ext = os.path.splitext(spatial_file)[1].lower()
      
@@ -467,17 +478,18 @@ def process_summarization(akiya_pred_file, spatial_file, output_dir, key_column,
         if job_id:
             create_or_update_job_task(job_id, progress_percent="40", preprocess_type=None, error_code=None, result=json.dumps({}), id= task_id)
             create_or_update_job(job_id, process)
-            process += process
+            process += process_init
 
         # 集計に使用するカラム名も引数として渡す
-        Summarization(input_paths, output_path, key_column).process()
+        Summarization(input_paths, output_path, key_column, data_set_result_id).process()
         if job_id:
             create_or_update_job_task(job_id, progress_percent="100", preprocess_type=None, error_code=None, result=json.dumps({}), id= task_id, is_finish=True)
             create_or_update_job(job_id, process)
-            process += process
+            process += process_init
             
         return output_path
     except Exception as e:
+        print(e)
         if task_id is not None:
             create_or_update_job_task(job_id, progress_percent="", preprocess_type=None, error_code="e001", result=json.dumps({}), id= task_id, is_finish=True)
         raise Exception("Error: Area aggregation process encountered an issue")
