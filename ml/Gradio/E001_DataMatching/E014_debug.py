@@ -34,15 +34,29 @@ CUSTOM_CSS = """
 """
 
 
-def generate_file_paths(citycode_value, targetyear_value):
+def generate_file_paths(citycode_value, targetyear_value, targedataset):
     """
     市区町村コードと対象年度に基づいてファイルパスを生成する
     """
     
-    main_csv = f'./data/{citycode_value}/E014/inputs/juki_residence_{targetyear_value}.csv'
-    sub_csv = f'./data/{citycode_value}/E014/inputs/akiya_result_cleaned_{targetyear_value}.csv'
-    output_path = f'./data/{citycode_value}/E014/outputs/matched_data.csv'
-    return main_csv, sub_csv,output_path
+    if targedataset == "住基-水道":
+        main_csv = f'./data/{citycode_value}/E013/outputs/juki_residence_{targetyear_value}.csv'
+        sub_csv = f'./data/{citycode_value}/E013/outputs/suido_residence_2023.csv'
+        output_path = f'./data/{citycode_value}/E014/outputs/matched_data.csv'
+    elif targedataset == "結果1-登記":
+        main_csv = f'./data/{citycode_value}/E014/outputs/matched_data.csv'
+        sub_csv = f'./data/{citycode_value}/E013/outputs/touki_residence.csv'
+        output_path = f'./data/{citycode_value}/E014/outputs/matched_data.csv'
+    elif targedataset == "結果2-空き家調査":
+        main_csv = f'./data/{citycode_value}/E014/outputs/matched_data.csv'
+        sub_csv = f'./data/{citycode_value}/E012/outputs/akiya_result_cleaned.csv'
+        output_path = f'./data/{citycode_value}/E014/outputs/matched_data.csv'
+    elif targedataset == "結果3-ジオコーディング":
+        main_csv = f'./data/{citycode_value}/E014/outputs/matched_data.csv'
+        sub_csv = f'./data/{citycode_value}/E012/outputs/geocoding_cleaned.csv'
+        output_path = f'./data/{citycode_value}/E014/outputs/matched_data.csv'
+
+    return main_csv, sub_csv, output_path
 
 def update_column_dropdowns_and_radio_buttons(main_csv: io.BytesIO, sub_csv: io.BytesIO) -> Tuple[gr.Dropdown, gr.Dropdown, gr.Radio]:
     """
@@ -84,17 +98,30 @@ if __name__ == "__main__":
                     choices=["2020", "2021", "2022", "2023", "2024"], 
                     value="2023", 
                     interactive=True
-                        )
+                )
+                targedataset = gr.Dropdown(
+                    label="対象データセットを選択", 
+                    choices=["住基-水道", "結果1-登記", "結果2-空き家調査", "結果3-ジオコーディング"], 
+                    value="住基-水道", 
+                    interactive=True
+                )
         
-        file_input_1 = gr.File(label="csvファイルを入力してください", elem_id="csv")
-        file_input_2 = gr.File(label="csvファイルを入力してください", elem_id="csv")
+        file_input_1 = gr.File(
+            label="csvファイルを入力してください",
+            value=f'./data/23211/E013/outputs/juki_residence_2023.csv',
+            elem_id="csv"
+        )
+        file_input_2 = gr.File(
+            label="csvファイルを入力してください",
+            value=f'./data/23211/E013/outputs/suido_residence_2023.csv',
+            elem_id="csv"
+        )
 
-        # '正規化住所' を最初から choices に設定しておく
         column_dropdown_1 = gr.Dropdown(label="結合元の基準にする列を選択してください", choices=['正規化住所'], value='正規化住所', interactive=True)
         column_dropdown_2 = gr.Dropdown(label="結合対象の基準にする列を選択してください", choices=['正規化住所'], value='正規化住所', interactive=True)
         merge_base = gr.Radio(choices=[], label="結合の基準にするファイルを選択してください")
         ngram_size = gr.Radio([1, 2, 3], value=2, label="N-gram Size")
-        similarity_threshold = gr.Slider(0.0, 1.0, value=0.5, label="Similarity Threshold", step=0.05)
+        similarity_threshold = gr.Slider(0.0, 1.0, value=1.0, label="Similarity Threshold", step=0.05)
 
         match_button = gr.Button("名寄せ実行")
         
@@ -105,32 +132,37 @@ if __name__ == "__main__":
         file_input_2.change(update_column_dropdowns_and_radio_buttons, inputs=[file_input_1, file_input_2], outputs=[column_dropdown_1, column_dropdown_2, merge_base])
         
         
-        def on_submit(citycode_value, targetyear_value, column_dropdown_1, column_dropdown_2, merge_base, ngram_size, similarity_threshold):
+        def on_submit(citycode_value, targetyear_value, targedataset_value, column_dropdown_1, column_dropdown_2, merge_base, ngram_size, similarity_threshold):
+            # ディレクトリを作成
             os.makedirs(f'./data/{citycode_value}/E014/outputs/', exist_ok=True)
-            file_input_1, file_input_2, output_path = generate_file_paths(citycode_value, targetyear_value)
+
+            # ファイルパスを生成
+            main_csv, sub_csv, output_path = generate_file_paths(citycode_value, targetyear_value, targedataset_value)
+
+            # 名寄せを実行
             return embedding_address(
-                file_input_1, 
-                file_input_2, 
+                main_csv, 
+                sub_csv, 
                 column_dropdown_1, 
                 column_dropdown_2,
                 merge_base,
+                output_path,
                 ngram_size,
                 similarity_threshold,
-                1000,
-                output_path
-                
+                1000
             )
 
         match_button.click(
             fn=on_submit,
             inputs=[
-                citycode
-                , targetyear
-                , column_dropdown_1
-                , column_dropdown_2
-                , merge_base
-                , ngram_size
-                , similarity_threshold
+                citycode,
+                targetyear,
+                targedataset,  # 修正: targedatasetを引数として渡す
+                column_dropdown_1,
+                column_dropdown_2,
+                merge_base,
+                ngram_size,
+                similarity_threshold
             ],
             outputs=[output_file, results_text]
         )
