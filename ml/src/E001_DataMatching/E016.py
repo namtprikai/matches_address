@@ -527,9 +527,9 @@ def transform_to_wgs84(geometries, source_crs):
     return geometries.apply(lambda geom: transform(transformer.transform, geom) if geom and not geom.is_empty else None)
 
 def _drop_z(geom):
-    if geom is not None and not geom.is_empty:
+    if geom is not None and hasattr(geom, "is_empty") and not geom.is_empty:
         return wkb.loads(wkb.dumps(geom, output_dimension=2))
-    return None
+    return geom  # 無効なジオメトリまたは空のジオメトリはそのまま返す
 
 def assign_points_to_buildings(buildings_gdf, points_gdf, mul, crs, point_selected_column, option, building_id):
     """
@@ -599,10 +599,14 @@ def assign_points_to_buildings(buildings_gdf, points_gdf, mul, crs, point_select
         columns_to_drop = ["index_right", "buffer", "centroid", "area"]
         joined = joined.drop(columns=[col for col in columns_to_drop if col in joined.columns])
         combined_gdf = joined
-        # Z次元を削除した2次元ジオメトリに変換
-        _drop_z = lambda geom: wkb.loads(wkb.dumps(geom, output_dimension=2))
-        combined_gdf['geometry_plateau'] = combined_gdf['geometry_plateau'].transform(_drop_z)
-        combined_gdf['geometry_plateau'] = transform_to_wgs84(combined_gdf['geometry_plateau'], crs)
+
+        # geometry_plateau を GeoSeries として扱う
+        combined_gdf['geometry_plateau'] = gpd.GeoSeries(
+            combined_gdf['geometry_plateau'], crs=combined_gdf.crs
+        ).transform(_drop_z)
+        combined_gdf['geometry_plateau'] = transform_to_wgs84(
+            gpd.GeoSeries(combined_gdf['geometry_plateau'], crs=combined_gdf.crs), crs
+        )
         combined_gdf = gpd.GeoDataFrame(combined_gdf, geometry='geometry')
     else:
         # 空間結合(交差)の実行（ここで、水道のデータが2つ以上結合されている場合があるので、最も近いもののみを残す）
@@ -629,8 +633,12 @@ def assign_points_to_buildings(buildings_gdf, points_gdf, mul, crs, point_select
             buildings_gdf = buildings_gdf.rename(columns={'geometry': 'geometry_plateau'})
             combined_gdf = combined_gdf.merge(buildings_gdf[['right_geometry']], left_on='index_right', right_index=True, how='left')
 
-        combined_gdf['geometry_plateau'] = combined_gdf['geometry_plateau'].apply(_drop_z)
-        combined_gdf['geometry_plateau'] = transform_to_wgs84(combined_gdf['geometry_plateau'], crs)
+        combined_gdf['geometry_plateau'] = gpd.GeoSeries(
+            combined_gdf['geometry_plateau'], crs=combined_gdf.crs
+        ).transform(_drop_z)
+        combined_gdf['geometry_plateau'] = transform_to_wgs84(
+            gpd.GeoSeries(combined_gdf['geometry_plateau'], crs=combined_gdf.crs), crs
+        )
         # 建物のジオメトリに設定しなおして、GeoDataFrameに変換
         combined_gdf = gpd.GeoDataFrame(combined_gdf, geometry='geometry')
 
