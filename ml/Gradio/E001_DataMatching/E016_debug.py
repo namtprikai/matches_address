@@ -190,10 +190,10 @@ def generate_file_paths(citycode_value, targetyear_value):
     市区町村コードと対象年度に基づいてファイルパスを生成する
     """
     
-    water_supply_file = f'./data/{citycode_value}/E016/inputs/juki_suido_touki_akiya_geocoded_手動geocoding済_{targetyear_value}.csv'
+    water_supply_file = f'./data/{citycode_value}/E014/outputs/matched_data.csv'#_{targetyear_value}.csv'
     tatemono_file = f'./data/{citycode_value}/E016/inputs/toyota_lod0_attributes.csv'
     shp_file = f'./data/{citycode_value}/E016/inputs/r2ka23.gpkg'
-    output_path = f'./data/{citycode_value}/E016/outputs/D901.csv'
+    output_path = f'./data/{citycode_value}/E016/outputs/D901_{targetyear_value}.csv'
     return tatemono_file, water_supply_file, shp_file, output_path
 
 def gradio_interface(tatemono_file, water_supply_file, shp_file, ken, sikuchoson, join_option, output_format, output_path):
