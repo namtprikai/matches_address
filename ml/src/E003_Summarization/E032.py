@@ -412,6 +412,7 @@ def process_summarization(akiya_pred_file, spatial_file, output_dir, key_column,
             connect_sqllite(db_path)
         task_id = None
         process = (process/3)
+        process_init = process
         if job_id:
             task_id = create_or_update_job_task(job_id, progress_percent="0", preprocess_type=None, error_code=None, result=json.dumps({}))
 
@@ -434,7 +435,7 @@ def process_summarization(akiya_pred_file, spatial_file, output_dir, key_column,
         if job_id:
             create_or_update_job_task(job_id, progress_percent="20", preprocess_type=None, error_code=None, result=json.dumps({}), id= task_id)
             create_or_update_job(job_id, process)
-            process += process
+            process += process_init
         # ファイル拡張子を取得
         file_ext = os.path.splitext(spatial_file)[1].lower()
      
@@ -477,14 +478,14 @@ def process_summarization(akiya_pred_file, spatial_file, output_dir, key_column,
         if job_id:
             create_or_update_job_task(job_id, progress_percent="40", preprocess_type=None, error_code=None, result=json.dumps({}), id= task_id)
             create_or_update_job(job_id, process)
-            process += process
+            process += process_init
 
         # 集計に使用するカラム名も引数として渡す
         Summarization(input_paths, output_path, key_column, data_set_result_id).process()
         if job_id:
             create_or_update_job_task(job_id, progress_percent="100", preprocess_type=None, error_code=None, result=json.dumps({}), id= task_id, is_finish=True)
             create_or_update_job(job_id, process)
-            process += process
+            process += process_init
             
         return output_path
     except Exception as e:

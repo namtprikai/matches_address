@@ -94,7 +94,7 @@ def main():
     random_str = str(uuid.uuid4())
     output_directory = concatenate(params.get('output_path'), random_str)
     join_option = "交差結合"
-    if params.get('joining_method') == 'nearer':
+    if params.get('joining_method') == 'nearest':
         join_option = '最近傍結合'
     search_period = "1"
     input_zip_file = None
@@ -240,9 +240,9 @@ def main():
         print(e)
         if job_id:
             create_or_update_job(job_id, "error")
-    finally:
-        if output_directory and os.path.isdir(output_directory):
-            shutil.rmtree(output_directory)
+    # finally:
+    #     if output_directory and os.path.isdir(output_directory):
+    #         shutil.rmtree(output_directory)
 
         
 if __name__ == "__main__":

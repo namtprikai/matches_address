@@ -408,13 +408,14 @@ def process_and_predict(input_folder, input_file, model_directory, threshold, ou
     """
     try:
         process = (process/7)
+        process_init = process
         if db_path:
             connect_sqllite(db_path)
         task_id = None
         if job_id:
             task_id = create_or_update_job_task(job_id, progress_percent="0", preprocess_type=None, error_code=None, result=json.dumps({}))
             create_or_update_job(job_id, process)
-            process += process
+            process += process_init
         # ディレクトリの設定
         print("ディレクトリを設定中...")
         # setup_directory(os.path.expanduser('~'))
@@ -426,7 +427,7 @@ def process_and_predict(input_folder, input_file, model_directory, threshold, ou
         if job_id:
             create_or_update_job_task(job_id, progress_percent="20", preprocess_type=None, error_code=None, result=json.dumps({}), id= task_id)
             create_or_update_job(job_id, process)
-            process += process
+            process += process_init
         # 予測用データ（REQUIRED_FEATURES）を準備するためのコピーを作成
         prediction_data = input_data.copy()
 
@@ -447,14 +448,14 @@ def process_and_predict(input_folder, input_file, model_directory, threshold, ou
         if job_id:
             create_or_update_job_task(job_id, progress_percent="30", preprocess_type=None, error_code=None, result=json.dumps({}), id= task_id)
             create_or_update_job(job_id, process)
-            process += process
+            process += process_init
         # 訓練済みモデルの読み込み
         print("訓練済みモデルを読み込み中...")
         models = load_models(model_directory)
         if job_id:
             create_or_update_job_task(job_id, progress_percent="50", preprocess_type=None, error_code=None, result=json.dumps({}), id= task_id)
             create_or_update_job(job_id, process)
-            process += process
+            process += process_init
         # 特徴量のチェック
         print("特徴量をチェック中...")
         prediction_data, features_match, message = check_features(prediction_data, required_features, outcome_variable)
@@ -467,7 +468,7 @@ def process_and_predict(input_folder, input_file, model_directory, threshold, ou
         if job_id:
             create_or_update_job_task(job_id, progress_percent="70", preprocess_type=None, error_code=None, result=json.dumps({}), id= task_id)
             create_or_update_job(job_id, process)
-            process += process
+            process += process_init
         # 結果の保存
         print("結果を保存中...")
 
@@ -483,7 +484,7 @@ def process_and_predict(input_folder, input_file, model_directory, threshold, ou
         if job_id:
             create_or_update_job_task(job_id, progress_percent="90", preprocess_type=None, error_code=None, result=json.dumps({}), id= task_id)
             create_or_update_job(job_id, process)
-            process += process
+            process += process_init
         # 試行するエンコーディングのリスト
         encodings = ['utf-8-sig']
         for encoding in encodings:
@@ -495,7 +496,7 @@ def process_and_predict(input_folder, input_file, model_directory, threshold, ou
                 if job_id:
                     create_or_update_job_task(job_id, progress_percent="100", preprocess_type=None, error_code=None, result=json.dumps({}), id= task_id, is_finish=True)
                     create_or_update_job(job_id, process)
-                    process += process
+                    process += process_init
                 return f"予測結果が {output_file} に保存されました", output_file
             except Exception as e:
                 # 保存中にエラーが発生した場合、エラーメッセージを表示して次のエンコーディングを試す
