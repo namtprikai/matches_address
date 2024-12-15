@@ -240,9 +240,9 @@ def main():
         print(e)
         if job_id:
             create_or_update_job(job_id, "error")
-    # finally:
-    #     if output_directory and os.path.isdir(output_directory):
-    #         shutil.rmtree(output_directory)
+    finally:
+        if output_directory and os.path.isdir(output_directory):
+            shutil.rmtree(output_directory)
 
         
 if __name__ == "__main__":

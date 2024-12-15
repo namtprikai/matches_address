@@ -66,10 +66,10 @@ def main():
             key_column = 'KEY_CODE'
             
         spatial_file = concatenate(params.get('output_path'), params.get('area_grouping'))
+        process = 0
         total = len(params.get('normalized_dataset_paths'))
         data_set_result_id = create_data_set_results()
         for item in params.get('normalized_dataset_paths'):
-            process = 0
             normalized = concatenate(params.get('output_path'), item)
             input_folder = os.path.dirname(normalized)
             input_file = os.path.basename(normalized)
