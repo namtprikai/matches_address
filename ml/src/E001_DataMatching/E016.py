@@ -1033,7 +1033,6 @@ def process_data(tatemono_path, water_supply_path, gpkg_path, ken, sikuchoson, o
 
         return output_path, join_ratio
     except Exception as e:
-        print(e)
         if task_id is not None:
             create_or_update_job_task(job_id, progress_percent="", preprocess_type="e016", error_code="e001", result=json.dumps({}), id= task_id, is_finish=True)
         raise Exception("Error: There was an issue during the Spatial join process")
