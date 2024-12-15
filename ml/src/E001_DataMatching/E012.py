@@ -726,6 +726,7 @@ def process_data(input_files, output_directory, main_data_type, job_id, columns,
         # 出力パスのうち、実際にファイルが生成されたもののみをリストにして返す
         return [path for path in output_paths.values() if os.path.exists(path)]
     except Exception as e:
+        print(e)
         if task_id is not None:
             create_or_update_job_task(job_id, progress_percent="", preprocess_type="012", error_code="e001", result=json.dumps({}), id= task_id, is_finish=True)
         raise Exception("Error: Data cleaning process encountered an issue")

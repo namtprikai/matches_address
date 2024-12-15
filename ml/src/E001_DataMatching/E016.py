@@ -31,6 +31,9 @@ from tqdm import tqdm
 from concurrent.futures import ThreadPoolExecutor
 from shapely import wkt, wkb
 from shapely.geometry import MultiPolygon, Point, Polygon
+from pyproj import CRS, Transformer
+from shapely.ops import transform
+pd.set_option("display.max_columns", None)
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
 async_tasks_path = os.path.join(current_dir, '..', 'async_tasks')
@@ -502,6 +505,32 @@ def extract_zip(zip_file, extract_to):
         "prj": prj_file
     }
 
+def transform_to_wgs84(geometries, source_crs):
+    """
+    GeoDataFrame全体のジオメトリをWGS84に変換する高速版
+    Parameters
+    ----------
+    geometries : GeoSeries
+        入力ジオメトリの列
+    source_crs : int or str
+        入力座標参照系 (EPSGコードなど)
+    
+    Returns
+    -------
+    GeoSeries
+        WGS84に変換されたジオメトリの列
+    """
+    # Transformerを事前に作成
+    transformer = Transformer.from_crs(source_crs, CRS.from_epsg(4326), always_xy=True)
+
+    # shapelyのtransformを使って座標変換
+    return geometries.apply(lambda geom: transform(transformer.transform, geom) if geom and not geom.is_empty else None)
+
+def _drop_z(geom):
+    if geom is not None and hasattr(geom, "is_empty") and not geom.is_empty:
+        return wkb.loads(wkb.dumps(geom, output_dimension=2))
+    return geom  # 無効なジオメトリまたは空のジオメトリはそのまま返す
+
 def assign_points_to_buildings(buildings_gdf, points_gdf, mul, crs, point_selected_column, option, building_id):
     """
     建物のジオメトリとポイントのジオメトリを結合し、ポイントを建物に割り当てる
@@ -571,23 +600,12 @@ def assign_points_to_buildings(buildings_gdf, points_gdf, mul, crs, point_select
         joined = joined.drop(columns=[col for col in columns_to_drop if col in joined.columns])
         combined_gdf = joined
         # Z次元を削除した2次元ジオメトリに変換
-        def _drop_z(geom):
-            try:
-                if geom is None or geom.is_empty:
-                    return geom  # 無効なジオメトリはそのまま返す
-                # Z次元を持つ場合は 2D に変換
-                if geom.has_z:
-                    return wkb.loads(wkb.dumps(geom, output_dimension=2))
-                return geom  # すでに 2D の場合はそのまま返す
-            except Exception as e:
-                print(f"Error processing geometry: {e}")
-                return geom
-
-
-        # geometry_plateauに対して有効なジオメトリのみ変換を適用
-        combined_gdf = combined_gdf[combined_gdf['geometry_plateau'].notnull()]
-        # geometry_plateau を GeoSeries として扱う
-        combined_gdf['geometry_plateau'] = gpd.GeoSeries(combined_gdf['geometry_plateau']).apply(_drop_z)
+        combined_gdf['geometry_plateau'] = gpd.GeoSeries(
+            combined_gdf['geometry_plateau'], crs=combined_gdf.crs
+        ).transform(_drop_z)
+        combined_gdf['geometry_plateau'] = transform_to_wgs84(
+            gpd.GeoSeries(combined_gdf['geometry_plateau'], crs=combined_gdf.crs), crs
+        )
         combined_gdf = gpd.GeoDataFrame(combined_gdf, geometry='geometry')
     else:
         # 空間結合(交差)の実行（ここで、水道のデータが2つ以上結合されている場合があるので、最も近いもののみを残す）
@@ -613,24 +631,13 @@ def assign_points_to_buildings(buildings_gdf, points_gdf, mul, crs, point_select
         else:
             buildings_gdf = buildings_gdf.rename(columns={'geometry': 'geometry_plateau'})
             combined_gdf = combined_gdf.merge(buildings_gdf[['right_geometry']], left_on='index_right', right_index=True, how='left')
-        # ここでgeometry_plateauのZ次元を削除した2次元ジオメトリに変換
-        def _drop_z(geom):
-            try:
-                # MultiPolygon または Polygon で Z 次元がない場合はそのまま返す
-                if isinstance(geom, (MultiPolygon, Polygon)) and geom.has_z is False:
-                    return geom
-                # Z 次元がある場合のみ 2D に変換
-                return wkb.loads(wkb.dumps(geom, output_dimension=2))
-            except Exception as e:
-                print(f"Geometry processing error: {e}")
-                return geom  # エラー時はそのまま返す
 
-        # geometry_plateauに対して有効なジオメトリのみ変換を適用
-        combined_gdf = combined_gdf[combined_gdf['geometry_plateau'].notnull()]
-        combined_gdf = combined_gdf[~combined_gdf['geometry_plateau'].is_empty]
-        
-        combined_gdf['geometry_plateau'] = combined_gdf['geometry_plateau'].apply(_drop_z)
-
+        combined_gdf['geometry_plateau'] = gpd.GeoSeries(
+            combined_gdf['geometry_plateau'], crs=combined_gdf.crs
+        ).transform(_drop_z)
+        combined_gdf['geometry_plateau'] = transform_to_wgs84(
+            gpd.GeoSeries(combined_gdf['geometry_plateau'], crs=combined_gdf.crs), crs
+        )
         # 建物のジオメトリに設定しなおして、GeoDataFrameに変換
         combined_gdf = gpd.GeoDataFrame(combined_gdf, geometry='geometry')
 
