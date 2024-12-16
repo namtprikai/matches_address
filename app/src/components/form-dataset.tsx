@@ -13,6 +13,7 @@ import { LanguageMap } from "../metadata";
 import { useDialogState } from "../hooks/use-dialog-state";
 import { useFetchDatasetColumns } from "../hooks/use-fetch-dataset-columns";
 import { useFetchRawDataset } from "../hooks/use-fetch-raw-dataset";
+import { type PreprocessParameters } from "../@types/job-parameters";
 import { Dropdown } from "./ui/dropdown";
 import { Field } from "./ui/field";
 import { DialogImportDataset } from "./dialog-import-dataset";
@@ -52,23 +53,25 @@ const useStyles = makeStyles({
   },
 });
 
-export const FormDataset = <
-  COLUMN_TYPE extends Partial<Record<string, string>>,
->({
-  value: prevValue,
-  dataSetName,
+interface Value {
+  id: PreprocessParameters["data"]["resident_registry"]["id"]; // ひとまずresident_registryの型を使う
+  path: PreprocessParameters["data"]["resident_registry"]["path"] | undefined;
+  columns?: Record<string, string | undefined>; // TODO: 都市計画決定情報データと国勢調査データで扱うカラムを決まったらoptionalを外す
+}
+
+interface Props {
+  value: Value;
+  label: string;
+  appearance?: "default" | "large";
+  onChange: (value: Value) => void;
+}
+
+export const FormDataset = ({
+  value,
+  label,
   appearance,
   onChange,
-}: {
-  value: {
-    id: number;
-    columns?: COLUMN_TYPE;
-    path?: string;
-  };
-  dataSetName: string;
-  appearance?: "default" | "large";
-  onChange?: (data: typeof prevValue) => void;
-}): JSX.Element => {
+}: Props): JSX.Element => {
   const styles = useStyles();
   const [dataSet, setDataSet] = useState<SelectRawDataSet | undefined>(
     undefined,
@@ -79,19 +82,17 @@ export const FormDataset = <
   });
   const { setIsOpen } = dialogState;
 
-  const { data: prevDataset } = useFetchRawDataset({ id: prevValue.id });
+  const { data: prevDataset } = useFetchRawDataset({ id: value.id });
   useEffect(() => {
     if (prevDataset) {
       /** @fixme ここでセットするとうまくいきそうだがいかない */
       // setDataSet(prevDataset);
     }
-  }, [prevDataset, prevValue]);
+  }, [prevDataset, value]);
 
   useEffect(() => {
     if (onChange && dataSetColumns) {
-      const columnKV = prevValue.columns
-        ? Object.entries(prevValue.columns)
-        : [];
+      const columnKV = value.columns ? Object.entries(value.columns) : [];
 
       if (columnKV.length === 0) {
         return;
@@ -105,10 +106,9 @@ export const FormDataset = <
       }, {});
 
       onChange({
-        id: prevValue.id,
-        path: prevValue.path,
-        // reduceでは厳密な型推論ができないためasで型を指定
-        columns: newColumns as COLUMN_TYPE,
+        id: value.id,
+        path: value.path,
+        columns: newColumns,
       });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps -- prevValueが含まれるとcolumnsの更新を行い、無限ループになるため
@@ -116,7 +116,7 @@ export const FormDataset = <
 
   return (
     <Card>
-      <p>{dataSetName}</p>
+      <p>{label}</p>
       <div className={styles.fieldContainer}>
         <div
           className={styles.fileSelectorContainer}
@@ -132,7 +132,7 @@ export const FormDataset = <
                 setDataSet(undefined);
                 if (onChange) {
                   onChange({
-                    ...prevValue,
+                    ...value,
                     path: undefined,
                   });
                 }
@@ -148,8 +148,8 @@ export const FormDataset = <
             appearance === "large" && styles.dropdownContainer,
           )}
         >
-          {prevValue.columns
-            ? Object.entries(prevValue.columns).map(([key]) => (
+          {value.columns
+            ? Object.entries(value.columns).map(([key]) => (
                 <Field
                   key={key}
                   className={styles.field}
@@ -165,15 +165,15 @@ export const FormDataset = <
                     onOptionSelect={(_, data) => {
                       if (!onChange) return;
                       onChange({
-                        ...prevValue,
+                        ...value,
                         columns: {
-                          ...prevValue.columns,
+                          ...value.columns,
                           [key]: data.optionValue,
-                        } as COLUMN_TYPE,
+                        },
                       });
                     }}
-                    selectedOptions={[prevValue.columns?.[key] ?? ""]}
-                    value={prevValue.columns?.[key] ?? ""}
+                    selectedOptions={[value.columns?.[key] ?? ""]}
+                    value={value.columns?.[key] ?? ""}
                   >
                     {dataSetColumns?.map((column) => (
                       <Option key={column} text={column} value={column}>
@@ -192,7 +192,7 @@ export const FormDataset = <
           setDataSet(data);
           if (!onChange) return;
           onChange({
-            ...prevValue,
+            ...value,
             id: data.id,
             path: data?.file_path,
           });
