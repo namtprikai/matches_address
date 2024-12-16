@@ -135,12 +135,10 @@ export const FormDataset = ({
               dataSet={dataSet}
               onDelete={() => {
                 setDataSet(undefined);
-                if (onChange) {
-                  onChange({
-                    ...value,
-                    path: undefined,
-                  });
-                }
+                onChange({
+                  ...value,
+                  path: undefined,
+                });
               }}
             />
           ) : (
@@ -168,7 +166,6 @@ export const FormDataset = ({
                     className={styles.dropdown}
                     disabled={!dataSetColumns || dataSetColumns.length === 0}
                     onOptionSelect={(_, data) => {
-                      if (!onChange) return;
                       onChange({
                         ...value,
                         columns: {
@@ -195,7 +192,6 @@ export const FormDataset = ({
         dialogState={dialogState}
         onSubmit={(data) => {
           setDataSet(data);
-          if (!onChange) return;
           onChange({
             ...value,
             id: data.id,
