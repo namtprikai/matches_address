@@ -2,6 +2,7 @@ import { Dialog, makeStyles, DialogTrigger } from "@fluentui/react-components";
 import { DismissFilled } from "@fluentui/react-icons";
 import { useForm, type FieldPath } from "react-hook-form";
 import { type z } from "zod";
+import { useEffect } from "react";
 import { type ReturnUseDialogState } from "../hooks/use-dialog-state";
 import { type schema as formModelCreateSchema } from "../hooks/use-form-model-create";
 import { Button } from "./ui/button";
@@ -40,7 +41,7 @@ type FormType = z.infer<typeof formModelCreateSchema>;
 type Props = {
   dialogState: ReturnUseDialogState;
   onSelected: (selected: FormType["settings"]["advanced"]) => void;
-  initialValues: FormType["settings"]["advanced"];
+  initialValues: FormType["settings"]["advanced"] | undefined;
 };
 
 /**
