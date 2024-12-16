@@ -2,12 +2,14 @@ import useSWR, { type SWRResponse } from "swr";
 import { type SelectJob } from "../schema";
 
 interface Params {
-  id: SelectJob["id"];
+  id: SelectJob["id"] | undefined;
 }
 
 type Result = SelectJob | undefined;
 
 const fetcher = async ({ id }: Params): Promise<Result> => {
+  if (!id) return undefined;
+
   const result = await window.ipcRenderer.invoke("selectJob", {
     id,
   });
