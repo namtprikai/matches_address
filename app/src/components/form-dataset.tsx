@@ -56,7 +56,7 @@ const useStyles = makeStyles({
 interface Value {
   id: PreprocessParameters["data"]["resident_registry"]["id"]; // ひとまずresident_registryの型を使う
   path: PreprocessParameters["data"]["resident_registry"]["path"] | undefined;
-  columns?: Record<string, string | undefined>; // TODO: 都市計画決定情報データと国勢調査データで扱うカラムを決まったらoptionalを外す
+  columns?: Record<string, string | undefined>; // 都市計画決定情報データと国勢調査データにカラムがないためoptionalを指定する
 }
 
 interface Props {
