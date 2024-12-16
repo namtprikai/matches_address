@@ -80,7 +80,6 @@ export const FormDataset = ({
   const { data: dataSetColumns } = useFetchDatasetColumns({
     filename: dataSet?.file_path,
   });
-  const { setIsOpen } = dialogState;
 
   const { data: currentRawDataset, isLoading: isCurrentRawDatasetLoading } =
     useFetchDatasetWithFilePath({
@@ -127,7 +126,7 @@ export const FormDataset = ({
         <div
           className={styles.fileSelectorContainer}
           onClick={() => {
-            setIsOpen(true);
+            dialogState.setIsOpen(true);
           }}
           role="button"
         >
