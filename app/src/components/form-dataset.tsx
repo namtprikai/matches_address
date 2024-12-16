@@ -12,8 +12,8 @@ import { type SelectRawDataSet } from "../schema";
 import { LanguageMap } from "../metadata";
 import { useDialogState } from "../hooks/use-dialog-state";
 import { useFetchDatasetColumns } from "../hooks/use-fetch-dataset-columns";
-import { useFetchRawDataset } from "../hooks/use-fetch-raw-dataset";
 import { type PreprocessParameters } from "../@types/job-parameters";
+import { useFetchDatasetWithFilePath } from "../hooks/use-fetch-dataset-with-file-name";
 import { Dropdown } from "./ui/dropdown";
 import { Field } from "./ui/field";
 import { DialogImportDataset } from "./dialog-import-dataset";
@@ -82,13 +82,16 @@ export const FormDataset = ({
   });
   const { setIsOpen } = dialogState;
 
-  const { data: prevDataset } = useFetchRawDataset({ id: value.id });
+  const { data: rawDataSet, isLoading: isRawDatasetLoading } =
+    useFetchDatasetWithFilePath({
+      type: "raw",
+      filePath: value.path,
+    });
+
   useEffect(() => {
-    if (prevDataset) {
-      /** @fixme ここでセットするとうまくいきそうだがいかない */
-      // setDataSet(prevDataset);
-    }
-  }, [prevDataset, value]);
+    if (isRawDatasetLoading) return;
+    setDataSet(rawDataSet);
+  }, [isRawDatasetLoading, rawDataSet]);
 
   useEffect(() => {
     if (onChange && dataSetColumns) {
