@@ -82,16 +82,19 @@ export const FormDataset = ({
   });
   const { setIsOpen } = dialogState;
 
-  const { data: rawDataSet, isLoading: isRawDatasetLoading } =
+  const { data: currentRawDataset, isLoading: isCurrentRawDatasetLoading } =
     useFetchDatasetWithFilePath({
       type: "raw",
       filePath: value.path,
     });
 
-  useEffect(() => {
-    if (isRawDatasetLoading) return;
-    setDataSet(rawDataSet);
-  }, [isRawDatasetLoading, rawDataSet]);
+  useEffect(
+    function setCurrentRawDataSet() {
+      if (isCurrentRawDatasetLoading) return;
+      setDataSet(currentRawDataset);
+    },
+    [isCurrentRawDatasetLoading, currentRawDataset],
+  );
 
   useEffect(
     // ファイルが選択されたらドロップダウンの値を更新する
