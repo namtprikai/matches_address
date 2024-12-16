@@ -93,29 +93,29 @@ export const FormDataset = ({
     setDataSet(rawDataSet);
   }, [isRawDatasetLoading, rawDataSet]);
 
-  useEffect(() => {
-    if (onChange && dataSetColumns) {
-      const columnKV = value.columns ? Object.entries(value.columns) : [];
-
-      if (columnKV.length === 0) {
+  useEffect(
+    // ファイルが選択されたらドロップダウンの値を更新する
+    function updateColumns() {
+      if (!dataSetColumns || dataSetColumns.length === 0 || !value.columns)
         return;
-      }
 
-      const newColumns = columnKV.reduce((acc, [key]) => {
-        return {
-          ...acc,
-          [key]: dataSetColumns[0],
-        };
-      }, {});
+      // 最初の要素をドロップダウンのdefault valueに設定する
+      const [firstItem] = dataSetColumns;
+
+      const columnEntries = Object.entries(value.columns);
+
+      const newColumns = Object.fromEntries(
+        columnEntries.map(([key]) => [key, firstItem]),
+      );
 
       onChange({
-        id: value.id,
-        path: value.path,
+        ...value,
         columns: newColumns,
       });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- prevValueが含まれるとcolumnsの更新を行い、無限ループになるため
-  }, [dataSetColumns]);
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- valueが含まれるとcolumnsの更新を行い、無限ループになるため
+    [dataSetColumns],
+  );
 
   return (
     <Card>
