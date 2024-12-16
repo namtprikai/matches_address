@@ -74,6 +74,7 @@
     "zod": "^3.23.8"
   },
   "dependencies": {
+    "@ngageoint/geopackage": "github:HideBa/geopackage-js",
     "better-sqlite3": "^11.2.1",
     "electron-squirrel-startup": "^1.0.1",
     "vite-plugin-native": "^2.2.1"
