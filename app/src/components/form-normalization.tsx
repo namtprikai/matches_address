@@ -1,9 +1,8 @@
 import { Controller, useController } from "react-hook-form";
 import { makeStyles, tokens } from "@fluentui/react-components";
-import { useEffect } from "react";
 import { LanguageMap } from "../metadata";
 import { useFormNormalization } from "../hooks/use-form-normalization";
-import { useFetchJobs } from "../hooks/use-fetch-jobs";
+import { type PreprocessParameters } from "../@types/job-parameters";
 import { FormDataset } from "./form-dataset";
 import { FormNormalizationSettings } from "./form-normalization-settings";
 import { ErrorMessage } from "./error-message";
@@ -24,39 +23,24 @@ const useStyles = makeStyles({
 
 type Props = {
   formId: string;
-  jobId?: string;
+  preprocessParameters?: PreprocessParameters;
   afterSubmit: () => void;
 };
 
 export const FormNormalization = ({
   formId,
-  jobId,
+  preprocessParameters,
   afterSubmit,
 }: Props): JSX.Element => {
   const {
     handleSubmit,
     control,
-    reset,
     formState: { errors },
-  } = useFormNormalization();
+  } = useFormNormalization({
+    defaultValues: preprocessParameters,
+  });
 
   const hasErrors = Object.keys(errors).length > 0;
-
-  const { data } = useFetchJobs(jobId ? Number(jobId) : undefined);
-
-  const prevParameters =
-    data && data.length > 0 ? data[0].parameters : undefined;
-
-  useEffect(() => {
-    if (prevParameters && jobId) {
-      if (prevParameters.parameterType === "preprocess") {
-        reset({
-          settings: prevParameters.settings,
-          data: prevParameters.data,
-        });
-      }
-    }
-  }, [jobId, prevParameters, reset]);
 
   const onSubmit = handleSubmit(async (data) => {
     await window.ipcRenderer.invoke("execE001", {
