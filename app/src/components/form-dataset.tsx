@@ -73,39 +73,22 @@ export const FormDataset = ({
   onChange,
 }: Props): JSX.Element => {
   const styles = useStyles();
-  const [dataSet, setDataSet] = useState<SelectRawDataSet | undefined>(
-    undefined,
-  );
   const dialogState = useDialogState();
   const { data: dataSetColumns } = useFetchDatasetColumns({
-    filename: dataSet?.file_path,
+    filename: value?.path,
   });
-
-  const { data: currentRawDataset, isLoading: isCurrentRawDatasetLoading } =
-    useFetchDatasetWithFilePath({
-      type: "raw",
-      filePath: value.path,
-    });
-
-  useEffect(
-    function setCurrentRawDataSet() {
-      if (isCurrentRawDatasetLoading) return;
-      setDataSet(currentRawDataset);
-    },
-    [isCurrentRawDatasetLoading, currentRawDataset],
-  );
+  const [isUpdateColumns, setIsUpdateColumns] = useState(false);
 
   useEffect(
     // ファイルが選択されたらドロップダウンの値を更新する
     function updateColumns() {
+      if (!isUpdateColumns) return;
       if (!dataSetColumns || dataSetColumns.length === 0 || !value.columns)
         return;
 
       // 最初の要素をドロップダウンのdefault valueに設定する
       const [firstItem] = dataSetColumns;
-
       const columnEntries = Object.entries(value.columns);
-
       const newColumns = Object.fromEntries(
         columnEntries.map(([key]) => [key, firstItem]),
       );
@@ -114,9 +97,10 @@ export const FormDataset = ({
         ...value,
         columns: newColumns,
       });
+      setIsUpdateColumns(false);
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- valueが含まれるとcolumnsの更新を行い、無限ループになるため
-    [dataSetColumns],
+
+    [dataSetColumns, isUpdateColumns, onChange, value],
   );
 
   return (
@@ -130,20 +114,21 @@ export const FormDataset = ({
           }}
           role="button"
         >
-          {dataSet ? (
-            <SelectedDataSetView
-              dataSet={dataSet}
-              onDelete={() => {
-                setDataSet(undefined);
-                onChange({
-                  ...value,
-                  path: undefined,
-                });
-              }}
-            />
-          ) : (
-            <DataSetImportSymbol />
-          )}
+          <SelectedDataSetView
+            filePath={value.path}
+            onDelete={() => {
+              onChange({
+                ...value,
+                path: undefined,
+                columns: Object.fromEntries(
+                  Object.keys(value.columns ?? {}).map((key) => [
+                    key,
+                    undefined,
+                  ]),
+                ),
+              });
+            }}
+          />
         </div>
         <div
           // FormDatasetが横長の場合のスタイルだしわけ
@@ -191,22 +176,25 @@ export const FormDataset = ({
       <DialogImportDataset
         dialogState={dialogState}
         onSubmit={(data) => {
-          setDataSet(data);
           onChange({
             ...value,
             id: data.id,
             path: data?.file_path,
           });
+          setIsUpdateColumns(true);
         }}
       />
     </Card>
   );
 };
 
-/**
- * データセットインポートのアイコンや文字部分をスタイリングするためにスタイルを別定義
- */
-const useDataSetImporterSymbolStyle = makeStyles({
+const selectedDataSetViewStyles = makeStyles({
+  symbol: {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    gap: `${tokens.spacingVerticalS} 0`,
+  },
   roundedLabel: {
     backgroundColor: THEME_COLORS.primary,
     borderRadius: "14px",
@@ -215,32 +203,6 @@ const useDataSetImporterSymbolStyle = makeStyles({
     lineHeight: "28px",
     padding: `0 ${tokens.spacingHorizontalXXL}`,
   },
-  root: {
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    gap: `${tokens.spacingVerticalS} 0`,
-  },
-});
-
-/**
- * データセットインポートのアイコンや文字部分だけのコンポーネント
- */
-const DataSetImportSymbol = (): JSX.Element => {
-  const styles = useDataSetImporterSymbolStyle();
-
-  return (
-    <div className={styles.root}>
-      <img alt="upload file" src="/file-upload-icon.svg" />
-      <div className={styles.roundedLabel}>データを選択</div>
-    </div>
-  );
-};
-
-/**
- * 選択されたデータセットの表示部分用のスタイル
- */
-const selectedDataSetViewStyles = makeStyles({
   root: {
     display: "flex",
     flexDirection: "column",
@@ -268,21 +230,31 @@ const selectedDataSetViewStyles = makeStyles({
   },
 });
 
-/**
- * 選択されたデータセットの表示部分
- */
 const SelectedDataSetView = ({
-  dataSet,
+  filePath,
   onDelete,
 }: {
-  dataSet: SelectRawDataSet;
+  filePath: SelectRawDataSet["file_path"] | undefined;
   onDelete: () => void;
 }): JSX.Element => {
   const styles = selectedDataSetViewStyles();
+  const { data } = useFetchDatasetWithFilePath({
+    type: "raw",
+    filePath,
+  });
+
+  if (!data) {
+    return (
+      <div className={styles.symbol}>
+        <img alt="upload file" src="/file-upload-icon.svg" />
+        <div className={styles.roundedLabel}>データを選択</div>
+      </div>
+    );
+  }
 
   return (
     <div className={styles.root}>
-      <p className={styles.selectedDataSetFilePath}>{dataSet.file_name}</p>
+      <p className={styles.selectedDataSetFilePath}>{data.file_name}</p>
       <button
         className={styles.deleteButton}
         onClick={(event) => {
