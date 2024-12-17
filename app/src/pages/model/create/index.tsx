@@ -24,6 +24,7 @@ import { DialogModelMessage } from "../../../components/dialog-model-message";
 import { useFetchDatasetColumns } from "../../../hooks/use-fetch-dataset-columns";
 import { useFetchJob } from "../../../hooks/use-fetch-job";
 import { useFetchDatasetWithFilePath } from "../../../hooks/use-fetch-dataset-with-file-path";
+import { TextWithTooltip } from "../../../components/ui/text-with-tooltip";
 
 const useStyles = makeStyles({
   root: {
@@ -151,7 +152,16 @@ export const ModelCreate = (): JSX.Element => {
         />
 
         <Card>
-          <Subtitle2>② 説明変数に使うカラムの選択</Subtitle2>
+          <Subtitle2>
+            <TextWithTooltip
+              textNode={"② 説明変数に使うカラムの選択"}
+              tooltipContent={`①で名寄せ済みデータセットを選択すると、説明変数に使うカラムを選択できます。名寄せ処理済みデータセットのうち、説明変数に必ず使うカラムはすでに選択されます。それ以外に機械学習に使いたい情報があれば、カラムを選択してください。
+
+※「説明変数」とは、機械学習によって空き家確率を推定するための情報のことです。
+（例）「水道閉開栓状態と水道使用量から、空き家かどうかを推定したい」 → 「水道開閉栓状況」と「水道使用量」を説明変数として選択します。`}
+            />
+          </Subtitle2>
+
           {explanatoryVariables.length > 0 && (
             <div>
               {explanatoryVariables.map((column, index) => (
