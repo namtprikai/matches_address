@@ -37,13 +37,15 @@ export const TextWithTooltip = ({
   return (
     <div className={styles.root}>
       {textNode}
-      <Tooltip
-        content={<div className={styles.content}>{tooltipContent}</div>}
-        relationship="description"
-        withArrow
-      >
-        <InfoFilled className={styles.icon} />
-      </Tooltip>
+      {tooltipContent && (
+        <Tooltip
+          content={<div className={styles.content}>{tooltipContent}</div>}
+          relationship="description"
+          withArrow
+        >
+          <InfoFilled className={styles.icon} />
+        </Tooltip>
+      )}
     </div>
   );
 };
