@@ -2,9 +2,9 @@ import { Dialog, makeStyles, DialogTrigger } from "@fluentui/react-components";
 import { DismissFilled } from "@fluentui/react-icons";
 import { useForm, type FieldPath } from "react-hook-form";
 import { type z } from "zod";
-import { useEffect } from "react";
 import { type ReturnUseDialogState } from "../hooks/use-dialog-state";
 import { type schema as formModelCreateSchema } from "../hooks/use-form-model-create";
+import { lang } from "../lang";
 import { Button } from "./ui/button";
 import { DialogSurface } from "./ui/dialog-surface";
 import { DialogBody } from "./ui/dialog-body";
@@ -13,6 +13,7 @@ import { DialogContent } from "./ui/dialog-content";
 import { DialogActions } from "./ui/dialog-actions";
 import { Field } from "./ui/field";
 import { Input } from "./ui/input";
+import { TextWithTooltip } from "./ui/text-with-tooltip";
 
 const useStyles = makeStyles({
   dialogTitle: {
@@ -53,11 +54,13 @@ type AdvancedField = {
   placeholder: string;
   step?: string;
   type: "number" | "checkbox";
+  description?: string;
 };
 const Fields: AdvancedField[] = [
   {
     key: "test_size",
-    label: "Test Size",
+    label: lang.components["dialog-model-advanced"].test_size.label,
+    description: lang.components["dialog-model-advanced"].test_size.description,
     placeholder: "0.0",
     step: "0.1",
     type: "number",
@@ -191,26 +194,36 @@ export const DialogModelAdvanced = ({
             高度な設定を変更
           </DialogTitle>
           <DialogContent className={styles.formContents}>
-            {Fields.map(({ key, label, placeholder, step, type }) => (
-              <Field key={key} label={label}>
-                {type === "number" && (
-                  <Input
-                    {...register(key)}
-                    placeholder={placeholder}
-                    step={step}
-                    type="number"
-                  />
-                )}
-                {type === "checkbox" && (
-                  /** @fixme Checkboxコンポーネント使いたい。だが使うと初期ステートが反映されない */
-                  <input
-                    className={styles.input}
-                    type="checkbox"
-                    {...register(key)}
-                  />
-                )}
-              </Field>
-            ))}
+            {Fields.map(
+              ({ key, label, placeholder, step, type, description }) => (
+                <Field
+                  key={key}
+                  label={
+                    <TextWithTooltip
+                      textNode={label}
+                      tooltipContent={description}
+                    />
+                  }
+                >
+                  {type === "number" && (
+                    <Input
+                      {...register(key)}
+                      placeholder={placeholder}
+                      step={step}
+                      type="number"
+                    />
+                  )}
+                  {type === "checkbox" && (
+                    /** @fixme Checkboxコンポーネント使いたい。だが使うと初期ステートが反映されない */
+                    <input
+                      className={styles.input}
+                      type="checkbox"
+                      {...register(key)}
+                    />
+                  )}
+                </Field>
+              ),
+            )}
           </DialogContent>
           <DialogActions>
             <Button appearance="primary" onClick={handleClick}>
