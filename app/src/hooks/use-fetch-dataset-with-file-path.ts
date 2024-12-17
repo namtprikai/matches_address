@@ -1,7 +1,9 @@
 import useSWR, { type SWRResponse } from "swr";
 import { type SelectNormalizedDataSet, type SelectRawDataSet } from "../schema";
 
-type Params<T extends "raw" | "normalized"> = {
+type DatasetTypeWithFile = "raw" | "normalized";
+
+type Params<T extends DatasetTypeWithFile> = {
   filePath:
     | (T extends "raw"
         ? SelectRawDataSet["file_path"]
@@ -10,11 +12,11 @@ type Params<T extends "raw" | "normalized"> = {
   type: T;
 };
 
-type Response<T extends "raw" | "normalized"> =
+type Response<T extends DatasetTypeWithFile> =
   | (T extends "raw" ? SelectRawDataSet : SelectNormalizedDataSet)
   | undefined;
 
-const fetcher = <T extends "raw" | "normalized">({
+const fetcher = <T extends DatasetTypeWithFile>({
   filePath,
   type,
 }: Params<T>): Promise<Response<T>> => {
@@ -44,7 +46,7 @@ const fetcher = <T extends "raw" | "normalized">({
 /**
  * UUIDのファイルパス（ファイル名）からデータセットを取得する
  */
-export const useFetchDatasetWithFilePath = <T extends "raw" | "normalized">(
+export const useFetchDatasetWithFilePath = <T extends DatasetTypeWithFile>(
   params: Params<T>,
 ): SWRResponse<Response<T>> => {
   const swr = useSWR(
