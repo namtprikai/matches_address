@@ -41,6 +41,9 @@ const fetcher = <T extends "raw" | "normalized">({
   }
 };
 
+/**
+ * UUIDのファイルパス（ファイル名）からデータセットを取得する
+ */
 export const useFetchDatasetWithFilePath = <T extends "raw" | "normalized">(
   params: Params<T>,
 ): SWRResponse<Response<T>> => {
