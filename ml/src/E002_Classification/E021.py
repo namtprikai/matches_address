@@ -57,8 +57,8 @@ CONSTANTS = {
     'model_name' : 'LightGBM',
     'explanatory_variables': [
         'gml_id', '世帯コード', '世帯人数', '15歳未満人数', '15歳以上64歳以下人数', 
-        '65歳以上人数', '15歳未満構成比', '15歳以上64歳以下構成比', '65歳以上構成比', '男女比', 
-        '住定期間', '水道番号_suido_residence', '最大使用水量_suido_residence', '閉栓フラグ_suido_residence', '構造名称_touki_residence', 
+        '65歳以上人数', '15歳未満構成比', '15歳以上64歳以下構成比', '65歳以上構成比', '最大年齢', '最小年齢', '男女比', 
+        '住定期間', '水道番号_suido_residence', '水道使用量変化率_suido_residence', '最大使用水量_suido_residence', '合計使用水量_suido_residence', '閉栓フラグ_suido_residence', '構造名称_touki_residence', 
         '登記日付_touki_residence', 'akiya_result_cleaned_flag', 'matched_data_flag'
     ],
     'outcome_variable': 'akiya_result_cleaned_flag'
