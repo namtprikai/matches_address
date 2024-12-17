@@ -44,31 +44,42 @@ export function MapComponent({
   const containerRef = useRef<HTMLDivElement | null>(null);
   const [mapInstance, setMapInstance] = useState<Map | null>(null);
   const [layerIds, setLayerIds] = useState<string[] | null>(null);
+  const [isMounted, setIsMounted] = useState(false);
 
-  useEffect(function initializeMapEffect() {
-    const containerEl = containerRef.current;
-    if (!containerEl) return;
-
-    const protocol = new Protocol();
-    addProtocol("pmtiles", protocol.tile);
-
-    const initializedMap = new Map({
-      container: containerEl,
-      style: "protomaps-basemaps.json",
-      center: [137.120435, 34.990565],
-      zoom: 14,
-      maxZoom: 22,
-      minZoom: 6,
-    });
-
-    initializedMap.on("load", () => {
-      setMapInstance(initializedMap);
-    });
-
-    return () => {
-      removeProtocol("pmtiles");
-    };
+  // 初期表示時にマップのサイズがおかしくなるので、親要素がマウントされた後にマップを初期化する
+  useEffect(function setIsMountedEffect() {
+    setIsMounted(true);
   }, []);
+
+  useEffect(
+    function initializeMapEffect() {
+      if (!isMounted) return;
+
+      const containerEl = containerRef.current;
+      if (!containerEl) return;
+
+      const protocol = new Protocol();
+      addProtocol("pmtiles", protocol.tile);
+
+      const initializedMap = new Map({
+        container: containerEl,
+        style: "protomaps-basemaps.json",
+        center: [137.120435, 34.990565],
+        zoom: 14,
+        maxZoom: 22,
+        minZoom: 6,
+      });
+
+      initializedMap.on("load", () => {
+        setMapInstance(initializedMap);
+      });
+
+      return () => {
+        removeProtocol("pmtiles");
+      };
+    },
+    [isMounted],
+  );
 
   useEffect(
     function updateMapEffect() {

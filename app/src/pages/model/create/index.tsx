@@ -24,6 +24,8 @@ import { DialogModelMessage } from "../../../components/dialog-model-message";
 import { useFetchDatasetColumns } from "../../../hooks/use-fetch-dataset-columns";
 import { useFetchJob } from "../../../hooks/use-fetch-job";
 import { useFetchDatasetWithFilePath } from "../../../hooks/use-fetch-dataset-with-file-path";
+import { TextWithTooltip } from "../../../components/ui/text-with-tooltip";
+import { lang } from "../../../lang";
 
 const useStyles = makeStyles({
   root: {
@@ -151,7 +153,13 @@ export const ModelCreate = (): JSX.Element => {
         />
 
         <Card>
-          <Subtitle2>② 説明変数に使うカラムの選択</Subtitle2>
+          <Subtitle2>
+            <TextWithTooltip
+              textNode={lang.pages["model/create"].subtitle2.label}
+              tooltipContent={lang.pages["model/create"].subtitle2.description}
+            />
+          </Subtitle2>
+
           {explanatoryVariables.length > 0 && (
             <div>
               {explanatoryVariables.map((column, index) => (
