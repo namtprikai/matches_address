@@ -7,8 +7,9 @@ import {
   tokens,
 } from "@fluentui/react-components";
 import { ArrowLeftFilled } from "@fluentui/react-icons";
-import { Fragment, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import { type z } from "zod";
+import { useParams } from "react-router-dom";
 import { Button } from "../../../components/ui/button";
 import { useDialogState } from "../../../hooks/use-dialog-state";
 import { DialogImportNormalizedDataset } from "../../../components/dialog-import-normalized-dataset";
@@ -21,6 +22,8 @@ import {
 } from "../../../hooks/use-form-model-create";
 import { DialogModelMessage } from "../../../components/dialog-model-message";
 import { useFetchDatasetColumns } from "../../../hooks/use-fetch-dataset-columns";
+import { useFetchJob } from "../../../hooks/use-fetch-job";
+import { useFetchDatasetWithFilePath } from "../../../hooks/use-fetch-dataset-with-file-path";
 
 const useStyles = makeStyles({
   root: {
@@ -55,7 +58,21 @@ type FormType = z.infer<typeof schema>;
 export const ModelCreate = (): JSX.Element => {
   const styles = useStyles();
 
-  const modelMessageDialogState = useDialogState();
+  const { id } = useParams<{ id: string }>();
+  const { data: job, isLoading: isJobLoading } = useFetchJob({
+    id: Number(id),
+  });
+  const modelCreateParameters =
+    job?.parameters.parameterType === "ml" ? job.parameters : undefined;
+  const { data: currentNormalizedDataset } = useFetchDatasetWithFilePath({
+    type: "normalized",
+    filePath: modelCreateParameters?.input_path,
+  });
+  const [normalizedDataSet, setNormalizedDataSet] =
+    useState<SelectNormalizedDataSet>();
+  const [explanatoryVariables, setExplanatoryVariables] = useState<string[]>(
+    [],
+  );
 
   const form = useFormModelCreate();
   const {
@@ -64,6 +81,21 @@ export const ModelCreate = (): JSX.Element => {
     formState: { errors },
     watch,
   } = form;
+
+  useEffect(
+    function setCurrentValues() {
+      if (!modelCreateParameters || !currentNormalizedDataset) return;
+
+      setNormalizedDataSet(currentNormalizedDataset);
+      setExplanatoryVariables(
+        modelCreateParameters.settings.explanatory_variables,
+      );
+      setValue("settings.advanced", modelCreateParameters.settings.advanced);
+    },
+    [currentNormalizedDataset, modelCreateParameters, setValue],
+  );
+
+  const modelMessageDialogState = useDialogState();
 
   const onSubmit = handleSubmit(async (data: FormType) => {
     await window.ipcRenderer.invoke("buildModel", {
@@ -76,13 +108,8 @@ export const ModelCreate = (): JSX.Element => {
   });
 
   const importNormalizedDatasetDialogState = useDialogState();
-  const [normalizedDataSet, setNormalizedDataSet] =
-    useState<SelectNormalizedDataSet>();
 
   const explanatoryVariablesDialogState = useDialogState();
-  const [explanatoryVariables, setExplanatoryVariables] = useState<string[]>(
-    [],
-  );
   const { data: datasetColumns } = useFetchDatasetColumns({
     filename: normalizedDataSet?.file_path,
   });
@@ -102,9 +129,7 @@ export const ModelCreate = (): JSX.Element => {
       <div className={styles.contents}>
         <Card>
           <Subtitle2>① ファイルをインポート</Subtitle2>
-          <div>
-            {normalizedDataSet && <div>{normalizedDataSet.file_name}</div>}
-          </div>
+          <div>{normalizedDataSet?.file_name}</div>
           <div>
             <Button
               appearance="primary"
@@ -151,15 +176,19 @@ export const ModelCreate = (): JSX.Element => {
             <Text>{errors.settings?.explanatory_variables?.message}</Text>
           </div>
         </Card>
-        <DialogExplanatoryVariables
-          columnOptions={datasetColumns || []}
-          dialogState={explanatoryVariablesDialogState}
-          onSelected={(data) => {
-            setExplanatoryVariables(data);
-            setValue("settings.explanatory_variables", data);
-          }}
-        />
-
+        {!isJobLoading ? (
+          <DialogExplanatoryVariables
+            columnOptions={datasetColumns || []}
+            dialogState={explanatoryVariablesDialogState}
+            initialValues={
+              modelCreateParameters?.settings.explanatory_variables
+            }
+            onSelected={(data) => {
+              setExplanatoryVariables(data);
+              setValue("settings.explanatory_variables", data);
+            }}
+          />
+        ) : null}
         <Card>
           <Subtitle2>③ パラメーターを変更</Subtitle2>
           {modelAdvanced && (
@@ -183,11 +212,13 @@ export const ModelCreate = (): JSX.Element => {
             <Text>{errors.settings?.advanced?.message}</Text>
           </div>
         </Card>
-        <DialogModelAdvanced
-          dialogState={modelAdvancedDialogState}
-          initialValues={modelAdvanced}
-          onSelected={(data) => setValue("settings.advanced", data)}
-        />
+        {!isJobLoading ? (
+          <DialogModelAdvanced
+            dialogState={modelAdvancedDialogState}
+            initialValues={modelCreateParameters?.settings.advanced}
+            onSelected={(data) => setValue("settings.advanced", data)}
+          />
+        ) : null}
       </div>
 
       <div className={styles.footer}>

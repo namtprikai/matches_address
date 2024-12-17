@@ -3,14 +3,16 @@ import { raw_data_sets, type SelectRawDataSet } from "../schema";
 import { db } from "../utils/db";
 import { type IpcMainListener } from ".";
 
-export const selectRawDataset = (async (
+export const selectRawDatasetWithFilePath = (async (
   _: unknown,
-  { id }: { id: number },
+  { filePath }: { filePath: SelectRawDataSet["file_path"] | undefined },
 ): Promise<SelectRawDataSet | undefined> => {
+  if (!filePath) return undefined;
+
   const data = await db
     .select()
     .from(raw_data_sets)
-    .where(eq(raw_data_sets.id, id))
+    .where(eq(raw_data_sets.file_path, filePath))
     .get();
 
   return data;

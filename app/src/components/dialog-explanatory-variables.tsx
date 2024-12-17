@@ -42,16 +42,18 @@ type Props = {
   dialogState: ReturnUseDialogState;
   onSelected: (data: ExplanatoryVariable[]) => void;
   columnOptions: ExplanatoryVariable[];
+  initialValues: ExplanatoryVariable[] | undefined;
 };
 
 export const DialogExplanatoryVariables = ({
   dialogState,
   onSelected,
   columnOptions,
+  initialValues,
 }: Props): JSX.Element => {
   const styles = useStyles();
   const [selectedExplanatoryVariable, setSelectedExplanatoryVariable] =
-    useState<ExplanatoryVariable[]>([]);
+    useState<ExplanatoryVariable[]>(initialValues || []);
 
   const { isOpen: isDialogOpen, setIsOpen: setIsDialogOpen } = dialogState;
 

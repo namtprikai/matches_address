@@ -340,7 +340,12 @@ export function MlDetail(): JSX.Element {
       </div>
 
       <div className={styles.restartButtonWrapper}>
-        <Button appearance="primary">再実行へ</Button>
+        <Button
+          appearance="primary"
+          onClick={() => navigate(`/model/create/${id}`)}
+        >
+          再実行へ
+        </Button>
       </div>
     </div>
   );

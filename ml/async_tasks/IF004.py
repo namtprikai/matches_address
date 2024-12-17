@@ -41,7 +41,7 @@ def main():
         
         connect_sqllite(params.get('db_path'))
 
-        job_id = create_or_update_job(None ,"", "ml", os.getpid(), 0, args.parameters)
+        job_id = create_or_update_job(None ,"", "export", os.getpid(), 0, args.parameters)
         if params.get('output_format') == 'geopackage':
             file_path = f"{output_directory}.gpkg"
         else:
