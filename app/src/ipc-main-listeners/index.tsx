@@ -66,6 +66,7 @@ import { exportData } from "./ml/export-data";
 import { selectJob } from "./select-job";
 import { selectNormalizedDatasetWithFilePath } from "./select-normalized-dataset-with-file-path";
 import { selectBuildingPreview } from "./select-building-preview";
+import { selectRawDatasetWithFilePath } from "./select-raw-dataset-with-file-path";
 
 export const ipcMainListeners = {
   helloFromPython,
@@ -132,6 +133,7 @@ export const ipcMainListeners = {
   exportData,
   selectJob,
   selectNormalizedDatasetWithFilePath,
+  selectRawDatasetWithFilePath,
 };
 
 export const execFileAsync = promisify(execFile);

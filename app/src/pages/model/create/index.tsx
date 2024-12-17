@@ -23,7 +23,7 @@ import {
 import { DialogModelMessage } from "../../../components/dialog-model-message";
 import { useFetchDatasetColumns } from "../../../hooks/use-fetch-dataset-columns";
 import { useFetchJob } from "../../../hooks/use-fetch-job";
-import { useFetchNormalizedDatasetWithFilePath } from "../../../hooks/use-fetch-normalized-dataset-with-file-path";
+import { useFetchDatasetWithFilePath } from "../../../hooks/use-fetch-dataset-with-file-path";
 
 const useStyles = makeStyles({
   root: {
@@ -64,10 +64,10 @@ export const ModelCreate = (): JSX.Element => {
   });
   const modelCreateParameters =
     job?.parameters.parameterType === "ml" ? job.parameters : undefined;
-  const { data: currentNormalizedDataset } =
-    useFetchNormalizedDatasetWithFilePath({
-      filePath: modelCreateParameters?.input_path,
-    });
+  const { data: currentNormalizedDataset } = useFetchDatasetWithFilePath({
+    type: "normalized",
+    filePath: modelCreateParameters?.input_path,
+  });
   const [normalizedDataSet, setNormalizedDataSet] =
     useState<SelectNormalizedDataSet>();
   const [explanatoryVariables, setExplanatoryVariables] = useState<string[]>(

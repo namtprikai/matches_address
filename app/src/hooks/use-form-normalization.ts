@@ -95,9 +95,13 @@ export const schema = z.object({
 });
 type FormType = z.infer<typeof schema>;
 
-export const useFormNormalization = (): UseFormReturn<FormType> => {
+export const useFormNormalization = ({
+  defaultValues,
+}: {
+  defaultValues?: FormType;
+}): UseFormReturn<FormType> => {
   return useForm<FormType>({
-    defaultValues: {
+    defaultValues: defaultValues ?? {
       settings: {
         reference_data: "water_status",
         reference_date: "2021-01-01",
