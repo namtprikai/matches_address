@@ -1948,6 +1948,6 @@
       }
     }
   ],
-  "sprite": "https://protomaps.github.io/basemaps-assets/sprites/v3/light",
-  "glyphs": "https://protomaps.github.io/basemaps-assets/fonts/{fontstack}/{range}.pbf"
+  "sprite": "/basemaps-assets/sprites/v3/light",
+  "glyphs": "/basemaps-assets/fonts/{fontstack}/{range}.pbf"
 }
