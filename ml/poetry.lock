@@ -1130,26 +1130,28 @@ files = [
 
 [[package]]
 name = "lightgbm"
-version = "3.3.5"
+version = "4.4.0"
 description = "LightGBM Python Package"
 optional = false
-python-versions = "*"
+python-versions = ">=3.7"
 files = [
-    {file = "lightgbm-3.3.5-py3-none-macosx_10_15_x86_64.macosx_11_6_x86_64.macosx_12_0_x86_64.whl", hash = "sha256:843dd37c00a1096a8898b80e368b3eef7f5a5d327d1fd9eb770b6f3c2e1edc49"},
-    {file = "lightgbm-3.3.5-py3-none-manylinux1_x86_64.whl", hash = "sha256:044f65664c1a32c98cb619bafa97d8cd9d93c2c2d5053376aadfe509a3a3e7fa"},
-    {file = "lightgbm-3.3.5-py3-none-manylinux2014_aarch64.whl", hash = "sha256:ef01e46939293a0a36729350a7384dc17a36880176d0f17d82b738bbe77e4528"},
-    {file = "lightgbm-3.3.5-py3-none-win_amd64.whl", hash = "sha256:02a40745c1972cf4a2cde764c7739228f45178c2237af2df40fde7063a58ac6a"},
-    {file = "lightgbm-3.3.5.tar.gz", hash = "sha256:10b8fbdcf851e4f68a1f02f38d99bdc44c7c7fb9b1a62dcf924a0d29ff73395c"},
+    {file = "lightgbm-4.4.0-py3-none-macosx_10_15_x86_64.macosx_11_6_x86_64.macosx_12_5_x86_64.whl", hash = "sha256:f51f17a10ef9b4669b9c95a2297213b57debbc9deadfe5c1489a7f3c9e2617c5"},
+    {file = "lightgbm-4.4.0-py3-none-macosx_14_0_arm64.whl", hash = "sha256:d96b06c85f0840da95bbbf31a095b207186bb0e584cee0fe2f2e7f24fb07c70f"},
+    {file = "lightgbm-4.4.0-py3-none-manylinux2014_aarch64.whl", hash = "sha256:a04875e4c0ffda7c67a0ab5bd8892f154a491833f4f5b39c4acf5b3add099699"},
+    {file = "lightgbm-4.4.0-py3-none-manylinux_2_28_x86_64.whl", hash = "sha256:8700b41f637717d36763a282d280b8d4722a87103030b7f0f373b96da0225022"},
+    {file = "lightgbm-4.4.0-py3-none-win_amd64.whl", hash = "sha256:460dd78586dccfc0ed756571690fcfcd3d61770ed7972746c655c3b11cce8a93"},
+    {file = "lightgbm-4.4.0.tar.gz", hash = "sha256:9e8a7640911481134e60987d5d1e1cd157f430c3b4b38de8d36fc55c302bc299"},
 ]
 
 [package.dependencies]
-numpy = "*"
-scikit-learn = "!=0.22.0"
+numpy = ">=1.17.0"
 scipy = "*"
-wheel = "*"
 
 [package.extras]
-dask = ["dask[array] (>=2.0.0)", "dask[dataframe] (>=2.0.0)", "dask[distributed] (>=2.0.0)", "pandas"]
+arrow = ["cffi (>=1.15.1)", "pyarrow (>=6.0.1)"]
+dask = ["dask[array,dataframe,distributed] (>=2.0.0)", "pandas (>=0.24.0)"]
+pandas = ["pandas (>=0.24.0)"]
+scikit-learn = ["scikit-learn (!=0.22.0)"]
 
 [[package]]
 name = "macholib"
@@ -2843,21 +2845,7 @@ files = [
     {file = "websockets-12.0.tar.gz", hash = "sha256:81df9cbcbb6c260de1e007e58c011bfebe2dafc8435107b0537f393dd38c8b1b"},
 ]
 
-[[package]]
-name = "wheel"
-version = "0.44.0"
-description = "A built-package format for Python"
-optional = false
-python-versions = ">=3.8"
-files = [
-    {file = "wheel-0.44.0-py3-none-any.whl", hash = "sha256:2376a90c98cc337d18623527a97c31797bd02bad0033d41547043a1cbfbe448f"},
-    {file = "wheel-0.44.0.tar.gz", hash = "sha256:a29c3f2817e95ab89aa4660681ad547c0e9547f20e75b0562fe7723c9a2a9d49"},
-]
-
-[package.extras]
-test = ["pytest (>=6.0.0)", "setuptools (>=65)"]
-
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "dc8f67427e4de78af77db51d74a6444ea01ea48558a6d71f48c7020c27be01db"
+content-hash = "0f37c38f559aa333216924e0a34ea605ea39d7d4a5569be3217d354d9a187548"
