@@ -1,4 +1,5 @@
-import useSWR, { type SWRResponse } from "swr";
+import { type SWRResponse } from "swr";
+import useSWRImmutable from "swr/immutable";
 import { type SelectJob } from "../schema";
 
 interface Params {
@@ -18,7 +19,7 @@ const fetcher = async ({ id }: Params): Promise<Result> => {
 };
 
 export const useFetchJob = ({ id }: Params): SWRResponse<Result> => {
-  const swr = useSWR(
+  const swr = useSWRImmutable(
     {
       id,
       key: useFetchJob.name,
