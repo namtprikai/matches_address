@@ -13,7 +13,7 @@ import { LanguageMap } from "../metadata";
 import { useDialogState } from "../hooks/use-dialog-state";
 import { useFetchDatasetColumns } from "../hooks/use-fetch-dataset-columns";
 import { type PreprocessParameters } from "../@types/job-parameters";
-import { useFetchDatasetWithFilePath } from "../hooks/use-fetch-dataset-with-file-name";
+import { useFetchDatasetWithFilePath } from "../hooks/use-fetch-dataset-with-file-path";
 import { Dropdown } from "./ui/dropdown";
 import { Field } from "./ui/field";
 import { DialogImportDataset } from "./dialog-import-dataset";

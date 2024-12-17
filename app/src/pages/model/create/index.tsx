@@ -23,7 +23,7 @@ import {
 import { DialogModelMessage } from "../../../components/dialog-model-message";
 import { useFetchDatasetColumns } from "../../../hooks/use-fetch-dataset-columns";
 import { useFetchJob } from "../../../hooks/use-fetch-job";
-import { useFetchDatasetWithFilePath } from "../../../hooks/use-fetch-dataset-with-file-name";
+import { useFetchDatasetWithFilePath } from "../../../hooks/use-fetch-dataset-with-file-path";
 
 const useStyles = makeStyles({
   root: {
