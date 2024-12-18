@@ -26,7 +26,7 @@ export const DialogModelMessage = ({ dialogState }: Props): JSX.Element => {
             <Body1>
               前処理が完了するまで一定の時間がかかります
               <br />
-              ステータスは「非同期処理一覧画面」で確認できます。
+              ステータスは「非同期処理一覧画面」で確認できます
             </Body1>
           </DialogContent>
           <DialogActions>
