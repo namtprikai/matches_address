@@ -918,18 +918,18 @@ def process_plateaugml(input_zip_file, output_gpkg_file, buildings_gdf):
     unzip_file(input_zip_file, temp_dir)
 
     # 解凍されたディレクトリからudx/bldgフォルダ内のGMLファイルを取得
-    gml_files = glob.glob(os.path.join(temp_dir, "udx", "bldg", "*.gml"))
+    gml_files = glob.glob(os.path.join(temp_dir, "bldg", "*.gml"))
 
     # GMLファイルの処理
     with ThreadPoolExecutor(max_workers=4) as executor:
         list(tqdm(executor.map(convert_gml_to_gpkg, gml_files), total=len(gml_files)))
 
     # 生成されたGPKGファイルを結合
-    gpkg_files = glob.glob(os.path.join(temp_dir, "udx", "bldg", "*.gpkg"))
+    gpkg_files = glob.glob(os.path.join(temp_dir, "bldg", "*.gpkg"))
     gdf_plateu_all = gpd.GeoDataFrame()
     for gpkg_file in tqdm(gpkg_files):
         gpkg_path = gpkg_file.replace("\\", "/")
-        gdf_plateu = gpd.read_file(gpkg_file)
+        gdf_plateu = gpd.read_file(gpkg_path)
         gdf_plateu_all = pd.concat([gdf_plateu_all, gdf_plateu], axis=0)
 
     # gdf_plateu_allにCRSが設定されているか確認し、なければデフォルトでEPSG:4326を設定
