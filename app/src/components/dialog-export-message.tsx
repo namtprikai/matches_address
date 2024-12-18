@@ -24,9 +24,7 @@ export const DialogExportMessage = ({ dialogState }: Props): JSX.Element => {
           <DialogTitle>ダウンロード処理を開始しました</DialogTitle>
           <DialogContent>
             <Body1>
-              ダウンロードの準備が完了するまで一定の時間がかかります
-              <br />
-              ステータスは「非同期処理一覧画面」で確認できます
+              処理が完了すると「非同期処理一覧画面」からファイルがダウンロードできます
             </Body1>
           </DialogContent>
           <DialogActions>
