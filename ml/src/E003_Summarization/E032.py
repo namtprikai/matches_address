@@ -233,7 +233,7 @@ class Summarization:
             if conn:
                 conn.close()
            
-    def insert_data_set_detail_areas(self, summerized_df, data_set_result_id):
+    def insert_data_set_detail_areas(self, summerized_df, data_set_result_id, key_column):
         """
         集計結果をSQLiteデータベースに挿入する関数。
     
@@ -250,14 +250,19 @@ class Summarization:
                 '若年層率': 'young_population_ratio',
                 '高齢者率': 'elderly_population_ratio',
                 # '空き家率': 'vacant_house_ratio',
-                'KEY_CODE': 'key_code',
                 'reference_date': 'reference_date',
                 'AREA': 'area',
                 '空き家率': 'predicted_probability',
-                'S_NAME': 'area_group',
                 'geometry': 'geometry'
             }
 
+            if isinstance(key_column, list):
+                mapping_header[key_column[0]] = 'key_code'
+                mapping_header[key_column[1]] = 'area_group'
+            else:
+                mapping_header['KEY_CODE'] = 'key_code'
+                mapping_header['S_NAME'] = 'area_group'
+            
             summerized_df['geometry'] = summerized_df['geometry'].apply(lambda x: x.wkt if x else None)
             summerized_df = summerized_df.rename(columns=mapping_header)
             
@@ -348,7 +353,7 @@ class Summarization:
 
         # insert sqlite
         # 今は一時的に停止
-        self.insert_data_set_detail_areas(summerized_gdf, self.data_set_result_id)
+        self.insert_data_set_detail_areas(summerized_gdf, self.data_set_result_id, self.key_column)
 
 
 @staticmethod

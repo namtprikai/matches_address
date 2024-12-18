@@ -25,7 +25,7 @@ def main():
     params = {
         'db_path': json_dict.get('database_path'),
         'output_path': json_dict.get('output_path'),
-        'output_format': json_dict.get('ouput_file_type', 'csv'),
+        'output_format': json_dict.get('output_file_type', 'csv'),
         'target_crs': json_dict.get('output_coordinate', 'EPSG:4326 (WGS84)'),
         'target_unit': json_dict.get('target_unit', 'building'),
         'reference_date': json_dict.get('reference_date', None),
