@@ -1,5 +1,7 @@
 import { type FeatureIdentifier, Popup, type Map } from "maplibre-gl";
 import { renderToString } from "react-dom/server";
+import { wktToGeoJSON } from "betterknown";
+import { type GeoJsonProperties, type Geometry, type Feature } from "geojson";
 import { type SelectDataSetDetailBuilding } from "../../../../schema";
 import { BuildingPopup, type BuildingProperties } from "./building-popup";
 import { VACANCY_RATE_HIGH, VACANCY_RATE_MEDIUM } from ".";
@@ -16,19 +18,33 @@ export function addBuildingLayer(
     map.removeSource(layerId);
   }
 
+  // 型エラーを回避するための空のFeature
+  const emptyFeature: Feature<Geometry, GeoJsonProperties> = {
+    type: "Feature",
+    geometry: {
+      type: "Point",
+      coordinates: [],
+    },
+    properties: {},
+  };
+
   map.addSource(layerId, {
     type: "geojson",
     generateId: true, // featureのIDを個別に自動生成する、クリックしたポリゴンを判別して色を変えるために必要
     data: {
       type: "FeatureCollection",
-      features: buildings.map(({ geometry, ...properties }) => ({
-        type: "Feature",
-        geometry: {
-          type: "Polygon",
-          coordinates: JSON.parse(geometry),
+      features: buildings.map(
+        ({ geometry, ...properties }): Feature<Geometry, GeoJsonProperties> => {
+          const converted = wktToGeoJSON(geometry);
+          if (!converted) return emptyFeature;
+
+          return {
+            type: "Feature",
+            geometry: converted,
+            properties,
+          };
         },
-        properties,
-      })),
+      ),
     },
   });
 
