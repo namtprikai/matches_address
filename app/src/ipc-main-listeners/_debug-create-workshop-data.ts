@@ -1,4 +1,4 @@
-import { getFilePathInPublic } from "../utils/get-file-path-in-public";
+import { getFilePathInDummyData } from "../utils/get-file-path-in-dummy-data";
 import { convertCsvToObject } from "../utils/convert-csv-to-object";
 import { db } from "../utils/db";
 import {
@@ -22,7 +22,7 @@ export const _debugCreateWorkshopData = (async (
 
   const buildings = await (async () => {
     // TODO: 建物データは大きそうなので分割してインサートしないとメモリリークするかも
-    const filePath = getFilePathInPublic("D902_workshop.csv");
+    const filePath = getFilePathInDummyData("D902_workshop.csv");
     const converted = await convertCsvToObject(filePath);
     return converted.data;
   })();
@@ -43,7 +43,7 @@ export const _debugCreateWorkshopData = (async (
   );
 
   const areas = await (async () => {
-    const filePath = getFilePathInPublic("D903_workshop.csv");
+    const filePath = getFilePathInDummyData("D903_workshop.csv");
     const converted = await convertCsvToObject(filePath);
     return converted.data;
   })();
