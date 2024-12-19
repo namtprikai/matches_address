@@ -652,6 +652,7 @@ export const job_tasks = sqliteTable("job_tasks", {
     enum: ["e012", "e013", "e014", "e016"],
   }),
   error_code: text("error_code", { enum: ["undefined_error"] }),
+  error_msg: text("error_msg"),
 
   // 完了したら設定される
   result: text("result", {
