@@ -1,5 +1,6 @@
 import { readFile } from "fs/promises";
 import { type FeatureCollection } from "geojson";
+import { geoJSONToWkt } from "betterknown";
 import {
   data_set_results,
   data_set_detail_areas,
@@ -80,10 +81,7 @@ export const createDummyDataSetResults = (async (
                 total_building_count: Math.floor(Math.random() * 100),
                 area: Math.floor(Math.random() * 100),
                 vacant_house_count: Math.floor(Math.random() * 100),
-                geometry:
-                  feature.geometry.type === "Polygon"
-                    ? JSON.stringify(feature.geometry.coordinates) // 多重配列はsqliteに入らないので文字列に変換する
-                    : "",
+                geometry: geoJSONToWkt(feature.geometry),
                 key_code: `key_code_${i}`,
               });
             }),
@@ -184,10 +182,7 @@ export const createDummyDataSetResults = (async (
                 name: `建物名${i}`,
                 predicted_label: Math.round(pred),
                 predicted_probability: pred * 100,
-                geometry:
-                  feature.geometry.type === "Polygon"
-                    ? JSON.stringify(feature.geometry.coordinates) // 多重配列はsqliteに入らないので文字列に変換する
-                    : "",
+                geometry: geoJSONToWkt(feature.geometry),
               };
               await tx.insert(data_set_detail_buildings).values(insertion);
               await new Promise((resolve) => setTimeout(resolve, 10));
