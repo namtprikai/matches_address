@@ -192,7 +192,7 @@ export function MlDetail(): JSX.Element {
   if (data[0].result.taskResultType === "preprocess")
     return <>データ形式が正しくありません</>;
 
-  const isError = !!data[0].error_code;
+  const isError = job && job[0].status === "error";
 
   /** @see https://project-links.slack.com/archives/C074TSBS7PW/p1731043911917709?thread_ts=1730328973.471009&cid=C074TSBS7PW */
   const isLowAccuracy = data && Number(data[0].result.accuracy) < 51;
