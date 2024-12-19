@@ -36,6 +36,8 @@ import { useFetchNormalizedDatasets } from "../../../hooks/use-fetch-normalized-
 import { useFetchRawDatasets } from "../../../hooks/use-fetch-raw-datasets";
 import { useFetchDatasetColumns } from "../../../hooks/use-fetch-dataset-columns";
 import { ErrorMessage } from "../../../components/error-message";
+import { TextWithTooltip } from "../../../components/ui/text-with-tooltip";
+import { lang } from "../../../lang";
 
 const useStyles = makeStyles({
   root: {
@@ -211,7 +213,14 @@ export const JobEvaluationCreate = (): JSX.Element => {
           )}
           {/* モデルファイルの選択 */}
           <Card>
-            <Subtitle2>① 利用するモデルを選択</Subtitle2>
+            <Subtitle2>
+              <TextWithTooltip
+                textNode={lang.pages["evaluation/create"].subtitle1.label}
+                tooltipContent={
+                  lang.pages["evaluation/create"].subtitle1.description
+                }
+              />
+            </Subtitle2>
             <div className={styles.file}>
               {modelName ? (
                 <>
@@ -250,7 +259,14 @@ export const JobEvaluationCreate = (): JSX.Element => {
 
           {/* 分析対象のデータの選択 */}
           <Card>
-            <Subtitle2>② 分析対象のデータを選択</Subtitle2>
+            <Subtitle2>
+              <TextWithTooltip
+                textNode={lang.pages["evaluation/create"].subtitle2.label}
+                tooltipContent={
+                  lang.pages["evaluation/create"].subtitle2.description
+                }
+              />
+            </Subtitle2>
             <div className={styles.file}>
               {normalizedDatasetNames && normalizedDatasetNames.length > 0 ? (
                 <div className={styles.fileItem}>
@@ -296,7 +312,14 @@ export const JobEvaluationCreate = (): JSX.Element => {
 
           {/* 地域集計用データの選択 */}
           <Card>
-            <Subtitle2>③ 地域集計用データをアップロード</Subtitle2>
+            <Subtitle2>
+              <TextWithTooltip
+                textNode={lang.pages["evaluation/create"].subtitle3.label}
+                tooltipContent={
+                  lang.pages["evaluation/create"].subtitle3.description
+                }
+              />
+            </Subtitle2>
             <div className={styles.file}>
               {spatialFileName ? (
                 <div className={styles.fileItem}>
@@ -321,7 +344,14 @@ export const JobEvaluationCreate = (): JSX.Element => {
             {/* ドロップダウンの表示 */}
             {spatialFile && (
               <div className={styles.dropdownWrapper}>
-                <label htmlFor="area-id-dropdown">地域IDカラム</label>
+                <label htmlFor="area-id-dropdown">
+                  <TextWithTooltip
+                    textNode={lang.pages["evaluation/create"].column1.label}
+                    tooltipContent={
+                      lang.pages["evaluation/create"].column1.description
+                    }
+                  />
+                </label>
                 <Dropdown
                   className={styles.dropdown}
                   id="area-id-dropdown"
@@ -340,7 +370,14 @@ export const JobEvaluationCreate = (): JSX.Element => {
                     </Option>
                   ))}
                 </Dropdown>
-                <label htmlFor="area-name-dropdown">地域名称カラム</label>
+                <label htmlFor="area-name-dropdown">
+                  <TextWithTooltip
+                    textNode={lang.pages["evaluation/create"].column2.label}
+                    tooltipContent={
+                      lang.pages["evaluation/create"].column2.description
+                    }
+                  />
+                </label>
                 <Dropdown
                   className={styles.dropdown}
                   id="area-name-dropdown"
@@ -378,7 +415,14 @@ export const JobEvaluationCreate = (): JSX.Element => {
 
           {/* 高度な設定 */}
           <Card>
-            <Subtitle2>④ 高度な設定</Subtitle2>
+            <Subtitle2>
+              <TextWithTooltip
+                textNode={lang.pages["evaluation/create"].subtitle4.label}
+                tooltipContent={
+                  lang.pages["evaluation/create"].subtitle4.description
+                }
+              />
+            </Subtitle2>
             <div className={styles.file}>
               <DialogSetting
                 onChange={(newValue) =>
