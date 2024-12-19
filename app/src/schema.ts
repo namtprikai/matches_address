@@ -1,10 +1,4 @@
-import {
-  blob,
-  integer,
-  real,
-  sqliteTable,
-  text,
-} from "drizzle-orm/sqlite-core";
+import { integer, real, sqliteTable, text } from "drizzle-orm/sqlite-core";
 import { sql } from "drizzle-orm";
 import { type FilterCondition, type GroupingCondition } from "./@types/charts";
 import { type JobParameters } from "./@types/job-parameters";
@@ -660,7 +654,7 @@ export const job_tasks = sqliteTable("job_tasks", {
   error_code: text("error_code", { enum: ["undefined_error"] }),
 
   // 完了したら設定される
-  result: blob("result", {
+  result: text("result", {
     mode: "json",
   }).$type<JobTaskResult>(),
 
