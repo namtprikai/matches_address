@@ -14,9 +14,11 @@ import { useDialogState } from "../hooks/use-dialog-state";
 import { useFetchDatasetColumns } from "../hooks/use-fetch-dataset-columns";
 import { type PreprocessParameters } from "../@types/job-parameters";
 import { useFetchDatasetWithFilePath } from "../hooks/use-fetch-dataset-with-file-path";
+import { lang } from "../lang";
 import { Dropdown } from "./ui/dropdown";
 import { Field } from "./ui/field";
 import { DialogImportDataset } from "./dialog-import-dataset";
+import { TextWithTooltip } from "./ui/text-with-tooltip";
 
 const useStyles = makeStyles({
   fileSelectorContainer: {
@@ -61,14 +63,14 @@ interface Value {
 
 interface Props {
   value: Value;
-  label: string;
+  dataKey: keyof typeof lang.components.normalizationData;
   appearance?: "default" | "large";
   onChange: (value: Value) => void;
 }
 
 export const FormDataset = ({
   value,
-  label,
+  dataKey,
   appearance,
   onChange,
 }: Props): JSX.Element => {
@@ -103,9 +105,18 @@ export const FormDataset = ({
     [dataSetColumns, isUpdateColumns, onChange, value],
   );
 
+  const datasetInfo = lang.components.normalizationData[dataKey];
+  const datasetLabel = datasetInfo.label;
+  const datasetDescription = datasetInfo.description || "";
+
   return (
     <Card>
-      <p>{label}</p>
+      <p>
+        <TextWithTooltip
+          textNode={datasetLabel}
+          tooltipContent={datasetDescription}
+        />
+      </p>
       <div className={styles.fieldContainer}>
         <div
           className={styles.fileSelectorContainer}
@@ -142,9 +153,18 @@ export const FormDataset = ({
                   key={key}
                   className={styles.field}
                   label={
-                    LanguageMap.NORMALIZATION_PARAMETER_LABEL[
-                      key as keyof typeof LanguageMap.NORMALIZATION_PARAMETER_LABEL
-                    ] + "カラム"
+                    <TextWithTooltip
+                      textNode={
+                        LanguageMap.NORMALIZATION_PARAMETER_LABEL[
+                          key as keyof typeof LanguageMap.NORMALIZATION_PARAMETER_LABEL
+                        ] + "カラム"
+                      }
+                      tooltipContent={
+                        lang.components.normalizationParameters[
+                          key as keyof typeof lang.components.normalizationParameters
+                        ]?.description || ""
+                      }
+                    />
                   }
                 >
                   <Dropdown

@@ -1,6 +1,5 @@
 import { Controller, useController } from "react-hook-form";
 import { makeStyles, tokens } from "@fluentui/react-components";
-import { LanguageMap } from "../metadata";
 import { useFormNormalization } from "../hooks/use-form-normalization";
 import { type PreprocessParameters } from "../@types/job-parameters";
 import { FormDataset } from "./form-dataset";
@@ -73,19 +72,20 @@ export const FormNormalization = ({
         render={({ field: { value, onChange } }) => (
           <FormDataset
             appearance="large"
-            label={LanguageMap.NORMALIZATION_DATA_LABEL.residentRegistry}
+            dataKey="residentRegistry"
             onChange={onChange}
             value={value}
           />
         )}
       />
+
       <Controller
         control={control}
         name="data.water_status"
         render={({ field: { value, onChange } }) => (
           <FormDataset
             appearance="large"
-            label={LanguageMap.NORMALIZATION_DATA_LABEL.waterStatus}
+            dataKey="waterStatus"
             onChange={onChange}
             value={value}
           />
@@ -97,7 +97,7 @@ export const FormNormalization = ({
           name="data.water_usage"
           render={({ field: { value, onChange } }) => (
             <FormDataset
-              label={LanguageMap.NORMALIZATION_DATA_LABEL.waterUsage}
+              dataKey="waterUsage"
               onChange={onChange}
               value={value}
             />
@@ -108,7 +108,7 @@ export const FormNormalization = ({
           name="data.land_registry"
           render={({ field: { value, onChange } }) => (
             <FormDataset
-              label={LanguageMap.NORMALIZATION_DATA_LABEL.landRegistry}
+              dataKey="landRegistry"
               onChange={onChange}
               value={value}
             />
@@ -119,7 +119,7 @@ export const FormNormalization = ({
           name="data.vacant_house"
           render={({ field: { value, onChange } }) => (
             <FormDataset
-              label={LanguageMap.NORMALIZATION_DATA_LABEL.vacantHouse}
+              dataKey="vacantHouse"
               onChange={onChange}
               value={value}
             />
@@ -130,7 +130,7 @@ export const FormNormalization = ({
           name="data.geocoding"
           render={({ field: { value, onChange } }) => (
             <FormDataset
-              label={LanguageMap.NORMALIZATION_DATA_LABEL.geocoding}
+              dataKey="geocoding"
               onChange={onChange}
               value={value}
             />
@@ -141,7 +141,7 @@ export const FormNormalization = ({
           name="data.building_polygon"
           render={({ field: { value, onChange } }) => (
             <FormDataset
-              label={LanguageMap.NORMALIZATION_DATA_LABEL.buildingPolygon}
+              dataKey="buildingPolygon"
               onChange={onChange}
               value={value}
             />
@@ -152,7 +152,7 @@ export const FormNormalization = ({
           name="data.urban_planning"
           render={({ field: { value, onChange } }) => (
             <FormDataset
-              label={LanguageMap.NORMALIZATION_DATA_LABEL.urbanPlanning}
+              dataKey="urbanPlanning"
               onChange={onChange}
               value={value}
             />
@@ -162,11 +162,7 @@ export const FormNormalization = ({
           control={control}
           name="data.census"
           render={({ field: { value, onChange } }) => (
-            <FormDataset
-              label={LanguageMap.NORMALIZATION_DATA_LABEL.census}
-              onChange={onChange}
-              value={value}
-            />
+            <FormDataset dataKey="census" onChange={onChange} value={value} />
           )}
         />
       </div>
