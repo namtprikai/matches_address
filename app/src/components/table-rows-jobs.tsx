@@ -68,7 +68,7 @@ export const TableRowJobs = ({ item }: { item: SelectJob }): JSX.Element => {
   const statusInfo = getStatusInfo(item.status);
   /** result か null ではないかつ、 status が complete または error であればクリック(遷移)可能 */
   const clickable =
-    !(item.type === "result" || item.type === null) &&
+    !(item.type === null) &&
     (item.status === "complete" || item.status === "error");
 
   return (
