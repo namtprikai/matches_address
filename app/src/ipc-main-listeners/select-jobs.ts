@@ -1,5 +1,5 @@
 import { type IpcMainInvokeEvent } from "electron";
-import { eq } from "drizzle-orm";
+import { desc, eq } from "drizzle-orm";
 import { db } from "../utils/db";
 import { jobs, type SelectJob } from "../schema";
 import { type IpcMainListener } from ".";
@@ -19,6 +19,8 @@ export const selectJobs = (async (
   if (type) {
     query = query.where(eq(jobs.type, type));
   }
+  query = query.orderBy(desc(jobs.created_at));
+
   const result = await query;
   return result;
 }) satisfies IpcMainListener;
