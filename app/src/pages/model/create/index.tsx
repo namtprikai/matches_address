@@ -130,7 +130,12 @@ export const ModelCreate = (): JSX.Element => {
 
       <div className={styles.contents}>
         <Card>
-          <Subtitle2>① ファイルをインポート</Subtitle2>
+          <Subtitle2>
+            <TextWithTooltip
+              textNode={lang.pages["model/create"].subtitle1.label}
+              tooltipContent={lang.pages["model/create"].subtitle1.description}
+            />
+          </Subtitle2>
           <div>{normalizedDataSet?.file_name}</div>
           <div>
             <Button
@@ -198,7 +203,12 @@ export const ModelCreate = (): JSX.Element => {
           />
         ) : null}
         <Card>
-          <Subtitle2>③ パラメーターを変更</Subtitle2>
+          <Subtitle2>
+            <TextWithTooltip
+              textNode={lang.pages["model/create"].subtitle3.label}
+              tooltipContent={lang.pages["model/create"].subtitle3.description}
+            />
+          </Subtitle2>
           {modelAdvanced && (
             <span>
               {Object.entries(modelAdvanced)
