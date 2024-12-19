@@ -103,15 +103,27 @@ export function addBuildingLayer(
 
   // マップのクリックイベントで、ポリゴン外をクリックした場合の処理
   map.on("click", (e) => {
-    const features = map.queryRenderedFeatures(e.point, { layers: [layerId] });
-    if (features.length === 0 && clickedId !== undefined) {
-      map.setFeatureState(
-        { source: layerId, id: clickedId },
-        { clicked: false },
-      );
-      clickedId = undefined;
+    // レイヤーの存在確認を追加
+    if (!map.getLayer(layerId)) {
+      return;
+    }
+
+    try {
+      const features = map.queryRenderedFeatures(e.point, {
+        layers: [layerId],
+      });
+      if (features.length === 0 && clickedId !== undefined) {
+        map.setFeatureState(
+          { source: layerId, id: clickedId },
+          { clicked: false },
+        );
+        clickedId = undefined;
+      }
+    } catch (error) {
+      console.warn(`Error querying features for layer ${layerId}:`, error);
     }
   });
+
   // ポリゴンレイヤーにマウスが乗ったときにカーソルを変更
   map.on("mouseenter", layerId, () => {
     map.getCanvas().style.cursor = "pointer";
