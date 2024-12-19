@@ -23,15 +23,11 @@ export const DialogModelMessage = ({ dialogState }: Props): JSX.Element => {
         <DialogBody>
           <DialogTitle>モデル作成処理を開始しました</DialogTitle>
           <DialogContent>
-            <Body1>
-              前処理が完了するまで一定の時間がかかります
-              <br />
-              ステータスは「非同期処理一覧画面」で確認できます
-            </Body1>
+            <Body1>前処理が完了するまで一定の時間がかかります</Body1>
           </DialogContent>
           <DialogActions>
-            <a href="#job">
-              <Button appearance="primary">非同期処理一覧画面へ</Button>
+            <a href="/model">
+              <Button appearance="primary">処理のステータスを確認する</Button>
             </a>
           </DialogActions>
         </DialogBody>

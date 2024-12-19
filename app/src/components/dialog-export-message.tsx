@@ -21,14 +21,14 @@ export const DialogExportMessage = ({ dialogState }: Props): JSX.Element => {
     >
       <DialogSurface>
         <DialogBody>
-          <DialogTitle>ダウンロード処理を開始しました</DialogTitle>
+          <DialogTitle>ダウンロード準備を開始しました</DialogTitle>
           <DialogContent>
             <Body1>
-              処理が完了すると「非同期処理一覧画面」からファイルがダウンロードできます
+              準備が完了すると「非同期処理一覧画面」からファイルがダウンロードできます
             </Body1>
           </DialogContent>
           <DialogActions>
-            <a href="#job">
+            <a href="/job">
               <Button appearance="primary">非同期処理一覧画面へ</Button>
             </a>
           </DialogActions>

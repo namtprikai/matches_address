@@ -327,7 +327,7 @@ function DownloadDialog({
                 setIsOpen(false);
               }}
             >
-              ダウンロード処理を開始する
+              ダウンロード準備を開始する
             </Button>
           </DialogActions>
         </DialogBody>

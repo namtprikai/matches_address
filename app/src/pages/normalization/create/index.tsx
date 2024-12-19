@@ -109,8 +109,6 @@ export function NormalizationCreate(): JSX.Element {
                 </DialogTitle>
                 <DialogContent>
                   前処理が完了するまで一定の時間がかかります。
-                  <br />
-                  ステータスは「非同期処理一覧画面」で確認できます
                 </DialogContent>
                 <DialogActions>
                   <DialogTrigger disableButtonEnhancement>
@@ -119,10 +117,10 @@ export function NormalizationCreate(): JSX.Element {
                   <Button
                     appearance="primary"
                     onClick={() => {
-                      navigator("/job");
+                      navigator("/normalization");
                     }}
                   >
-                    非同期処理一覧画面へ
+                    処理のステータスを確認する
                   </Button>
                 </DialogActions>
               </DialogBody>

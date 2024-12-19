@@ -436,21 +436,18 @@ export const JobEvaluationCreate = (): JSX.Element => {
                 分析を開始しました
               </DialogTitle>
               <DialogContent>
-                <div>
-                  処理が完了するまで一定の時間がかかります
-                  ステータスは「非同期処理一覧画面」で確認できます。
-                </div>
+                <div>処理が完了するまで一定の時間がかかります</div>
               </DialogContent>
               <DialogActions>
                 <Button
                   appearance="primary"
                   onClick={() => {
                     analysisStartDialogState.setIsOpen(false);
-                    navigate("/job");
+                    navigate("/evaluation");
                   }}
                   size="medium"
                 >
-                  非同期処理一覧画面へ
+                  処理のステータスを確認する
                 </Button>
               </DialogActions>
             </DialogBody>
