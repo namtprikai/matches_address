@@ -103,14 +103,16 @@ export function ExportDetail(): JSX.Element {
         >
           <span>{isError ? "処理に失敗しました。" : SuccessMsg}</span>
           <div className={styles.buttonWrapper}>
-            <Button
-              onClick={async () => {
-                if (!jobResultsData) return;
-                await downloadFile(jobResultsData.file_path);
-              }}
-            >
-              ダウンロード
-            </Button>
+            {!isError && (
+              <Button
+                onClick={async () => {
+                  if (!jobResultsData) return;
+                  await downloadFile(jobResultsData.file_path);
+                }}
+              >
+                ダウンロード
+              </Button>
+            )}
           </div>
         </div>
       </div>
