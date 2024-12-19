@@ -223,7 +223,9 @@ export const ModelCreate = (): JSX.Element => {
         {!isJobLoading ? (
           <DialogModelAdvanced
             dialogState={modelAdvancedDialogState}
-            initialValues={modelCreateParameters?.settings.advanced}
+            initialValues={
+              modelCreateParameters?.settings.advanced ?? modelAdvanced
+            }
             onSelected={(data) => setValue("settings.advanced", data)}
           />
         ) : null}
