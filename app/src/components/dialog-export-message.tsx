@@ -11,7 +11,7 @@ type Props = {
   dialogState: ReturnUseDialogState;
 };
 
-export const DialogModelMessage = ({ dialogState }: Props): JSX.Element => {
+export const DialogExportMessage = ({ dialogState }: Props): JSX.Element => {
   const { isOpen: isDialogOpen, setIsOpen: setIsDialogOpen } = dialogState;
 
   return (
@@ -21,12 +21,10 @@ export const DialogModelMessage = ({ dialogState }: Props): JSX.Element => {
     >
       <DialogSurface>
         <DialogBody>
-          <DialogTitle>モデル作成処理を開始しました</DialogTitle>
+          <DialogTitle>ダウンロード処理を開始しました</DialogTitle>
           <DialogContent>
             <Body1>
-              前処理が完了するまで一定の時間がかかります
-              <br />
-              ステータスは「非同期処理一覧画面」で確認できます
+              処理が完了すると「非同期処理一覧画面」からファイルがダウンロードできます
             </Body1>
           </DialogContent>
           <DialogActions>
