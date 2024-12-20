@@ -74,7 +74,7 @@ const menuItems = [
   },
   {
     icon: DatabaseRegular,
-    label: "モデル管理",
+    label: "モデル構築",
     value: "3",
     href: "#model",
   },

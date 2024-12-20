@@ -51,7 +51,7 @@ export const ButtonCreateModel = (): JSX.Element => {
             }
             size="small"
           >
-            新規モデル作成
+            モデル構築を始める
           </Button>
         </MenuTrigger>
 

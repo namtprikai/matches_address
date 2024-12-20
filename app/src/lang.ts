@@ -11,7 +11,7 @@ export const lang = {
   pages: {
     "model/create": {
       subtitle1: {
-        label: "① ファイルをインポート",
+        label: "① 名寄せ済みデータセット一覧から選択",
         description: `空き家確率を推定するモデルを構築するため、「名寄せ済みデータセット」を選択します。名寄せ済みのデータセットが無い場合には、「名寄せ処理」を実施してください。`,
       },
       subtitle2: {
