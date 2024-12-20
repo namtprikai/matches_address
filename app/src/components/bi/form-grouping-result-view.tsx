@@ -248,15 +248,17 @@ export const FormGroupingResultView = ({
           appearance={parameterFilters.length === 0 ? "outline" : "primary"}
           size="medium"
         >
-          {parameterFilters.length === 0 ? "グループを追加" : "グループを編集"}
+          {parameterFilters.length === 0
+            ? "ラベルのグループを追加"
+            : "ラベルのグループを編集"}
         </Button>
       </DialogTrigger>
       <DialogSurface>
         <DialogBody>
           <DialogTitle>
             {columnLabel
-              ? `グループを編集（${columnLabel}）`
-              : "グループを編集"}
+              ? `ラベルのグループを編集（${columnLabel}）`
+              : "ラベルのグループを編集"}
           </DialogTitle>
           <DialogContent border className={styles.dialogContent}>
             <div className={styles.dialogInner}>
@@ -318,7 +320,7 @@ export const FormGroupingResultView = ({
                         <Input
                           defaultValue={field.value.value}
                           {...register(`parameters.${index}.value.value`)}
-                          placeholder="値"
+                          placeholder="グループごとの値"
                           type="text"
                         />
                         <Button
@@ -418,7 +420,7 @@ export const FormGroupingResultView = ({
                             }
                             {...register(`parameters.${index}.value.value`)}
                             className={styles.inputValue}
-                            placeholder="値"
+                            placeholder="グループごとの値"
                             type="date"
                           />
                         )}
@@ -524,7 +526,7 @@ export const FormGroupingResultView = ({
                           }
                           {...register(`parameters.${index}.value.value`)}
                           className={styles.inputValue}
-                          placeholder="値"
+                          placeholder="グループごとの値"
                           type="number"
                         />
                       )}

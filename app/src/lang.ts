@@ -56,55 +56,55 @@ export const lang = {
   components: {
     "dialog-model-advanced": {
       test_size: {
-        label: "Test Size",
+        label: "テストサイズ",
         description: `（Test Size）モデルの評価に使う「テストデータ」の割合のこと。データを学習用（トレーニングデータ）と評価用（テストデータ）に分ける際、テストデータが全体のどれくらいの割合かを指定します。`,
       },
       n_splits: {
-        label: "N Splits",
+        label: "スプリット数",
         description: `（Number of Splits）データを分割して検証する際の分割回数。特に「クロスバリデーション（交差検証）」で、データを何回分けて学習と評価を繰り返すかを指定します。`,
       },
       undersample: {
-        label: "Undersample",
-        description: `（Undersampling）不均衡なデータ（例: 一部のクラスが少ない場合）に対して、多すぎるクラスのデータを減らす処理を行うかどうかを設定します。`,
+        label: "アンダーサンプリングの使用",
+        description: `（Use Undersampling）不均衡なデータ（例: 一部のクラスが少ない場合）に対して、多すぎるクラスのデータを減らす処理を行うかどうかを設定します。`,
       },
       undersample_ratio: {
-        label: "Undersample Ratio",
+        label: "アンダーサンプリング比率",
         description: `（Undersample Ratio）アンダーサンプリングを行う際、多すぎるクラスをどの程度まで減らすかを指定する比率を設定します。`,
       },
       threshold: {
-        label: "Threshold",
+        label: "しきい値",
         description: `（Threshold）予測結果を分類するための基準となる値。特に確率を出力するモデルで、「どの確率以上を陽性と判断するか」を決める値を指定します。`,
       },
       hyperparameter_flag: {
-        label: "Hyperparameter Flag",
+        label: "ハイパーパラメータチューニングの使用",
         description: `（Hyperparameter Tuning）モデルの性能を上げるために、ハイパーパラメータ（モデルの設定値）を自動的に調整する作業を行うかどうかを設定します。その代わり、処理時間が長くなります。`,
       },
       n_trials: {
-        label: "N Trials",
+        label: "ハイパーパラメータチューニングの試行回数",
         description: `（Number of Trials for Hyperparameter Tuning）ハイパーパラメータを調整する際、異なる設定を何回試すかを指定する値を設定します。回数が多いほど処理時間が長くなります。`,
       },
       lambda_l1: {
-        label: "Lambda L1",
+        label: "ラムダL1",
         description: `（Lambda L1）不要な特徴量をゼロに近づけることで、モデルをシンプルにするL1正規化の強さを設定します。`,
       },
       lambda_l2: {
-        label: "Lambda L2",
+        label: "ラムダL2",
         description: `（Lambda L2）モデルの重みが大きくなりすぎないようにペナルティを与えるL2正規化の強さを設定します。`,
       },
       num_leaves: {
-        label: "Num Leaves",
+        label: "リーフ数",
         description: `（Number of Leaves）決定木や勾配ブースティングモデルで、1つの木の中で最終的な分岐先（リーフ）の数を指定します。`,
       },
       feature_fraction: {
-        label: "Feature Fraction",
+        label: "フィーチャー割合",
         description: `（Feature Fraction）モデルを作るときに、全ての特徴量（フィーチャー）のうち、どれくらいの割合を使用するかを指定します。`,
       },
       bagging_fraction: {
-        label: "Bagging Fraction",
+        label: "バギング割合",
         description: `（Bagging Fraction）バギング（Bagging：標本抽出）を行う際、全体のデータからどれだけの割合をランダムに選んで使うかを指定します。`,
       },
       bagging_freq: {
-        label: "Bagging Freq",
+        label: "バギング頻度",
         description: `（Bagging Frequency）勾配ブースティングモデルで、何回ごとにバギングを行うかを指定します。`,
       },
     },
