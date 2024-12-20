@@ -318,7 +318,7 @@ def insert_sqlite_and_export(input_data, data_set_result_id):
             'fid': 'fid',
             'gml_id': 'gml_id',
             'class': 'class',
-            'geometry': 'geometry',
+            'geometry_plateau': 'geometry',
             'measuredHeight': 'measuredheight',
             'measuredHeight_uom': 'measuredheight_uom',
             'srcScale': 'src_scale',
@@ -362,6 +362,7 @@ def insert_sqlite_and_export(input_data, data_set_result_id):
             'S_NAME': 'area_group'
         }
         # カラム名を変換
+        input_data = input_data.drop('geometry', axis=1, errors='ignore')
         input_data = input_data.rename(columns=mapping_header)
         existing_columns = input_data.columns.tolist()
         mapped_columns = [col for col in mapping_header.values() if col in existing_columns]
