@@ -173,9 +173,9 @@ export function Dataset(): JSX.Element {
             <Tab key={value} value={value}>
               {
                 {
-                  raw: "シードデータ",
-                  normalization: "正規化済データ",
-                  result: "空き家判定結果データ",
+                  raw: "インプットデータ",
+                  normalization: "名寄せ処理済データ",
+                  result: "空き家推定結果データ",
                 }[value]
               }
             </Tab>
@@ -283,15 +283,15 @@ const _dummyRawDataSets: InsertRawDataSet[] = [
     file_path: "dummy-data.csv",
   },
   {
-    file_name: "前処理住民台帳1.csv",
+    file_name: "名寄せ処理住民台帳1.csv",
     file_path: "dummy-data.csv",
   },
   {
-    file_name: "前処理住民台帳2.csv",
+    file_name: "名寄せ処理住民台帳2.csv",
     file_path: "dummy-data.csv",
   },
   {
-    file_name: "前処理住民台帳3.csv",
+    file_name: "名寄せ処理住民台帳3.csv",
     file_path: "dummy-data.csv",
   },
   {
@@ -310,15 +310,15 @@ const _dummyNormalizedDataSets: InsertNormalizedDataSet[] = [
     file_path: "dummy-data.csv",
   },
   {
-    file_name: "前処理住民台帳1.csv",
+    file_name: "名寄せ処理住民台帳1.csv",
     file_path: "dummy-data.csv",
   },
   {
-    file_name: "前処理住民台帳2.csv",
+    file_name: "名寄せ処理住民台帳2.csv",
     file_path: "dummy-data.csv",
   },
   {
-    file_name: "前処理住民台帳3.csv",
+    file_name: "名寄せ処理住民台帳3.csv",
     file_path: "dummy-data.csv",
   },
   {

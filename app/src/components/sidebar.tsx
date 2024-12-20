@@ -80,7 +80,7 @@ const menuItems = [
   },
   {
     icon: HomeRegular,
-    label: "空き家判定",
+    label: "空き家推定",
     value: "4",
     href: "#evaluation",
   },
@@ -93,7 +93,7 @@ const menuItems = [
   },
   {
     icon: ArrowSyncCircleRegular,
-    label: "非同期処理",
+    label: "処理一覧",
     value: "6",
     href: "#job",
   },

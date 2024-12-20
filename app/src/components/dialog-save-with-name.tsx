@@ -87,7 +87,7 @@ export const DialogSaveWithName = ({
                 className={styles.input}
                 name="title"
                 onChange={handleInputChange}
-                placeholder="OO年度前処理済みデータ"
+                placeholder="OO年度名寄せ処理済みデータ"
                 value={inputValue}
               />
             </Form>

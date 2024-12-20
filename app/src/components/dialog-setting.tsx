@@ -136,7 +136,7 @@ export const DialogSetting = ({ value, onChange }: Props): JSX.Element => {
           <DialogContent className={styles.dialogContent}>
             <div className={styles.formSection}>
               <h4>テキストマッチング</h4>
-              <Field className={styles.field} label={"Similarity Threshold"}>
+              <Field className={styles.field} label={"類似度のしきい値を調整"}>
                 <div className={styles.sliderWrapper}>
                   <Input
                     max={1}
