@@ -64,7 +64,7 @@ export function NormalizationCreate(): JSX.Element {
     <>
       <div className={styles.stickyWrapper}>
         <div className={styles.root}>
-          <h2 className={styles.heading}>データ正規化処理</h2>
+          <h2 className={styles.heading}>名寄せ処理</h2>
           <div>
             {!isJobLoading ? (
               <FormNormalization
@@ -105,7 +105,7 @@ export function NormalizationCreate(): JSX.Element {
                     </DialogTrigger>
                   }
                 >
-                  データ正規化処理を開始しました
+                  データ名寄せ処理を開始しました
                 </DialogTitle>
                 <DialogContent>
                   前処理が完了するまで一定の時間がかかります。
