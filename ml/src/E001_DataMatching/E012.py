@@ -20,10 +20,12 @@ if async_tasks_path not in sys.path:
 
 try:
     from utils import *
+    from constants import *
 except ImportError:
     sys.path.remove(async_tasks_path)
     sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../')))
     from async_tasks.utils import *
+    from async_tasks.constants import *
 
 # 入力する各データのカラムを定義
 INPUT_COLUMNS = {
@@ -114,6 +116,9 @@ kanji_to_number = {
     '六': 6, '七': 7, '八': 8, '九': 9, '十': 10
 }
 
+ERROR_CODE=None
+ERROR_MSG=None
+
 # データ処理を行うための基本クラス
 class DataProcessor:
     def __init__(self, input_paths, output_paths):
@@ -159,10 +164,12 @@ class DataProcessor:
                 return
             except Exception as e:
                 # エラーが発生した場合、メッセージを表示して次のエンコーディングを試す
-                print(f"ファイル {path} を {encoding} エンコーディングで保存中にエラーが発生しました: {e}")
+                set_error(ERROR_00001, path, encoding)
+                # print(f"ファイル {path} を {encoding} エンコーディングで保存中にエラーが発生しました: {e}")
+                raise
 
         # すべてのエンコーディングで失敗した場合のメッセージ
-        print(f"ファイル {path} をいずれのエンコーディングでも保存できませんでした。")
+        # print(f"ファイル {path} をいずれのエンコーディングでも保存できませんでした。")
     
     def process(self):
         """
@@ -324,11 +331,12 @@ class CleanData:
         )
         if pd.isna(text):
             return text
-        # 半角カタカナを全角カタカナに変換
-        text = text.translate(half_to_full_katakana_map)
-        # 濁点と半濁点の処理
-        text = re.sub(r'(\w゛)', lambda x: chr(ord(x.group(1)[0]) + 1), text)
-        text = re.sub(r'(\w゜)', lambda x: chr(ord(x.group(1)[0]) + 2), text)
+        if isinstance(text, str):
+            # 半角カタカナを全角カタカナに変換
+            text = text.translate(half_to_full_katakana_map)
+            # 濁点と半濁点の処理
+            text = re.sub(r'(\w゛)', lambda x: chr(ord(x.group(1)[0]) + 1), text)
+            text = re.sub(r'(\w゜)', lambda x: chr(ord(x.group(1)[0]) + 2), text)
         return text 
     
 
@@ -515,6 +523,7 @@ def read_file(path, key, **kwargs):
             df = pd.read_excel(path, **kwargs)
         
         else:
+            set_error(ERROR_00003, file_extension)
             # サポートされていないファイル形式
             raise ValueError(f"サポートされていないファイル形式です: {file_extension}")
 
@@ -529,7 +538,9 @@ def read_file(path, key, **kwargs):
         return df
 
     except Exception as e:
-        print(f"ファイルの読み込み中にエラーが発生しました: {e}")
+        if ERROR_CODE is None:
+            set_error(ERROR_00004)
+        # print(f"ファイルの読み込み中にエラーが発生しました: {e}")
         return None
 
 
@@ -622,7 +633,7 @@ def process_data(input_files, output_directory, main_data_type, job_id, columns,
         task_id = None
         progress_percent = 0
         if job_id:
-            task_id = create_or_update_job_task(job_id, progress_percent="0", preprocess_type="e012", error_code=None, result=None)
+            task_id = create_or_update_job_task(job_id, progress_percent="0", preprocess_type="e012", error_code=None, error_msg=None, result=None)
 
         if output_directory is None:
             output_directory = './E012/outputs'
@@ -646,12 +657,6 @@ def process_data(input_files, output_directory, main_data_type, job_id, columns,
             
         if input_files.get('touki'):
             output_paths['touki'] = f"{output_directory}/touki_cleaned.csv"
-
-        if input_files.get('akiya_result') is None:
-            raise ValueError("空き家結果データは必須です。")
-        
-        if input_files.get('geocoding') is None:
-            raise ValueError("ジオコーディングデータは必須です。")
 
         if columns:
             columns = json.loads(columns)
@@ -679,13 +684,16 @@ def process_data(input_files, output_directory, main_data_type, job_id, columns,
         if job_id:
             create_or_update_job(job_id, "5")
             
-        # ファイルを保存して、処理に反映
-        if input_files.get('suido_use'):
-            suido_use_df.to_csv(f"{output_directory}/processed_suido_use.csv", index=False)
-        if input_files.get('touki'):
-            touki_df.to_csv(f"{output_directory}/processed_touki.csv", index=False)
-        geocoding_df.to_csv(f"{output_directory}/processed_geocoding.csv", index=False)
-        akiya_result_df.to_csv(f"{output_directory}/processed_akiya_result.csv", index=False)
+        try:
+            # ファイルを保存して、処理に反映
+            if input_files.get('suido_use'):
+                suido_use_df.to_csv(f"{output_directory}/processed_suido_use.csv", index=False)
+            if input_files.get('touki'):
+                touki_df.to_csv(f"{output_directory}/processed_touki.csv", index=False)
+            geocoding_df.to_csv(f"{output_directory}/processed_geocoding.csv", index=False)
+            akiya_result_df.to_csv(f"{output_directory}/processed_akiya_result.csv", index=False)
+        except:
+            raise
 
         # 入力ファイルのパスを設定
         input_paths = {
@@ -716,21 +724,34 @@ def process_data(input_files, output_directory, main_data_type, job_id, columns,
             # EachFileProcessorのprocess_fileメソッドを呼び出して各ファイルを処理
             processor.process_file(file_key)
             if job_id:
-                create_or_update_job_task(job_id, progress_percent=str(progress_percent), preprocess_type="e012", error_code=None, result=None, id= task_id)
+                create_or_update_job_task(job_id, progress_percent=str(progress_percent), preprocess_type="e012", error_code=None, error_msg=None, result=None, id= task_id)
                 create_or_update_job(job_id, progress_percent_job)
                 
         print("すべての処理が完了しました!")
         if job_id:
-            create_or_update_job_task(job_id, progress_percent="100", preprocess_type="e012", error_code=None, result=json.dumps({}), id= task_id, is_finish=True)
+            create_or_update_job_task(job_id, progress_percent="100", preprocess_type="e012", error_code=None, error_msg=None, result=json.dumps({}), id= task_id, is_finish=True)
         # 処理済みファイルのパスリストを返す
         # 出力パスのうち、実際にファイルが生成されたもののみをリストにして返す
         return [path for path in output_paths.values() if os.path.exists(path)]
     except Exception as e:
         print(e)
+        if ERROR_CODE is None:
+            set_error(ERROR_00005)
         if task_id is not None:
-            create_or_update_job_task(job_id, progress_percent="", preprocess_type="012", error_code="e001", result=json.dumps({}), id= task_id, is_finish=True)
-        raise Exception("Error: Data cleaning process encountered an issue")
+            create_or_update_job_task(job_id, progress_percent="", preprocess_type="e012", error_code=ERROR_CODE, error_msg=ERROR_MSG, result=json.dumps({}), id= task_id, is_finish=True)
+        raise Exception("データクレンジング処理中にエラーが発生しました。入力データに異常や規定外のフォーマットがないかご確認ください。")
 
+def set_error(value, param_st1=None, param_st2=None):
+    global ERROR_CODE
+    global ERROR_MSG
+    ERROR_CODE = value['code']
+    if param_st1 is not None and param_st2 is not None:
+        ERROR_MSG = value['message'].format(param_st1=param_st1, param_st2=param_st2)
+    elif param_st1 is not None:
+        ERROR_MSG = value['message'].format(param_st1=param_st1)
+    else:
+        ERROR_MSG = value['message']
+        
 
 def main():
     parser = argparse.ArgumentParser(description="E012 - データクレンジング機能")

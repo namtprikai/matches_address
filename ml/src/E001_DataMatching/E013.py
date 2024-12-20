@@ -21,10 +21,12 @@ if async_tasks_path not in sys.path:
 
 try:
     from utils import *
+    from constants import *
 except ImportError:
     sys.path.remove(async_tasks_path)
     sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../')))
     from async_tasks.utils import *
+    from async_tasks.constants import *
 
 COLUMNS = {
             "suido_use": {
@@ -52,6 +54,9 @@ COLUMNS = {
                 "registration_date": "登記日付"
             }
         }
+
+ERROR_CODE=None
+ERROR_MSG=None
 
 class DataProcessor:
     def __init__(self, input_paths, output_paths, reference_date, search_period):
@@ -122,6 +127,7 @@ class DataProcessor:
             file_extension = os.path.splitext(path)[1].lower()
             
             if file_extension not in ['.csv', '.txt']:
+                set_error(ERROR_00006, file_extension)
                 raise ValueError(f"CSVファイルまたはテキストファイル以外は対応していません: {file_extension}")
             
             # 複数のエンコーディングを試行                
@@ -140,10 +146,12 @@ class DataProcessor:
                 return pd.read_csv(path, encoding=detected_encoding, **kwargs)
             
             # 適切なエンコーディングが見つからない場合、エラーを発生させる
+            set_error(ERROR_00008, path)
             raise ValueError(f"適切なエンコーディングが見つかりませんでした: {path}")
         except Exception as e:
             # 何らかの例外が発生した場合、エラーメッセージを表示してNoneを返す
-            print(f"ファイル {path} の読み込み中にエラーが発生しました: {e}")
+            set_error(ERROR_00007)
+            # print(f"ファイル {path} の読み込み中にエラーが発生しました: {e}")
             return None
 
     @staticmethod
@@ -167,11 +175,12 @@ class DataProcessor:
                 print(f"ファイルが {encoding} エンコーディングで正常に保存されました: {path}")
                 return
             except Exception as e:
+                set_error(ERROR_00009, path, encoding)
                 # 保存中にエラーが発生した場合、エラーメッセージを表示して次のエンコーディングを試す
-                print(f"ファイル {path} を {encoding} エンコーディングで保存中にエラーが発生しました: {e}")
+                # print(f"ファイル {path} を {encoding} エンコーディングで保存中にエラーが発生しました: {e}")
         
         # すべてのエンコーディングで保存に失敗した場合のメッセージ
-        print(f"ファイル {path} をいずれのエンコーディングでも保存できませんでした。")
+        # print(f"ファイル {path} をいずれのエンコーディングでも保存できませんでした。")
 
     @staticmethod
     def drop_duplicates(df, subset, keep="first"):
@@ -891,7 +900,7 @@ def process_all_data(suido_use_file, suido_status_file, juki_file, tatemono_file
         progress_percent = 0
         task_id = None
         if job_id:
-            task_id = create_or_update_job_task(job_id, progress_percent=progress_percent, preprocess_type="e013", error_code=None, result=None)
+            task_id = create_or_update_job_task(job_id, progress_percent=progress_percent, preprocess_type="e013", error_code=None, error_msg=None, result=None)
         # 入力ファイルのパスを設定
         # 各ファイルオブジェクトから名前（パス）を取得し、辞書形式で保存
         input_paths = {}
@@ -933,7 +942,7 @@ def process_all_data(suido_use_file, suido_status_file, juki_file, tatemono_file
             if job_id:
                 progress_percent += 30
                 progress_percent_job += 8
-                create_or_update_job_task(job_id, progress_percent=progress_percent, preprocess_type="e013", error_code=None, result=None, id= task_id)
+                create_or_update_job_task(job_id, progress_percent=progress_percent, preprocess_type="e013", error_code=None, error_msg=None, result=None, id= task_id)
                 create_or_update_job(job_id, progress_percent_job)
             print(f"{file_key}データを処理中...")
             processor_class(input_paths, output_paths, reference_date, search_period).process()
@@ -947,18 +956,20 @@ def process_all_data(suido_use_file, suido_status_file, juki_file, tatemono_file
 
         print("すべての処理が完了しました!")
         if job_id:
-            create_or_update_job_task(job_id, progress_percent="100", preprocess_type="e013", error_code=None, result=json.dumps({}), id= task_id, is_finish=True)
+            create_or_update_job_task(job_id, progress_percent="100", preprocess_type="e013", error_code=None, error_msg=None, result=json.dumps({}), id= task_id, is_finish=True)
         
         return [path for path in output_paths.values() if os.path.exists(path)]
     except ValueError as e:
         if task_id is not None:
-            create_or_update_job_task(job_id, progress_percent="", preprocess_type="e013", error_code="e001", result=json.dumps({}), id= task_id, is_finish=True)
+            create_or_update_job_task(job_id, progress_percent="", preprocess_type="e013", error_code=ERROR_CODE, error_msg=ERROR_MSG, result=json.dumps({}), id= task_id, is_finish=True)
         raise Exception(e)
     except Exception as e:
         print(e)
+        if ERROR_CODE is None:
+            set_error(ERROR_00010)
         if task_id is not None:
-            create_or_update_job_task(job_id, progress_percent="", preprocess_type="e013", error_code="e001", result=json.dumps({}), id= task_id, is_finish=True)
-        raise Exception("Error: The issue occurred during the Housing Unit Data Creation function process")
+            create_or_update_job_task(job_id, progress_percent="", preprocess_type="e013", error_code=ERROR_CODE, error_msg=ERROR_MSG, result=json.dumps({}), id= task_id, is_finish=True)
+        raise Exception("住居単位データ作成プロセスにおいて、エラーが発生しました。")
 
 def normalize_dates(df, column, formats=['%Y/%m/%d', '%d/%m/%Y', '%Y-%m-%d', '%m/%d/%Y', '%Y%m%d']):
     # Initialize the temporary column with NaN values
@@ -978,6 +989,17 @@ def normalize_dates(df, column, formats=['%Y/%m/%d', '%d/%m/%Y', '%Y-%m-%d', '%m
     
     return df
 
+def set_error(value, param_st1=None, param_st2=None):
+    global ERROR_CODE
+    global ERROR_MSG
+    ERROR_CODE = value['code']
+    if param_st1 is not None and param_st2 is not None:
+        ERROR_MSG = value['message'].format(param_st1=param_st1, param_st2=param_st2)
+    elif param_st1 is not None:
+        ERROR_MSG = value['message'].format(param_st1=param_st1)
+    else:
+        ERROR_MSG = value['message']
+    
 def main():
     parser = argparse.ArgumentParser(description="E013 - 住居単位データ作成機能")
     parser.add_argument("--suido_use", required=True, help="水道使用量データファイルのパス")
