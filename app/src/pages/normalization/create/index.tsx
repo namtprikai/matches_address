@@ -108,7 +108,7 @@ export function NormalizationCreate(): JSX.Element {
                   データ名寄せ処理を開始しました
                 </DialogTitle>
                 <DialogContent>
-                  前処理が完了するまで一定の時間がかかります。
+                  名寄せ処理が完了するまで一定の時間がかかります。
                 </DialogContent>
                 <DialogActions>
                   <DialogTrigger disableButtonEnhancement>

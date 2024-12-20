@@ -2,10 +2,10 @@ import { type z } from "zod";
 import { type schema as normalizationSchema } from "../hooks/use-form-normalization";
 
 /**
- * 前処理で利用するデフォルトのパラメータを作成するだけの関数
+ * 名寄せ処理で利用するデフォルトのパラメータを作成するだけの関数
  * インラインで書くとコードの見通しが悪くなるため追加
  *
- * @returns デフォルトの前処理用パラメータ
+ * @returns デフォルトの名寄せ処理用パラメータ
  */
 export const defaultNormalizationParameters: z.infer<
   typeof normalizationSchema
