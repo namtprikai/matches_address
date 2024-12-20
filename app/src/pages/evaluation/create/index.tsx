@@ -8,6 +8,7 @@ import {
   Dialog,
   Option,
   DialogTrigger,
+  Caption1,
 } from "@fluentui/react-components";
 import { DeleteRegular, Dismiss24Regular } from "@fluentui/react-icons";
 import { useNavigate } from "react-router-dom";
@@ -201,6 +202,8 @@ export const JobEvaluationCreate = (): JSX.Element => {
     setValue("area_grouping.columns.area_group_id", "");
     setValue("area_grouping.columns.area_group_name", "");
   };
+
+  const settingsThreshold = watch("settings.threshold");
 
   return (
     <form onSubmit={onSubmit}>
@@ -423,6 +426,9 @@ export const JobEvaluationCreate = (): JSX.Element => {
                 }
               />
             </Subtitle2>
+            <div>
+              <Caption1>テキストマッチング: {settingsThreshold}</Caption1>
+            </div>
             <div className={styles.file}>
               <DialogSetting
                 onChange={(newValue) =>

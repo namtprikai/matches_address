@@ -26,7 +26,7 @@ export const useFormDataEvaluation = (): UseFormReturn<FormType> => {
       model_path: "",
       normalized_dataset_paths: [],
       settings: {
-        threshold: 0,
+        threshold: 0.3,
       },
       area_grouping: {
         path: "",
