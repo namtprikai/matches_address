@@ -28,7 +28,7 @@ export const DialogExportMessage = ({ dialogState }: Props): JSX.Element => {
             </Body1>
           </DialogContent>
           <DialogActions>
-            <a href="/job">
+            <a href="#/job">
               <Button appearance="primary">非同期処理一覧画面へ</Button>
             </a>
           </DialogActions>
