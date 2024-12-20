@@ -68,7 +68,7 @@ const menuItems = [
   },
   {
     icon: TableSwitchRegular,
-    label: "正規化処理",
+    label: "名寄せ処理",
     value: "2",
     href: "#normalization",
   },
