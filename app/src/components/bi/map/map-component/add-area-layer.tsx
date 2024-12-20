@@ -1,5 +1,7 @@
 import { type FeatureIdentifier, Popup, type Map } from "maplibre-gl";
 import { renderToString } from "react-dom/server";
+import { type Feature, type GeoJsonProperties, type Geometry } from "geojson";
+import { wktToGeoJSON } from "betterknown";
 import { type SelectDataSetDetailArea } from "../../../../schema";
 import { AreaPopup, type AreaProperties } from "./area-popup";
 import { VACANCY_RATE_HIGH, VACANCY_RATE_MEDIUM } from ".";
@@ -16,19 +18,31 @@ export function addAreaLayer(
     map.removeSource(layerId);
   }
 
+  // 型エラーを回避するための空のFeature
+  const emptyFeature: Feature<Geometry, GeoJsonProperties> = {
+    type: "Feature",
+    geometry: {
+      type: "Point",
+      coordinates: [],
+    },
+    properties: {},
+  };
+
   map.addSource(layerId, {
     type: "geojson",
     generateId: true, // featureのIDを個別に自動生成する、クリックしたポリゴンを判別して色を変えるために必要
     data: {
       type: "FeatureCollection",
-      features: buildings.map(({ geometry, ...properties }) => ({
-        type: "Feature",
-        geometry: {
-          type: "Polygon",
-          coordinates: JSON.parse(geometry),
-        },
-        properties,
-      })),
+      features: buildings.map(({ geometry, ...properties }) => {
+        const converted = wktToGeoJSON(geometry);
+        if (!converted) return emptyFeature;
+
+        return {
+          type: "Feature",
+          geometry: converted,
+          properties,
+        };
+      }),
     },
   });
 
@@ -103,15 +117,25 @@ export function addAreaLayer(
 
   // マップのクリックイベントで、ポリゴン外をクリックした場合の処理
   map.on("click", (e) => {
-    const features = map.queryRenderedFeatures(e.point, { layers: [layerId] });
-    if (features.length === 0 && clickedId !== undefined) {
-      map.setFeatureState(
-        { source: layerId, id: clickedId },
-        { clicked: false },
-      );
-      clickedId = undefined;
+    // レイヤーの存在確認を追加
+    if (!map.getLayer(layerId)) return;
+
+    try {
+      const features = map.queryRenderedFeatures(e.point, {
+        layers: [layerId],
+      });
+      if (features.length === 0 && clickedId !== undefined) {
+        map.setFeatureState(
+          { source: layerId, id: clickedId },
+          { clicked: false },
+        );
+        clickedId = undefined;
+      }
+    } catch (error) {
+      console.warn(`Error querying features for layer ${layerId}:`, error);
     }
   });
+
   // ポリゴンレイヤーにマウスが乗ったときにカーソルを変更
   map.on("mouseenter", layerId, () => {
     map.getCanvas().style.cursor = "pointer";

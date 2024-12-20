@@ -1,4 +1,5 @@
 import { type Polygon } from "geojson";
+import { geoJSONToWkt } from "betterknown";
 import {
   data_set_detail_areas,
   data_set_detail_buildings,
@@ -20,7 +21,10 @@ export const createDataSetResults = (async (
     await tx.insert(data_set_detail_areas).values({
       data_set_result_id: res[0].id,
       reference_date: "2021-01-01 12:00:00",
-      geometry: JSON.stringify(dummyAreaGeometry),
+      geometry: geoJSONToWkt({
+        type: "Polygon",
+        coordinates: dummyAreaGeometry,
+      }),
     });
 
     /** 開発用のテストデータ生成ロジック、本番環境では利用しない  */
@@ -95,15 +99,18 @@ export const createDataSetResults = (async (
         name: `建物名${i}`,
         predicted_label: Math.round(pred),
         predicted_probability: pred * 100,
-        geometry: JSON.stringify([
-          [
-            [137.120435, 34.990565],
-            [137.12052, 34.990551],
-            [137.120504, 34.990487],
-            [137.120419, 34.990501],
-            [137.120435, 34.990565],
+        geometry: geoJSONToWkt({
+          type: "Polygon",
+          coordinates: [
+            [
+              [137.120435, 34.990565],
+              [137.12052, 34.990551],
+              [137.120504, 34.990487],
+              [137.120419, 34.990501],
+              [137.120435, 34.990565],
+            ],
           ],
-        ]),
+        }),
       };
 
       await tx.insert(data_set_detail_buildings).values(insertion);

@@ -9,7 +9,8 @@ import {
 } from "maplibre-gl";
 import { Protocol } from "pmtiles";
 import { makeStyles } from "@fluentui/react-components";
-import { type Polygon } from "geojson";
+import { type Geometry } from "geojson";
+import { wktToGeoJSON } from "betterknown";
 import { type VacancyLevels } from "../vacancy-level-checkbox";
 import { addBuildingLayer } from "./add-building-layer";
 import { type BuildingProperties } from "./building-popup";
@@ -17,6 +18,7 @@ import { addAreaLayer } from "./add-area-layer";
 
 export const VACANCY_RATE_HIGH = 80;
 export const VACANCY_RATE_MEDIUM = 30;
+const INITIAL_CENTER: [number, number] = [137.120435, 34.990565];
 
 const useMapComponentStyles = makeStyles({
   map: {
@@ -64,7 +66,7 @@ export function MapComponent({
       const initializedMap = new Map({
         container: containerEl,
         style: "protomaps-basemaps.json",
-        center: [137.120435, 34.990565],
+        center: INITIAL_CENTER,
         zoom: 14,
         maxZoom: 22,
         minZoom: 6,
@@ -102,17 +104,11 @@ export function MapComponent({
               );
 
               if (!result?.length) return;
-
               const [firstItem] = result;
-              const coordinates: Polygon["coordinates"] = JSON.parse(
-                firstItem.geometry,
-              );
-              const center: [number, number] = [
-                coordinates[0][0][0],
-                coordinates[0][0][1],
-              ];
-
-              mapInstance.setCenter(center);
+              const firstGeometry = wktToGeoJSON(firstItem.geometry);
+              if (!firstGeometry) return;
+              const center = getCenter(firstGeometry);
+              mapInstance.setCenter([center[0], center[1]]);
             };
 
             const addBuildingLayers = async (): Promise<void> => {
@@ -192,16 +188,10 @@ export function MapComponent({
               );
 
               if (!result?.length) return;
-
               const [firstItem] = result;
-              const coordinates: Polygon["coordinates"] = JSON.parse(
-                firstItem.geometry,
-              );
-              const center: [number, number] = [
-                coordinates[0][0][0],
-                coordinates[0][0][1],
-              ];
-
+              const firstGeometry = wktToGeoJSON(firstItem.geometry);
+              if (!firstGeometry) return;
+              const center: [number, number] = getCenter(firstGeometry);
               mapInstance.setCenter(center);
             };
 
@@ -331,4 +321,16 @@ export function MapComponent({
   );
 
   return <div ref={containerRef} className={styles.map} />;
+}
+
+function getCenter(geometry: Geometry): [number, number] {
+  if (geometry?.type === "Polygon") {
+    const [lng, lat] = geometry.coordinates[0][0];
+    return [lng, lat];
+  } else if (geometry?.type === "MultiPolygon") {
+    const [lng, lat] = geometry.coordinates[0][0][0];
+    return [lng, lat];
+  } else {
+    return INITIAL_CENTER;
+  }
 }
