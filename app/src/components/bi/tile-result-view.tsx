@@ -296,7 +296,7 @@ function DownloadDialog({
               </Dropdown>
             </div>
             <div className={styles.dropdown}>
-              <label id="reference-date">対象期間</label>
+              <label id="reference-date">判定日</label>
               {selectedReferenceDate && (
                 <Dropdown
                   aria-labelledby="reference-date"
@@ -366,9 +366,9 @@ function DeleteDialog({ onSubmit }: { onSubmit: () => void }): JSX.Element {
               </DialogTrigger>
             }
           >
-            タイルを削除しますか？
+            ビューを削除しますか？
           </DialogTitle>
-          <DialogContent>削除したタイルはもとに戻せません</DialogContent>
+          <DialogContent>削除したビューはもとに戻せません</DialogContent>
           <DialogActions position="start">
             <Button>キャンセル</Button>
           </DialogActions>
