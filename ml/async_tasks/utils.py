@@ -1,8 +1,7 @@
 
-from datetime import datetime
+from datetime import datetime, timezone
 import sqlite3
 import pandas as pd
-from zoneinfo import ZoneInfo
 
 
 CONNECTION = None
@@ -84,8 +83,7 @@ def create_or_update_job_task(job_id: int, progress_percent: str, preprocess_typ
     try:
         finished_at = None
         if is_finish:
-            local_time = datetime.now(ZoneInfo("localtime"))
-            finished_at = local_time.strftime("%Y-%m-%d %H:%M:%S")
+            finished_at = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
         if id is None:
             CURSOR.execute("""
             INSERT INTO job_tasks(job_id, progress_percent, preprocess_type, error_code, result)
@@ -135,8 +133,7 @@ def create_data_set_detail_buildings_or_area(input_data, table_name="data_set_de
         
 def create_data_set_results(title: str = ""):
     try:
-        local_time = datetime.now(ZoneInfo("localtime"))       
-        current_date = local_time.strftime("%m%d")
+        current_date = datetime.now().strftime('%m%d')
         base_title = f"空き家判定結果_{current_date}"
         title = base_title
 
