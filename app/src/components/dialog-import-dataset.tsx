@@ -130,7 +130,6 @@ type TabValue = "select" | "upload";
 type Props = {
   dialogState: ReturnUseDialogState;
   onSubmit?: (data: SelectRawDataSet) => void;
-  initialRawDataSetId?: SelectRawDataSet["id"];
 };
 
 export const DialogImportDataset = ({
