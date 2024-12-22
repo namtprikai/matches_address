@@ -72,7 +72,11 @@ export const ResultSheet = ({ sheetId }: Props): JSX.Element => {
     <div className={styles.root}>
       <div className={resultViewsGridTemplate}>
         {data.map((item) => (
-          <TileResultView key={item.id} resultView={item} />
+          <TileResultView
+            key={item.id}
+            className={styles[`view${item.layoutIndex}` as keyof typeof styles]}
+            resultView={item}
+          />
         ))}
       </div>
     </div>
