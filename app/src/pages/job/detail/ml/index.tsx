@@ -22,6 +22,7 @@ import { downloadFile } from "../../../../utils/download-file";
 import { useDialogState } from "../../../../hooks/use-dialog-state";
 import { useFetchJobs } from "../../../../hooks/use-fetch-jobs";
 import { Button } from "../../../../components/ui/button";
+import { ErrorJobTaskInfo } from "../../../../components/error-job-task-info";
 
 const useStyles = makeStyles({
   root: {
@@ -243,6 +244,7 @@ export function MlDetail(): JSX.Element {
           )}
         >
           <span>{MESSAGE[isError ? "error" : "info"]}</span>
+          {id && <ErrorJobTaskInfo jobId={Number(id)} />}
           {!isError && (
             <div className={styles.buttonWrapper}>
               <Button
