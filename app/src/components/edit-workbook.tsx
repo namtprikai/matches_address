@@ -1,10 +1,11 @@
 import { useParams } from "react-router-dom";
 import { makeStyles, tokens } from "@fluentui/react-components";
 import { useFetchWorkbook } from "../hooks/use-fetch-workbook";
-import { Button } from "./ui/button";
+import { ROUTES, withHash } from "../routes";
 import { TabListEditResultSheet } from "./tab-list-edit-result-sheet";
 import { SidebarEditResultView } from "./bi/sidebar-edit-result-view";
 import { PreviewResultSheet } from "./preview-result-sheet";
+import { BreadcrumbBase, BreadcrumbItem } from "./ui/breadcrumb";
 
 const useStyles = makeStyles({
   root: {
@@ -52,14 +53,34 @@ function Content(): JSX.Element {
 
   return (
     <div className={styles.content}>
+      <BreadcrumbBase
+        breadcrumbItem={[
+          <BreadcrumbItem
+            key={ROUTES.ANALYSIS.WORKBOOK}
+            href={withHash(ROUTES.ANALYSIS.WORKBOOK)}
+          >
+            分析
+          </BreadcrumbItem>,
+          <BreadcrumbItem
+            key={ROUTES.ANALYSIS.WORKBOOK_DETAIL(id || "#")}
+            href={withHash(ROUTES.ANALYSIS.WORKBOOK_DETAIL(id || "#"))}
+          >
+            {workbook?.title ?? "詳細"}
+          </BreadcrumbItem>,
+          <BreadcrumbItem
+            key={ROUTES.ANALYSIS.WORKBOOK_EDIT(id || "#")}
+            current
+            href={withHash(ROUTES.ANALYSIS.WORKBOOK_EDIT(id || "#"))}
+          >
+            編集
+          </BreadcrumbItem>,
+        ]}
+      />
       <h2 className={styles.heading}>{workbook?.title}</h2>
       <TabListEditResultSheet workbookId={workbook?.id} />
       <div>
         <PreviewResultSheet />
       </div>
-      <a href={`#analysis/workbook/${id}`}>
-        <Button>詳細に戻る</Button>
-      </a>
     </div>
   );
 }
