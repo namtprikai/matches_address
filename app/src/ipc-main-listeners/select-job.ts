@@ -9,5 +9,14 @@ export const selectJob = (async (
   { id }: { id: SelectJob["id"] },
 ): Promise<SelectJob | undefined> => {
   const result = await db.select().from(jobs).where(eq(jobs.id, id)).get();
+
+  // Pythonから送られてくるデータはstringなので、JSON.parseする
+  if (typeof result?.parameters === "string") {
+    return {
+      ...result,
+      parameters: JSON.parse(result.parameters),
+    };
+  }
+
   return result;
 }) satisfies IpcMainListener;
