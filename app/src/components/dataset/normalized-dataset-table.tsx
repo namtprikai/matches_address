@@ -14,7 +14,6 @@ import {
   MenuItem,
   useTableFeatures,
   useTableSelection,
-  type TableRowId,
   createTableColumn,
   TableSelectionCell,
 } from "@fluentui/react-components";
@@ -22,12 +21,7 @@ import {
   ArrowDownloadRegular,
   MoreVerticalRegular,
 } from "@fluentui/react-icons";
-import {
-  type Dispatch,
-  type SetStateAction,
-  type MouseEvent,
-  useState,
-} from "react";
+import { type Dispatch, type SetStateAction, type MouseEvent } from "react";
 import { Button } from "../ui/button";
 import { type SelectNormalizedDataSet } from "../../schema";
 import { useFetchNormalizedDatasets } from "../../hooks/use-fetch-normalized-datasets";
@@ -69,29 +63,24 @@ const useStyles = makeStyles({
 });
 
 type Props = {
+  selectedIds: SelectNormalizedDataSet["id"][];
   onSelectionChange: Dispatch<SetStateAction<SelectNormalizedDataSet["id"][]>>;
 };
 
 export function NormalizedDataSetTable({
   onSelectionChange,
+  selectedIds,
 }: Props): JSX.Element {
   const styles = useStyles();
   const columns = [
     createTableColumn<SelectNormalizedDataSet>({ columnId: "name" }),
     createTableColumn<SelectNormalizedDataSet>({ columnId: "date" }),
   ];
-  const [selectedRows, setSelectedRows] = useState(new Set<TableRowId>());
   const { data, mutate } = useFetchNormalizedDatasets();
 
   const {
     getRows,
-    selection: {
-      allRowsSelected,
-      someRowsSelected,
-      toggleAllRows,
-      toggleRow,
-      isRowSelected,
-    },
+    selection: { toggleAllRows, toggleRow },
   } = useTableFeatures(
     {
       columns,
@@ -100,14 +89,13 @@ export function NormalizedDataSetTable({
     [
       useTableSelection({
         selectionMode: "multiselect",
-        selectedItems: selectedRows,
-        onSelectionChange: (_, data) => setSelectedRows(data.selectedItems),
+        selectedItems: new Set(selectedIds.map(String)), // TableRowIdをstringに変換
       }),
     ],
   );
 
   const rows = getRows((row) => {
-    const selected = isRowSelected(row.rowId);
+    const selected = selectedIds.includes(row.item.id);
 
     return {
       ...row,
@@ -126,23 +114,28 @@ export function NormalizedDataSetTable({
 
   const handleToggleAll = (e: MouseEvent): void => {
     toggleAllRows(e);
-    onSelectionChange(() =>
-      allRowsSelected ? [] : data?.map((dataset) => dataset.id) || [],
+    onSelectionChange((prev) =>
+      prev.length === (data?.length || 0)
+        ? []
+        : data?.map((dataset) => dataset.id) || [],
     );
   };
 
-  const handleDelete = (id: SelectNormalizedDataSet["id"]): void => {
-    window.ipcRenderer
-      .invoke("deleteNormalizedDataset", {
-        id,
-      })
-      .then(() => {
-        void mutate();
-        setSelectedRows(new Set());
-        onSelectionChange([]);
-      })
-      .catch(console.error);
+  const handleDelete = async (
+    id: SelectNormalizedDataSet["id"],
+  ): Promise<void> => {
+    try {
+      await window.ipcRenderer.invoke("deleteNormalizedDataset", { id });
+      await mutate();
+      onSelectionChange((prev) => prev.filter((prevId) => prevId !== id));
+    } catch (error) {
+      console.error("Delete operation failed:", error);
+    }
   };
+
+  const allSelected = data?.length === selectedIds.length;
+  const someSelected =
+    selectedIds.length > 0 && selectedIds.length < (data?.length || 0);
 
   return (
     <Table>
@@ -150,9 +143,7 @@ export function NormalizedDataSetTable({
         <TableRow>
           <TableSelectionCell
             checkboxIndicator={{ "aria-label": "Select all rows" }}
-            checked={
-              allRowsSelected ? true : someRowsSelected ? "mixed" : false
-            }
+            checked={allSelected ? true : someSelected ? "mixed" : false}
             onClick={handleToggleAll}
           />
           <TableHeaderCell>データセット名</TableHeaderCell>
