@@ -649,7 +649,7 @@ export const job_tasks = sqliteTable("job_tasks", {
     .notNull(),
   progress_percent: text("progress_percent") /** @memo 結局使ってないかも */,
   preprocess_type: text("preprocess_type", {
-    enum: ["e012", "e013", "e014", "e016"],
+    enum: ["e014", "e016"],
   }),
   error_code: text("error_code", { enum: ["undefined_error"] }),
   error_msg: text("error_msg"),
