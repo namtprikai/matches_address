@@ -3,6 +3,7 @@ import { ArrowLeftRegular } from "@fluentui/react-icons";
 import { useNavigate, useParams } from "react-router-dom";
 import { Button } from "../../../../components/ui/button";
 import { useFetchJobs } from "../../../../hooks/use-fetch-jobs";
+import { ErrorJobTaskInfo } from "../../../../components/error-job-task-info";
 
 const useStyles = makeStyles({
   root: {
@@ -85,6 +86,7 @@ export function ResultDetail(): JSX.Element {
               ? "空き家推定に失敗しました。"
               : "処理が完了しました。判定結果はデータセット>空き家判定結果データタブから確認できます。"}
           </span>
+          {id && <ErrorJobTaskInfo jobId={Number(id)} />}
         </div>
       </div>
       <div className={styles.restartButtonWrapper}>
