@@ -62,20 +62,6 @@ export const _debugCreateJob = (async (
         await tx.insert(job_tasks).values({
           job_id: insertedId,
           progress_percent: "100",
-          preprocess_type: "e012",
-          finished_at: sql`(CURRENT_TIMESTAMP)`,
-          result: { taskResultType: "preprocess", joining_rate: "20" },
-        });
-        await tx.insert(job_tasks).values({
-          job_id: insertedId,
-          progress_percent: "100",
-          preprocess_type: "e013",
-          finished_at: sql`(CURRENT_TIMESTAMP)`,
-          result: { taskResultType: "preprocess", joining_rate: "43.21" },
-        });
-        await tx.insert(job_tasks).values({
-          job_id: insertedId,
-          progress_percent: "100",
           preprocess_type: "e014",
           finished_at: sql`(CURRENT_TIMESTAMP)`,
           result: { taskResultType: "preprocess", joining_rate: "93.21" },
