@@ -816,13 +816,13 @@ def train_and_evaluate(db_path, input_file, output_path, explanatory_variables, 
                     explanatory_variables_dict[col] = tar_colname[0]
             
         # 異常値除去
-        condition = (df['akiya_result_cleaned_flag'] == 1) & (df[explanatory_variables_dict["最小使用水量"]] > 20)
+        condition = ((df['akiya_result_cleaned_flag'] == 1) & (df[explanatory_variables_dict["最小使用水量"]] > 20))
         df = df[~condition].reset_index(drop=True)
 
-        condition = (df['akiya_result_cleaned_flag'] == 0) & (df[explanatory_variables_dict["最小使用水量"]] < 2)
+        condition = ((df['akiya_result_cleaned_flag'] == 0) & (df[explanatory_variables_dict["最小使用水量"]] < 2))
         df = df[~condition].reset_index(drop=True)
         
-        condition = (df['akiya_result_cleaned_flag'] == 0) & (df[explanatory_variables_dict["平均使用水量"]] == 0)
+        condition = ((df['akiya_result_cleaned_flag'] == 0) & (df[explanatory_variables_dict["平均使用水量"]] == 0))
         df = df[~condition].reset_index(drop=True)
         
         if job_id:
