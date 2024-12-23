@@ -35,6 +35,27 @@ const useStyles = makeStyles({
   },
 });
 
+const DEFAULT_SELECTED_COLUMNS = [
+  "世帯人数",
+  "15歳未満人数",
+  "15歳未満構成比",
+  "15歳以上64歳以下人数",
+  "15歳以上64歳以下構成比",
+  "65歳以上人数",
+  "65歳以上構成比",
+  "最大年齢",
+  "最小年齢",
+  "男女比",
+  "住定期間",
+  "閉栓フラグ",
+  "最大使用水量",
+  "平均使用水量",
+  "最小使用水量",
+  "合計使用水量",
+  "水道使用量変化率",
+  "住基・水道",
+];
+
 /** 仮: もっと具体的に書けそうなら書く・書けなかったら普通にstringとして書く */
 type ExplanatoryVariable = string;
 
@@ -53,7 +74,11 @@ export const DialogExplanatoryVariables = ({
 }: Props): JSX.Element => {
   const styles = useStyles();
   const [selectedExplanatoryVariable, setSelectedExplanatoryVariable] =
-    useState<ExplanatoryVariable[]>(initialValues || []);
+    useState<ExplanatoryVariable[]>(
+      initialValues
+        ? [...DEFAULT_SELECTED_COLUMNS, ...initialValues]
+        : DEFAULT_SELECTED_COLUMNS,
+    );
 
   const { isOpen: isDialogOpen, setIsOpen: setIsDialogOpen } = dialogState;
 
@@ -90,6 +115,7 @@ export const DialogExplanatoryVariables = ({
               <Checkbox
                 key={column}
                 checked={selectedExplanatoryVariable.includes(column)}
+                disabled={DEFAULT_SELECTED_COLUMNS.includes(column)}
                 id={column}
                 label={column}
                 name={column}
