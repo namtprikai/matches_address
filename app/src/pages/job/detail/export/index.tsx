@@ -78,10 +78,11 @@ export function ExportDetail(): JSX.Element {
     navigate(-1);
   };
 
-  const SuccessMsg =
+  const SuccessMsg = `${
     dataSetResult && dataSetResult.length > 0
       ? `${dataSetResult[0].title}の`
-      : "" + "ダウンロード準備が完了しました。";
+      : ""
+  }ダウンロード準備が完了しました。`;
 
   return (
     <div className={styles.pageContainer}>
