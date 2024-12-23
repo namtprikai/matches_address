@@ -22,5 +22,16 @@ export const selectJobs = (async (
   query = query.orderBy(desc(jobs.created_at));
 
   const result = await query;
-  return result;
+
+  const parsed = result.map((job) => {
+    if (typeof job?.parameters === "string") {
+      return {
+        ...job,
+        parameters: JSON.parse(job.parameters),
+      };
+    }
+    return job;
+  });
+
+  return parsed;
 }) satisfies IpcMainListener;
