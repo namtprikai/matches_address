@@ -237,14 +237,13 @@ export function PreprocessDetail(): JSX.Element {
               </TableHeader>
               <TableBody>
                 {data.map((item) => {
+                  /** e014, e016のみ表示する: https://project-links.slack.com/archives/C074TSBS7PW/p1732600089563499?thread_ts=1732155822.403759&cid=C074TSBS7PW */
+                  const shouldShow = ["e014", "e016"].some(
+                    (v) =>
+                      item.preprocess_type && item.preprocess_type.includes(v),
+                  );
                   if (item.preprocess_type === null) return null;
-                  if (
-                    ["14", "16"].some(
-                      (v) =>
-                        item.preprocess_type &&
-                        item.preprocess_type.includes(v),
-                    )
-                  ) {
+                  if (shouldShow) {
                     return (
                       <TableRow key={item.id}>
                         <TableCell className={styles.tableCell}>
