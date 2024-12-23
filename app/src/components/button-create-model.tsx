@@ -51,7 +51,7 @@ export const ButtonCreateModel = (): JSX.Element => {
             }
             size="small"
           >
-            新規モデル作成
+            モデル構築を始める
           </Button>
         </MenuTrigger>
 
@@ -62,14 +62,14 @@ export const ButtonCreateModel = (): JSX.Element => {
                 navigator("/normalization/create");
               }}
             >
-              正規化処理から始める
+              名寄せ処理から始める
             </MenuItem>
             <MenuItem
               onClick={() => {
                 navigator("/model/create");
               }}
             >
-              正規化処理済データから始める
+              名寄せ処理済データから始める
             </MenuItem>
             <MenuItem
               onClick={() => {

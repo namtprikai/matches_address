@@ -55,7 +55,7 @@ export function Map({ type, dataSetResultId, areas }: Props): JSX.Element {
     <div>
       <div className={styles.filters}>
         <div className={styles.filter}>
-          <div>空き家率</div>
+          <div>空き家確率</div>
           <div>
             <VacancyLevelCheckbox
               setVacancyLevels={setVacancyLevels}
@@ -64,7 +64,7 @@ export function Map({ type, dataSetResultId, areas }: Props): JSX.Element {
           </div>
         </div>
         <div className={styles.filter}>
-          <div>表示期間</div>
+          <div>判定日</div>
           <div>
             <ReferenceDateDropdown
               referenceDates={referenceDates}

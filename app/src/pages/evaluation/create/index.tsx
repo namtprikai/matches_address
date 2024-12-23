@@ -208,7 +208,7 @@ export const JobEvaluationCreate = (): JSX.Element => {
   return (
     <form onSubmit={onSubmit}>
       <div className={styles.root}>
-        <h2 className={styles.heading}>空き家判定</h2>
+        <h2 className={styles.heading}>空き家推定</h2>
 
         <div className={styles.contents}>
           {hasErrors && (
@@ -309,7 +309,7 @@ export const JobEvaluationCreate = (): JSX.Element => {
               );
             }}
             placeholder="データ名"
-            title="分析対象のデータを選択"
+            title="分析を行う名寄せ処理済みデータセットを選択"
             useFetchDatasets={useFetchNormalizedDatasets}
           />
 

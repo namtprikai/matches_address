@@ -143,7 +143,7 @@ export const FormNormalizationAdvancedSettings = ({
                   <Radio label={3} value={"3"} />
                 </RadioGroup>
               </Field>
-              <Field className={styles.field} label={"Similarity Threshold"}>
+              <Field className={styles.field} label={"類似度のしきい値を調整"}>
                 <div className={styles.sliderWrapper}>
                   <Input
                     ref={similarityThresholdField.ref}

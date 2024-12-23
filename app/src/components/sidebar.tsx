@@ -68,19 +68,19 @@ const menuItems = [
   },
   {
     icon: TableSwitchRegular,
-    label: "正規化処理",
+    label: "名寄せ処理",
     value: "2",
     href: "#normalization",
   },
   {
     icon: DatabaseRegular,
-    label: "モデル管理",
+    label: "モデル構築",
     value: "3",
     href: "#model",
   },
   {
     icon: HomeRegular,
-    label: "空き家判定",
+    label: "空き家推定",
     value: "4",
     href: "#evaluation",
   },
@@ -93,7 +93,7 @@ const menuItems = [
   },
   {
     icon: ArrowSyncCircleRegular,
-    label: "非同期処理",
+    label: "処理一覧",
     value: "6",
     href: "#job",
   },

@@ -243,7 +243,7 @@ export const ModelCreate = (): JSX.Element => {
 
       <div className={styles.footer}>
         <Button appearance="primary" size="large" type="submit">
-          モデル作成
+          モデル構築
         </Button>
       </div>
       <DialogModelMessage dialogState={modelMessageDialogState} />
