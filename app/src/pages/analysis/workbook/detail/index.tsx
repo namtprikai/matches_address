@@ -91,7 +91,7 @@ export function DetailWorkbook(): JSX.Element {
             分析
           </BreadcrumbItem>,
           <BreadcrumbItem
-            key={ROUTES.ANALYSIS.WORKBOOK}
+            key={ROUTES.ANALYSIS.WORKBOOK_DETAIL(id || "#")}
             current
             href={withHash(ROUTES.ANALYSIS.WORKBOOK_DETAIL(id || "#"))}
           >
