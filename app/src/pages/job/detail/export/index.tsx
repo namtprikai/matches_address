@@ -79,9 +79,9 @@ export function ExportDetail(): JSX.Element {
   };
 
   const SuccessMsg =
-    dataSetResult &&
-    dataSetResult.length > 0 &&
-    `${dataSetResult[0].title}の` + "ダウンロード準備が完了しました。";
+    dataSetResult && dataSetResult.length > 0
+      ? `${dataSetResult[0].title}の`
+      : "" + "ダウンロード準備が完了しました。";
 
   return (
     <div className={styles.pageContainer}>
