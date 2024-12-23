@@ -25,6 +25,11 @@ import { ResultSheet } from "../../../../components/result-sheet";
 import { Tab } from "../../../../components/ui/tab";
 import { DialogContent } from "../../../../components/ui/dialog-content";
 import { selectedResultViewIdAtom } from "../../../../state/selected-result-view-id-atom";
+import {
+  BreadcrumbBase,
+  BreadcrumbItem,
+} from "../../../../components/ui/breadcrumb";
+import { ROUTES, withHash } from "../../../../routes";
 
 const useStyles = makeStyles({
   root: {
@@ -77,6 +82,23 @@ export function DetailWorkbook(): JSX.Element {
 
   return (
     <div className={styles.root}>
+      <BreadcrumbBase
+        breadcrumbItem={[
+          <BreadcrumbItem
+            key={ROUTES.ANALYSIS.WORKBOOK}
+            href={withHash(ROUTES.ANALYSIS.WORKBOOK)}
+          >
+            分析
+          </BreadcrumbItem>,
+          <BreadcrumbItem
+            key={ROUTES.ANALYSIS.WORKBOOK}
+            current
+            href={withHash(ROUTES.ANALYSIS.WORKBOOK_DETAIL(id || "#"))}
+          >
+            {workbook?.title ?? "詳細"}
+          </BreadcrumbItem>,
+        ]}
+      />
       <div className={styles.headingWithAction}>
         <h2 className={styles.heading}>{workbook?.title}</h2>
         <div className={styles.buttons}>

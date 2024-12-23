@@ -1,6 +1,11 @@
 import { Card, makeStyles, tokens } from "@fluentui/react-components";
 import { ButtonCreateWorkbook } from "../../../components/button-create-workbook";
 import { TableWorkbook } from "../../../components/table-workbook";
+import {
+  BreadcrumbBase,
+  BreadcrumbItem,
+} from "../../../components/ui/breadcrumb";
+import { ROUTES, withHash } from "../../../routes";
 
 const useStyles = makeStyles({
   root: {
@@ -27,8 +32,18 @@ export function Workbook(): JSX.Element {
 
   return (
     <div className={styles.root}>
+      <BreadcrumbBase
+        breadcrumbItem={[
+          <BreadcrumbItem
+            key={ROUTES.ANALYSIS.WORKBOOK}
+            current
+            href={withHash(ROUTES.ANALYSIS.WORKBOOK)}
+          >
+            分析
+          </BreadcrumbItem>,
+        ]}
+      />
       <h2 className={styles.heading}>分析</h2>
-
       <Card className={styles.content}>
         <ButtonCreateWorkbook />
         <TableWorkbook />
