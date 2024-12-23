@@ -20,6 +20,7 @@ import { useFetchJobResults } from "../../../../hooks/use-fetch-job-results";
 import { useDialogState } from "../../../../hooks/use-dialog-state";
 import { Button } from "../../../../components/ui/button";
 import { useFetchJobs } from "../../../../hooks/use-fetch-jobs";
+import { ErrorJobTaskInfo } from "../../../../components/error-job-task-info";
 
 const useStyles = makeStyles({
   root: {
@@ -174,6 +175,7 @@ export function PreprocessDetail(): JSX.Element {
           )}
         >
           <span>{MESSAGE[isError ? "error" : "info"]}</span>
+          {id && <ErrorJobTaskInfo jobId={Number(id)} />}
           {!isError && (
             <div className={styles.buttonWrapper}>
               <Button
