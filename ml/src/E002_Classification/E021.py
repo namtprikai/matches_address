@@ -15,6 +15,7 @@ from itertools import chain
 
 import chardet
 import matplotlib.pyplot as plt
+import japanize_matplotlib
 import seaborn as sns
 import numpy as np
 import pandas as pd
@@ -23,7 +24,6 @@ import optuna
 import zipfile
 import argparse
 from concurrent.futures import ThreadPoolExecutor
-import japanize_matplotlib
 
 from memory_profiler import profile
 from sklearn.metrics import accuracy_score, confusion_matrix, precision_score, recall_score, f1_score
@@ -59,7 +59,8 @@ CONSTANTS = {
     'explanatory_variables': [
         'gml_id', '世帯コード', '世帯人数', '15歳未満人数', '15歳以上64歳以下人数', 
         '65歳以上人数', '15歳未満構成比', '15歳以上64歳以下構成比', '65歳以上構成比', '最大年齢', '最小年齢', '男女比', 
-        '住定期間', '水道番号_suido_residence', '水道使用量変化率_suido_residence', '最大使用水量_suido_residence', '合計使用水量_suido_residence', '閉栓フラグ_suido_residence', '構造名称_touki_residence', 
+        '住定期間', '水道番号_suido_residence', '水道使用量変化率_suido_residence', '最大使用水量_suido_residence', 
+        '合計使用水量_suido_residence', '閉栓フラグ_suido_residence', '構造名称_touki_residence', 
         '登記日付_touki_residence', 'akiya_result_cleaned_flag', 'matched_data_flag'
     ],
     'outcome_variable': 'akiya_result_cleaned_flag'
@@ -197,8 +198,6 @@ def prepare_learning_data(df, explanatory_variables, explanatory_variables_dict)
         learning_data = learning_data[merged_variables]
     else:
         learning_data = learning_data[CONSTANTS['explanatory_variables']]
-    if "matched_data_flag" not in learning_data.columns:
-        learning_data["matched_data_flag"] = 1
 
     learning_data = learning_data[learning_data['matched_data_flag'] == 1]
     learning_data.drop(columns=['matched_data_flag'], inplace=True)
@@ -236,11 +235,6 @@ def split_data(df, params, explanatory_variables_dict):
     # データを学習用とテスト用に分割
     # stratify = y で目的変数の分布を維持
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=params['test_size'], stratify = y, random_state = 42)
-    print("training data samples: ")
-    print(y_train.value_counts())
-    print("")
-    print("test data samples: ")
-    print(y_test.value_counts())
     
     # アンダーサンプリングが有効な場合、学習セットを調整
     if params['undersample']:
@@ -262,13 +256,15 @@ def split_data(df, params, explanatory_variables_dict):
                     else:
                         fill_value = X_train[col].mean()
                     X_train[col] = X_train[col].fillna(fill_value)
+
+            # アップサンプリング
             oversample = SMOTE(random_state=101, sampling_strategy=params['undersample_ratio']/10, k_neighbors=4)
             X_train, y_train = oversample.fit_resample(X_train, y_train)
 
         else:
             # 正例（空き家）の数をカウント
             vacant_count = y_train.value_counts()[1]
-    
+
             # アンダーサンプル比に基づいて負例（非空き家）の数を決定
             non_vacant_count = int(vacant_count * params['undersample_ratio'])
             
@@ -278,7 +274,7 @@ def split_data(df, params, explanatory_variables_dict):
             
             # non_vacant_countが利用可能な非空き家インデックスを超えないようにする
             non_vacant_count = min(non_vacant_count, len(non_vacant_indices))
-    
+
             # 必要な数の負例をランダムにサンプリング
             sampled_non_vacant_indices = non_vacant_indices.to_series().sample(non_vacant_count, random_state=42).index
             
@@ -288,9 +284,6 @@ def split_data(df, params, explanatory_variables_dict):
             # 学習データを新しいインデックスでサブセット化
             X_train = X_train.loc[new_indices]
             y_train = y_train.loc[new_indices]
-
-    print("sampled training data samples: ")
-    print(y_train.value_counts())
     
     # 説明変数と目的変数を学習用とテスト用のデータフレームに再結合
     train_df = X_train.copy()
@@ -306,8 +299,7 @@ def split_data(df, params, explanatory_variables_dict):
 # - 出力：「D014　学習済みモデル【pkl】」
 
 @profile
-def train_lgb_with_optuna(train_df, params, citycode_value, targetyear_value, output_path, 
-                          explanatory_variables_dict, job_id=None, task_id=None):
+def train_lgb_with_optuna(train_df, params, citycode_value, targetyear_value, output_path, job_id=None, task_id=None):
     """
     K-Fold交差検証とOptunaによるハイパーパラメータチューニングを用いてLightGBMモデルを学習する
    
@@ -332,7 +324,7 @@ def train_lgb_with_optuna(train_df, params, citycode_value, targetyear_value, ou
 
     # 学習データを特徴量（X）と目的変数（y）に分割
     id_train = train_df.copy()
-    X_train = train_df.drop(columns=[CONSTANTS['outcome_variable'], 'gml_id', '世帯コード', '水道番号'])
+    X_train = train_df.drop(columns=[CONSTANTS['outcome_variable'], 'gml_id', '世帯コード', '水道番号_suido_residence'])
     y_train = train_df[CONSTANTS['outcome_variable']]
     
     # クラスの重みを調整するためのポジティブ/ネガティブサンプルの比率を計算
@@ -544,7 +536,7 @@ def evaluate_models_on_test(test_df, models, params):
     # テストデータを識別するフラグを追加
     id_test["test_flg"] = 1
     # 非特徴量列を除いて特徴量行列を作成
-    X_test = test_df.drop(columns=[CONSTANTS['outcome_variable'], 'gml_id', '世帯コード', '水道番号'])
+    X_test = test_df.drop(columns=[CONSTANTS['outcome_variable'], 'gml_id', '世帯コード', '水道番号_suido_residence'])
     # 真のラベルを抽出
     y_test = test_df[CONSTANTS['outcome_variable']]
 
@@ -794,7 +786,7 @@ def train_and_evaluate(db_path, input_file, output_path, explanatory_variables, 
         df = read_data(file_path, low_memory=False)
         if df is None:
             raise ValueError(f"ファイル {file_path} の読み込みに失敗しました。")
-
+        
         # 入力されたカラム名を取得し、以下該当カラムに適用させる
         explanatory_vars = CONSTANTS["explanatory_variables"]
         
@@ -805,7 +797,7 @@ def train_and_evaluate(db_path, input_file, output_path, explanatory_variables, 
                 tar_colname = [ col901 for col901 in df.columns if col in col901 ]
                 if len(tar_colname) > 0:
                     explanatory_variables_dict[col] = tar_colname[0]
-                
+
         CONSTANTS['explanatory_variables'] = [ explanatory_variables_dict[val] for val in explanatory_variables_dict.keys()] + [CONSTANTS['outcome_variable'],'gml_id']
         explanatory_variables = [ explanatory_variables_dict[val] for val in explanatory_variables_dict.keys()] + [CONSTANTS['outcome_variable'],'gml_id']
         
@@ -814,7 +806,7 @@ def train_and_evaluate(db_path, input_file, output_path, explanatory_variables, 
                 tar_colname = [ col901 for col901 in df.columns if col in col901 ]
                 if len(tar_colname) > 0:
                     explanatory_variables_dict[col] = tar_colname[0]
-            
+        
         # 異常値除去
         condition = ((df['akiya_result_cleaned_flag'] == 1) & (df[explanatory_variables_dict["最小使用水量"]] > 20))
         df = df[~condition].reset_index(drop=True)
@@ -854,7 +846,7 @@ def train_and_evaluate(db_path, input_file, output_path, explanatory_variables, 
         if job_id:
             create_or_update_job_task(job_id, progress_percent="30", preprocess_type=None, error_code=None, result=json.dumps({}), id= task_id)
             create_or_update_job(job_id , "30")
-        models, oof_pred, feature_importances_dict_train, model_zip_file_path = train_lgb_with_optuna(train_df, params, citycode_value, targetyear_value, output_path, explanatory_variables_dict, job_id, task_id)
+        models, oof_pred, feature_importances_dict_train, model_zip_file_path = train_lgb_with_optuna(train_df, params, citycode_value, targetyear_value, output_path, job_id, task_id)
         
         if job_id:
             create_or_update_job_task(job_id, progress_percent="80", preprocess_type=None, error_code=None, result=json.dumps({}), id= task_id)
