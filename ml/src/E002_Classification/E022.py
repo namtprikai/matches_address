@@ -463,15 +463,12 @@ def process_and_predict(input_folder, input_file, model_directory, threshold, ou
         if explanatory_variables_dict["構造名称"] in prediction_data.columns:
             prediction_data[explanatory_variables_dict["構造名称"]] = prediction_data[explanatory_variables_dict["構造名称"]].astype("category")
 
-        # 基準日を設定
+        # # 基準日を設定
         # base_date = pd.to_datetime('2023/03/20')
 
-        # 基準日からの経過日数を計算
-        # prediction_data['登記日付_touki_residence'] = (base_date - prediction_data['登記日付_touki_residence']).dt.days
+        # 登記日付をYearに変換
         prediction_data[explanatory_variables_dict["登記日付"]] = prediction_data[explanatory_variables_dict["登記日付"]].dt.year
 
-        X_basic_colname = {v: k for k, v in explanatory_variables_dict.items()}
-        
         if job_id:
             create_or_update_job_task(job_id, progress_percent="30", preprocess_type=None, error_code=None, result=json.dumps({}), id= task_id)
             create_or_update_job(job_id, process)
@@ -507,7 +504,7 @@ def process_and_predict(input_folder, input_file, model_directory, threshold, ou
         os.makedirs(output_dir, exist_ok=True)
 
         #insert SQLite
-        # insert_sqlite_and_export(input_data, data_set_result_id)
+        insert_sqlite_and_export(input_data, data_set_result_id)
         if job_id:
             create_or_update_job_task(job_id, progress_percent="90", preprocess_type=None, error_code=None, result=json.dumps({}), id= task_id)
             create_or_update_job(job_id, process)
@@ -538,25 +535,6 @@ def process_and_predict(input_folder, input_file, model_directory, threshold, ou
         if task_id is not None:
             create_or_update_job_task(job_id, progress_percent="", preprocess_type=None, error_code="e001", result=json.dumps({}), id= task_id, is_finish=True)
         raise Exception("Error: Vacant house classification process encountered an issue")
-
-def normalize_dates(df, column, formats=['%Y/%m/%d', '%d/%m/%Y', '%Y-%m-%d', '%m/%d/%Y', '%Y%m%d']):
-    # Initialize the temporary column with NaN values
-    temp_column = f'{column}_normalized'
-    df[temp_column] = np.nan
-
-    # Try the provided formats on the invalid values
-    for fmt in formats:
-        mask = df[temp_column].isna()
-        df.loc[mask, temp_column] = pd.to_datetime(
-            df.loc[mask, column], format=fmt, errors='coerce'
-        )
-
-    # Remove the time portion and keep only the date
-    df[temp_column] = pd.to_datetime(df[temp_column], errors='coerce')
-    df[column] = df[temp_column]
-    
-    return df.drop(f'{column}_normalized',axis=1)
-
 
 def main():
     # !!!!!! 引数で指定に要変更
