@@ -14,7 +14,6 @@ import {
   MenuItem,
   useTableFeatures,
   useTableSelection,
-  type TableRowId,
   createTableColumn,
   TableSelectionCell,
   Dialog,
@@ -90,27 +89,24 @@ const useStyles = makeStyles({
 export type ResultDataSetUnit = "building" | "area";
 
 type Props = {
+  selectedIds: SelectDataSetResult["id"][];
   onSelectionChange: Dispatch<SetStateAction<SelectDataSetResult["id"][]>>;
 };
 
-export function ResultDataSetTable({ onSelectionChange }: Props): JSX.Element {
+export function ResultDataSetTable({
+  onSelectionChange,
+  selectedIds,
+}: Props): JSX.Element {
   const styles = useStyles();
   const columns = [
     createTableColumn<SelectDataSetResult>({ columnId: "name" }),
     createTableColumn<SelectDataSetResult>({ columnId: "date" }),
   ];
-  const [selectedRows, setSelectedRows] = useState(new Set<TableRowId>());
   const { data, mutate } = useFetchDataSetResults();
 
   const {
     getRows,
-    selection: {
-      allRowsSelected,
-      someRowsSelected,
-      toggleAllRows,
-      toggleRow,
-      isRowSelected,
-    },
+    selection: { toggleAllRows, toggleRow },
   } = useTableFeatures(
     {
       columns,
@@ -119,14 +115,13 @@ export function ResultDataSetTable({ onSelectionChange }: Props): JSX.Element {
     [
       useTableSelection({
         selectionMode: "multiselect",
-        selectedItems: selectedRows,
-        onSelectionChange: (_, data) => setSelectedRows(data.selectedItems),
+        selectedItems: new Set(selectedIds.map(String)), // TableRowIdをstringに変換
       }),
     ],
   );
 
   const rows = getRows((row) => {
-    const selected = isRowSelected(row.rowId);
+    const selected = selectedIds.includes(row.item.id);
 
     return {
       ...row,
@@ -145,23 +140,26 @@ export function ResultDataSetTable({ onSelectionChange }: Props): JSX.Element {
 
   const handleToggleAll = (e: MouseEvent): void => {
     toggleAllRows(e);
-    onSelectionChange(() =>
-      allRowsSelected ? [] : data?.map((dataset) => dataset.id) || [],
+    onSelectionChange((prev) =>
+      prev.length === (data?.length || 0)
+        ? []
+        : data?.map((dataset) => dataset.id) || [],
     );
   };
 
-  const handleDelete = (id: SelectDataSetResult["id"]): void => {
-    window.ipcRenderer
-      .invoke("deleteDataSetResult", {
-        id,
-      })
-      .then(() => {
-        void mutate();
-        setSelectedRows(new Set());
-        onSelectionChange([]);
-      })
-      .catch(console.error);
+  const handleDelete = async (id: SelectDataSetResult["id"]): Promise<void> => {
+    try {
+      await window.ipcRenderer.invoke("deleteRawDataset", { id });
+      await mutate();
+      onSelectionChange((prev) => prev.filter((prevId) => prevId !== id));
+    } catch (error) {
+      console.error("Delete operation failed:", error);
+    }
   };
+
+  const allSelected = data?.length === selectedIds.length;
+  const someSelected =
+    selectedIds.length > 0 && selectedIds.length < (data?.length || 0);
 
   return (
     <Table>
@@ -169,9 +167,7 @@ export function ResultDataSetTable({ onSelectionChange }: Props): JSX.Element {
         <TableRow>
           <TableSelectionCell
             checkboxIndicator={{ "aria-label": "Select all rows" }}
-            checked={
-              allRowsSelected ? true : someRowsSelected ? "mixed" : false
-            }
+            checked={allSelected ? true : someSelected ? "mixed" : false}
             onClick={handleToggleAll}
           />
           <TableHeaderCell>データセット名</TableHeaderCell>

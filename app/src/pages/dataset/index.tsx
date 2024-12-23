@@ -215,14 +215,23 @@ export function Dataset(): JSX.Element {
         <div className={styles.datasetList}>
           {
             {
-              raw: <RawDataSetTable onSelectionChange={setSelectedItemIds} />,
+              raw: (
+                <RawDataSetTable
+                  onSelectionChange={setSelectedItemIds}
+                  selectedIds={selectedItemIds}
+                />
+              ),
               normalization: (
                 <NormalizedDataSetTable
                   onSelectionChange={setSelectedItemIds}
+                  selectedIds={selectedItemIds}
                 />
               ),
               result: (
-                <ResultDataSetTable onSelectionChange={setSelectedItemIds} />
+                <ResultDataSetTable
+                  onSelectionChange={setSelectedItemIds}
+                  selectedIds={selectedItemIds}
+                />
               ),
             }[selectedValue]
           }
