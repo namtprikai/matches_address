@@ -143,6 +143,7 @@ def processing(params, job_id=None, db_path=None):
         gdf = read_input_data(data_set_results_id, params.get("reference_date"), table_name)
         if job_id:
             create_or_update_job_task(job_id, progress_percent="20", preprocess_type=None, error_code=None, error_msg=None, result=json.dumps({}), id= task_id)
+            create_or_update_job(job_id, 20)
         if params.get('target_crs'):
             logging.info(f"Target CRS specified: {params['target_crs']}")
             target_crs = params['target_crs']
@@ -163,13 +164,15 @@ def processing(params, job_id=None, db_path=None):
 
         if job_id:
             create_or_update_job_task(job_id, progress_percent="40", preprocess_type=None, error_code=None, error_msg=None, result=json.dumps({}), id= task_id)
+            create_or_update_job(job_id, 40)
         
         logging.info(f"Exporting data to {output_path}")
         output_file_path = export_data(gdf, output_path, params['output_format'])
 
         if job_id:
             create_or_update_job_task(job_id, progress_percent="100", preprocess_type=None, error_code=None, error_msg=None, result=json.dumps({}), id= task_id, is_finish=True)
-
+            create_or_update_job(job_id, 80)
+            
         logging.info("Processing completed successfully")
         return output_file_path
     except Exception as e:
