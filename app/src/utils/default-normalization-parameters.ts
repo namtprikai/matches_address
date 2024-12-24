@@ -85,6 +85,7 @@ export const defaultNormalizationParameters: z.infer<
       columns: {
         building_id: "",
       },
+      input_file_type: "csv",
     },
     urban_planning: { id: 0, path: "" },
     census: { id: 0, path: "" },

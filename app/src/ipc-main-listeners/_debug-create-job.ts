@@ -235,6 +235,7 @@ const mockE001: PreprocessParameters = {
       columns: {
         building_id: "",
       },
+      input_file_type: "csv",
     },
     urban_planning: {
       id: 0,
