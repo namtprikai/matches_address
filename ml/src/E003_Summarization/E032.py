@@ -97,7 +97,7 @@ class Summarization:
             地域ごとの住戸数、空き家数、空き家率、若年層率、高齢者率を集計したGeoDataFrame。
         """
         akiya_pred_cols = self.INPUT_COLUMNS["akiya_pred"]
-        gdf[akiya_pred_cols["predicted_label"]] = gdf[akiya_pred_cols["predicted_label"]].map({"true": 1, "false": 0})
+        # gdf[akiya_pred_cols["predicted_label"]] = gdf[akiya_pred_cols["predicted_label"]].map({"true": 1, "false": 0})
 
         # 各市区町村ブロックごとに集計を行う
         summerized_gdf = gdf.groupby(self.key_column).agg(
@@ -271,7 +271,7 @@ class Summarization:
             summerized_df['geometry'] = summerized_df['geometry'].apply(lambda x: x.wkt if x else None)
             summerized_df = summerized_df.rename(columns=mapping_header)
             
-            summerized_df.to_csv("E032.csv", index=False, encoding='utf-8-sig')
+            # summerized_df.to_csv("E032.csv", index=False, encoding='utf-8-sig')
             existing_columns = summerized_df.columns.tolist()
             mapped_columns = [col for col in mapping_header.values() if col in existing_columns]
             summerized_df = summerized_df[mapped_columns]
@@ -291,6 +291,11 @@ class Summarization:
 
             # Replace NaN, None, and empty values with the found value (or leave it empty if no valid value is found)
             summerized_df['reference_date'] = summerized_df['reference_date'].replace([None, '', pd.NA], reference_date_value)
+            summerized_df['predicted_probability'] = summerized_df['predicted_probability'].fillna(0)
+            summerized_df['vacant_house_count'] = summerized_df['vacant_house_count'].fillna(0)
+            summerized_df['total_building_count'] = summerized_df['total_building_count'].fillna(0)
+            summerized_df['young_population_ratio'] = summerized_df['young_population_ratio'].fillna(0)
+            summerized_df['elderly_population_ratio'] = summerized_df['elderly_population_ratio'].fillna(0)
             
             is_success = create_data_set_detail_buildings_or_area(summerized_df, 'data_set_detail_areas')
             if not is_success:

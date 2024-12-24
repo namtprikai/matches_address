@@ -604,7 +604,8 @@ def assign_points_to_buildings(buildings_gdf, points_gdf, mul, crs, point_select
         columns_to_drop = ["index_right", "buffer", "centroid", "area"]
         joined = joined.drop(columns=[col for col in columns_to_drop if col in joined.columns])
         combined_gdf = joined
-        # Z次元を削除した2次元ジオメトリに変換
+
+        # geometry_plateau を GeoSeries として扱う
         combined_gdf['geometry_plateau'] = gpd.GeoSeries(
             combined_gdf['geometry_plateau'], crs=combined_gdf.crs
         ).transform(_drop_z)
