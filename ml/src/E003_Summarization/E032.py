@@ -271,7 +271,7 @@ class Summarization:
             summerized_df['geometry'] = summerized_df['geometry'].apply(lambda x: x.wkt if x else None)
             summerized_df = summerized_df.rename(columns=mapping_header)
             
-            summerized_df.to_csv("E032.csv", index=False, encoding='utf-8-sig')
+            # summerized_df.to_csv("E032.csv", index=False, encoding='utf-8-sig')
             existing_columns = summerized_df.columns.tolist()
             mapped_columns = [col for col in mapping_header.values() if col in existing_columns]
             summerized_df = summerized_df[mapped_columns]
