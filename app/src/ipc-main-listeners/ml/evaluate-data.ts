@@ -37,12 +37,10 @@ export const evaluateData = (async (
       ],
       {
         detached: true,
-        env: { ...process.env, PYTHONIOENCODING: "utf8" },
       },
     );
 
-    cp.stdout.setEncoding("utf8");
-    cp.stderr.setEncoding("utf8");
+    processLogger(cp);
 
     return true;
   } catch (error) {
