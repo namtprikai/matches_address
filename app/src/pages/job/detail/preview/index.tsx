@@ -145,10 +145,6 @@ export function JobPreview(): JSX.Element {
           <BreadcrumbItem key={item.href} {...item} />
         ))}
       />
-      <div className={styles.historyBack} onClick={handleBackToResultsClick}>
-        <ArrowLeftRegular />
-        処理結果に戻る
-      </div>
       <h2 className={styles.heading}>ファイルのプレビュー</h2>
       <div className={styles.previewWrapper}>
         <div className={styles.preview}>
