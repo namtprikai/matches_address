@@ -14,9 +14,6 @@ export const buildModel = (async (
   params: Params,
 ): Promise<boolean> => {
   const { data } = params;
-  // 受け取ったデータを一度 Buffer を通して UTF-8 に変換
-  const rawData = Buffer.from(JSON.stringify(params.data)).toString("utf8");
-  const parsedData = JSON.parse(rawData);
 
   // eslint-disable-next-line no-console -- for debug @todo remove
   console.log("--- start buildModel ---", data);
@@ -32,7 +29,7 @@ export const buildModel = (async (
         "--parameters",
         JSON.stringify(
           JSON.stringify({
-            ...parsedData,
+            ...data,
             output_path,
             database_path,
           }),
