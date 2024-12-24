@@ -97,7 +97,7 @@ class Summarization:
             地域ごとの住戸数、空き家数、空き家率、若年層率、高齢者率を集計したGeoDataFrame。
         """
         akiya_pred_cols = self.INPUT_COLUMNS["akiya_pred"]
-        gdf[akiya_pred_cols["predicted_label"]] = gdf[akiya_pred_cols["predicted_label"]].map({"true": 1, "false": 0})
+        # gdf[akiya_pred_cols["predicted_label"]] = gdf[akiya_pred_cols["predicted_label"]].map({"true": 1, "false": 0})
 
         # 各市区町村ブロックごとに集計を行う
         summerized_gdf = gdf.groupby(self.key_column).agg(
