@@ -37,10 +37,12 @@ if async_tasks_path not in sys.path:
 
 try:
     from utils import *
+    from constants import *
 except ImportError:
     sys.path.remove(async_tasks_path)
     sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../')))
     from async_tasks.utils import *
+    from async_tasks.constants import *
 
 # Set pandas display options
 pd.set_option('display.max_columns', None)
@@ -68,6 +70,8 @@ CONSTANTS = {
 
 CONNECTION = None
 CURSOR = None
+ERROR_CODE = None
+ERROR_MSG=None
 
 def setup_directory():
     """
@@ -133,6 +137,7 @@ def read_data(path: str, **kwargs) -> pd.DataFrame:
         
         # CSVファイル以外の場合はエラーを発生させる
         if file_extension != '.csv':
+            set_error(ERROR_10001, file_extension)
             raise ValueError(f"CSVファイル以外は対応していません: {file_extension}")
         
         # 複数のエンコーディングを試行                
@@ -151,10 +156,13 @@ def read_data(path: str, **kwargs) -> pd.DataFrame:
             return pd.read_csv(path, encoding=detected_encoding, **kwargs)
         
         # 適切なエンコーディングが見つからない場合、エラーを発生させる
+        set_error(ERROR_10002, path)
         raise ValueError(f"適切なエンコーディングが見つかりませんでした: {path}")
     except Exception as e:
         # 何らかの例外が発生した場合、エラーメッセージを表示してNoneを返す
-        print(f"ファイル {path} の読み込み中にエラーが発生しました: {e}")
+        # print(f"ファイル {path} の読み込み中にエラーが発生しました: {e}")
+        if ERROR_CODE is None:
+            set_error(ERROR_10003, path)
         return None
 
 def prepare_learning_data(df, explanatory_variables, explanatory_variables_dict):
@@ -193,7 +201,9 @@ def prepare_learning_data(df, explanatory_variables, explanatory_variables_dict)
             try:
                 explanatory_variables = ast.literal_eval(explanatory_variables)
             except (ValueError, SyntaxError) as e:
-                print(f"Error parsing data: {e}")
+                set_error(ERROR_10007)
+                # print(f"Error parsing data: {e}")
+                raise
         merged_variables = list(dict.fromkeys(chain(CONSTANTS['explanatory_variables'], explanatory_variables)))
         learning_data = learning_data[merged_variables]
     else:
@@ -398,7 +408,7 @@ def train_lgb_with_optuna(train_df, params, citycode_value, targetyear_value, ou
             'min_data_in_leaf': params['min_data_in_leaf'],
         })
     if job_id:
-        create_or_update_job_task(job_id, progress_percent="40", preprocess_type=None, error_code=None, result=json.dumps({}), id= task_id)
+        create_or_update_job_task(job_id, progress_percent="40", preprocess_type=None, error_code=None, error_msg=None, result=json.dumps({}), id= task_id)
         create_or_update_job(job_id , "40")
     # 最良のハイパーパラメータを表示
     print("Best Hyperparameters:", best_params)
@@ -456,7 +466,7 @@ def train_lgb_with_optuna(train_df, params, citycode_value, targetyear_value, ou
         lgbm_models.append(model)
     
     if job_id:
-        create_or_update_job_task(job_id, progress_percent="50", preprocess_type=None, error_code=None, result=json.dumps({}), id= task_id)
+        create_or_update_job_task(job_id, progress_percent="50", preprocess_type=None, error_code=None, error_msg=None, result=json.dumps({}), id= task_id)
         create_or_update_job(job_id , "50")
     # 全体の学習時間の終了
     end_total_time = time.time()
@@ -478,7 +488,7 @@ def train_lgb_with_optuna(train_df, params, citycode_value, targetyear_value, ou
     os.makedirs(output_file_path, exist_ok=True)
     
     if job_id:
-        create_or_update_job_task(job_id, progress_percent="60", preprocess_type=None, error_code=None, result=json.dumps({}), id= task_id)
+        create_or_update_job_task(job_id, progress_percent="60", preprocess_type=None, error_code=None, error_msg=None, result=json.dumps({}), id= task_id)
         create_or_update_job(job_id , "60")
     # 各学習済みモデルをファイルに保存
     for i, model in enumerate(lgbm_models):
@@ -498,7 +508,7 @@ def train_lgb_with_optuna(train_df, params, citycode_value, targetyear_value, ou
                     # arcname をファイル名のみに設定して models/ フォルダを含めない
                     zipf.write(file_path, arcname=file)
     if job_id:
-        create_or_update_job_task(job_id, progress_percent="70", preprocess_type=None, error_code=None, result=json.dumps({}), id= task_id)
+        create_or_update_job_task(job_id, progress_percent="70", preprocess_type=None, error_code=None, error_msg=None, result=json.dumps({}), id= task_id)
         create_or_update_job(job_id , "70")
     # 学習済みモデル、Out-of-fold予測、学習データの特徴量重要度を返す
     return lgbm_models, oof_pred, feature_importances_dict_train, model_zip_file_path
@@ -660,10 +670,11 @@ def merge_and_save_results(df, pred, output_file):
             return merged_df
         except Exception as e:
             # 保存中にエラーが発生した場合、エラーメッセージを表示して次のエンコーディングを試す
-            print(f"ファイル {output_file} を {encoding} エンコーディングで保存中にエラーが発生しました: {e}")
+            set_error(ERROR_10004, output_file, encoding)
+            # print(f"ファイル {output_file} を {encoding} エンコーディングで保存中にエラーが発生しました: {e}")
     
     # すべてのエンコーディングで保存に失敗した場合のメッセージ
-    print(f"ファイル {output_file} をいずれのエンコーディングでも保存できませんでした。")
+    # print(f"ファイル {output_file} をいずれのエンコーディングでも保存できませんでした。")
     return merged_df
 
 def save_metrics_and_importances(score_dict, feature_importances_dict_train, citycode_value, targetyear_value, output_path):
@@ -780,7 +791,7 @@ def train_and_evaluate(db_path, input_file, output_path, explanatory_variables, 
             connect_sqllite(db_path)
         task_id = None
         if job_id:
-            task_id = create_or_update_job_task(job_id, progress_percent="0", preprocess_type=None, error_code=None, result=json.dumps({}))
+            task_id = create_or_update_job_task(job_id, progress_percent="0", preprocess_type=None, error_code=None, error_msg=None, result=json.dumps({}))
             create_or_update_job(job_id , "0")
         file_path = input_file
         df = read_data(file_path, low_memory=False)
@@ -818,7 +829,7 @@ def train_and_evaluate(db_path, input_file, output_path, explanatory_variables, 
         df = df[~condition].reset_index(drop=True)
         
         if job_id:
-            create_or_update_job_task(job_id, progress_percent="10", preprocess_type=None, error_code=None, result=json.dumps({}), id= task_id)
+            create_or_update_job_task(job_id, progress_percent="10", preprocess_type=None, error_code=None, error_msg=None, result=json.dumps({}), id= task_id)
             create_or_update_job(job_id , "10")
         learning_data = prepare_learning_data(df, explanatory_variables, explanatory_variables_dict)
         
@@ -839,22 +850,22 @@ def train_and_evaluate(db_path, input_file, output_path, explanatory_variables, 
             'min_data_in_leaf': int(min_data_in_leaf),
         }
         if job_id:
-            create_or_update_job_task(job_id, progress_percent="20", preprocess_type=None, error_code=None, result=json.dumps({}), id= task_id)
+            create_or_update_job_task(job_id, progress_percent="20", preprocess_type=None, error_code=None, error_msg=None, result=json.dumps({}), id= task_id)
             create_or_update_job(job_id , "20")
         train_df, test_df = split_data(learning_data, params, explanatory_variables_dict)
         
         if job_id:
-            create_or_update_job_task(job_id, progress_percent="30", preprocess_type=None, error_code=None, result=json.dumps({}), id= task_id)
+            create_or_update_job_task(job_id, progress_percent="30", preprocess_type=None, error_code=None, error_msg=None, result=json.dumps({}), id= task_id)
             create_or_update_job(job_id , "30")
         models, oof_pred, feature_importances_dict_train, model_zip_file_path = train_lgb_with_optuna(train_df, params, citycode_value, targetyear_value, output_path, job_id, task_id)
         
         if job_id:
-            create_or_update_job_task(job_id, progress_percent="80", preprocess_type=None, error_code=None, result=json.dumps({}), id= task_id)
+            create_or_update_job_task(job_id, progress_percent="80", preprocess_type=None, error_code=None, error_msg=None, result=json.dumps({}), id= task_id)
             create_or_update_job(job_id , "80")
         pred, score_dict, feature_importances_dict_test, feature_importance_plot = evaluate_models_on_test(test_df, models, params)
         
         if job_id:
-            create_or_update_job_task(job_id, progress_percent="90", preprocess_type=None, error_code=None, result=json.dumps({}), id= task_id)
+            create_or_update_job_task(job_id, progress_percent="90", preprocess_type=None, error_code=None, error_msg=None, result=json.dumps({}), id= task_id)
             create_or_update_job(job_id , "90")
         if citycode_value is not None:
             output_file = f'{output_path}/data/{citycode_value}/E021/outputs/D902.csv'
@@ -870,7 +881,7 @@ def train_and_evaluate(db_path, input_file, output_path, explanatory_variables, 
         data_zip_file_path = save_metrics_and_importances(score_dict, feature_importances_dict_train, citycode_value, targetyear_value, output_path)
 
         if job_id:
-            create_or_update_job_task(job_id, progress_percent="95", preprocess_type=None, error_code=None, result=json.dumps({}), id= task_id)
+            create_or_update_job_task(job_id, progress_percent="95", preprocess_type=None, error_code=None, error_msg=None, result=json.dumps({}), id= task_id)
             create_or_update_job(job_id , "95")
         # Create a string with the evaluation results
         result_str = (
@@ -899,15 +910,28 @@ def train_and_evaluate(db_path, input_file, output_path, explanatory_variables, 
         
         # Update progress to complete
         if job_id:
-            create_or_update_job_task(job_id, progress_percent="100", preprocess_type=None, error_code=None, result=json.dumps(result, ensure_ascii=False), id= task_id, is_finish=True)
+            create_or_update_job_task(job_id, progress_percent="100", preprocess_type=None, error_code=None, error_msg=None, result=json.dumps(result, ensure_ascii=False), id= task_id, is_finish=True)
             create_or_update_job(job_id , "complete")
 
         return result_str, feature_importance_plot, output_file, model_zip_file_path, data_zip_file_path
     except Exception as e:
         print(e)
+        if ERROR_CODE is None:
+            set_error(ERROR_10006)
         if task_id is not None:
-            create_or_update_job_task(job_id, progress_percent="", preprocess_type=None, error_code="e001", result=json.dumps({}), id= task_id, is_finish=True)
-        raise Exception("Error: Vacant house learning process encountered an issue")
+            create_or_update_job_task(job_id, progress_percent="", preprocess_type=None, error_code=ERROR_CODE, error_msg=ERROR_MSG, result=json.dumps({}), id= task_id, is_finish=True)
+        raise Exception("空き家判定の学習モデル構築中にエラーが発生しました。")
+    
+def set_error(value, param_st1=None, param_st2=None):
+    global ERROR_CODE
+    global ERROR_MSG
+    ERROR_CODE = value['code']
+    if param_st1 is not None and param_st2 is not None:
+        ERROR_MSG = value['message'].format(param_st1=param_st1, param_st2=param_st2)
+    elif param_st1 is not None:
+        ERROR_MSG = value['message'].format(param_st1=param_st1)
+    else:
+        ERROR_MSG = value['message']
     
 def main():
     parser = argparse.ArgumentParser(description="E021 - 空き家学習機能")

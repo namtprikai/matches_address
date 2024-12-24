@@ -58,7 +58,7 @@ export const EditResultViewLayoutSort = (): JSX.Element => {
   };
 
   return (
-    <Field label="ビューの表示順序の変更">
+    <Field label="ビューの並び替え">
       <div className={styles.inner}>
         <Button
           disabled={

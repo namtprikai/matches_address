@@ -42,10 +42,12 @@ if async_tasks_path not in sys.path:
 
 try:
     from utils import *
+    from constants import *
 except ImportError:
     sys.path.remove(async_tasks_path)
     sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../')))
     from async_tasks.utils import *
+    from async_tasks.constants import *
 
 pd.set_option("display.max_columns", None)
 
@@ -206,6 +208,9 @@ NUMBER_17_CITIES = {
     "北大東村", "南大東村"
 }
 
+ERROR_CODE=None
+ERROR_MSG=None
+
 @staticmethod
 def detect_encoding(file_path):
     """
@@ -271,7 +276,8 @@ def read_csv(path: str, **kwargs) -> pd.DataFrame:
         raise ValueError(f"適切なエンコーディングが見つかりませんでした: {path}")
     except Exception as e:
         # 何らかの例外が発生した場合、エラーメッセージを表示してNoneを返す
-        print(f"ファイル {path} の読み込み中にエラーが発生しました: {e}")
+        set_error(ERROR_00014, path)
+        # print(f"ファイル {path} の読み込み中にエラーが発生しました: {e}")
         return None
 
 def load_and_process_data(file_path, crs, building_id, is_tatemono=True):
@@ -462,7 +468,8 @@ def parse_wkt(wkt_str):
     try:
         return wkt.loads(wkt_str)
     except Exception as e:
-        print(f"WKTの解析中にエラーが発生しましたT: {e}")
+        set_error(ERROR_00015)
+        # print(f"WKTの解析中にエラーが発生しましたT: {e}")
         return None
 
 def extract_zip(zip_file, extract_to):
@@ -730,9 +737,10 @@ def save_geodataframe(gdf, output_path, output_type):
                 print(f"ファイルが {encoding} エンコーディングでGeoPackage形式で正常に保存されました: {output_path}")
                 return
             except Exception as e:
-                print(f"ファイル {output_path} を {encoding} エンコーディングでGeoPackage形式で保存中にエラーが発生しました: {e}")
+                set_error(ERROR_00016, output_path, encoding)
+                # print(f"ファイル {output_path} を {encoding} エンコーディングでGeoPackage形式で保存中にエラーが発生しました: {e}")
         
-        print(f"ファイル {output_path} をいずれのエンコーディングでもGeoPackage形式で保存できませんでした。")
+        # print(f"ファイル {output_path} をいずれのエンコーディングでもGeoPackage形式で保存できませんでした。")
 
     elif output_type == 'csv':
         # CSV形式で保存 
@@ -742,12 +750,14 @@ def save_geodataframe(gdf, output_path, output_type):
                 print(f"ファイルが {encoding} エンコーディングでCSV形式で正常に保存されました: {output_path}")
                 return
             except Exception as e:
-                print(f"ファイル {output_path} を {encoding} エンコーディングでCSV形式で保存中にエラーが発生しました: {e}")
+                set_error(ERROR_00017, output_path, encoding)
+                # print(f"ファイル {output_path} を {encoding} エンコーディングでCSV形式で保存中にエラーが発生しました: {e}")
         
-        print(f"ファイル {output_path} をいずれのエンコーディングでもCSV形式で保存できませんでした。")
+        # print(f"ファイル {output_path} をいずれのエンコーディングでもCSV形式で保存できませんでした。")
 
     else:
         # サポートされていない出力形式が指定された場合、例外を発生させる
+        set_error(ERROR_00018, output_type)
         raise ValueError(f"サポートされていない出力形式です: {output_type}")
 
 def unzip_file(zip_file, extract_to):
@@ -983,7 +993,7 @@ def process_data(tatemono_path, water_supply_path, gpkg_path, ken, sikuchoson, o
             connect_sqllite(db_path)
         task_id = None
         if job_id:
-            task_id = create_or_update_job_task(job_id, progress_percent="0", preprocess_type="e016", error_code=None, result=None)
+            task_id = create_or_update_job_task(job_id, progress_percent="0", preprocess_type="e016", error_code=None, error_msg=None, result=None)
         # 座標系を設定
         crs = get_transformer(ken, sikuchoson)
         
@@ -992,7 +1002,7 @@ def process_data(tatemono_path, water_supply_path, gpkg_path, ken, sikuchoson, o
         water_supply = load_and_process_data(water_supply_path, crs, building_id)
 
         if job_id:
-            create_or_update_job_task(job_id, progress_percent="20", preprocess_type="e016", error_code=None, result=None, id= task_id)
+            create_or_update_job_task(job_id, progress_percent="20", preprocess_type="e016", error_code=None, error_msg=None, result=None, id= task_id)
         tatemono.to_crs(crs, inplace=True)
         water_supply.to_crs(crs, inplace=True)
         
@@ -1002,12 +1012,12 @@ def process_data(tatemono_path, water_supply_path, gpkg_path, ken, sikuchoson, o
         # 建物データと水道データを結合
         tatemono_use_point, join_ratio = assign_points_to_buildings(tatemono, water_supply, 2, crs, point_selected_column, option, building_id)
         if job_id:
-            create_or_update_job_task(job_id, progress_percent="50", preprocess_type="e016", error_code=None, result=None, id= task_id)
+            create_or_update_job_task(job_id, progress_percent="50", preprocess_type="e016", error_code=None, error_msg=None, result=None, id= task_id)
         # 住居IDを追加
         add_residenceID(tatemono_use_point, building_id)
         
         if job_id:
-            create_or_update_job_task(job_id, progress_percent="70", preprocess_type="e016", error_code=None, result=None, id= task_id)
+            create_or_update_job_task(job_id, progress_percent="70", preprocess_type="e016", error_code=None, error_msg=None, result=None, id= task_id)
         # 地域コードと町丁字名の付与
         tatemono_use_point_add_keycode = add_keycode(tatemono_use_point, gpkg_path)
 
@@ -1027,13 +1037,26 @@ def process_data(tatemono_path, water_supply_path, gpkg_path, ken, sikuchoson, o
                 "joining_rate": join_ratio,
                 "input_source": input_source
             }
-            create_or_update_job_task(job_id, progress_percent="100", preprocess_type="e016", error_code=None, result=json.dumps(result, ensure_ascii=False), id= task_id, is_finish=True)
+            create_or_update_job_task(job_id, progress_percent="100", preprocess_type="e016", error_code=None, error_msg=None, result=json.dumps(result, ensure_ascii=False), id= task_id, is_finish=True)
 
         return output_path, join_ratio
     except Exception as e:
+        if ERROR_CODE is None:
+            set_error(ERROR_00018)
         if task_id is not None:
-            create_or_update_job_task(job_id, progress_percent="", preprocess_type="e016", error_code="e001", result=json.dumps({}), id= task_id, is_finish=True)
-        raise Exception("Error: There was an issue during the Spatial join process")
+            create_or_update_job_task(job_id, progress_percent="", preprocess_type="e016", error_code=ERROR_CODE, error_msg=ERROR_MSG, result=json.dumps({}), id= task_id, is_finish=True)
+        raise Exception("空間結合処理中にエラーが発生しました。ジオメトリに不正がないか、ご確認ください。")
+
+def set_error(value, param_st1=None, param_st2=None):
+    global ERROR_CODE
+    global ERROR_MSG
+    ERROR_CODE = value['code']
+    if param_st1 is not None and param_st2 is not None:
+        ERROR_MSG = value['message'].format(param_st1=param_st1, param_st2=param_st2)
+    elif param_st1 is not None:
+        ERROR_MSG = value['message'].format(param_st1=param_st1)
+    else:
+        ERROR_MSG = value['message']
 
 def main():
     parser = argparse.ArgumentParser(description="E016 - 空間結合機能")

@@ -84,15 +84,15 @@ export const EditResultViewFields = ({ dataSetTitle }: Props): JSX.Element => {
         <Input placeholder="選択中のビューのタイトル" {...register("title")} />
       </Field>
       <Fieldset>
-        <FieldLegend>パラメーター</FieldLegend>
-        <Field label="スタイル">
+        <FieldLegend>設定</FieldLegend>
+        <Field label="種類">
           <Select
             {...register("style")}
             onChange={(e) => {
               const value = e.target.value as keyof SelectResultView["style"];
               // styleに合わせてparameterをリセット
               resetParametersByStyle(value);
-              // スタイルの値を更新
+              // 種類の値を更新
               setValue("style", value);
             }}
           >
@@ -204,9 +204,9 @@ export const EditResultViewFields = ({ dataSetTitle }: Props): JSX.Element => {
                           }}
                           value={groupCalc?.value}
                         >
-                          <option value="avg">平均</option>
-                          <option value="sum">合計</option>
-                          <option value="count">総件数</option>
+                          <option value="avg">値の平均</option>
+                          <option value="sum">値の合計</option>
+                          <option value="count">総件数（世帯数）</option>
                         </Select>
                       )
                   }

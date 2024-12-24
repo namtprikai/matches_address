@@ -27,10 +27,12 @@ if async_tasks_path not in sys.path:
 
 try:
     from utils import *
+    from constants import *
 except ImportError:
     sys.path.remove(async_tasks_path)
     sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../')))
     from async_tasks.utils import *
+    from async_tasks.constants import *
 
 # カスタムCSS
 CUSTOM_CSS = """
@@ -42,6 +44,8 @@ CUSTOM_CSS = """
 """
 
 OUTPUT_PATH = "matched_data.csv"
+ERROR_CODE=None
+ERROR_MSG=None
 
 @staticmethod
 def detect_encoding(file_path):
@@ -108,7 +112,8 @@ def read_data(path: str, **kwargs) -> pd.DataFrame:
         raise ValueError(f"適切なエンコーディングが見つかりませんでした: {path}")
     except Exception as e:
         # 何らかの例外が発生した場合、エラーメッセージを表示してNoneを返す
-        print(f"ファイル {path} の読み込み中にエラーが発生しました: {e}")
+        set_error(ERROR_00011, path)
+        # print(f"ファイル {path} の読み込み中にエラーが発生しました: {e}")
         return None
 
 def get_column_names(csv_file: str) -> List[str]:
@@ -166,7 +171,7 @@ def embedding_address(main_csv: io.BytesIO | str, sub_csv: io.BytesIO | str, mai
             connect_sqllite(db_path)
         task_id = None
         if job_id:
-            task_id = create_or_update_job_task(job_id, progress_percent="0", preprocess_type="e014", error_code=None, result=None)
+            task_id = create_or_update_job_task(job_id, progress_percent="0", preprocess_type="e014", error_code=None, error_msg=None, result=None)
       
         if output_path is None:
             output_path = OUTPUT_PATH
@@ -223,7 +228,7 @@ def embedding_address(main_csv: io.BytesIO | str, sub_csv: io.BytesIO | str, mai
         sub_df[f'名寄せ元情報_{sub_csv_name}'] = sub_df[sub_column]
         sub_df.rename(columns={sub_column: main_column}, inplace=True)
         if job_id:
-            create_or_update_job_task(job_id, progress_percent="30", preprocess_type="e014", error_code=None, result=None, id= task_id)
+            create_or_update_job_task(job_id, progress_percent="30", preprocess_type="e014", error_code=None, error_msg=None, result=None, id= task_id)
         # 完全一致による結合
         df_merge = pd.merge(main_df, sub_df, on=main_column, how='inner')
         merged_rows = len(df_merge)    # 完全一致できた行数
@@ -234,7 +239,7 @@ def embedding_address(main_csv: io.BytesIO | str, sub_csv: io.BytesIO | str, mai
         main_df = main_df.reset_index(drop=True)
         sub_df = sub_df.reset_index(drop=True)
         if job_id:
-            create_or_update_job_task(job_id, progress_percent="40", preprocess_type="e014", error_code=None, result=None, id= task_id)
+            create_or_update_job_task(job_id, progress_percent="40", preprocess_type="e014", error_code=None, error_msg=None, result=None, id= task_id)
         # N-gramで類似度を計算する準備
         vectorizer = CountVectorizer(analyzer='char', ngram_range=(ngram, ngram))
         main_df_ngram_matrix = vectorizer.fit_transform(main_df[main_column].astype(str))
@@ -288,7 +293,7 @@ def embedding_address(main_csv: io.BytesIO | str, sub_csv: io.BytesIO | str, mai
         other_columns = [col for col in result_df.columns if 'flag' not in col]
         result_df = result_df[other_columns + flag_columns]
         if job_id:
-            create_or_update_job_task(job_id, progress_percent="90", preprocess_type="e014", error_code=None, result=None, id= task_id)
+            create_or_update_job_task(job_id, progress_percent="90", preprocess_type="e014", error_code=None, error_msg=None, result=None, id= task_id)
         # 結果をCSVファイルとして保存
         saved_file_path = save_csv(result_df, output_path)
         
@@ -303,14 +308,16 @@ def embedding_address(main_csv: io.BytesIO | str, sub_csv: io.BytesIO | str, mai
             'input_source': input_source
         }
         if job_id:
-            create_or_update_job_task(job_id, progress_percent="100", preprocess_type="e014", error_code=None, result=json.dumps(res, ensure_ascii=False), id= task_id, is_finish=True)
+            create_or_update_job_task(job_id, progress_percent="100", preprocess_type="e014", error_code=None, error_msg=None, result=json.dumps(res, ensure_ascii=False), id= task_id, is_finish=True)
 
         return saved_file_path, f"{complete_match_ratio}\n{threshold_match_ratio}\n{sub_complete_match_ratio}"
     except Exception as e:
         print(e)
+        if ERROR_CODE is None:
+            set_error(ERROR_00013)
         if task_id is not None:
-            create_or_update_job_task(job_id, progress_percent="", preprocess_type="e014", error_code="e001", result=json.dumps({}), id= task_id, is_finish=True)
-        raise Exception("Error: There was an issue during the Text Matching process")
+            create_or_update_job_task(job_id, progress_percent="", preprocess_type="e014", error_code=ERROR_CODE, error_msg=ERROR_MSG, result=json.dumps({}), id= task_id, is_finish=True)
+        raise Exception("テキストマッチング処理中にエラーが発生しました。")
 
 def save_csv(df, path):
     """
@@ -335,10 +342,22 @@ def save_csv(df, path):
             print(f"ファイルが {encoding} エンコーディングで正常に保存されました: {abs_path}")
             return abs_path
         except Exception as e:
-            print(f"ファイル {abs_path} を {encoding} エンコーディングで保存中にエラーが発生しました: {e}")
+            set_error(ERROR_00012, abs_path, encoding)
+            # print(f"ファイル {abs_path} を {encoding} エンコーディングで保存中にエラーが発生しました: {e}")
     
-    print(f"ファイル {abs_path} をいずれのエンコーディングでも保存できませんでした。")
+    # print(f"ファイル {abs_path} をいずれのエンコーディングでも保存できませんでした。")
     return None
+
+def set_error(value, param_st1=None, param_st2=None):
+    global ERROR_CODE
+    global ERROR_MSG
+    ERROR_CODE = value['code']
+    if param_st1 is not None and param_st2 is not None:
+        ERROR_MSG = value['message'].format(param_st1=param_st1, param_st2=param_st2)
+    elif param_st1 is not None:
+        ERROR_MSG = value['message'].format(param_st1=param_st1)
+    else:
+        ERROR_MSG = value['message']
 
 def main():
     parser = argparse.ArgumentParser(description="E014 - テキストマッチング機能")

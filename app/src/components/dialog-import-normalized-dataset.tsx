@@ -188,7 +188,7 @@ export const DialogImportNormalizedDataset = ({
                 データセットから選択
               </Tab>
               {/* <Tab className={styles.tab} value={1}>
-                アップロード
+                新規アップロード
               </Tab> */}
             </TabList>
 
@@ -281,7 +281,7 @@ export const DialogImportNormalizedDataset = ({
               disabled={selectedTab === 0 && selectedDataSet === null}
               onClick={handleClick}
             >
-              インポート
+              選択
             </Button>
           </DialogActions>
         </DialogBody>

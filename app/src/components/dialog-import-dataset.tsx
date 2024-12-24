@@ -130,7 +130,6 @@ type TabValue = "select" | "upload";
 type Props = {
   dialogState: ReturnUseDialogState;
   onSubmit?: (data: SelectRawDataSet) => void;
-  initialRawDataSetId?: SelectRawDataSet["id"];
 };
 
 export const DialogImportDataset = ({
@@ -216,7 +215,7 @@ export const DialogImportDataset = ({
             }
             className={styles.dialogTitle}
           >
-            ファイルをインポート
+            インプットデータセット一覧から選択
           </DialogTitle>
           <DialogContent padding={false}>
             <TabList
@@ -228,7 +227,7 @@ export const DialogImportDataset = ({
                 データセットから選択
               </Tab>
               <Tab className={styles.tab} value="upload">
-                アップロード
+                新規アップロード
               </Tab>
             </TabList>
             {selectedTab === "select" && (
@@ -314,7 +313,7 @@ export const DialogImportDataset = ({
               disabled={isDisabledImportButton}
               onClick={handleClick}
             >
-              インポート
+              選択
             </Button>
           </DialogActions>
         </DialogBody>

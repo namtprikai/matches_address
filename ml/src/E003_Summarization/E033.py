@@ -14,11 +14,15 @@ if async_tasks_path not in sys.path:
 
 try:
     from utils import *
+    from constants import *
 except ImportError:
     sys.path.remove(async_tasks_path)
     sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../')))
     from async_tasks.utils import *
+    from async_tasks.constants import *
 
+ERROR_CODE=None
+ERROR_MSG=None
 
 # 一般的な座標系のリスト
 COMMON_CRS = [
@@ -79,7 +83,8 @@ def read_input_data(data_set_results_id, reference_date, table_name):
 
         return gdf
     except Exception as e:
-        logging.error(f"An error occurred while reading input data: {str(e)}")
+        # logging.error(f"An error occurred while reading input data: {str(e)}")
+        set_error(ERROR_30001)
         raise
 
 
@@ -113,7 +118,8 @@ def export_data(gdf, output_path, output_format):
     except ValueError as e:
         raise
     except Exception as e:
-        logging.error(f"An error occurred during export: {str(e)}")
+        # logging.error(f"An error occurred during export: {str(e)}")
+        set_error(ERROR_30002)
         raise
 
 def processing(params, job_id=None, db_path=None):
@@ -132,11 +138,12 @@ def processing(params, job_id=None, db_path=None):
         output_path = params['output_path']
         task_id = None
         if job_id:
-            task_id = create_or_update_job_task(job_id, progress_percent="0", preprocess_type=None, error_code=None, result=json.dumps({}))
+            task_id = create_or_update_job_task(job_id, progress_percent="0", preprocess_type=None, error_code=None, error_msg=None, result=json.dumps({}))
 
         gdf = read_input_data(data_set_results_id, params.get("reference_date"), table_name)
         if job_id:
-            create_or_update_job_task(job_id, progress_percent="20", preprocess_type=None, error_code=None, result=json.dumps({}), id= task_id)
+            create_or_update_job_task(job_id, progress_percent="20", preprocess_type=None, error_code=None, error_msg=None, result=json.dumps({}), id= task_id)
+            create_or_update_job(job_id, 20)
         if params.get('target_crs'):
             logging.info(f"Target CRS specified: {params['target_crs']}")
             target_crs = params['target_crs']
@@ -156,24 +163,37 @@ def processing(params, job_id=None, db_path=None):
             logging.info("No target CRS specified. Skipping conversion.")
 
         if job_id:
-            create_or_update_job_task(job_id, progress_percent="40", preprocess_type=None, error_code=None, result=json.dumps({}), id= task_id)
+            create_or_update_job_task(job_id, progress_percent="40", preprocess_type=None, error_code=None, error_msg=None, result=json.dumps({}), id= task_id)
+            create_or_update_job(job_id, 40)
         
         logging.info(f"Exporting data to {output_path}")
         output_file_path = export_data(gdf, output_path, params['output_format'])
 
         if job_id:
-            create_or_update_job_task(job_id, progress_percent="100", preprocess_type=None, error_code=None, result=json.dumps({}), id= task_id, is_finish=True)
-
+            create_or_update_job_task(job_id, progress_percent="100", preprocess_type=None, error_code=None, error_msg=None, result=json.dumps({}), id= task_id, is_finish=True)
+            create_or_update_job(job_id, 80)
+            
         logging.info("Processing completed successfully")
         return output_file_path
     except Exception as e:
+        if ERROR_CODE is None:
+            set_error(ERROR_30003)
         if task_id is not None:
-            create_or_update_job_task(job_id, progress_percent="", preprocess_type=None, error_code="e001", result=json.dumps({}), id= task_id, is_finish=True)
+            create_or_update_job_task(job_id, progress_percent="", preprocess_type=None, error_code=ERROR_CODE, error_msg=ERROR_MSG, result=json.dumps({}), id= task_id, is_finish=True)
 
-        logging.error(f"An error occurred: {str(e)}")
-        raise Exception("Error: CRS conversion process encountered an issue")
+        # logging.error(f"An error occurred: {str(e)}")
+        raise Exception("変換処理中にエラーが発生しました。正しいCRS（参照座標系）になっているかご確認ください。")
 
-
+def set_error(value, param_st1=None, param_st2=None):
+    global ERROR_CODE
+    global ERROR_MSG
+    ERROR_CODE = value['code']
+    if param_st1 is not None and param_st2 is not None:
+        ERROR_MSG = value['message'].format(param_st1=param_st1, param_st2=param_st2)
+    elif param_st1 is not None:
+        ERROR_MSG = value['message'].format(param_st1=param_st1)
+    else:
+        ERROR_MSG = value['message']
 
 def main():
     parser = argparse.ArgumentParser(description="E033 - データ出力機能")

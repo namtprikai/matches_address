@@ -8,6 +8,7 @@ import {
   Dialog,
   Option,
   DialogTrigger,
+  Caption1,
 } from "@fluentui/react-components";
 import { DeleteRegular, Dismiss24Regular } from "@fluentui/react-icons";
 import { useNavigate } from "react-router-dom";
@@ -202,10 +203,12 @@ export const JobEvaluationCreate = (): JSX.Element => {
     setValue("area_grouping.columns.area_group_name", "");
   };
 
+  const settingsThreshold = watch("settings.threshold");
+
   return (
     <form onSubmit={onSubmit}>
       <div className={styles.root}>
-        <h2 className={styles.heading}>空き家判定</h2>
+        <h2 className={styles.heading}>空き家推定</h2>
 
         <div className={styles.contents}>
           {hasErrors && (
@@ -306,7 +309,7 @@ export const JobEvaluationCreate = (): JSX.Element => {
               );
             }}
             placeholder="データ名"
-            title="分析対象のデータを選択"
+            title="分析を行う名寄せ処理済みデータセットを選択"
             useFetchDatasets={useFetchNormalizedDatasets}
           />
 
@@ -423,6 +426,9 @@ export const JobEvaluationCreate = (): JSX.Element => {
                 }
               />
             </Subtitle2>
+            <div>
+              <Caption1>テキストマッチング: {settingsThreshold}</Caption1>
+            </div>
             <div className={styles.file}>
               <DialogSetting
                 onChange={(newValue) =>

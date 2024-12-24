@@ -6,8 +6,8 @@ export enum JobType {
 }
 
 export const TYPE_DISPLAY_MAP: Record<JobType, string> = {
-  [JobType.Preprocess]: "前処理",
-  [JobType.ML]: "モデル作成",
-  [JobType.Result]: "空き家判定処理",
+  [JobType.Preprocess]: "名寄せ処理",
+  [JobType.ML]: "モデル構築",
+  [JobType.Result]: "空き家推定",
   [JobType.Export]: "ダウンロード準備",
 };

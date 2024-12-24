@@ -1,4 +1,5 @@
 import { Dialog, Body1 } from "@fluentui/react-components";
+import { useNavigate } from "react-router-dom";
 import { type ReturnUseDialogState } from "../hooks/use-dialog-state";
 import { Button } from "./ui/button";
 import { DialogSurface } from "./ui/dialog-surface";
@@ -13,6 +14,7 @@ type Props = {
 
 export const DialogModelMessage = ({ dialogState }: Props): JSX.Element => {
   const { isOpen: isDialogOpen, setIsOpen: setIsDialogOpen } = dialogState;
+  const navigator = useNavigate();
 
   return (
     <Dialog
@@ -21,14 +23,14 @@ export const DialogModelMessage = ({ dialogState }: Props): JSX.Element => {
     >
       <DialogSurface>
         <DialogBody>
-          <DialogTitle>モデル作成処理を開始しました</DialogTitle>
+          <DialogTitle>モデル構築処理を開始しました</DialogTitle>
           <DialogContent>
-            <Body1>前処理が完了するまで一定の時間がかかります</Body1>
+            <Body1>名寄せ処理が完了するまで一定の時間がかかります</Body1>
           </DialogContent>
           <DialogActions>
-            <a href="/model">
-              <Button appearance="primary">処理のステータスを確認する</Button>
-            </a>
+            <Button appearance="primary" onClick={() => navigator("/model")}>
+              処理のステータスを確認する
+            </Button>
           </DialogActions>
         </DialogBody>
       </DialogSurface>

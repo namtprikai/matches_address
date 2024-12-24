@@ -26,10 +26,15 @@ if async_tasks_path not in sys.path:
 
 try:
     from utils import *
+    from constants import *
 except ImportError:
     sys.path.remove(async_tasks_path)
     sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../')))
     from async_tasks.utils import *
+    from async_tasks.constants import *
+    
+ERROR_CODE=None
+ERROR_MSG=None
 
 class Summarization:
     def __init__(self, input_paths, output_path, key_column, data_set_result_id):
@@ -266,7 +271,7 @@ class Summarization:
             summerized_df['geometry'] = summerized_df['geometry'].apply(lambda x: x.wkt if x else None)
             summerized_df = summerized_df.rename(columns=mapping_header)
             
-            summerized_df.to_csv("E032.csv", index=False, encoding='utf-8-sig')
+            # summerized_df.to_csv("E032.csv", index=False, encoding='utf-8-sig')
             existing_columns = summerized_df.columns.tolist()
             mapped_columns = [col for col in mapping_header.values() if col in existing_columns]
             summerized_df = summerized_df[mapped_columns]
@@ -287,10 +292,14 @@ class Summarization:
             # Replace NaN, None, and empty values with the found value (or leave it empty if no valid value is found)
             summerized_df['reference_date'] = summerized_df['reference_date'].replace([None, '', pd.NA], reference_date_value)
             
-            create_data_set_detail_buildings_or_area(summerized_df, 'data_set_detail_areas')
+            is_success = create_data_set_detail_buildings_or_area(summerized_df, 'data_set_detail_areas')
+            if not is_success:
+                raise
             
         except Exception as e:
-            print(f"Error when insert SQLite: {e}")
+            set_error(ERROR_20013)
+            raise
+            # print(f"Error when insert SQLite: {e}")
     
     def process(self):
         # データを読み込む
@@ -326,11 +335,14 @@ class Summarization:
                 city_block_df["geometry"] = city_block_df["geometry"].apply(load_wkt)  # WKT形式からジオメトリを生成
                 city_block_gdf = gpd.GeoDataFrame(city_block_df, geometry="geometry", crs="EPSG:4326")
             else:
+                set_error(ERROR_20009)
                 raise ValueError("CSV does not contain a 'geometry' column with WKT data.")
         else:
+            set_error(ERROR_20010)
             raise ValueError("No valid spatial file format found")
 
         if city_block_gdf is None:
+            set_error(ERROR_20011)
             raise ValueError("city_block_gdf is None. File may not have been read correctly.")
         
         # 座標系変換
@@ -419,7 +431,7 @@ def process_summarization(akiya_pred_file, spatial_file, output_dir, key_column,
         process = (process/3)
         process_init = process
         if job_id:
-            task_id = create_or_update_job_task(job_id, progress_percent="0", preprocess_type=None, error_code=None, result=json.dumps({}))
+            task_id = create_or_update_job_task(job_id, progress_percent="0", preprocess_type=None, error_code=None, error_msg=None, result=json.dumps({}))
 
         # 一時ディレクトリを作成
         if output_dir and len(output_dir) > 2:
@@ -438,7 +450,7 @@ def process_summarization(akiya_pred_file, spatial_file, output_dir, key_column,
             akiya_pred_path = move_uploaded_file(akiya_pred_file, temp_dir)
 
         if job_id:
-            create_or_update_job_task(job_id, progress_percent="20", preprocess_type=None, error_code=None, result=json.dumps({}), id= task_id)
+            create_or_update_job_task(job_id, progress_percent="20", preprocess_type=None, error_code=None, error_msg=None, result=json.dumps({}), id= task_id)
             create_or_update_job(job_id, process)
             process += process_init
         # ファイル拡張子を取得
@@ -478,27 +490,40 @@ def process_summarization(akiya_pred_file, spatial_file, output_dir, key_column,
             }
 
         else:
+            set_error(ERROR_20009, file_ext)
             raise ValueError(f"Unsupported file format: {file_ext}")
         
         if job_id:
-            create_or_update_job_task(job_id, progress_percent="40", preprocess_type=None, error_code=None, result=json.dumps({}), id= task_id)
+            create_or_update_job_task(job_id, progress_percent="40", preprocess_type=None, error_code=None, error_msg=None, result=json.dumps({}), id= task_id)
             create_or_update_job(job_id, process)
             process += process_init
 
         # 集計に使用するカラム名も引数として渡す
         Summarization(input_paths, output_path, key_column, data_set_result_id).process()
         if job_id:
-            create_or_update_job_task(job_id, progress_percent="100", preprocess_type=None, error_code=None, result=json.dumps({}), id= task_id, is_finish=True)
+            create_or_update_job_task(job_id, progress_percent="100", preprocess_type=None, error_code=None, error_msg=None, result=json.dumps({}), id= task_id, is_finish=True)
             create_or_update_job(job_id, process)
             process += process_init
             
         return output_path
     except Exception as e:
         print(e)
+        if ERROR_CODE is None:
+            set_error(ERROR_20012)
         if task_id is not None:
-            create_or_update_job_task(job_id, progress_percent="", preprocess_type=None, error_code="e001", result=json.dumps({}), id= task_id, is_finish=True)
-        raise Exception("Error: Area aggregation process encountered an issue")
+            create_or_update_job_task(job_id, progress_percent="", preprocess_type=None, error_code=ERROR_CODE, error_msg=ERROR_MSG, result=json.dumps({}), id= task_id, is_finish=True)
+        raise Exception("地域集計処理においてエラーが発生しています。集計に用いているデータに型の不一致や欠損がないかご確認ください。")
 
+def set_error(value, param_st1=None, param_st2=None):
+    global ERROR_CODE
+    global ERROR_MSG
+    ERROR_CODE = value['code']
+    if param_st1 is not None and param_st2 is not None:
+        ERROR_MSG = value['message'].format(param_st1=param_st1, param_st2=param_st2)
+    elif param_st1 is not None:
+        ERROR_MSG = value['message'].format(param_st1=param_st1)
+    else:
+        ERROR_MSG = value['message']
 
 def main():
     parser = argparse.ArgumentParser(description="E032 - 地域集計機能")

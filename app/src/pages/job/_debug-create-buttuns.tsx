@@ -3,7 +3,7 @@ import { Button, Caption1Strong } from "@fluentui/react-components";
 export const DebugCreateButtons = (): JSX.Element => {
   return (
     <div style={{ display: "grid", gap: 4 }}>
-      <Caption1Strong>非同期処理疑似データ作成(debug)</Caption1Strong>
+      <Caption1Strong>処理疑似データ作成(debug)</Caption1Strong>
       <div style={{ display: "flex", flexWrap: "wrap", gap: "2px" }}>
         <Button
           onClick={() => {
@@ -16,7 +16,7 @@ export const DebugCreateButtons = (): JSX.Element => {
           }}
           size="small"
         >
-          前処理開始
+          名寄せ処理開始
         </Button>
         <Button
           onClick={() => {
@@ -29,7 +29,7 @@ export const DebugCreateButtons = (): JSX.Element => {
           }}
           size="small"
         >
-          前処理完了
+          名寄せ処理完了
         </Button>
         <Button
           onClick={() => {
@@ -42,7 +42,7 @@ export const DebugCreateButtons = (): JSX.Element => {
           }}
           size="small"
         >
-          前処理失敗
+          名寄せ処理失敗
         </Button>
         <Button
           onClick={() => {
@@ -55,7 +55,7 @@ export const DebugCreateButtons = (): JSX.Element => {
           }}
           size="small"
         >
-          モデル作成開始
+          モデル構築開始
         </Button>
         <Button
           onClick={() => {
@@ -68,7 +68,7 @@ export const DebugCreateButtons = (): JSX.Element => {
           }}
           size="small"
         >
-          モデル作成完了
+          モデル構築完了
         </Button>
         <Button
           onClick={() => {
@@ -81,7 +81,7 @@ export const DebugCreateButtons = (): JSX.Element => {
           }}
           size="small"
         >
-          モデル作成失敗
+          モデル構築失敗
         </Button>
         <Button
           onClick={() => {

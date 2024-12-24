@@ -14,7 +14,6 @@ import {
   MenuItem,
   useTableFeatures,
   useTableSelection,
-  type TableRowId,
   createTableColumn,
   TableSelectionCell,
 } from "@fluentui/react-components";
@@ -22,12 +21,7 @@ import {
   ArrowDownloadRegular,
   MoreVerticalRegular,
 } from "@fluentui/react-icons";
-import {
-  type MouseEvent,
-  useState,
-  type Dispatch,
-  type SetStateAction,
-} from "react";
+import { type MouseEvent, type Dispatch, type SetStateAction } from "react";
 import { Button } from "../ui/button";
 import { type SelectRawDataSet } from "../../schema";
 import { useFetchRawDatasets } from "../../hooks/use-fetch-raw-datasets";
@@ -69,27 +63,24 @@ const useStyles = makeStyles({
 });
 
 type Props = {
+  selectedIds: SelectRawDataSet["id"][];
   onSelectionChange: Dispatch<SetStateAction<SelectRawDataSet["id"][]>>;
 };
 
-export function RawDataSetTable({ onSelectionChange }: Props): JSX.Element {
+export function RawDataSetTable({
+  selectedIds,
+  onSelectionChange,
+}: Props): JSX.Element {
   const styles = useStyles();
   const columns = [
     createTableColumn<SelectRawDataSet>({ columnId: "name" }),
     createTableColumn<SelectRawDataSet>({ columnId: "date" }),
   ];
-  const [selectedRows, setSelectedRows] = useState(new Set<TableRowId>());
   const { data, mutate } = useFetchRawDatasets();
 
   const {
     getRows,
-    selection: {
-      allRowsSelected,
-      someRowsSelected,
-      toggleAllRows,
-      toggleRow,
-      isRowSelected,
-    },
+    selection: { toggleAllRows, toggleRow },
   } = useTableFeatures(
     {
       columns,
@@ -98,14 +89,13 @@ export function RawDataSetTable({ onSelectionChange }: Props): JSX.Element {
     [
       useTableSelection({
         selectionMode: "multiselect",
-        selectedItems: selectedRows,
-        onSelectionChange: (_, data) => setSelectedRows(data.selectedItems),
+        selectedItems: new Set(selectedIds.map(String)), // TableRowIdをstringに変換
       }),
     ],
   );
 
   const rows = getRows((row) => {
-    const selected = isRowSelected(row.rowId);
+    const selected = selectedIds.includes(row.item.id);
 
     return {
       ...row,
@@ -124,23 +114,26 @@ export function RawDataSetTable({ onSelectionChange }: Props): JSX.Element {
 
   const handleToggleAll = (e: MouseEvent): void => {
     toggleAllRows(e);
-    onSelectionChange(() =>
-      allRowsSelected ? [] : data?.map((dataset) => dataset.id) || [],
+    onSelectionChange((prev) =>
+      prev.length === (data?.length || 0)
+        ? []
+        : data?.map((dataset) => dataset.id) || [],
     );
   };
 
   const handleDelete = async (id: SelectRawDataSet["id"]): Promise<void> => {
-    await window.ipcRenderer
-      .invoke("deleteRawDataset", {
-        id,
-      })
-      .then(() => {
-        void mutate();
-        setSelectedRows(new Set());
-        onSelectionChange([]);
-      })
-      .catch(console.error);
+    try {
+      await window.ipcRenderer.invoke("deleteRawDataset", { id });
+      await mutate();
+      onSelectionChange((prev) => prev.filter((prevId) => prevId !== id));
+    } catch (error) {
+      console.error("Delete operation failed:", error);
+    }
   };
+
+  const allSelected = data?.length === selectedIds.length;
+  const someSelected =
+    selectedIds.length > 0 && selectedIds.length < (data?.length || 0);
 
   return (
     <Table>
@@ -148,9 +141,7 @@ export function RawDataSetTable({ onSelectionChange }: Props): JSX.Element {
         <TableRow>
           <TableSelectionCell
             checkboxIndicator={{ "aria-label": "Select all rows" }}
-            checked={
-              allRowsSelected ? true : someRowsSelected ? "mixed" : false
-            }
+            checked={allSelected ? true : someSelected ? "mixed" : false}
             onClick={handleToggleAll}
           />
           <TableHeaderCell>データセット名</TableHeaderCell>

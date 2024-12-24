@@ -1,4 +1,5 @@
 import { Dialog, Body1 } from "@fluentui/react-components";
+import { useNavigate } from "react-router-dom";
 import { type ReturnUseDialogState } from "../hooks/use-dialog-state";
 import { Button } from "./ui/button";
 import { DialogSurface } from "./ui/dialog-surface";
@@ -13,6 +14,7 @@ type Props = {
 
 export const DialogExportMessage = ({ dialogState }: Props): JSX.Element => {
   const { isOpen: isDialogOpen, setIsOpen: setIsDialogOpen } = dialogState;
+  const navigator = useNavigate();
 
   return (
     <Dialog
@@ -24,13 +26,13 @@ export const DialogExportMessage = ({ dialogState }: Props): JSX.Element => {
           <DialogTitle>ダウンロード準備を開始しました</DialogTitle>
           <DialogContent>
             <Body1>
-              準備が完了すると「非同期処理一覧画面」からファイルがダウンロードできます
+              準備が完了すると「処理一覧画面」からファイルがダウンロードできます
             </Body1>
           </DialogContent>
           <DialogActions>
-            <a href="/job">
-              <Button appearance="primary">非同期処理一覧画面へ</Button>
-            </a>
+            <Button appearance="primary" onClick={() => navigator("/job")}>
+              処理一覧画面へ
+            </Button>
           </DialogActions>
         </DialogBody>
       </DialogSurface>

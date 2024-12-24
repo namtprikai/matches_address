@@ -6,6 +6,7 @@ import shutil
 import sys
 import uuid
 from utils import *
+from constants import *
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../')))
 from src.E001_DataMatching.E012 import process_data as E012
@@ -107,9 +108,6 @@ def main():
         connect_sqllite(params.get('db_path'))
         job_id = create_or_update_job(None ,"", "preprocess", os.getpid(), 0, args.parameters)
         
-        if not params.get('akiya_result') or not params.get('geocoding') or ((not params.get('suido_status') or not params.get('suido_use')) and not params.get('juki')) or not params.get('building_polygon'):
-            raise Exception("Error: juki (or suido), akiya_result, geocoding, building_polygon field is required")
-        
         suido_use_file = None
         suido_status_file = None
         juki_file = None
@@ -135,7 +133,8 @@ def main():
 
         input_files = {
             "akiya_result": concatenate(params.get('output_path'), params.get('akiya_result')),
-            "geocoding": concatenate(params.get('output_path'), params.get('geocoding'))
+            "geocoding": concatenate(params.get('output_path'), params.get('geocoding')),
+            "building_polygon": params.get('building_polygon')
         }
             
         if params.get('suido_status'):

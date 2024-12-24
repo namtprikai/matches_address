@@ -21,14 +21,19 @@ if async_tasks_path not in sys.path:
 
 try:
     from utils import *
+    from constants import *
 except ImportError:
     sys.path.remove(async_tasks_path)
     sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../')))
     from async_tasks.utils import *
+    from async_tasks.constants import *
 
 
 # pandasの表示オプションを設定
 pd.set_option('display.max_columns', None)
+
+ERROR_CODE=None
+ERROR_MSG=None
 
 def setup_directory(base_dir):
     """
@@ -97,6 +102,7 @@ def read_csv(path: str) -> pd.DataFrame:
 
         # CSVファイル以外の場合はエラーを発生させる
         if file_extension != '.csv':
+            set_error(ERROR_20001, file_extension)
             raise ValueError(f"CSVファイル以外は対応していません: {file_extension}")
 
         # 複数のエンコーディングを試行
@@ -115,10 +121,13 @@ def read_csv(path: str) -> pd.DataFrame:
             return pd.read_csv(path, encoding=detected_encoding)
 
         # 適切なエンコーディングが見つからない場合、エラーを発生させる
+        set_error(ERROR_20002, path)
         raise ValueError(f"適切なエンコーディングが見つかりませんでした: {path}")
     except Exception as e:
         # 何らかの例外が発生した場合、エラーメッセージを表示してNoneを返す
-        print(f"ファイル {path} の読み込み中にエラーが発生しました: {e}")
+        # print(f"ファイル {path} の読み込み中にエラーが発生しました: {e}")
+        if ERROR_CODE is None:
+            set_error(ERROR_20003, path)
         return None
 
 def extract_zip(zip_file, extract_to):
@@ -198,6 +207,7 @@ def check_features(new_data, required_features, outcome_variable):
 
     # 不足している特徴量と余分な特徴量を特定
     if missing_features:
+        set_error(ERROR_20004, missing_features)
         error_message = "学習に使用したデータと予測に使用するデータの列が一致しません!\n"
         error_message += f"不足している特徴量: {missing_features}\n"
         return new_data, False, error_message
@@ -308,7 +318,7 @@ def insert_sqlite_and_export(input_data, data_set_result_id):
             'fid': 'fid',
             'gml_id': 'gml_id',
             'class': 'class',
-            'geometry': 'geometry',
+            'geometry_plateau': 'geometry',
             'measuredHeight': 'measuredheight',
             'measuredHeight_uom': 'measuredheight_uom',
             'srcScale': 'src_scale',
@@ -352,6 +362,7 @@ def insert_sqlite_and_export(input_data, data_set_result_id):
             'S_NAME': 'area_group'
         }
         # カラム名を変換
+        input_data = input_data.drop('geometry', axis=1, errors='ignore')
         input_data = input_data.rename(columns=mapping_header)
         existing_columns = input_data.columns.tolist()
         mapped_columns = [col for col in mapping_header.values() if col in existing_columns]
@@ -381,7 +392,8 @@ def insert_sqlite_and_export(input_data, data_set_result_id):
 
     except Exception as e:
         # エラー時の処理
-        print("Insert sql failed...", e)
+        set_error(ERROR_20007)
+        # print("Insert sql failed...", e)
         raise
 
 def drop_duplicates(df, subset, keep="first"):
@@ -413,7 +425,7 @@ def process_and_predict(input_folder, input_file, model_directory, threshold, ou
             connect_sqllite(db_path)
         task_id = None
         if job_id:
-            task_id = create_or_update_job_task(job_id, progress_percent="0", preprocess_type=None, error_code=None, result=json.dumps({}))
+            task_id = create_or_update_job_task(job_id, progress_percent="0", preprocess_type=None, error_code=None, error_msg=None, result=json.dumps({}))
             create_or_update_job(job_id, process)
             process += process_init
         # ディレクトリの設定
@@ -425,7 +437,7 @@ def process_and_predict(input_folder, input_file, model_directory, threshold, ou
         input_path = os.path.join(input_folder, input_file)
         input_data = read_csv(input_path)
         if job_id:
-            create_or_update_job_task(job_id, progress_percent="20", preprocess_type=None, error_code=None, result=json.dumps({}), id= task_id)
+            create_or_update_job_task(job_id, progress_percent="20", preprocess_type=None, error_code=None, error_msg=None, result=json.dumps({}), id= task_id)
             create_or_update_job(job_id, process)
             process += process_init
         # 予測用データ（REQUIRED_FEATURES）を準備するためのコピーを作成
@@ -470,27 +482,29 @@ def process_and_predict(input_folder, input_file, model_directory, threshold, ou
         prediction_data[explanatory_variables_dict["登記日付"]] = prediction_data[explanatory_variables_dict["登記日付"]].dt.year
 
         if job_id:
-            create_or_update_job_task(job_id, progress_percent="30", preprocess_type=None, error_code=None, result=json.dumps({}), id= task_id)
+            create_or_update_job_task(job_id, progress_percent="30", preprocess_type=None, error_code=None, error_msg=None, result=json.dumps({}), id= task_id)
             create_or_update_job(job_id, process)
             process += process_init
         # 訓練済みモデルの読み込み
         print("訓練済みモデルを読み込み中...")
         models = load_models(model_directory)
         if job_id:
-            create_or_update_job_task(job_id, progress_percent="50", preprocess_type=None, error_code=None, result=json.dumps({}), id= task_id)
+            create_or_update_job_task(job_id, progress_percent="50", preprocess_type=None, error_code=None, error_msg=None, result=json.dumps({}), id= task_id)
             create_or_update_job(job_id, process)
             process += process_init
         # 特徴量のチェック
         print("特徴量をチェック中...")
         prediction_data, features_match, message = check_features(prediction_data, required_features, outcome_variable)
         if not features_match:
+            if job_id:
+                raise
             return message, None
 
         # 予測の実行
         print("予測中...")
         test_preds, test_preds_proba = predict(models, prediction_data, required_features, threshold)
         if job_id:
-            create_or_update_job_task(job_id, progress_percent="70", preprocess_type=None, error_code=None, result=json.dumps({}), id= task_id)
+            create_or_update_job_task(job_id, progress_percent="70", preprocess_type=None, error_code=None, error_msg=None, result=json.dumps({}), id= task_id)
             create_or_update_job(job_id, process)
             process += process_init
         # 結果の保存
@@ -506,7 +520,7 @@ def process_and_predict(input_folder, input_file, model_directory, threshold, ou
         #insert SQLite
         insert_sqlite_and_export(input_data, data_set_result_id)
         if job_id:
-            create_or_update_job_task(job_id, progress_percent="90", preprocess_type=None, error_code=None, result=json.dumps({}), id= task_id)
+            create_or_update_job_task(job_id, progress_percent="90", preprocess_type=None, error_code=None, error_msg=None, result=json.dumps({}), id= task_id)
             create_or_update_job(job_id, process)
             process += process_init
         # 試行するエンコーディングのリスト
@@ -518,23 +532,37 @@ def process_and_predict(input_folder, input_file, model_directory, threshold, ou
                 print(f"ファイルが {encoding} エンコーディングで正常に保存されました: {output_file}")
 
                 if job_id:
-                    create_or_update_job_task(job_id, progress_percent="100", preprocess_type=None, error_code=None, result=json.dumps({}), id= task_id, is_finish=True)
+                    create_or_update_job_task(job_id, progress_percent="100", preprocess_type=None, error_code=None, error_msg=None, result=json.dumps({}), id= task_id, is_finish=True)
                     create_or_update_job(job_id, process)
                     process += process_init
                 return f"予測結果が {output_file} に保存されました", output_file
             except Exception as e:
                 # 保存中にエラーが発生した場合、エラーメッセージを表示して次のエンコーディングを試す
-                print(f"ファイル {output_file} を {encoding} エンコーディングで保存中にエラーが発生しました: {e}")
+                set_error(ERROR_20005, output_file, encoding)
+                # print(f"ファイル {output_file} を {encoding} エンコーディングで保存中にエラーが発生しました: {e}")
 
         # すべてのエンコーディングで保存に失敗した場合のメッセージ
         if job_id:
-            create_or_update_job_task(job_id, progress_percent="", preprocess_type=None, error_code="e001", result=json.dumps({}), id= task_id, is_finish=True)
+            raise
         return f"{output_file} への予測結果の保存に失敗しました", None
     except Exception as e:
         print(e)
+        if ERROR_CODE is None:
+            set_error(ERROR_20008)
         if task_id is not None:
-            create_or_update_job_task(job_id, progress_percent="", preprocess_type=None, error_code="e001", result=json.dumps({}), id= task_id, is_finish=True)
-        raise Exception("Error: Vacant house classification process encountered an issue")
+            create_or_update_job_task(job_id, progress_percent="", preprocess_type=None, error_code=ERROR_CODE, error_msg=ERROR_MSG, result=json.dumps({}), id= task_id, is_finish=True)
+        raise Exception("空き家判定処理中にエラーが発生しました。")
+
+def set_error(value, param_st1=None, param_st2=None):
+    global ERROR_CODE
+    global ERROR_MSG
+    ERROR_CODE = value['code']
+    if param_st1 is not None and param_st2 is not None:
+        ERROR_MSG = value['message'].format(param_st1=param_st1, param_st2=param_st2)
+    elif param_st1 is not None:
+        ERROR_MSG = value['message'].format(param_st1=param_st1)
+    else:
+        ERROR_MSG = value['message']
 
 def normalize_dates(df, column, formats=['%Y/%m/%d', '%d/%m/%Y', '%Y-%m-%d', '%m/%d/%Y', '%Y%m%d']):
     # Initialize the temporary column with NaN values
@@ -553,7 +581,7 @@ def normalize_dates(df, column, formats=['%Y/%m/%d', '%d/%m/%Y', '%Y-%m-%d', '%m
     df[column] = df[temp_column]
     
     return df.drop(f'{column}_normalized',axis=1)
-    
+
 def main():
     # !!!!!! 引数で指定に要変更
     REQUIRED_FEATURES = [

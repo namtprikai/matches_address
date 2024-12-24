@@ -20,6 +20,7 @@ import { useFetchJobResults } from "../../../../hooks/use-fetch-job-results";
 import { useDialogState } from "../../../../hooks/use-dialog-state";
 import { Button } from "../../../../components/ui/button";
 import { useFetchJobs } from "../../../../hooks/use-fetch-jobs";
+import { ErrorJobTaskInfo } from "../../../../components/error-job-task-info";
 
 const useStyles = makeStyles({
   root: {
@@ -120,10 +121,15 @@ const useStyles = makeStyles({
 const PreprocessTypeMap: {
   [key in Exclude<SelectJobTask["preprocess_type"], null>]: string;
 } = {
-  e012: "e012",
-  e013: "e013",
-  e014: "e014",
-  e016: "e016",
+  e014: "テキストマッチング機能",
+  e016: "空間結合機能",
+};
+
+const PreprocessPercentTypeMap: {
+  [key in Exclude<SelectJobTask["preprocess_type"], null>]: string;
+} = {
+  e014: "結合率",
+  e016: "結合率",
 };
 
 const MESSAGE = {
@@ -174,6 +180,7 @@ export function PreprocessDetail(): JSX.Element {
           )}
         >
           <span>{MESSAGE[isError ? "error" : "info"]}</span>
+          {id && <ErrorJobTaskInfo jobId={Number(id)} />}
           {!isError && (
             <div className={styles.buttonWrapper}>
               <Button
@@ -231,30 +238,35 @@ export function PreprocessDetail(): JSX.Element {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {data.map((item) => (
-                  <TableRow key={item.id}>
-                    <TableCell className={styles.tableCell}>
-                      {item.preprocess_type
-                        ? PreprocessTypeMap[item.preprocess_type]
-                        : "不明な処理"}
-                    </TableCell>
-                    <TableCell className={styles.tableCell}>
-                      {item.preprocess_type &&
-                        (item.preprocess_type ===
-                        "e013" /** 仮: @todo 指標の対応を確認して修正する https://github.com/eukarya-inc/links-akiya/issues/448 */
-                          ? "緯度経度付与率"
-                          : "結合率")}
-                    </TableCell>
-                    <TableCell className={styles.tableCell}>
-                      <div className={styles.successRateCell}>
-                        {getIndexRate(item)}
-                        {item.error_code && (
-                          <ErrorCircleFilled className={styles.errorIcon} />
-                        )}
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
+                {data.map((item) => {
+                  /** e014, e016のみ表示する: https://project-links.slack.com/archives/C074TSBS7PW/p1732600089563499?thread_ts=1732155822.403759&cid=C074TSBS7PW */
+                  const shouldShow = ["e014", "e016"].some(
+                    (v) =>
+                      item.preprocess_type && item.preprocess_type.includes(v),
+                  );
+                  if (item.preprocess_type === null) return null;
+                  if (shouldShow) {
+                    return (
+                      <TableRow key={item.id}>
+                        <TableCell className={styles.tableCell}>
+                          {PreprocessTypeMap[item.preprocess_type]}
+                        </TableCell>
+                        <TableCell className={styles.tableCell}>
+                          {PreprocessPercentTypeMap[item.preprocess_type]}
+                        </TableCell>
+                        <TableCell className={styles.tableCell}>
+                          <div className={styles.successRateCell}>
+                            {getIndexRate(item)}
+                            {item.error_code && (
+                              <ErrorCircleFilled className={styles.errorIcon} />
+                            )}
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  }
+                  return null;
+                })}
               </TableBody>
             </Table>
           ) : (

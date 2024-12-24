@@ -45,7 +45,7 @@ export function Job(): JSX.Element {
 
   return (
     <div className={styles.root}>
-      <h2 className={styles.heading}>非同期処理一覧</h2>
+      <h2 className={styles.heading}>処理一覧</h2>
 
       <Card className={styles.content}>
         {hasData ? (
@@ -58,9 +58,7 @@ export function Job(): JSX.Element {
             </TableBody>
           </Table>
         ) : (
-          <div className={styles.noData}>
-            現在表示できる非同期処理はありません
-          </div>
+          <div className={styles.noData}>現在表示できる処理はありません</div>
         )}
       </Card>
 

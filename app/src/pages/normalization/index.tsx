@@ -30,7 +30,7 @@ export function Normalization(): JSX.Element {
 
   return (
     <div className={styles.root}>
-      <h2 className={styles.heading}>正規化処理</h2>
+      <h2 className={styles.heading}>名寄せ処理</h2>
 
       <Card className={styles.content}>
         <Button
@@ -46,10 +46,10 @@ export function Normalization(): JSX.Element {
           }}
           size="small"
         >
-          正規化処理を始める
+          名寄せ処理を始める
         </Button>
 
-        <h4>実行中の処理</h4>
+        <h4>処理一覧</h4>
         <TableJobsByType jobType="preprocess" />
       </Card>
     </div>

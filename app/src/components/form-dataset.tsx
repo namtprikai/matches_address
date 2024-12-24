@@ -267,7 +267,7 @@ const SelectedDataSetView = ({
     return (
       <div className={styles.symbol}>
         <img alt="upload file" src="/file-upload-icon.svg" />
-        <div className={styles.roundedLabel}>データを選択</div>
+        <div className={styles.roundedLabel}>データセットを選択</div>
       </div>
     );
   }

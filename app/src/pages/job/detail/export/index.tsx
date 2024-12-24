@@ -6,6 +6,7 @@ import { useFetchJobResults } from "../../../../hooks/use-fetch-job-results";
 import { Button } from "../../../../components/ui/button";
 import { useFetchJobs } from "../../../../hooks/use-fetch-jobs";
 import { useFetchDataSetResultItem } from "../../../../hooks/use-fetch-data-set-result-item";
+import { ErrorJobTaskInfo } from "../../../../components/error-job-task-info";
 
 const useStyles = makeStyles({
   root: {
@@ -78,10 +79,11 @@ export function ExportDetail(): JSX.Element {
     navigate(-1);
   };
 
-  const SuccessMsg =
-    dataSetResult &&
-    dataSetResult.length > 0 &&
-    `${dataSetResult[0].title}の` + "ダウンロード準備が完了しました。";
+  const SuccessMsg = `${
+    dataSetResult && dataSetResult.length > 0
+      ? `${dataSetResult[0].title}の`
+      : ""
+  }ダウンロード準備が完了しました。`;
 
   return (
     <div className={styles.pageContainer}>
@@ -102,6 +104,7 @@ export function ExportDetail(): JSX.Element {
           )}
         >
           <span>{isError ? "処理に失敗しました。" : SuccessMsg}</span>
+          {id && <ErrorJobTaskInfo jobId={Number(id)} />}
           <div className={styles.buttonWrapper}>
             {!isError && (
               <Button
