@@ -324,7 +324,7 @@ def train_lgb_with_optuna(train_df, params, citycode_value, targetyear_value, ou
 
     # 学習データを特徴量（X）と目的変数（y）に分割
     id_train = train_df.copy()
-    X_train = train_df.drop(columns=[CONSTANTS['outcome_variable'], 'gml_id', '世帯コード', '水道番号_suido_residence'])
+    X_train = train_df.drop(columns=[CONSTANTS['outcome_variable'], 'gml_id', '世帯コード', '水道番号'])
     y_train = train_df[CONSTANTS['outcome_variable']]
     
     # クラスの重みを調整するためのポジティブ/ネガティブサンプルの比率を計算
