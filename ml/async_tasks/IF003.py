@@ -6,6 +6,7 @@ import shutil
 import sys
 import uuid
 from utils import *
+from constants import *
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../')))
 from src.E002_Classification.E022 import process_and_predict as E022
@@ -46,9 +47,6 @@ def main():
 
         job_id = create_or_update_job(None ,"", "result", os.getpid(), 0, args.parameters)
         file_path = f"{output_directory}/D902.csv"
-        
-        if not params.get('area_grouping') or not params.get('normalized_dataset_paths'):
-            raise Exception("Error: area_grouping or normalized_dataset_paths field is required")
 
         model_path = concatenate(params.get('output_path'), params.get('model_path'))
         

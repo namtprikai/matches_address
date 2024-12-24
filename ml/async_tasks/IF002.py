@@ -6,6 +6,7 @@ import shutil
 import sys
 import uuid
 from utils import *
+from constants import *
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../')))
 from src.E002_Classification.E021 import train_and_evaluate as E021
 

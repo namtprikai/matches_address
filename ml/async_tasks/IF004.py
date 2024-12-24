@@ -6,6 +6,8 @@ import shutil
 import sys
 import uuid
 from utils import *
+from constants import *
+
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../')))
 from src.E003_Summarization.E033 import processing as E033
 
@@ -46,9 +48,6 @@ def main():
             file_path = f"{output_directory}.gpkg"
         else:
             file_path = f"{output_directory}.{params.get('output_format')}"
-        
-        if not params.get('data_set_results_id') or not params.get('target_unit'):
-            raise Exception("Error: data_set_results_id and target_unit field is required")
         
         params = {
             'data_set_results_id': params.get('data_set_results_id'),
