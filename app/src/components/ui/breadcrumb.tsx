@@ -4,18 +4,28 @@ import {
   BreadcrumbDivider,
   BreadcrumbButton,
   type BreadcrumbButtonProps,
+  makeStyles,
 } from "@fluentui/react-components";
 import { Fragment, type ReactNode } from "react";
 import { ROUTES, withHash } from "../../routes";
 
+const useStyles = makeStyles({
+  root: {
+    margin: `0 -6px`, // tokensを使ってマイナスマージンにする方法がわからないので、いったん固定値で指定
+  },
+});
+
 type BreadcrumbBaseProps = {
   breadcrumbItem: ReactNode[];
 };
+
 export const BreadcrumbBase = ({
   breadcrumbItem = [],
 }: BreadcrumbBaseProps): JSX.Element => {
+  const styles = useStyles();
+
   return (
-    <Breadcrumb aria-label="パンくずリスト">
+    <Breadcrumb aria-label="パンくずリスト" className={styles.root}>
       <BreadcrumbItemFUI>
         <BreadcrumbButton href={withHash(ROUTES.HOME)}>トップ</BreadcrumbButton>
       </BreadcrumbItemFUI>
