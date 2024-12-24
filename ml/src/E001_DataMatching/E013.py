@@ -210,13 +210,11 @@ class SuidoProcessor(DataProcessor):
             前処理済みの水道使用量データ
         """
         cols = COLUMNS["suido_use"]
-        df[cols["meter_reading_date"]] = df[cols["meter_reading_date"]].apply(
-            lambda x: "20" + str(x) if len(str(x)) == 6 else str(x)
-        )
-
-        # 日付をdatetime型に変換
         df = normalize_dates(df, cols["meter_reading_date"])
         df.drop(columns=[f'{cols["meter_reading_date"]}_normalized'], inplace=True)
+
+        # 日付をdatetime型に変換
+        df[cols["meter_reading_date"]] = pd.to_datetime(df[cols["meter_reading_date"]], format="%Y%m%d")
         
         # 検針年月を作成
         df["検針年月"] = df[cols["meter_reading_date"]].dt.strftime("%Y-%m")
