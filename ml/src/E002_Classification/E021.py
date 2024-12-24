@@ -536,7 +536,7 @@ def evaluate_models_on_test(test_df, models, params):
     # テストデータを識別するフラグを追加
     id_test["test_flg"] = 1
     # 非特徴量列を除いて特徴量行列を作成
-    X_test = test_df.drop(columns=[CONSTANTS['outcome_variable'], 'gml_id', '世帯コード', '水道番号_suido_residence'])
+    X_test = test_df.drop(columns=[CONSTANTS['outcome_variable'], 'gml_id', '世帯コード', '水道番号'])
     # 真のラベルを抽出
     y_test = test_df[CONSTANTS['outcome_variable']]
 
