@@ -215,7 +215,8 @@ class SuidoProcessor(DataProcessor):
         )
 
         # 日付をdatetime型に変換
-        df[cols["meter_reading_date"]] = pd.to_datetime(df[cols["meter_reading_date"]], format="%Y%m%d")
+        df = normalize_dates(df, cols["meter_reading_date"])
+        df.drop(columns=[f'{cols["meter_reading_date"]}_normalized'], inplace=True)
         
         # 検針年月を作成
         df["検針年月"] = df[cols["meter_reading_date"]].dt.strftime("%Y-%m")
