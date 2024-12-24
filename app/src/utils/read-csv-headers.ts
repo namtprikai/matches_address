@@ -1,7 +1,6 @@
 import { createReadStream } from "fs";
 import { parse } from "csv-parse";
 import { decodeStream, encodeStream } from "iconv-lite";
-
 /**
  *
  * @param filePath ファイルへの絶対パス

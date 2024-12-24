@@ -1,4 +1,4 @@
-import { makeStyles, tokens } from "@fluentui/react-components";
+import { makeStyles, mergeClasses, tokens } from "@fluentui/react-components";
 import { ArrowLeftRegular } from "@fluentui/react-icons";
 import { useNavigate, useParams } from "react-router-dom";
 import { downloadFile } from "../../../../utils/download-file";
@@ -34,8 +34,13 @@ const useStyles = makeStyles({
     backgroundColor: "#ecf2ef",
     borderRadius: tokens.borderRadiusSmall,
   },
-  message: {
+  info: {
+    backgroundColor: "#ecf2ef",
     color: "#09583B",
+  },
+  error: {
+    backgroundColor: "rgba(196, 49, 75, 0.08)",
+    color: "rgb(196, 49, 75)",
   },
   buttonWrapper: {
     display: "flex",
@@ -67,9 +72,16 @@ export function ExportDetail(): JSX.Element {
     dataSetResultId,
   });
 
+  const isError = job && job[0].status === "error";
+
   const handleBack = (): void => {
     navigate(-1);
   };
+
+  const SuccessMsg =
+    dataSetResult &&
+    dataSetResult.length > 0 &&
+    `${dataSetResult[0].title}の` + "ダウンロード準備が完了しました。";
 
   return (
     <div className={styles.pageContainer}>
@@ -83,22 +95,24 @@ export function ExportDetail(): JSX.Element {
           処理結果
         </h2>
 
-        <div className={styles.result}>
-          <span className={styles.message}>
-            {dataSetResult &&
-              dataSetResult.length > 0 &&
-              `${dataSetResult[0].title}の`}
-            判定結果のダウンロード準備が完了しました。
-          </span>
+        <div
+          className={mergeClasses(
+            styles.result,
+            isError ? styles.error : styles.info,
+          )}
+        >
+          <span>{isError ? "処理に失敗しました。" : SuccessMsg}</span>
           <div className={styles.buttonWrapper}>
-            <Button
-              onClick={async () => {
-                if (!jobResultsData) return;
-                await downloadFile(jobResultsData.file_path);
-              }}
-            >
-              ダウンロード
-            </Button>
+            {!isError && (
+              <Button
+                onClick={async () => {
+                  if (!jobResultsData) return;
+                  await downloadFile(jobResultsData.file_path);
+                }}
+              >
+                ダウンロード
+              </Button>
+            )}
           </div>
         </div>
       </div>

@@ -5,12 +5,12 @@ import { type IpcMainListener } from ".";
 
 export const selectRawDataset = (async (
   _: unknown,
-  options?: { id: number },
+  { id }: { id: number },
 ): Promise<SelectRawDataSet | undefined> => {
   const data = await db
     .select()
     .from(raw_data_sets)
-    .where(options?.id ? eq(raw_data_sets.id, options.id) : undefined)
+    .where(eq(raw_data_sets.id, id))
     .get();
 
   return data;

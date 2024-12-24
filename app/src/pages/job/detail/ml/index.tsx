@@ -3,6 +3,7 @@ import {
   tokens,
   Text,
   typographyStyles,
+  mergeClasses,
 } from "@fluentui/react-components";
 import { useNavigate, useParams } from "react-router-dom";
 import {
@@ -47,6 +48,14 @@ const useStyles = makeStyles({
     padding: `${tokens.spacingVerticalM} ${tokens.spacingHorizontalL}`,
     backgroundColor: "#ecf2ef",
     borderRadius: tokens.borderRadiusSmall,
+  },
+  info: {
+    backgroundColor: "#ecf2ef",
+    color: "#09583B",
+  },
+  error: {
+    backgroundColor: "rgba(196, 49, 75, 0.08)",
+    color: "rgb(196, 49, 75)",
   },
   message: {
     color: "#09583B",
@@ -163,20 +172,27 @@ const useStyles = makeStyles({
 const SAFE_COLOR = "#8884d8";
 const ERROR_COLOR = "#C4314B";
 
+const MESSAGE = {
+  info: "処理が完了しました。",
+  error: "処理に失敗しました。",
+};
+
 export function MlDetail(): JSX.Element {
   const styles = useStyles();
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
-
   const { data } = useFetchJobTasks({ jobId: Number(id) });
   const { data: jobResultsData } = useFetchJobResults({ jobId: Number(id) });
   const { data: job, mutate } = useFetchJobs(Number(id));
 
   const dialogState = useDialogState();
 
-  if (!data || !data[0].result) return <>データが存在しません</>;
+  if (!data || data.length === 0 || !data[0].result)
+    return <>データが存在しません</>;
   if (data[0].result.taskResultType === "preprocess")
     return <>データ形式が正しくありません</>;
+
+  const isError = job && job[0].status === "error";
 
   /** @see https://project-links.slack.com/archives/C074TSBS7PW/p1731043911917709?thread_ts=1730328973.471009&cid=C074TSBS7PW */
   const isLowAccuracy = data && Number(data[0].result.accuracy) < 51;
@@ -198,10 +214,13 @@ export function MlDetail(): JSX.Element {
   ];
 
   // important_columns から chartData を生成
-  const chartData = result.important_columns.map((item) => ({
-    label: item.column,
-    value: parseFloat(item.value),
-  }));
+  const chartData =
+    result.important_columns && result.important_columns.length
+      ? result.important_columns.map((item) => ({
+          label: item.column,
+          value: parseFloat(item.value),
+        }))
+      : [];
 
   const xAxisLabels = Array.from({ length: 11 }, (_, i) => i * 10);
 
@@ -217,42 +236,49 @@ export function MlDetail(): JSX.Element {
           処理結果
         </div>
 
-        <div className={styles.result}>
-          <span className={styles.message}>処理が完了しました。</span>
-          <div className={styles.buttonWrapper}>
-            <Button
-              className={isNamed ? "" : styles.saveWithNameButton}
-              disabled={isNamed}
-              onClick={() => {
-                dialogState.setIsOpen(true);
-              }}
-            >
-              名前をつけて保存
-            </Button>
+        <div
+          className={mergeClasses(
+            styles.result,
+            isError ? styles.error : styles.info,
+          )}
+        >
+          <span>{MESSAGE[isError ? "error" : "info"]}</span>
+          {!isError && (
+            <div className={styles.buttonWrapper}>
+              <Button
+                className={isNamed ? "" : styles.saveWithNameButton}
+                disabled={isNamed}
+                onClick={() => {
+                  dialogState.setIsOpen(true);
+                }}
+              >
+                名前をつけて保存
+              </Button>
 
-            <DialogSaveWithName
-              dialogState={dialogState}
-              onSave={async (inputValue: string) => {
-                if (!jobResultsData) return;
-                await window.ipcRenderer.invoke("createModelFiles", {
-                  jobId: jobResultsData.job_id,
-                  insertParams: {
-                    file_name: inputValue,
-                    file_path: jobResultsData.file_path,
-                  },
-                });
-                await mutate();
-              }}
-            />
-            <Button
-              onClick={async () => {
-                if (!jobResultsData) return;
-                await downloadFile(jobResultsData.file_path);
-              }}
-            >
-              ダウンロード
-            </Button>
-          </div>
+              <DialogSaveWithName
+                dialogState={dialogState}
+                onSave={async (inputValue: string) => {
+                  if (!jobResultsData) return;
+                  await window.ipcRenderer.invoke("createModelFiles", {
+                    jobId: jobResultsData.job_id,
+                    insertParams: {
+                      file_name: inputValue,
+                      file_path: jobResultsData.file_path,
+                    },
+                  });
+                  await mutate();
+                }}
+              />
+              <Button
+                onClick={async () => {
+                  if (!jobResultsData) return;
+                  await downloadFile(jobResultsData.file_path);
+                }}
+              >
+                ダウンロード
+              </Button>
+            </div>
+          )}
         </div>
 
         <div className={styles.graphWrapper}>
@@ -340,7 +366,12 @@ export function MlDetail(): JSX.Element {
       </div>
 
       <div className={styles.restartButtonWrapper}>
-        <Button appearance="primary">再実行へ</Button>
+        <Button
+          appearance="primary"
+          onClick={() => navigate(`/model/create/${id}`)}
+        >
+          再実行へ
+        </Button>
       </div>
     </div>
   );

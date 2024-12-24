@@ -3,20 +3,25 @@ import { Open } from "unzipper";
 import { readCSVHeaders } from "../utils/read-csv-headers";
 import { readShpAttributes } from "../utils/read-shp-attributes";
 import { getFilePathInDatabaseDirectory } from "../utils/get-file-path-in-database-directory";
+import { readGPKGHeaders } from "../utils/read-gpkg-header";
 import { type IpcMainListener } from ".";
 
 export type readDatasetColumnsArgs = {
   filename: string | undefined;
 };
 
-const classifyFileType = async (
-  filePath: string,
-): Promise<"csv" | "shapefile" | "citygml"> => {
+export type FileType = "csv" | "shapefile" | "citygml" | "geopackage";
+
+const classifyFileType = async (filePath: string): Promise<FileType> => {
   const filename = basename(filePath);
   const ext = filename.split(".")?.pop();
 
   if (ext === "csv") {
     return "csv" as const;
+  }
+
+  if (ext === "gpkg") {
+    return "geopackage" as const;
   }
 
   if (ext === "zip") {
@@ -53,6 +58,10 @@ export const readDatasetColumns = (async (
   switch (fileType) {
     case "csv": {
       const result = await readCSVHeaders(filePath);
+      return result;
+    }
+    case "geopackage": {
+      const result = await readGPKGHeaders(filePath);
       return result;
     }
     case "citygml":

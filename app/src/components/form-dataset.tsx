@@ -12,10 +12,13 @@ import { type SelectRawDataSet } from "../schema";
 import { LanguageMap } from "../metadata";
 import { useDialogState } from "../hooks/use-dialog-state";
 import { useFetchDatasetColumns } from "../hooks/use-fetch-dataset-columns";
-import { useFetchRawDataset } from "../hooks/use-fetch-raw-dataset";
+import { type PreprocessParameters } from "../@types/job-parameters";
+import { useFetchDatasetWithFilePath } from "../hooks/use-fetch-dataset-with-file-path";
+import { lang } from "../lang";
 import { Dropdown } from "./ui/dropdown";
 import { Field } from "./ui/field";
 import { DialogImportDataset } from "./dialog-import-dataset";
+import { TextWithTooltip } from "./ui/text-with-tooltip";
 
 const useStyles = makeStyles({
   fileSelectorContainer: {
@@ -52,95 +55,91 @@ const useStyles = makeStyles({
   },
 });
 
-export const FormDataset = <
-  COLUMN_TYPE extends Partial<Record<string, string>>,
->({
-  value: prevValue,
-  dataSetName,
+interface Value {
+  id: PreprocessParameters["data"]["resident_registry"]["id"]; // ひとまずresident_registryの型を使う
+  path: PreprocessParameters["data"]["resident_registry"]["path"] | undefined;
+  columns?: Record<string, string | undefined>; // 都市計画決定情報データと国勢調査データにカラムがないためoptionalを指定する
+}
+
+interface Props {
+  value: Value;
+  dataKey: keyof typeof lang.components.normalizationData;
+  appearance?: "default" | "large";
+  onChange: (value: Value) => void;
+}
+
+export const FormDataset = ({
+  value,
+  dataKey,
   appearance,
   onChange,
-}: {
-  value: {
-    id: number;
-    columns?: COLUMN_TYPE;
-    path?: string;
-  };
-  dataSetName: string;
-  appearance?: "default" | "large";
-  onChange?: (data: typeof prevValue) => void;
-}): JSX.Element => {
+}: Props): JSX.Element => {
   const styles = useStyles();
-  const [dataSet, setDataSet] = useState<SelectRawDataSet | undefined>(
-    undefined,
-  );
   const dialogState = useDialogState();
   const { data: dataSetColumns } = useFetchDatasetColumns({
-    filename: dataSet?.file_path,
+    filename: value?.path,
   });
-  const { setIsOpen } = dialogState;
+  const [isUpdateColumns, setIsUpdateColumns] = useState(false);
 
-  const { data: prevDataset } = useFetchRawDataset({ id: prevValue.id });
-  useEffect(() => {
-    if (prevDataset) {
-      /** @fixme ここでセットするとうまくいきそうだがいかない */
-      // setDataSet(prevDataset);
-    }
-  }, [prevDataset, prevValue]);
-
-  useEffect(() => {
-    if (onChange && dataSetColumns) {
-      const columnKV = prevValue.columns
-        ? Object.entries(prevValue.columns)
-        : [];
-
-      if (columnKV.length === 0) {
+  useEffect(
+    // ファイルが選択されたらドロップダウンの値を更新する
+    function updateColumns() {
+      if (!isUpdateColumns) return;
+      if (!dataSetColumns || dataSetColumns.length === 0 || !value.columns)
         return;
-      }
 
-      const newColumns = columnKV.reduce((acc, [key]) => {
-        return {
-          ...acc,
-          [key]: dataSetColumns[0],
-        };
-      }, {});
+      // 最初の要素をドロップダウンのdefault valueに設定する
+      const [firstItem] = dataSetColumns;
+      const columnEntries = Object.entries(value.columns);
+      const newColumns = Object.fromEntries(
+        columnEntries.map(([key]) => [key, firstItem]),
+      );
 
       onChange({
-        id: prevValue.id,
-        path: prevValue.path,
-        // reduceでは厳密な型推論ができないためasで型を指定
-        columns: newColumns as COLUMN_TYPE,
+        ...value,
+        columns: newColumns,
       });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- prevValueが含まれるとcolumnsの更新を行い、無限ループになるため
-  }, [dataSetColumns]);
+      setIsUpdateColumns(false);
+    },
+
+    [dataSetColumns, isUpdateColumns, onChange, value],
+  );
+
+  const datasetInfo = lang.components.normalizationData[dataKey];
+  const datasetLabel = datasetInfo.label;
+  const datasetDescription = datasetInfo.description || "";
 
   return (
     <Card>
-      <p>{dataSetName}</p>
+      <p>
+        <TextWithTooltip
+          textNode={datasetLabel}
+          tooltipContent={datasetDescription}
+        />
+      </p>
       <div className={styles.fieldContainer}>
         <div
           className={styles.fileSelectorContainer}
           onClick={() => {
-            setIsOpen(true);
+            dialogState.setIsOpen(true);
           }}
           role="button"
         >
-          {dataSet ? (
-            <SelectedDataSetView
-              dataSet={dataSet}
-              onDelete={() => {
-                setDataSet(undefined);
-                if (onChange) {
-                  onChange({
-                    ...prevValue,
-                    path: undefined,
-                  });
-                }
-              }}
-            />
-          ) : (
-            <DataSetImportSymbol />
-          )}
+          <SelectedDataSetView
+            filePath={value.path}
+            onDelete={() => {
+              onChange({
+                ...value,
+                path: undefined,
+                columns: Object.fromEntries(
+                  Object.keys(value.columns ?? {}).map((key) => [
+                    key,
+                    undefined,
+                  ]),
+                ),
+              });
+            }}
+          />
         </div>
         <div
           // FormDatasetが横長の場合のスタイルだしわけ
@@ -148,32 +147,40 @@ export const FormDataset = <
             appearance === "large" && styles.dropdownContainer,
           )}
         >
-          {prevValue.columns
-            ? Object.entries(prevValue.columns).map(([key]) => (
+          {value.columns
+            ? Object.entries(value.columns).map(([key]) => (
                 <Field
                   key={key}
                   className={styles.field}
                   label={
-                    LanguageMap.NORMALIZATION_PARAMETER_LABEL[
-                      key as keyof typeof LanguageMap.NORMALIZATION_PARAMETER_LABEL
-                    ] + "カラム"
+                    <TextWithTooltip
+                      textNode={
+                        LanguageMap.NORMALIZATION_PARAMETER_LABEL[
+                          key as keyof typeof LanguageMap.NORMALIZATION_PARAMETER_LABEL
+                        ] + "カラム"
+                      }
+                      tooltipContent={
+                        lang.components.normalizationParameters[
+                          key as keyof typeof lang.components.normalizationParameters
+                        ]?.description || ""
+                      }
+                    />
                   }
                 >
                   <Dropdown
                     className={styles.dropdown}
                     disabled={!dataSetColumns || dataSetColumns.length === 0}
                     onOptionSelect={(_, data) => {
-                      if (!onChange) return;
                       onChange({
-                        ...prevValue,
+                        ...value,
                         columns: {
-                          ...prevValue.columns,
+                          ...value.columns,
                           [key]: data.optionValue,
-                        } as COLUMN_TYPE,
+                        },
                       });
                     }}
-                    selectedOptions={[prevValue.columns?.[key] ?? ""]}
-                    value={prevValue.columns?.[key] ?? ""}
+                    selectedOptions={[value.columns?.[key] ?? ""]}
+                    value={value.columns?.[key] ?? ""}
                   >
                     {dataSetColumns?.map((column) => (
                       <Option key={column} text={column} value={column}>
@@ -189,23 +196,25 @@ export const FormDataset = <
       <DialogImportDataset
         dialogState={dialogState}
         onSubmit={(data) => {
-          setDataSet(data);
-          if (!onChange) return;
           onChange({
-            ...prevValue,
+            ...value,
             id: data.id,
             path: data?.file_path,
           });
+          setIsUpdateColumns(true);
         }}
       />
     </Card>
   );
 };
 
-/**
- * データセットインポートのアイコンや文字部分をスタイリングするためにスタイルを別定義
- */
-const useDataSetImporterSymbolStyle = makeStyles({
+const selectedDataSetViewStyles = makeStyles({
+  symbol: {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    gap: `${tokens.spacingVerticalS} 0`,
+  },
   roundedLabel: {
     backgroundColor: THEME_COLORS.primary,
     borderRadius: "14px",
@@ -214,32 +223,6 @@ const useDataSetImporterSymbolStyle = makeStyles({
     lineHeight: "28px",
     padding: `0 ${tokens.spacingHorizontalXXL}`,
   },
-  root: {
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    gap: `${tokens.spacingVerticalS} 0`,
-  },
-});
-
-/**
- * データセットインポートのアイコンや文字部分だけのコンポーネント
- */
-const DataSetImportSymbol = (): JSX.Element => {
-  const styles = useDataSetImporterSymbolStyle();
-
-  return (
-    <div className={styles.root}>
-      <img alt="upload file" src="/file-upload-icon.svg" />
-      <div className={styles.roundedLabel}>データを選択</div>
-    </div>
-  );
-};
-
-/**
- * 選択されたデータセットの表示部分用のスタイル
- */
-const selectedDataSetViewStyles = makeStyles({
   root: {
     display: "flex",
     flexDirection: "column",
@@ -267,21 +250,31 @@ const selectedDataSetViewStyles = makeStyles({
   },
 });
 
-/**
- * 選択されたデータセットの表示部分
- */
 const SelectedDataSetView = ({
-  dataSet,
+  filePath,
   onDelete,
 }: {
-  dataSet: SelectRawDataSet;
+  filePath: SelectRawDataSet["file_path"] | undefined;
   onDelete: () => void;
 }): JSX.Element => {
   const styles = selectedDataSetViewStyles();
+  const { data } = useFetchDatasetWithFilePath({
+    type: "raw",
+    filePath,
+  });
+
+  if (!data) {
+    return (
+      <div className={styles.symbol}>
+        <img alt="upload file" src="/file-upload-icon.svg" />
+        <div className={styles.roundedLabel}>データを選択</div>
+      </div>
+    );
+  }
 
   return (
     <div className={styles.root}>
-      <p className={styles.selectedDataSetFilePath}>{dataSet.file_name}</p>
+      <p className={styles.selectedDataSetFilePath}>{data.file_name}</p>
       <button
         className={styles.deleteButton}
         onClick={(event) => {

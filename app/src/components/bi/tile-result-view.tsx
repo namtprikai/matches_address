@@ -29,6 +29,8 @@ import { Button } from "../ui/button";
 import { DialogContent } from "../ui/dialog-content";
 import { Dropdown } from "../ui/dropdown";
 import { useFetchReferenceDates } from "../../hooks/use-fetch-reference-dates";
+import { useDialogState } from "../../hooks/use-dialog-state";
+import { DialogExportMessage } from "../dialog-export-message";
 import { TileViewStyle } from "./tile-view-style";
 
 type Props = {
@@ -87,6 +89,7 @@ export const TileResultView = ({
   const [selectedResultViewId, setSelectedResultViewId] = useAtom(
     selectedResultViewIdAtom,
   );
+  const exportMessageDialogState = useDialogState();
 
   const { data: resultViews, mutate } = useFetchResultViews({
     sheetId: resultView.sheet_id,
@@ -103,16 +106,20 @@ export const TileResultView = ({
   ): Promise<void> => {
     if (!resultView.data_set_result_id || !resultView.unit || !reference_date)
       return;
-    await window.ipcRenderer.invoke("exportData", {
-      data: {
-        parameterType: "export",
-        output_file_type: fileType,
-        output_coordinate: coordinate,
-        data_set_results_id: resultView.data_set_result_id,
-        target_unit: resultView.unit,
-        reference_date,
-      },
-    });
+    await window.ipcRenderer
+      .invoke("exportData", {
+        data: {
+          parameterType: "export",
+          output_file_type: fileType,
+          output_coordinate: coordinate,
+          data_set_results_id: resultView.data_set_result_id,
+          target_unit: resultView.unit,
+          reference_date,
+        },
+      })
+      .then(() => {
+        exportMessageDialogState.setIsOpen(true);
+      });
   };
 
   const handleDelete = async (): Promise<void> => {
@@ -173,6 +180,7 @@ export const TileResultView = ({
       ) : (
         <div>データセットが選択されていません</div>
       )}
+      <DialogExportMessage dialogState={exportMessageDialogState} />
     </Card>
   );
 };
@@ -189,6 +197,7 @@ function DownloadDialog({
   ) => void;
 }): JSX.Element {
   const styles = useStyles();
+  const { isOpen, setIsOpen } = useDialogState();
   const [selectedFileType, setSelectedFileType] = useState(
     OUTPUT_FILE_TYPES[0].type,
   );
@@ -215,7 +224,7 @@ function DownloadDialog({
   );
 
   return (
-    <Dialog>
+    <Dialog onOpenChange={(_, { open }) => setIsOpen(open)} open={isOpen}>
       <DialogTrigger disableButtonEnhancement>
         <Button
           appearance="subtle"
@@ -306,7 +315,7 @@ function DownloadDialog({
               )}
             </div>
           </DialogContent>
-          <DialogActions position="end">
+          <DialogActions>
             <Button
               appearance="primary"
               onClick={() => {
@@ -315,9 +324,10 @@ function DownloadDialog({
                   selectedCoordinate,
                   selectedReferenceDate,
                 );
+                setIsOpen(false);
               }}
             >
-              ダウンロード
+              ダウンロード準備を開始する
             </Button>
           </DialogActions>
         </DialogBody>

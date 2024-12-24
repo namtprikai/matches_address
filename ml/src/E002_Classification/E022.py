@@ -435,16 +435,40 @@ def process_and_predict(input_folder, input_file, model_directory, threshold, ou
         geometry_data = prediction_data['geometry']
         prediction_data = prediction_data.drop(columns=['geometry'], errors='ignore')
 
+        # 入力されたカラム名を取得し、以下該当カラムに適用させる
+        explanatory_vars = required_features
+        
+        exp_cols = [ col.split('_')[0] for col in explanatory_vars ]
+        explanatory_variables_dict = {}
+        for col in exp_cols:
+            if "akiya" not in col:
+                tar_colname = [ col901 for col901 in prediction_data.columns if col in col901 ]
+                if len(tar_colname) > 0:
+                    explanatory_variables_dict[col] = tar_colname[0]
+                
+        required_features = [ explanatory_variables_dict[val] for val in explanatory_variables_dict.keys()] 
+        explanatory_variables = [ explanatory_variables_dict[val] for val in explanatory_variables_dict.keys()] 
+        
+        for col in ['最小使用水量','平均使用水量','住定異動年月日','登記日付']:
+            if col not in explanatory_variables_dict.keys():
+                tar_colname = [ col901 for col901 in prediction_data.columns if col in col901 ]
+                if len(tar_colname) > 0:
+                    explanatory_variables_dict[col] = tar_colname[0]
+
         # 閉栓フラグをブール値に変換
-        prediction_data["閉栓フラグ_suido_residence"] = prediction_data["閉栓フラグ_suido_residence"].map({"True": True, "False": False}).astype("bool")
+        prediction_data[explanatory_variables_dict["閉栓フラグ"]] = prediction_data[explanatory_variables_dict["閉栓フラグ"]].map({"True": True, "False": False}).astype("bool")
         # '登記日付_touki_residence'をdatetime型に変換
-        prediction_data['登記日付_touki_residence'] = pd.to_datetime(prediction_data['登記日付_touki_residence'], errors='coerce', format='%Y/%m/%d')
+        prediction_data = normalize_dates(prediction_data, explanatory_variables_dict["登記日付"])
+        # 構造名称_touki_residenceをカテゴリ型に変換
+        if explanatory_variables_dict["構造名称"] in prediction_data.columns:
+            prediction_data[explanatory_variables_dict["構造名称"]] = prediction_data[explanatory_variables_dict["構造名称"]].astype("category")
 
-        # 基準日を設定
-        base_date = pd.to_datetime('2023/03/20')
+        # # 基準日を設定
+        # base_date = pd.to_datetime('2023/03/20')
 
-        # 基準日からの経過日数を計算
-        prediction_data['登記日付_touki_residence'] = (base_date - prediction_data['登記日付_touki_residence']).dt.days
+        # 登記日付をYearに変換
+        prediction_data[explanatory_variables_dict["登記日付"]] = prediction_data[explanatory_variables_dict["登記日付"]].dt.year
+
         if job_id:
             create_or_update_job_task(job_id, progress_percent="30", preprocess_type=None, error_code=None, result=json.dumps({}), id= task_id)
             create_or_update_job(job_id, process)
@@ -512,6 +536,24 @@ def process_and_predict(input_folder, input_file, model_directory, threshold, ou
             create_or_update_job_task(job_id, progress_percent="", preprocess_type=None, error_code="e001", result=json.dumps({}), id= task_id, is_finish=True)
         raise Exception("Error: Vacant house classification process encountered an issue")
 
+def normalize_dates(df, column, formats=['%Y/%m/%d', '%d/%m/%Y', '%Y-%m-%d', '%m/%d/%Y', '%Y%m%d']):
+    # Initialize the temporary column with NaN values
+    temp_column = f'{column}_normalized'
+    df[temp_column] = np.nan
+
+    # Try the provided formats on the invalid values
+    for fmt in formats:
+        mask = df[temp_column].isna()
+        df.loc[mask, temp_column] = pd.to_datetime(
+            df.loc[mask, column], format=fmt, errors='coerce'
+        )
+
+    # Remove the time portion and keep only the date
+    df[temp_column] = pd.to_datetime(df[temp_column], errors='coerce')
+    df[column] = df[temp_column]
+    
+    return df.drop(f'{column}_normalized',axis=1)
+    
 def main():
     # !!!!!! 引数で指定に要変更
     REQUIRED_FEATURES = [

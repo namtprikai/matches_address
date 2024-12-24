@@ -14,6 +14,7 @@ import { DialogTitle } from "../../../components/ui/dialog-title";
 import { DialogContent } from "../../../components/ui/dialog-content";
 import { DialogActions } from "../../../components/ui/dialog-actions";
 import { useDialogState } from "../../../hooks/use-dialog-state";
+import { useFetchJob } from "../../../hooks/use-fetch-job";
 
 const useStyles = makeStyles({
   root: {
@@ -51,10 +52,13 @@ const formId = "normalization-form";
 export function NormalizationCreate(): JSX.Element {
   const styles = useStyles();
   const navigator = useNavigate();
-
   const { id } = useParams<{ id: string }>();
-
   const { isOpen, setIsOpen } = useDialogState();
+  const { data: job, isLoading: isJobLoading } = useFetchJob({
+    id: Number(id),
+  });
+  const preprocessParameters =
+    job?.parameters.parameterType === "preprocess" ? job.parameters : undefined;
 
   return (
     <>
@@ -62,13 +66,15 @@ export function NormalizationCreate(): JSX.Element {
         <div className={styles.root}>
           <h2 className={styles.heading}>データ正規化処理</h2>
           <div>
-            <FormNormalization
-              afterSubmit={() => {
-                setIsOpen(true);
-              }}
-              formId={formId}
-              jobId={id}
-            />
+            {!isJobLoading ? (
+              <FormNormalization
+                afterSubmit={() => {
+                  setIsOpen(true);
+                }}
+                formId={formId}
+                preprocessParameters={preprocessParameters}
+              />
+            ) : null}
           </div>
         </div>
         <div className={styles.footerActions}>
@@ -103,8 +109,6 @@ export function NormalizationCreate(): JSX.Element {
                 </DialogTitle>
                 <DialogContent>
                   前処理が完了するまで一定の時間がかかります。
-                  <br />
-                  ステータスは「非同期処理一覧画面」で確認できます
                 </DialogContent>
                 <DialogActions>
                   <DialogTrigger disableButtonEnhancement>
@@ -113,10 +117,10 @@ export function NormalizationCreate(): JSX.Element {
                   <Button
                     appearance="primary"
                     onClick={() => {
-                      navigator("/job");
+                      navigator("/normalization");
                     }}
                   >
-                    非同期処理一覧画面へ
+                    処理のステータスを確認する
                   </Button>
                 </DialogActions>
               </DialogBody>
