@@ -291,6 +291,11 @@ class Summarization:
 
             # Replace NaN, None, and empty values with the found value (or leave it empty if no valid value is found)
             summerized_df['reference_date'] = summerized_df['reference_date'].replace([None, '', pd.NA], reference_date_value)
+            summerized_df['predicted_probability'] = summerized_df['predicted_probability'].fillna(0)
+            summerized_df['vacant_house_count'] = summerized_df['vacant_house_count'].fillna(0)
+            summerized_df['total_building_count'] = summerized_df['total_building_count'].fillna(0)
+            summerized_df['young_population_ratio'] = summerized_df['young_population_ratio'].fillna(0)
+            summerized_df['elderly_population_ratio'] = summerized_df['elderly_population_ratio'].fillna(0)
             
             is_success = create_data_set_detail_buildings_or_area(summerized_df, 'data_set_detail_areas')
             if not is_success:
