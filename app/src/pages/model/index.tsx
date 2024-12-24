@@ -3,6 +3,8 @@ import { ButtonCreateModel } from "../../components/button-create-model";
 import { TableModel } from "../../components/table-model";
 import { Button } from "../../components/ui/button";
 import { TableJobsByType } from "../../components/table-jobs-by-type";
+import { BreadcrumbBase, BreadcrumbItem } from "../../components/ui/breadcrumb";
+import { ROUTES } from "../../routes";
 
 const useStyles = makeStyles({
   root: {
@@ -29,6 +31,17 @@ export function Model(): JSX.Element {
 
   return (
     <div className={styles.root}>
+      <BreadcrumbBase
+        breadcrumbItem={[
+          {
+            children: "モデル管理",
+            current: true,
+            href: ROUTES.MODEL.ROOT,
+          },
+        ].map((item) => (
+          <BreadcrumbItem key={item.href} {...item} />
+        ))}
+      />
       <h2 className={styles.heading}>モデル構築</h2>
 
       <Card className={styles.content}>

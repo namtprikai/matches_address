@@ -23,6 +23,11 @@ import { useDialogState } from "../../../../hooks/use-dialog-state";
 import { useFetchJobs } from "../../../../hooks/use-fetch-jobs";
 import { Button } from "../../../../components/ui/button";
 import { ErrorJobTaskInfo } from "../../../../components/error-job-task-info";
+import {
+  BreadcrumbBase,
+  BreadcrumbItem,
+} from "../../../../components/ui/breadcrumb";
+import { ROUTES } from "../../../../routes";
 
 const useStyles = makeStyles({
   root: {
@@ -228,6 +233,21 @@ export function MlDetail(): JSX.Element {
   return (
     <div className={styles.pageContainer}>
       <div className={styles.root}>
+        <BreadcrumbBase
+          breadcrumbItem={[
+            {
+              children: "処理一覧",
+              href: ROUTES.JOB.ROOT,
+            },
+            {
+              children: "処理結果 - モデル構築",
+              current: true,
+              href: ROUTES.JOB.DETAIL_ML(id || ""),
+            },
+          ].map((item) => (
+            <BreadcrumbItem key={item.href} {...item} />
+          ))}
+        />
         <div className={styles.heading}>
           <Button
             appearance="subtle"
