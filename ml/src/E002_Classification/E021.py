@@ -919,8 +919,19 @@ def train_and_evaluate(db_path, input_file, output_path, explanatory_variables, 
         if ERROR_CODE is None:
             set_error(ERROR_10006)
         if task_id is not None:
-            create_or_update_job_task(job_id, progress_percent="", preprocess_type=None, error_code="e001", result=json.dumps({}), id= task_id, is_finish=True)
-        raise Exception("Error: Vacant house learning process encountered an issue")
+            create_or_update_job_task(job_id, progress_percent="", preprocess_type=None, error_code=ERROR_CODE, error_msg=ERROR_MSG, result=json.dumps({}), id= task_id, is_finish=True)
+        raise Exception("空き家判定の学習モデル構築中にエラーが発生しました。")
+    
+def set_error(value, param_st1=None, param_st2=None):
+    global ERROR_CODE
+    global ERROR_MSG
+    ERROR_CODE = value['code']
+    if param_st1 is not None and param_st2 is not None:
+        ERROR_MSG = value['message'].format(param_st1=param_st1, param_st2=param_st2)
+    elif param_st1 is not None:
+        ERROR_MSG = value['message'].format(param_st1=param_st1)
+    else:
+        ERROR_MSG = value['message']
     
 def main():
     parser = argparse.ArgumentParser(description="E021 - 空き家学習機能")

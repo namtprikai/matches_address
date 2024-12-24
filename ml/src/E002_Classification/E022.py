@@ -318,7 +318,7 @@ def insert_sqlite_and_export(input_data, data_set_result_id):
             'fid': 'fid',
             'gml_id': 'gml_id',
             'class': 'class',
-            'geometry': 'geometry',
+            'geometry_plateau': 'geometry',
             'measuredHeight': 'measuredheight',
             'measuredHeight_uom': 'measuredheight_uom',
             'srcScale': 'src_scale',
@@ -362,6 +362,7 @@ def insert_sqlite_and_export(input_data, data_set_result_id):
             'S_NAME': 'area_group'
         }
         # カラム名を変換
+        input_data = input_data.drop('geometry', axis=1, errors='ignore')
         input_data = input_data.rename(columns=mapping_header)
         existing_columns = input_data.columns.tolist()
         mapped_columns = [col for col in mapping_header.values() if col in existing_columns]
@@ -551,7 +552,18 @@ def process_and_predict(input_folder, input_file, model_directory, threshold, ou
         if task_id is not None:
             create_or_update_job_task(job_id, progress_percent="", preprocess_type=None, error_code=ERROR_CODE, error_msg=ERROR_MSG, result=json.dumps({}), id= task_id, is_finish=True)
         raise Exception("空き家判定処理中にエラーが発生しました。")
-    
+
+def set_error(value, param_st1=None, param_st2=None):
+    global ERROR_CODE
+    global ERROR_MSG
+    ERROR_CODE = value['code']
+    if param_st1 is not None and param_st2 is not None:
+        ERROR_MSG = value['message'].format(param_st1=param_st1, param_st2=param_st2)
+    elif param_st1 is not None:
+        ERROR_MSG = value['message'].format(param_st1=param_st1)
+    else:
+        ERROR_MSG = value['message']
+
 def normalize_dates(df, column, formats=['%Y/%m/%d', '%d/%m/%Y', '%Y-%m-%d', '%m/%d/%Y', '%Y%m%d']):
     # Initialize the temporary column with NaN values
     temp_column = f'{column}_normalized'
@@ -569,17 +581,6 @@ def normalize_dates(df, column, formats=['%Y/%m/%d', '%d/%m/%Y', '%Y-%m-%d', '%m
     df[column] = df[temp_column]
     
     return df.drop(f'{column}_normalized',axis=1)
-
-def set_error(value, param_st1=None, param_st2=None):
-    global ERROR_CODE
-    global ERROR_MSG
-    ERROR_CODE = value['code']
-    if param_st1 is not None and param_st2 is not None:
-        ERROR_MSG = value['message'].format(param_st1=param_st1, param_st2=param_st2)
-    elif param_st1 is not None:
-        ERROR_MSG = value['message'].format(param_st1=param_st1)
-    else:
-        ERROR_MSG = value['message']
 
 def main():
     # !!!!!! 引数で指定に要変更
