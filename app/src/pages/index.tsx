@@ -4,6 +4,7 @@ import {
   createLightTheme,
   type BrandVariants,
 } from "@fluentui/react-components";
+import { NotFound } from "../components/not-found";
 import { Error } from "./error";
 import { Debug } from "./debug";
 import { NormalizationCreate } from "./normalization/create";
@@ -39,7 +40,7 @@ const router = createHashRouter([
       },
       {
         path: "*",
-        element: <>404 Not Found</>,
+        element: <NotFound />,
       },
       {
         path: "evaluation",
