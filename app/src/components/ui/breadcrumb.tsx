@@ -36,9 +36,17 @@ export const BreadcrumbBase = ({
 };
 
 export const BreadcrumbItem = (props: BreadcrumbButtonProps): JSX.Element => {
+  if ("href" in props) {
+    return (
+      <BreadcrumbItemFUI>
+        <BreadcrumbButton {...props} href={`#${props.href}`} />
+      </BreadcrumbItemFUI>
+    );
+  }
+
   return (
     <BreadcrumbItemFUI>
-      <BreadcrumbButton {...props}>{props.children}</BreadcrumbButton>
+      <BreadcrumbButton {...props} />
     </BreadcrumbItemFUI>
   );
 };
