@@ -338,7 +338,7 @@ export function MlDetail(): JSX.Element {
                         style={{ width: `${data.value || 0}%` }}
                       ></div>
                       <Text style={{ marginLeft: tokens.spacingHorizontalS }}>
-                        {data.value || "--"}%
+                        {data.value ? data.value.toFixed(1) : "--"}%
                       </Text>
                     </div>
                   ))}
