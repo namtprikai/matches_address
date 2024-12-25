@@ -172,7 +172,6 @@ def main():
             search_period,
             output_directory,
             job_id,
-            json.dumps(columns),
             params.get('db_path')
         )
         create_or_update_job(job_id, "50")
