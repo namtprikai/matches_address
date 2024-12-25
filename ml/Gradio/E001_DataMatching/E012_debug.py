@@ -83,12 +83,12 @@ def process_data_gradio(main_data_type,
     すべてのデータファイルを処理する
     """
 
-    suido_status_file = "{}/E012/inputs/suido_status_{}.csv".format(citycode, targetyear)
-    suido_use_file = "{}/E012/inputs/suido_use_{}.csv".format(citycode, targetyear)
-    juki_file = "{}/E012/inputs/juki_{}.csv".format(citycode, targetyear)
-    touki_file = "{}/E012/inputs/touki.csv".format(citycode)
-    akiya_result_file = "{}/E012/inputs/akiya_result.csv".format(citycode)
-    geocoding_file = "{}/E012/inputs/geocoding.csv".format(citycode)
+    suido_status_file = "data/{}/E012/inputs/suido_status_{}.csv".format(citycode, targetyear)
+    suido_use_file = "data/{}/E012/inputs/suido_use_{}.csv".format(citycode, targetyear)
+    juki_file = "data/{}/E012/inputs/juki_{}.csv".format(citycode, targetyear)
+    touki_file = "data/{}/E012/inputs/touki.csv".format(citycode)
+    akiya_result_file = "data/{}/E012/inputs/akiya_result.csv".format(citycode)
+    geocoding_file = "data/{}/E012/inputs/geocoding.csv".format(citycode)
 
     INPUT_COLUMNS = set_columns(
         suido_number, usage_status, suido_status_address, usage_start_date, usage_end_date,
@@ -134,30 +134,30 @@ def process_data_gradio(main_data_type,
     akiya_result_df = read_file(akiya_result_file, "akiya_result")
 
     # ファイルを保存して、処理に反映
-    suido_use_df.to_csv("{}/E012/outputs/processed_suido_use_{}.csv".format(citycode, targetyear), index=False)
-    touki_df.to_csv("{}/E012/outputs/processed_touki.csv".format(citycode), index=False)
-    geocoding_df.to_csv("{}/E012/outputs/processed_geocoding.csv".format(citycode), index=False)
-    akiya_result_df.to_csv("{}/E012/outputs/processed_akiya_result.csv".format(citycode), index=False)
+    suido_use_df.to_csv("data/{}/E012/outputs/processed_suido_use_{}.csv".format(citycode, targetyear), index=False)
+    touki_df.to_csv("data/{}/E012/outputs/processed_touki.csv".format(citycode), index=False)
+    geocoding_df.to_csv("data/{}/E012/outputs/processed_geocoding.csv".format(citycode), index=False)
+    akiya_result_df.to_csv("data/{}/E012/outputs/processed_akiya_result.csv".format(citycode), index=False)
 
     # 入力ファイルのパスを設定
     input_paths = {
         "suido_status": suido_status_file,
-        "suido_use": "{}/E012/outputs/processed_suido_use_{}.csv".format(citycode, targetyear),
+        "suido_use": "data/{}/E012/outputs/processed_suido_use_{}.csv".format(citycode, targetyear),
         "juki": juki_file,
-        "touki": "{}/E012/outputs/processed_touki.csv".format(citycode),
-        "akiya_result": "{}/E012/outputs/processed_akiya_result.csv".format(citycode),
-        "geocoding": "{}/E012/outputs/processed_geocoding.csv".format(citycode)
+        "touki": "data/{}/E012/outputs/processed_touki.csv".format(citycode),
+        "akiya_result": "data/{}/E012/outputs/processed_akiya_result.csv".format(citycode),
+        "geocoding": "data/{}/E012/outputs/processed_geocoding.csv".format(citycode)
     }
     
     # 出力ファイルのパスを設定
     # 処理後のファイルの保存先パスを辞書形式で定義
     output_paths = {
-        "suido_status": "{}/E012/outputs/suido_status_cleaned_{}.csv".format(citycode, targetyear),
-        "suido_use": "{}/E012/outputs/suido_use_cleaned_{}.csv".format(citycode, targetyear),
-        "juki": "{}/E012/outputs/juki_cleaned_{}.csv".format(citycode, targetyear),
-        "touki": "{}/E012/outputs/touki_cleaned.csv".format(citycode),
-        "akiya_result": "{}/E012/outputs/akiya_result_cleaned.csv".format(citycode),
-        "geocoding": "{}/E012/outputs/geocoding_cleaned.csv".format(citycode)
+        "suido_status": "data/{}/E012/outputs/suido_status_cleaned_{}.csv".format(citycode, targetyear),
+        "suido_use": "data/{}/E012/outputs/suido_use_cleaned_{}.csv".format(citycode, targetyear),
+        "juki": "data/{}/E012/outputs/juki_cleaned_{}.csv".format(citycode, targetyear),
+        "touki": "data/{}/E012/outputs/touki_cleaned.csv".format(citycode),
+        "akiya_result": "data/{}/E012/outputs/akiya_result_cleaned.csv".format(citycode),
+        "geocoding": "data/{}/E012/outputs/geocoding_cleaned.csv".format(citycode)
     }
     
     # EachFileProcessorインスタンスを作成
@@ -171,10 +171,10 @@ def process_data_gradio(main_data_type,
         # EachFileProcessorのprocess_fileメソッドを呼び出して各ファイルを処理
         processor.process_file(file_key)
 
-    os.remove("{}/E012/outputs/processed_suido_use_{}.csv".format(citycode, targetyear), index=False)
-    os.remove("{}/E012/outputs/processed_touki_{}.csv".format(citycode, targetyear), index=False)
-    os.remove("{}/E012/outputs/processed_geocoding.csv".format(citycode), index=False)
-    os.remove("{}/E012/outputs/processed_akiya_result_{}.csv".format(citycode, targetyear), index=False)
+    #os.remove("data/{}/E012/outputs/processed_suido_use_{}.csv".format(citycode, targetyear), index=False)
+    #os.remove("data/{}/E012/outputs/processed_touki_{}.csv".format(citycode, targetyear), index=False)
+    #os.remove("data/{}/E012/outputs/processed_geocoding.csv".format(citycode), index=False)
+    #os.remove("data/{}/E012/outputs/processed_akiya_result_{}.csv".format(citycode, targetyear), index=False)
 
     print("すべての処理が完了しました!")
 

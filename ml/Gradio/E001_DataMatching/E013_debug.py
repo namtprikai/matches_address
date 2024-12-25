@@ -22,7 +22,7 @@ from E001_DataMatching.E013 import *
 
 
 # すべてのデータを処理する関数を作成
-def process_all_data_gradio(suido_use_file, suido_status_file, juki_file, tatemono_file, base_date, search_period, citycode_value, targetyear_value):
+def process_all_data_gradio(suido_use_file, suido_status_file, juki_file, tatemono_file, reference_date, search_period, citycode_value, targetyear_value):
     """
     すべてのデータファイルを処理する
     """
@@ -36,7 +36,7 @@ def process_all_data_gradio(suido_use_file, suido_status_file, juki_file, tatemo
     output_paths = {
         "suido": f"./data/{citycode_value}/E013/outputs/suido_residence_{targetyear_value}.csv",
         "juki": f"./data/{citycode_value}/E013/outputs/juki_residence_{targetyear_value}.csv",
-        "tatemono": f".data/{citycode_value}/E013/outputs/touki_residence.csv"
+        "tatemono": f"./data/{citycode_value}/E013/outputs/touki_residence.csv"
     }
 
     processors = {
@@ -47,7 +47,7 @@ def process_all_data_gradio(suido_use_file, suido_status_file, juki_file, tatemo
 
     for file_key, processor_class in processors.items():
         print(f"{file_key}データを処理中...")
-        processor_class(input_paths, output_paths, base_date, search_period).process()
+        processor_class(input_paths, output_paths, reference_date, search_period).process()
 
         output_file = output_paths[file_key]
         if os.path.exists(output_file):
@@ -64,10 +64,10 @@ def generate_file_paths(citycode_value, targetyear_value):
     """
     市区町村コードと対象年度に基づいてファイルパスを生成する
     """
-    suido_status_file = f"./data/{citycode_value}/E013/inputs/suido_status_cleaned.csv"
-    suido_use_file = f"./data/{citycode_value}/E013/inputs/suido_use_cleaned_{targetyear_value}.csv"
-    juki_file = f"./data/{citycode_value}/E013/inputs/juki_cleaned_{targetyear_value}.csv"
-    tatemono_file = f"./data/{citycode_value}/E013/inputs/touki_cleaned.csv"
+    suido_status_file = f"./data/{citycode_value}/E012/outputs/suido_status_cleaned_{targetyear_value}.csv"
+    suido_use_file = f"./data/{citycode_value}/E012/outputs/suido_use_cleaned_{targetyear_value}.csv"
+    juki_file = f"./data/{citycode_value}/E012/outputs/juki_cleaned_{targetyear_value}.csv"
+    tatemono_file = f"./data/{citycode_value}/E012/outputs/touki_cleaned.csv"
 
     return suido_use_file, suido_status_file, juki_file, tatemono_file
 
@@ -95,7 +95,7 @@ if __name__ == "__main__":
                 )
         
         with gr.Row():
-            base_date = gr.Number(label="Base Date (YYYYMMDD)", value=20230320)
+            reference_date = gr.Textbox(label="Base Date (YYYY-MM-DD)", value="2023-03-20")
             search_period = gr.Number(label="Search Period (Year)", value=1)
         
         submit_button = gr.Button("処理を実行")
@@ -106,15 +106,15 @@ if __name__ == "__main__":
             tatemono_output = gr.File(label="Processed Tatemono Data")
 
         # 修正: citycode と targetyear を取得してファイルパスを生成する
-        def on_submit(citycode_value, targetyear_value, base_date, search_period):
+        def on_submit(citycode_value, targetyear_value, reference_date, search_period):
             # 実際の citycode_value と targetyear_value を使ってファイルパスを生成
             suido_use_file, suido_status_file, juki_file, tatemono_file = generate_file_paths(citycode_value, targetyear_value)
 
-            return process_all_data_gradio(suido_use_file, suido_status_file, juki_file, tatemono_file, base_date, search_period, citycode_value, targetyear_value)
+            return process_all_data_gradio(suido_use_file, suido_status_file, juki_file, tatemono_file, reference_date, search_period, citycode_value, targetyear_value)
 
         submit_button.click(
             fn=on_submit,
-            inputs=[citycode, targetyear, base_date, search_period],
+            inputs=[citycode, targetyear, reference_date, search_period],
             outputs=[suido_output, juki_output, tatemono_output]
         )
 
