@@ -4,7 +4,7 @@ import { type Feature, type GeoJsonProperties, type Geometry } from "geojson";
 import { wktToGeoJSON } from "betterknown";
 import { type SelectDataSetDetailArea } from "../../../../schema";
 import { AreaPopup, type AreaProperties } from "./area-popup";
-import { VACANCY_RATE_HIGH, VACANCY_RATE_MEDIUM } from ".";
+import { PREDICTED_PROBABILITY_HIGH, PREDICTED_PROBABILITY_MEDIUM } from ".";
 
 export function addAreaLayer(
   map: Map,
@@ -55,9 +55,9 @@ export function addAreaLayer(
     paint: {
       "fill-color": [
         "case",
-        [">=", ["get", "predicted_probability"], VACANCY_RATE_HIGH],
+        [">=", ["get", "predicted_probability"], PREDICTED_PROBABILITY_HIGH],
         "#C4314B", // 赤 (80以上)
-        [">=", ["get", "predicted_probability"], VACANCY_RATE_MEDIUM],
+        [">=", ["get", "predicted_probability"], PREDICTED_PROBABILITY_MEDIUM],
         "#FFA929", // 黄 (30以上80未満)
         "#1B8C63", // 青 (30未満)
       ],
@@ -69,9 +69,9 @@ export function addAreaLayer(
       ],
       "fill-outline-color": [
         "case",
-        [">=", ["get", "predicted_probability"], VACANCY_RATE_HIGH],
+        [">=", ["get", "predicted_probability"], PREDICTED_PROBABILITY_HIGH],
         "#C4314B", // 赤 (80以上)
-        [">=", ["get", "predicted_probability"], VACANCY_RATE_MEDIUM],
+        [">=", ["get", "predicted_probability"], PREDICTED_PROBABILITY_MEDIUM],
         "#FFA929", // 黄 (30以上80未満)
         "#1B8C63", // 青 (30未満)
       ],

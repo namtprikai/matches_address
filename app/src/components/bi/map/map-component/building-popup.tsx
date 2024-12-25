@@ -3,7 +3,7 @@ import { mergeClasses } from "@fluentui/react-components";
 import { type SelectDataSetDetailBuilding } from "../../../../schema";
 import { formatDate } from "../../../../utils/format-date";
 import styles from "./building-popup.module.css";
-import { VACANCY_RATE_HIGH, VACANCY_RATE_MEDIUM } from ".";
+import { PREDICTED_PROBABILITY_HIGH, PREDICTED_PROBABILITY_MEDIUM } from ".";
 
 export type BuildingProperties = Pick<
   SelectDataSetDetailBuilding,
@@ -26,12 +26,12 @@ interface Props {
 
 export const BuildingPopup = forwardRef<HTMLDivElement, Props>(
   ({ properties }, ref) => {
-    const vacancyRateColorStyle = (() => {
-      if (!properties) return "";
-      const vacancyRate = properties.predicted_probability || 0;
-      if (vacancyRate >= VACANCY_RATE_HIGH) {
+    const { predicted_probability } = properties;
+    const predictedProbabilityColorStyle = (() => {
+      if (!predicted_probability) return;
+      if (predicted_probability >= PREDICTED_PROBABILITY_HIGH) {
         return styles.high;
-      } else if (vacancyRate >= VACANCY_RATE_MEDIUM) {
+      } else if (predicted_probability >= PREDICTED_PROBABILITY_MEDIUM) {
         return styles.medium;
       } else {
         return styles.low;
@@ -40,10 +40,15 @@ export const BuildingPopup = forwardRef<HTMLDivElement, Props>(
 
     return (
       <div ref={ref} className={styles.container} tabIndex={-1}>
-        <div className={mergeClasses(styles.header, vacancyRateColorStyle)}>
+        <div
+          className={mergeClasses(
+            styles.header,
+            predictedProbabilityColorStyle,
+          )}
+        >
           <span className={styles.circleIcon} />
           <div>
-            <span className={styles.vacancyRate}>
+            <span className={styles.predictedProbability}>
               {properties.predicted_probability !== null
                 ? properties.predicted_probability.toFixed(0)
                 : "??"}

@@ -16,8 +16,8 @@ import { addBuildingLayer } from "./add-building-layer";
 import { type BuildingProperties } from "./building-popup";
 import { addAreaLayer } from "./add-area-layer";
 
-export const VACANCY_RATE_HIGH = 80;
-export const VACANCY_RATE_MEDIUM = 30;
+export const PREDICTED_PROBABILITY_HIGH = 80;
+export const PREDICTED_PROBABILITY_MEDIUM = 30;
 const INITIAL_CENTER: [number, number] = [137.120435, 34.990565];
 
 const useMapComponentStyles = makeStyles({
@@ -287,21 +287,25 @@ export function MapComponent({
           filters.push([
             "<",
             ["get", "predicted_probability"],
-            VACANCY_RATE_MEDIUM,
+            PREDICTED_PROBABILITY_MEDIUM,
           ]);
         }
         if (vacancyLevels.medium) {
           filters.push([
             "all",
-            [">=", ["get", "predicted_probability"], VACANCY_RATE_MEDIUM],
-            ["<", ["get", "predicted_probability"], VACANCY_RATE_HIGH],
+            [
+              ">=",
+              ["get", "predicted_probability"],
+              PREDICTED_PROBABILITY_MEDIUM,
+            ],
+            ["<", ["get", "predicted_probability"], PREDICTED_PROBABILITY_HIGH],
           ]);
         }
         if (vacancyLevels.high) {
           filters.push([
             ">=",
             ["get", "predicted_probability"],
-            VACANCY_RATE_HIGH,
+            PREDICTED_PROBABILITY_HIGH,
           ]);
         }
 
