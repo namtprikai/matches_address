@@ -115,17 +115,13 @@ export const createDummyDataSetResults = (async (
                 number_of_people_aged_15_to_64 +
                 number_of_people_aged_65_and_over;
               const composition_ratio_of_people_aged_15_to_64 =
-                (number_of_people_aged_15_to_64 /
-                  number_of_people_in_household) *
-                100;
+                number_of_people_aged_15_to_64 / number_of_people_in_household;
               const composition_ratio_of_people_aged_65_and_over =
-                (number_of_people_aged_65_and_over /
-                  number_of_people_in_household) *
-                100;
+                number_of_people_aged_65_and_over /
+                number_of_people_in_household;
               const composition_ratio_of_people_under_15_years_old =
-                (number_of_people_under_15_years_old /
-                  number_of_people_in_household) *
-                100;
+                number_of_people_under_15_years_old /
+                number_of_people_in_household;
               const number_of_male = Math.floor(
                 Math.random() * number_of_people_in_household,
               );
