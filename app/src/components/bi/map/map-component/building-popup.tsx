@@ -28,7 +28,7 @@ export const BuildingPopup = forwardRef<HTMLDivElement, Props>(
   ({ properties }, ref) => {
     const { predicted_probability } = properties;
     const predictedProbabilityColorStyle = (() => {
-      if (!predicted_probability) return;
+      if (predicted_probability === null) return;
       if (predicted_probability >= PREDICTED_PROBABILITY_HIGH) {
         return styles.high;
       } else if (predicted_probability >= PREDICTED_PROBABILITY_MEDIUM) {
