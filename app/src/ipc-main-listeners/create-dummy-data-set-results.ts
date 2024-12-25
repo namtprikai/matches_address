@@ -73,7 +73,7 @@ export const createDummyDataSetResults = (async (
               await tx.insert(data_set_detail_areas).values({
                 data_set_result_id,
                 reference_date,
-                predicted_probability: Math.random() * 100,
+                predicted_probability: Math.random(),
                 area_group:
                   TOYOTA_AREAS[Math.floor(Math.random() * TOYOTA_AREAS.length)],
                 young_population_ratio: Math.floor(Math.random() * 100),
@@ -181,7 +181,7 @@ export const createDummyDataSetResults = (async (
                 landslide_risk_desc: `地滑りリスク${i}`,
                 name: `建物名${i}`,
                 predicted_label: Math.round(pred),
-                predicted_probability: pred * 100,
+                predicted_probability: pred,
                 geometry: geoJSONToWkt(feature.geometry),
               };
               await tx.insert(data_set_detail_buildings).values(insertion);
