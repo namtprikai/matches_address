@@ -130,19 +130,20 @@ export const filterDataSetForChart = ((
 
     return {
       data: all.map((row) => {
-        if (`${x}_group` in row) {
-          return {
+        const xValue = (() => {
+          if (`${x}_group` in row) {
             // @ts-expect-error drizzle側で型補完が効かないため、型を指定
-            x: row[`${x}_group`] as string,
-            y: formatChartValue(row[y] as number) as number,
-          };
-        }
-
+            return row[`${x}_group`] as string;
+          }
+          return row[x] as string;
+        })();
+        const yValue = formatChartValue(row[y] as number) as number;
         return {
-          x: row[x] as string,
-          y: formatChartValue(row[y] as number) as number,
+          x: xValue,
+          y: scaleValue(yValue, columnYMetadata.unit),
         };
       }),
+
       xAxisColumn: {
         type: "string",
         unit: columnXMetadata.unit,
@@ -229,19 +230,20 @@ export const filterDataSetForChart = ((
 
     return {
       data: all.map((row) => {
-        if (`${x}_group` in row) {
-          return {
-            // @ts-expect-error drizzle側で型補完が効かないため、型を指定
-            x: row[`${x}_group`],
-            y: formatChartValue(row[y] ?? "") as number,
-          };
-        }
+        const xValue = (() => {
+          if (columnXMetadata.type === "float") {
+            return scaleValue(row[x] as number, columnXMetadata.unit);
+          }
+          return row[x] as string;
+        })();
+        const yValue = formatChartValue(row[y] as number) as number;
 
         return {
-          x: row[x] as string,
-          y: formatChartValue(row[y] ?? "") as number,
+          x: xValue,
+          y: scaleValue(yValue, columnYMetadata.unit),
         };
       }),
+
       xAxisColumn: {
         type: "string",
         unit: columnXMetadata.unit,
@@ -265,3 +267,8 @@ export const filterDataSetForChart = ((
     },
   };
 }) satisfies IpcMainListener;
+
+function scaleValue(value: number, unit: string): number {
+  // 小数点第一位まで表示する
+  return unit === "%" ? Math.round(value * 1000) / 10 : value;
+}
