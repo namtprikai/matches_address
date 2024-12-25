@@ -468,18 +468,21 @@ def process_and_predict(input_folder, input_file, model_directory, threshold, ou
                     explanatory_variables_dict[col] = tar_colname[0]
 
         # 閉栓フラグをブール値に変換
-        prediction_data[explanatory_variables_dict["閉栓フラグ"]] = prediction_data[explanatory_variables_dict["閉栓フラグ"]].map({"True": True, "False": False}).astype("bool")
-        # '登記日付_touki_residence'をdatetime型に変換
-        prediction_data = normalize_dates(prediction_data, explanatory_variables_dict["登記日付"])
-        # 構造名称_touki_residenceをカテゴリ型に変換
-        if explanatory_variables_dict["構造名称"] in prediction_data.columns:
-            prediction_data[explanatory_variables_dict["構造名称"]] = prediction_data[explanatory_variables_dict["構造名称"]].astype("category")
-
-        # # 基準日を設定
-        # base_date = pd.to_datetime('2023/03/20')
-
-        # 登記日付をYearに変換
+        try:
+            prediction_data[explanatory_variables_dict["閉栓フラグ"]] = prediction_data[explanatory_variables_dict["閉栓フラグ"]].astype("bool")
+        except:
+            prediction_data[explanatory_variables_dict["閉栓フラグ"]] = prediction_data[explanatory_variables_dict["閉栓フラグ"]].map({"True": True, "False": False}).astype("bool")
+        # 登記日付_touki_residenceを日付型に変換
+        prediction_data[explanatory_variables_dict["登記日付"]] = pd.to_datetime(prediction_data[explanatory_variables_dict["登記日付"]], errors='coerce')
         prediction_data[explanatory_variables_dict["登記日付"]] = prediction_data[explanatory_variables_dict["登記日付"]].dt.year
+
+        # 構造名称_touki_residenceをカテゴリ型に変換
+        if explanatory_variables_dict["構造名称"] in prediction_data.columns: 
+            fill_value = [ i for i in np.arange(100) if i not in prediction_data[explanatory_variables_dict["構造名称"]].unique()]
+            if len(fill_value) == 0:
+                fill_value = [ i for i in [999,9999,99999,9999999,9999999] if i not in prediction_data[explanatory_variables_dict["構造名称"]].unique()]
+            prediction_data[explanatory_variables_dict["構造名称"]] = prediction_data[explanatory_variables_dict["構造名称"]].fillna(fill_value[0])
+            prediction_data[explanatory_variables_dict["構造名称"]] = prediction_data[explanatory_variables_dict["構造名称"]].astype("category")
 
         if job_id:
             create_or_update_job_task(job_id, progress_percent="30", preprocess_type=None, error_code=None, error_msg=None, result=json.dumps({}), id= task_id)
@@ -588,7 +591,7 @@ def main():
         '世帯人数', '15歳未満人数', '15歳以上64歳以下人数', '65歳以上人数', '15歳未満構成比', 
         '15歳以上64歳以下構成比', '65歳以上構成比', '最大年齢', '最小年齢', '男女比',
         '住定期間', '水道使用量変化率_suido_residence', '最大使用水量_suido_residence',
-        '合計使用水量_suido_residence', '閉栓フラグ_suido_residence', '構造名称_touki_residence', '登記日付_touki_residence'
+        '平均使用水量_suido_residence', '閉栓フラグ_suido_residence', '構造名称_touki_residence', '登記日付_touki_residence'
     ]
     # !!!!!! 引数で指定に要変更
     OUTCOME_VARIABLE = 'akiya_result_cleaned_flag'
