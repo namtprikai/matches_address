@@ -16,8 +16,8 @@ import { addBuildingLayer } from "./add-building-layer";
 import { type BuildingProperties } from "./building-popup";
 import { addAreaLayer } from "./add-area-layer";
 
-export const PREDICTED_PROBABILITY_HIGH = 80;
-export const PREDICTED_PROBABILITY_MEDIUM = 30;
+export const PREDICTED_PROBABILITY_HIGH = 0.8;
+export const PREDICTED_PROBABILITY_MEDIUM = 0.3;
 const INITIAL_CENTER: [number, number] = [137.120435, 34.990565];
 
 const useMapComponentStyles = makeStyles({
