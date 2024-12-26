@@ -181,16 +181,18 @@ def prepare_learning_data(df, explanatory_variables, explanatory_variables_dict)
     """
     # 閉栓フラグをブール値に変換
 
-    try:
-        df[explanatory_variables_dict["閉栓フラグ"]] = df[explanatory_variables_dict["閉栓フラグ"]].astype("bool")
-    except:
-        df[explanatory_variables_dict["閉栓フラグ"]] = df[explanatory_variables_dict["閉栓フラグ"]].map({"True": True, "False": False}).astype("bool")
+    if explanatory_variables_dict.get("閉栓フラグ") in df.columns:
+        try:
+            df[explanatory_variables_dict["閉栓フラグ"]] = df[explanatory_variables_dict["閉栓フラグ"]].astype("bool")
+        except:
+            df[explanatory_variables_dict["閉栓フラグ"]] = df[explanatory_variables_dict["閉栓フラグ"]].map({"True": True, "False": False}).astype("bool")
     # 登記日付_touki_residenceを日付型に変換
-    df[explanatory_variables_dict["登記日付"]] = pd.to_datetime(df[explanatory_variables_dict["登記日付"]], errors='coerce')
-    df[explanatory_variables_dict["登記日付"]] = df[explanatory_variables_dict["登記日付"]].dt.year
+    if explanatory_variables_dict.get("登記日付") in df.columns:
+        df[explanatory_variables_dict["登記日付"]] = pd.to_datetime(df[explanatory_variables_dict["登記日付"]], errors='coerce')
+        df[explanatory_variables_dict["登記日付"]] = df[explanatory_variables_dict["登記日付"]].dt.year
 
     # 構造名称_touki_residenceをカテゴリ型に変換
-    if explanatory_variables_dict["構造名称"] in df.columns: 
+    if explanatory_variables_dict.get("構造名称") in df.columns: 
         fill_value = [ i for i in np.arange(100) if i not in df[explanatory_variables_dict["構造名称"]].unique()]
         if len(fill_value) == 0:
             fill_value = [ i for i in [999,9999,99999,9999999,9999999] if i not in df[explanatory_variables_dict["構造名称"]].unique()]

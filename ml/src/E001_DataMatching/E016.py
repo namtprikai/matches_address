@@ -1043,7 +1043,7 @@ def process_data(tatemono_path, water_supply_path, gpkg_path, ken, sikuchoson, o
     except Exception as e:
         print(e)
         if ERROR_CODE is None:
-            set_error(ERROR_00018)
+            set_error(ERROR_00019)
         if task_id is not None:
             create_or_update_job_task(job_id, progress_percent="", preprocess_type="e016", error_code=ERROR_CODE, error_msg=ERROR_MSG, result=json.dumps({}), id= task_id, is_finish=True)
         raise Exception("空間結合処理中にエラーが発生しました。ジオメトリに不正がないか、ご確認ください。")
