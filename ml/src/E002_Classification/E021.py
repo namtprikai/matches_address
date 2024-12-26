@@ -62,7 +62,7 @@ CONSTANTS = {
         'gml_id', '世帯コード', '世帯人数', '15歳未満人数', '15歳以上64歳以下人数', 
         '65歳以上人数', '15歳未満構成比', '15歳以上64歳以下構成比', '65歳以上構成比', '最大年齢', '最小年齢', '男女比', 
         '住定期間', '水道番号_suido_residence', '水道使用量変化率_suido_residence', '最大使用水量_suido_residence', 
-        '合計使用水量_suido_residence', '閉栓フラグ_suido_residence', '構造名称_touki_residence', 
+        '平均使用水量_suido_residence', '閉栓フラグ_suido_residence', '構造名称_touki_residence', 
         '登記日付_touki_residence', 'akiya_result_cleaned_flag', 'matched_data_flag'
     ],
     'outcome_variable': 'akiya_result_cleaned_flag'
@@ -180,19 +180,27 @@ def prepare_learning_data(df, explanatory_variables, explanatory_variables_dict)
         準備された学習データ
     """
     # 閉栓フラグをブール値に変換
-    df[explanatory_variables_dict["閉栓フラグ"]] = df[explanatory_variables_dict["閉栓フラグ"]].map({"True": True, "False": False}).astype("bool")
+
+    try:
+        df[explanatory_variables_dict["閉栓フラグ"]] = df[explanatory_variables_dict["閉栓フラグ"]].astype("bool")
+    except:
+        df[explanatory_variables_dict["閉栓フラグ"]] = df[explanatory_variables_dict["閉栓フラグ"]].map({"True": True, "False": False}).astype("bool")
     # 登記日付_touki_residenceを日付型に変換
     df[explanatory_variables_dict["登記日付"]] = pd.to_datetime(df[explanatory_variables_dict["登記日付"]], errors='coerce')
-    # 日付型を数値型（Unixタイムスタンプ）に変換
-    # df[explanatory_variables_dict["登記日付"]] = df[explanatory_variables_dict["登記日付"]].apply(lambda x: x.timestamp() if pd.notnull(x) else np.nan)
     df[explanatory_variables_dict["登記日付"]] = df[explanatory_variables_dict["登記日付"]].dt.year
 
     # 構造名称_touki_residenceをカテゴリ型に変換
-    if explanatory_variables_dict["構造名称"] in df.columns:
+    if explanatory_variables_dict["構造名称"] in df.columns: 
+        fill_value = [ i for i in np.arange(100) if i not in df[explanatory_variables_dict["構造名称"]].unique()]
+        if len(fill_value) == 0:
+            fill_value = [ i for i in [999,9999,99999,9999999,9999999] if i not in df[explanatory_variables_dict["構造名称"]].unique()]
+        df[explanatory_variables_dict["構造名称"]] = df[explanatory_variables_dict["構造名称"]].fillna(fill_value[0])
         df[explanatory_variables_dict["構造名称"]] = df[explanatory_variables_dict["構造名称"]].astype("category")
 
     # 将来のマージのために識別子列をデータフレームに追加
-    df["gml_id"] = df.index 
+    if "gml_id" not in df.columns:
+        df["gml_id"] = df.index 
+
     # 特定の列を選択し、行をフィルタリングして学習データを準備
     learning_data = df.copy()
 
@@ -204,13 +212,16 @@ def prepare_learning_data(df, explanatory_variables, explanatory_variables_dict)
                 set_error(ERROR_10007)
                 # print(f"Error parsing data: {e}")
                 raise
+
         merged_variables = list(dict.fromkeys(chain(CONSTANTS['explanatory_variables'], explanatory_variables)))
         learning_data = learning_data[merged_variables]
     else:
         learning_data = learning_data[CONSTANTS['explanatory_variables']]
 
-    learning_data = learning_data[learning_data['matched_data_flag'] == 1]
-    learning_data.drop(columns=['matched_data_flag'], inplace=True)
+    if 'matched_data_flag' in learning_data.columns:
+        learning_data = learning_data[learning_data['matched_data_flag'] == 1]
+        learning_data.drop(columns=['matched_data_flag'], inplace=True)
+
     learning_data.reset_index(drop=True, inplace=True)
     return learning_data
 

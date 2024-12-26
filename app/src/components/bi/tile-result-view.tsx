@@ -394,7 +394,7 @@ const OUTPUT_FILE_TYPES = [
   },
   {
     name: "GeoPackage",
-    type: "geopackage",
+    type: "gpkg",
   },
 ];
 
