@@ -1,4 +1,5 @@
 import { forwardRef } from "react";
+import { mergeClasses } from "@fluentui/react-components";
 import { type SelectDataSetDetailArea } from "../../../../schema";
 import styles from "./area-popup.module.css";
 import { PREDICTED_PROBABILITY_HIGH, PREDICTED_PROBABILITY_MEDIUM } from ".";
@@ -22,7 +23,7 @@ export const AreaPopup = forwardRef<HTMLDivElement, Props>(
   ({ properties }, ref) => {
     const { predicted_probability } = properties;
     const predictedProbabilityColorStyle = (() => {
-      if (predicted_probability === null) return "";
+      if (predicted_probability === null) return;
       if (predicted_probability >= PREDICTED_PROBABILITY_HIGH) {
         return styles.high;
       } else if (predicted_probability >= PREDICTED_PROBABILITY_MEDIUM) {
@@ -34,7 +35,12 @@ export const AreaPopup = forwardRef<HTMLDivElement, Props>(
 
     return (
       <div ref={ref} className={styles.container} tabIndex={-1}>
-        <div className={`${styles.header} ${predictedProbabilityColorStyle}`}>
+        <div
+          className={mergeClasses(
+            styles.header,
+            predictedProbabilityColorStyle,
+          )}
+        >
           <span className={styles.circleIcon} />
           <div>
             <span className={styles.predictedProbability}>

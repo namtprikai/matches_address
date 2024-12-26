@@ -27,8 +27,8 @@ interface Props {
 export const BuildingPopup = forwardRef<HTMLDivElement, Props>(
   ({ properties }, ref) => {
     const { predicted_probability } = properties;
-    const predictedProbabilityColorStyle: string = (() => {
-      if (predicted_probability === null) return "";
+    const predictedProbabilityColorStyle = (() => {
+      if (predicted_probability === null) return;
       if (predicted_probability >= PREDICTED_PROBABILITY_HIGH) {
         return styles.high;
       } else if (predicted_probability >= PREDICTED_PROBABILITY_MEDIUM) {
@@ -40,7 +40,12 @@ export const BuildingPopup = forwardRef<HTMLDivElement, Props>(
 
     return (
       <div ref={ref} className={styles.container} tabIndex={-1}>
-        <div className={`${styles.header} ${predictedProbabilityColorStyle}`}>
+        <div
+          className={mergeClasses(
+            styles.header,
+            predictedProbabilityColorStyle,
+          )}
+        >
           <span className={styles.circleIcon} />
           <div>
             <span className={styles.predictedProbability}>
