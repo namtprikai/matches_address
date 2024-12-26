@@ -180,6 +180,7 @@ def prepare_learning_data(df, explanatory_variables, explanatory_variables_dict)
         準備された学習データ
     """
     # 閉栓フラグをブール値に変換
+
     try:
         df[explanatory_variables_dict["閉栓フラグ"]] = df[explanatory_variables_dict["閉栓フラグ"]].astype("bool")
     except:
@@ -199,6 +200,7 @@ def prepare_learning_data(df, explanatory_variables, explanatory_variables_dict)
     # 将来のマージのために識別子列をデータフレームに追加
     if "gml_id" not in df.columns:
         df["gml_id"] = df.index 
+
     # 特定の列を選択し、行をフィルタリングして学習データを準備
     learning_data = df.copy()
 
@@ -207,7 +209,10 @@ def prepare_learning_data(df, explanatory_variables, explanatory_variables_dict)
             try:
                 explanatory_variables = ast.literal_eval(explanatory_variables)
             except (ValueError, SyntaxError) as e:
-                print(f"Error parsing data: {e}")
+                set_error(ERROR_10007)
+                # print(f"Error parsing data: {e}")
+                raise
+
         merged_variables = list(dict.fromkeys(chain(CONSTANTS['explanatory_variables'], explanatory_variables)))
         learning_data = learning_data[merged_variables]
     else:
@@ -216,6 +221,7 @@ def prepare_learning_data(df, explanatory_variables, explanatory_variables_dict)
     if 'matched_data_flag' in learning_data.columns:
         learning_data = learning_data[learning_data['matched_data_flag'] == 1]
         learning_data.drop(columns=['matched_data_flag'], inplace=True)
+
     learning_data.reset_index(drop=True, inplace=True)
     return learning_data
 

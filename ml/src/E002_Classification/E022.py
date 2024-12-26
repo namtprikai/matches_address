@@ -484,6 +484,7 @@ def process_and_predict(input_folder, input_file, model_directory, threshold, ou
             prediction_data[explanatory_variables_dict["構造名称"]] = prediction_data[explanatory_variables_dict["構造名称"]].fillna(fill_value[0])
             prediction_data[explanatory_variables_dict["構造名称"]] = prediction_data[explanatory_variables_dict["構造名称"]].astype("category")
 
+
         if job_id:
             create_or_update_job_task(job_id, progress_percent="30", preprocess_type=None, error_code=None, error_msg=None, result=json.dumps({}), id= task_id)
             create_or_update_job(job_id, process)

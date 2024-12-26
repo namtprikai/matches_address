@@ -1041,6 +1041,7 @@ def process_data(tatemono_path, water_supply_path, gpkg_path, ken, sikuchoson, o
 
         return output_path, join_ratio
     except Exception as e:
+        print(e)
         if ERROR_CODE is None:
             set_error(ERROR_00018)
         if task_id is not None:
