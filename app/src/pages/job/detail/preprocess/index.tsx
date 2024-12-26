@@ -291,7 +291,7 @@ export function PreprocessDetail(): JSX.Element {
 // 成功率を取得する関数
 function getIndexRate(item: SelectJobTask): string {
   if (item.result?.taskResultType === "preprocess") {
-    return item.result.joining_rate;
+    return parseFloat(item.result.joining_rate).toFixed(1);
   } else {
     return "N/A";
   }
