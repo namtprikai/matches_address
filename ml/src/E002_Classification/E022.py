@@ -459,7 +459,6 @@ def process_and_predict(input_folder, input_file, model_directory, threshold, ou
                     explanatory_variables_dict[col] = tar_colname[0]
                 
         required_features = [ explanatory_variables_dict[val] for val in explanatory_variables_dict.keys()] 
-        explanatory_variables = [ explanatory_variables_dict[val] for val in explanatory_variables_dict.keys()] 
         
         for col in ['最小使用水量','平均使用水量','住定異動年月日','登記日付']:
             if col not in explanatory_variables_dict.keys():
@@ -468,16 +467,18 @@ def process_and_predict(input_folder, input_file, model_directory, threshold, ou
                     explanatory_variables_dict[col] = tar_colname[0]
 
         # 閉栓フラグをブール値に変換
-        try:
-            prediction_data[explanatory_variables_dict["閉栓フラグ"]] = prediction_data[explanatory_variables_dict["閉栓フラグ"]].astype("bool")
-        except:
-            prediction_data[explanatory_variables_dict["閉栓フラグ"]] = prediction_data[explanatory_variables_dict["閉栓フラグ"]].map({"True": True, "False": False}).astype("bool")
+        if explanatory_variables_dict.get("閉栓フラグ") in prediction_data.columns:
+            try:
+                prediction_data[explanatory_variables_dict["閉栓フラグ"]] = prediction_data[explanatory_variables_dict["閉栓フラグ"]].astype("bool")
+            except:
+                prediction_data[explanatory_variables_dict["閉栓フラグ"]] = prediction_data[explanatory_variables_dict["閉栓フラグ"]].map({"True": True, "False": False}).astype("bool")
         # 登記日付_touki_residenceを日付型に変換
-        prediction_data[explanatory_variables_dict["登記日付"]] = pd.to_datetime(prediction_data[explanatory_variables_dict["登記日付"]], errors='coerce')
-        prediction_data[explanatory_variables_dict["登記日付"]] = prediction_data[explanatory_variables_dict["登記日付"]].dt.year
+        if explanatory_variables_dict.get("登記日付") in prediction_data.columns:
+            prediction_data[explanatory_variables_dict["登記日付"]] = pd.to_datetime(prediction_data[explanatory_variables_dict["登記日付"]], errors='coerce')
+            prediction_data[explanatory_variables_dict["登記日付"]] = prediction_data[explanatory_variables_dict["登記日付"]].dt.year
 
         # 構造名称_touki_residenceをカテゴリ型に変換
-        if explanatory_variables_dict["構造名称"] in prediction_data.columns: 
+        if explanatory_variables_dict.get("構造名称") in prediction_data.columns: 
             fill_value = [ i for i in np.arange(100) if i not in prediction_data[explanatory_variables_dict["構造名称"]].unique()]
             if len(fill_value) == 0:
                 fill_value = [ i for i in [999,9999,99999,9999999,9999999] if i not in prediction_data[explanatory_variables_dict["構造名称"]].unique()]
