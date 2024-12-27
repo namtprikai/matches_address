@@ -190,13 +190,15 @@ def generate_file_paths(citycode_value, targetyear_value):
     市区町村コードと対象年度に基づいてファイルパスを生成する
     """
     
-    water_supply_file = f'./data/{citycode_value}/E014/outputs/matched_data.csv'#_{targetyear_value}.csv'
-    tatemono_file = f'./data/{citycode_value}/E016/inputs/toyota_lod0_attributes.csv'
+    e14_merged_file = f'./data/{citycode_value}/E014/outputs/matched_data.csv'
+    #tatemono_file = f'./data/{citycode_value}/E016/inputs/toyota_lod0_attributes.csv'
+    # citygml format
+    tatemono_file = f'./data/{citycode_value}/E016/inputs/PLATEAU_建物データ_citygml_豊田市_アプリ読込用.zip'
     shp_file = f'./data/{citycode_value}/E016/inputs/r2ka23.gpkg'
     output_path = f'./data/{citycode_value}/E016/outputs/D901_{targetyear_value}.csv'
-    return tatemono_file, water_supply_file, shp_file, output_path
+    return tatemono_file, e14_merged_file, shp_file, output_path
 
-def gradio_interface(tatemono_file, water_supply_file, shp_file, ken, sikuchoson, join_option, output_format, output_path):
+def gradio_interface(tatemono_file, e14_merged_file, shp_file, ken, sikuchoson, join_option, output_format, output_path):
     """
     Gradioインターフェース用の関数。建物データと水道データを処理し、結果を出力する。
 
@@ -204,8 +206,8 @@ def gradio_interface(tatemono_file, water_supply_file, shp_file, ken, sikuchoson
     ----------
     tatemono_file : File
         建物データのファイル
-    water_supply_file : File
-        水道データのファイル
+    e14_merged_file : File
+        E14 outputのファイル
     ken : str
         県の名前
     sikuchoson : str
@@ -223,7 +225,7 @@ def gradio_interface(tatemono_file, water_supply_file, shp_file, ken, sikuchoson
     # 結合オプションを設定（0: 交差結合、1: 最近傍結合）
     option = 0 if join_option == "交差結合" else 1
     # データ処理を実行
-    output_path, join_ratio = process_data(tatemono_file, water_supply_file, shp_file, ken, sikuchoson, option, output_format, output_path)
+    output_path, join_ratio = process_data(tatemono_file, e14_merged_file, shp_file, ken, sikuchoson, option, output_format, output_path)
     # 結果を返す
     return output_path, f"結合率: {join_ratio}%"
 
@@ -249,7 +251,7 @@ if __name__ == "__main__":
                     interactive=True
                         )
         tatemono_file = gr.File(label="【D101、D102、D106】空き家基盤データ (CSV)")
-        water_supply_file = gr.File(label="【D401】テキストマッチングデータ (CSV)")
+        e14_merged_file = gr.File(label="【D401】テキストマッチングデータ (CSV)")
         shp_file = gr.File(label="国勢調査 小地域ポリゴンデータ")
         ken = gr.Textbox(label="都道府県", value="愛知県")
         sikuchoson = gr.Textbox(label="市区町村", value="豊田市")
@@ -262,9 +264,9 @@ if __name__ == "__main__":
 
         def on_submit(citycode_value, targetyear_value, ken, sikuchoson, join_option, output_format):
             os.makedirs(f'./data/{citycode_value}/E016/outputs/', exist_ok=True)
-            tatemono_file, water_supply_file, shp_file, output_path = generate_file_paths(citycode_value, targetyear_value)
+            tatemono_file, e14_merged_file, shp_file, output_path = generate_file_paths(citycode_value, targetyear_value)
             return gradio_interface(tatemono_file
-                                    , water_supply_file
+                                    , e14_merged_file
                                     , shp_file
                                     , ken
                                     , sikuchoson
