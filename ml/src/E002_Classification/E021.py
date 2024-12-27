@@ -831,6 +831,24 @@ def train_and_evaluate(db_path, input_file, output_path, explanatory_variables, 
                 if len(tar_colname) > 0:
                     explanatory_variables_dict[col] = tar_colname[0]
         
+        # 建物構造名称カラム, 登記日付の追加
+        adding_col_dict = {
+            "構造名称":"buildingStructureType",
+            "登記日付":"住定異動年月日",
+        }
+        for adding_col_name in adding_col_dict.keys():
+            if adding_col_name not in explanatory_variables_dict.keys():
+                explanatory_variables_dict[adding_col_name] = adding_col_name
+                check_tar_col = [ col for col in df.columns if adding_col_name in col ]
+                if len(check_tar_col) == 0:
+                    check_alt_col = [ col for col in df.columns if adding_col_dict[adding_col_name] in col ]
+                    if len(check_alt_col) > 0:
+                        df[explanatory_variables_dict[adding_col_name]] = df[check_alt_col[0]].copy()
+                    else:
+                        df[explanatory_variables_dict[adding_col_name]] = np.nan
+                else:
+                    explanatory_variables_dict[adding_col_name] = check_tar_col[0]
+        
         # 異常値除去
         condition = ((df['akiya_result_cleaned_flag'] == 1) & (df[explanatory_variables_dict["最小使用水量"]] > 20))
         df = df[~condition].reset_index(drop=True)

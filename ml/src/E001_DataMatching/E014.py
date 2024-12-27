@@ -19,6 +19,7 @@ import pandas as pd
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 from scipy.sparse import csr_matrix
+import numpy as np
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
 async_tasks_path = os.path.join(current_dir, '..', 'async_tasks')
@@ -191,6 +192,24 @@ def embedding_address(main_csv: io.BytesIO | str, sub_csv: io.BytesIO | str, mai
             sub_df = read_data(sub_csv.name)
         else:
             sub_df = read_data(sub_csv)
+        
+        if '住基' in input_source and '水道' in input_source:
+            # 日付のNormalize化をし、年月を取得
+            main_start_date_col = [col for col in ['使用開始日', '住定異動年月日', '登記日付' ] if col in main_df.columns][0]
+            main_df = normalize_dates(main_df,main_start_date_col)
+            main_df['開始月'] = pd.to_datetime(main_df[main_start_date_col]).dt.strftime("%Y-%m")
+            sub_start_date_col = [col for col in ['使用開始日', '住定異動年月日', '登記日付' ] if col in sub_df.columns][0]
+            sub_df = normalize_dates(sub_df,sub_start_date_col)
+            sub_df['開始月'] = pd.to_datetime(sub_df[sub_start_date_col]).dt.strftime('%Y-%m')
+
+            # 住基の住所に閾値以上の世帯コードが結びつく住所のデータを住基、水道双方から除外
+            family_thresh = 4
+            if '世帯コード' in main_df.columns:
+                mlt_family_address_list = main_df.groupby(main_column)['世帯コード'].nunique()[main_df.groupby(main_column)['世帯コード'].nunique()>=family_thresh].index
+            else:
+                mlt_family_address_list = sub_df.groupby(main_column)['世帯コード'].nunique()[sub_df.groupby(main_column)['世帯コード'].nunique()>=family_thresh].index
+                main_df = main_df.loc[~main_df[main_column].isin(mlt_family_address_list)].reset_index(drop=False)
+                sub_df = sub_df.loc[~sub_df[sub_column].isin(mlt_family_address_list)].reset_index(drop=False)
 
         # 結合元のファイルがmain, 結合対象のファイルがsub、初めに読み込んだファイルを一旦mainにしているので、結合基準をsubにしてたら入れ替える
         if hasattr(sub_csv, 'name') and merge_base == os.path.basename(sub_csv.name):
@@ -229,6 +248,75 @@ def embedding_address(main_csv: io.BytesIO | str, sub_csv: io.BytesIO | str, mai
         sub_df.rename(columns={sub_column: main_column}, inplace=True)
         if job_id:
             create_or_update_job_task(job_id, progress_percent="30", preprocess_type="e014", error_code=None, error_msg=None, result=None, id= task_id)
+        
+        if '住基' in input_source and '水道' in input_source:
+            # 水道で1つの住所に複数の水道番号が結びついている住所を取り出す
+            multi_address_in_main = main_df[main_column].value_counts()[main_df[main_column].value_counts()>1].index
+            main_df_single = main_df.loc[~main_df[main_column].isin(multi_address_in_main)].copy().reset_index(drop=True)
+            main_df_multi = main_df.loc[main_df[main_column].isin(multi_address_in_main)].copy().reset_index(drop=True)
+
+            # 単一住所のレコードを住基と完全一致で結合させる
+            main_single_sub_merge = main_df_single.merge(sub_df, on=main_column, how='inner')
+
+            search_cols = [ "世帯コード", "水道番号", "使用開始日" , "使用中止日", "閉栓フラグ", "最大使用水量", 
+                        "平均使用水量", "最小使用水量", "合計使用水量", "水道使用量変化率", "開始月"]
+            
+            merged_df_col_dict = {}
+            main_multi_sub_merge = None
+            for colname in search_cols:
+                tar_colname_list = [ col for col in main_single_sub_merge.columns if colname in col ]
+                if len(tar_colname_list) > 0:
+                    merged_df_col_dict[colname] = tar_colname_list[0]
+                else:
+                    merged_df_col_dict[colname] = colname
+
+                    # 複数住所のレコードを水道使用開始月と住定年月が同じのレコードのみで結びつける（family_thresh以上は排除）
+                    main_multi_sub_merge = pd.DataFrame(columns = main_single_sub_merge.columns)
+                    no_juki = []
+                    over_thresh_building = []
+                    for address in multi_address_in_main:
+                        tar_main = main_df_multi.loc[main_df_multi[main_column]==address].sort_values([main_column,merged_df_col_dict['開始月']]).reset_index(drop=True)
+                        tar_sub = sub_df.loc[sub_df[main_column]==address].sort_values([main_column,f"開始月_{sub_csv_name}"]).reset_index(drop=True)
+                        if len(tar_sub) == 0:
+                            no_juki.append(address)
+                        elif len(tar_sub) == 1:
+                            tar_merged = tar_main.iloc[[-1]].merge(tar_sub, on=main_column, how='inner')
+                            main_multi_sub_merge = pd.concat([main_multi_sub_merge,tar_merged ])
+                        elif len(tar_sub) >= family_thresh:
+                            over_thresh_building.append(address)
+                        else:
+                            tar_merged = tar_main.merge(tar_sub.drop(main_column, axis=1), left_on=merged_df_col_dict['開始月'], right_on=f"開始月_{sub_csv_name}",  how='inner')
+                            main_multi_sub_merge = pd.concat([main_multi_sub_merge,tar_merged ])
+            
+            if main_multi_sub_merge:
+                juki_suido_merged = pd.concat([main_single_sub_merge.loc[main_single_sub_merge[merged_df_col_dict["世帯コード"]].notnull()],
+                                                main_multi_sub_merge.loc[main_multi_sub_merge[merged_df_col_dict["世帯コード"]].notnull()]], ignore_index=True)
+            else:
+                juki_suido_merged = main_single_sub_merge
+
+            # 一つの世帯コードに複数の水道番号が紐づいている場合、水道番号を一つに集計
+            setai_multi_ids = juki_suido_merged.groupby(merged_df_col_dict["世帯コード"])[merged_df_col_dict['水道番号']].count()[juki_suido_merged.groupby(merged_df_col_dict["世帯コード"])[merged_df_col_dict['水道番号']].count()>1].index
+
+            juki_suido_merged_single = juki_suido_merged.loc[~juki_suido_merged[merged_df_col_dict["世帯コード"]].isin(setai_multi_ids)]
+            juki_suido_merged_multi = juki_suido_merged.loc[juki_suido_merged[merged_df_col_dict["世帯コード"]].isin(setai_multi_ids)]
+
+            suido_groupby_calcs = {
+                merged_df_col_dict['水道番号']:'first', '正規化住所':pd.Series.mode, merged_df_col_dict['使用開始日']:'max',
+                merged_df_col_dict['使用中止日']:'max', merged_df_col_dict['閉栓フラグ']:'max', 
+                merged_df_col_dict['最大使用水量']:'max', merged_df_col_dict['平均使用水量']:'mean', 
+                merged_df_col_dict['最小使用水量']:'min', merged_df_col_dict['合計使用水量']:'sum', merged_df_col_dict['水道使用量変化率']:'mean', 
+                merged_df_col_dict['開始月']:'min'
+            }
+            juki_suido_merged_multi[merged_df_col_dict["使用開始日"]] = pd.to_datetime(juki_suido_merged_multi[merged_df_col_dict["使用開始日"]])
+            juki_suido_merged_multi[merged_df_col_dict["使用中止日"]] = pd.to_datetime(juki_suido_merged_multi[merged_df_col_dict["使用中止日"]])
+            juki_suido_merged_multi[merged_df_col_dict["開始月"]] = pd.to_datetime(juki_suido_merged_multi[merged_df_col_dict["開始月"]])
+            juki_suido_merged_multi[merged_df_col_dict["閉栓フラグ"]] = juki_suido_merged_multi[merged_df_col_dict["閉栓フラグ"]].astype('bool')
+
+            juki_suido_merged_multi_grpd = juki_suido_merged_multi.groupby(merged_df_col_dict["世帯コード"])[list(suido_groupby_calcs.keys())].agg(suido_groupby_calcs).reset_index(drop=False)
+            juki_suido_merged_multi_organized = juki_suido_merged_multi.drop(list(suido_groupby_calcs.keys()),axis=1).drop_duplicates(merged_df_col_dict["世帯コード"]).merge(juki_suido_merged_multi_grpd, on=merged_df_col_dict["世帯コード"])
+
+            df_merge = pd.concat([juki_suido_merged_single,juki_suido_merged_multi_organized], ignore_index=True)
+        
         # 完全一致による結合
         df_merge = pd.merge(main_df, sub_df, on=main_column, how='inner')
         merged_rows = len(df_merge)    # 完全一致できた行数
@@ -364,6 +452,24 @@ def set_error(value, param_st1=None, param_st2=None):
         ERROR_MSG = value['message'].format(param_st1=param_st1)
     else:
         ERROR_MSG = value['message']
+
+def normalize_dates(df, column, formats=['%Y/%m/%d', '%d/%m/%Y', '%Y-%m-%d', '%m/%d/%Y', '%Y%m%d']):
+    # Initialize the temporary column with NaN values
+    temp_column = f'{column}_normalized'
+    df[temp_column] = np.nan
+
+    # Try the provided formats on the invalid values
+    for fmt in formats:
+        mask = df[temp_column].isna()
+        df.loc[mask, temp_column] = pd.to_datetime(
+            df.loc[mask, column], format=fmt, errors='coerce'
+        )
+
+    # Remove the time portion and keep only the date
+    df[temp_column] = pd.to_datetime(df[temp_column], errors='coerce')
+    df[column] = df[temp_column]
+    
+    return df.drop(f'{column}_normalized',axis=1)
 
 def main():
     parser = argparse.ArgumentParser(description="E014 - テキストマッチング機能")
