@@ -54,7 +54,7 @@ type UseHandleClick = {
   areaGroups: string[] | undefined;
 };
 
-/** 地域選択の振る舞いに */
+/** 地域選択の振る舞いに関する機能を集約 */
 const useHandleAreas = ({
   areas,
   onSave,
