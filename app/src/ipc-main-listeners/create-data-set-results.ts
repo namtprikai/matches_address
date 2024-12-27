@@ -98,7 +98,7 @@ export const createDataSetResults = (async (
         landslide_risk_desc: `地滑りリスク${i}`,
         name: `建物名${i}`,
         predicted_label: Math.round(pred),
-        predicted_probability: pred * 100,
+        predicted_probability: pred,
         geometry: geoJSONToWkt({
           type: "Polygon",
           coordinates: [
