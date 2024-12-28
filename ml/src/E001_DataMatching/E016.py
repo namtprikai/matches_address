@@ -1021,15 +1021,6 @@ def process_data(tatemono_path, water_supply_path, gpkg_path, ken, sikuchoson, o
         # 地域コードと町丁字名の付与
         tatemono_use_point_add_keycode = add_keycode(tatemono_use_point, gpkg_path)
 
-        # 集合住宅のBuildingIDを削除（水道番号が3つ以上紐づいているbuildingIDを削除）
-        try:
-            suido_col = [ col for col in tatemono_use_point_add_keycode.columns if "水道番号" in col ][0]
-            bid_num_df = tatemono_use_point.groupby([building_id])[[suido_col]].count()
-            bid_num_over3 = bid_num_df.loc[bid_num_df[suido_col]>3]
-            tatemono_use_point_add_keycode = tatemono_use_point_add_keycode.loc[~tatemono_use_point_add_keycode[building_id].isin(bid_num_over3.index)]
-        except:
-            pass
-
         # 結果を保存
         if output_path is None:
             output_path = os.path.join(os.getcwd(), f"D901.{output_type}")
