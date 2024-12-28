@@ -39,3 +39,8 @@ yarn-error.log*
 __pycache__/
 
 *.spec
+
+# ML
+ml/Gradio/E001_DataMatching/data/
+ml/Gradio/E002_Classification/data/
+ml/Gradio/E003_Summarization/data/
