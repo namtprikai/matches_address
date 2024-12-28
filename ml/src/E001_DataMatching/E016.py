@@ -842,15 +842,16 @@ def process_plateaugml(temp_dir, output_dir, crs):
     output_gpkg_file = os.path.join(output_dir, "plateau_bldg.gpkg")
 
     # 解凍されたディレクトリからudx/bldgフォルダ内のGMLファイルを取得
-    gml_files = glob.glob(os.path.join(temp_dir, "udx", "bldg", "*.gml"))
-    
+    #temproal: gml_files = glob.glob(os.path.join(temp_dir, "udx", "bldg", "*.gml"))
+    gml_files = glob.glob(os.path.join(temp_dir, "bldg", "*.gml"))
     # GMLファイルの処理
     with ThreadPoolExecutor(max_workers=4) as executor:
         list(tqdm(executor.map(convert_gml_to_gpkg, gml_files), total=len(gml_files)))
 
     # 生成されたGPKGファイルを結合
     gdf_list = []
-    gpkg_files = glob.glob(os.path.join(temp_dir, "udx", "bldg", "*.gpkg"))
+    #temporal: gpkg_files = glob.glob(os.path.join(temp_dir, "udx", "bldg", "*.gpkg"))
+    gpkg_files = glob.glob(os.path.join(temp_dir, "bldg", "*.gpkg"))
     gdf_plateu_all = gpd.GeoDataFrame()
     for gpkg_file in tqdm(gpkg_files):
         try:
