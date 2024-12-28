@@ -19,20 +19,21 @@ import random
 import string
 import argparse
 import sys
+import uuid
 import chardet
 import geopandas as gpd
 import pandas as pd
 import zipfile
 import shutil
 import subprocess
-import xml.etree.ElementTree as ET
 import glob
 from tqdm import tqdm
 from concurrent.futures import ThreadPoolExecutor
 from shapely import wkt, wkb
-from shapely.geometry import MultiPolygon, Point, Polygon
+from shapely.geometry import Point
 from pyproj import CRS, Transformer
 from shapely.ops import transform
+
 pd.set_option("display.max_columns", None)
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -329,7 +330,8 @@ def load_and_process_data(file_path, crs, building_id, is_tatemono=True):
 
     elif file_path.lower().endswith('.zip'):
         # ZIPファイルかどうかを確認し、処理
-        temp_dir = os.path.join(os.getcwd(), "temp_files")
+        temp_folder = str(uuid.uuid4())
+        temp_dir = os.path.join(os.getcwd(), temp_folder)
         os.makedirs(temp_dir, exist_ok=True)
 
         extracted_files = extract_zip(file_path, temp_dir)
@@ -341,6 +343,9 @@ def load_and_process_data(file_path, crs, building_id, is_tatemono=True):
             process_plateaugml(temp_dir, output_dir, crs)  # buildings_gdfを引数として渡す
             bldg_gpkg_file = os.path.join(output_dir, "plateau_bldg.gpkg")
             gdf = gpd.read_file(bldg_gpkg_file)
+
+            if temp_dir and os.path.isdir(temp_dir):
+                shutil.rmtree(temp_dir)
         else:
             # shapefileを読み込む
             gdf = gpd.read_file(shp_files[0])
@@ -988,6 +993,15 @@ def process_data(tatemono_path, e14_merged_path, gpkg_path, ken, sikuchoson, opt
         create_or_update_job_task(job_id, progress_percent="70", preprocess_type="e016", error_code=None, error_msg=None, result=None, id= task_id)
     # 地域コードと町丁字名の付与
     tatemono_use_point_add_keycode = add_keycode(tatemono_use_point, gpkg_path)
+
+    # 集合住宅のBuildingIDを削除（水道番号が3つ以上紐づいているbuildingIDを削除）
+    try:
+        suido_col = [ col for col in tatemono_use_point_add_keycode.columns if "水道番号" in col ][0]
+        bid_num_df = tatemono_use_point.groupby([building_id])[[suido_col]].count()
+        bid_num_over3 = bid_num_df.loc[bid_num_df[suido_col]>3]
+        tatemono_use_point_add_keycode = tatemono_use_point_add_keycode.loc[~tatemono_use_point_add_keycode[building_id].isin(bid_num_over3.index)]
+    except:
+        pass
 
     # 結果を保存
     if output_path is None:
