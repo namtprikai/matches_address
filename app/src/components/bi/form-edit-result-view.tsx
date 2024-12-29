@@ -37,7 +37,7 @@ export const FormEditResultView = ({
   const { data: dataSetResult } = useFetchDataSetResultItem({
     dataSetResultId: selectedResultView?.data_set_result_id,
   });
-  const methods = useForm<EditResultViewFormType>();
+  const form = useForm<EditResultViewFormType>();
 
   useEffect(() => {
     if (!resultViews || resultViews.length === 0) return;
@@ -52,7 +52,7 @@ export const FormEditResultView = ({
       (parameter) => parameter.key === "year" && parameter.type === "filter",
     )?.value;
 
-    methods.reset({
+    form.reset({
       title: selectedResultView?.title ?? "",
       style: selectedResultView?.style ?? "map",
       unit: selectedResultView?.unit ?? "building",
@@ -63,16 +63,16 @@ export const FormEditResultView = ({
       },
       areas: [],
     });
-    methods.setValue("title", selectedResultView?.title ?? "");
+    form.setValue("title", selectedResultView?.title ?? "");
   }, [
-    methods,
+    form,
     selectedResultView?.parameters,
     selectedResultView?.style,
     selectedResultView?.title,
     selectedResultView?.unit,
   ]);
 
-  const onSubmit = methods.handleSubmit(async (data) => {
+  const onSubmit = form.handleSubmit(async (data) => {
     if (!selectedResultViewId) return;
 
     const parameters = data.parameters;
@@ -108,7 +108,7 @@ export const FormEditResultView = ({
   });
 
   return (
-    <FormProvider {...methods}>
+    <FormProvider {...form}>
       <form className={styles.form} onSubmit={onSubmit}>
         <EditResultViewFields dataSetTitle={dataSetResult?.[0].title} />
         <EditResultViewFilterFields resultView={selectedResultView} />
