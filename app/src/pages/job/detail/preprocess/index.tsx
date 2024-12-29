@@ -21,6 +21,11 @@ import { useDialogState } from "../../../../hooks/use-dialog-state";
 import { Button } from "../../../../components/ui/button";
 import { useFetchJobs } from "../../../../hooks/use-fetch-jobs";
 import { ErrorJobTaskInfo } from "../../../../components/error-job-task-info";
+import {
+  BreadcrumbBase,
+  BreadcrumbItem,
+} from "../../../../components/ui/breadcrumb";
+import { ROUTES } from "../../../../routes";
 
 const useStyles = makeStyles({
   root: {
@@ -164,6 +169,21 @@ export function PreprocessDetail(): JSX.Element {
   return (
     <div className={styles.pageContainer}>
       <div className={styles.root}>
+        <BreadcrumbBase
+          breadcrumbItem={[
+            {
+              children: "処理一覧",
+              href: ROUTES.JOB.ROOT,
+            },
+            {
+              children: "処理結果 - 前処理",
+              current: true,
+              href: ROUTES.JOB.DETAIL_PREPROCESS(id || ""),
+            },
+          ].map((item) => (
+            <BreadcrumbItem key={item.href} {...item} />
+          ))}
+        />
         <h2 className={styles.heading}>
           <Button
             appearance="subtle"
@@ -291,7 +311,7 @@ export function PreprocessDetail(): JSX.Element {
 // 成功率を取得する関数
 function getIndexRate(item: SelectJobTask): string {
   if (item.result?.taskResultType === "preprocess") {
-    return item.result.joining_rate;
+    return parseFloat(item.result.joining_rate).toFixed(1);
   } else {
     return "N/A";
   }

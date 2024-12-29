@@ -11,6 +11,7 @@ import { ROUTES, withHash } from "../../routes";
 type BreadcrumbBaseProps = {
   breadcrumbItem: ReactNode[];
 };
+
 export const BreadcrumbBase = ({
   breadcrumbItem = [],
 }: BreadcrumbBaseProps): JSX.Element => {
@@ -36,9 +37,17 @@ export const BreadcrumbBase = ({
 };
 
 export const BreadcrumbItem = (props: BreadcrumbButtonProps): JSX.Element => {
+  if ("href" in props && props.href) {
+    return (
+      <BreadcrumbItemFUI>
+        <BreadcrumbButton {...props} href={withHash(props.href)} />
+      </BreadcrumbItemFUI>
+    );
+  }
+
   return (
     <BreadcrumbItemFUI>
-      <BreadcrumbButton {...props}>{props.children}</BreadcrumbButton>
+      <BreadcrumbButton {...props} />
     </BreadcrumbItemFUI>
   );
 };

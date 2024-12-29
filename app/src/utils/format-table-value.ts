@@ -22,5 +22,9 @@ export const formatTableValue = (
     return value === 1 ? "○" : "×";
   }
 
+  if (typeof value === "number" && metadata?.unit === "%") {
+    return (value * 100).toFixed(0);
+  }
+
   return Number(value.toFixed(digits));
 };

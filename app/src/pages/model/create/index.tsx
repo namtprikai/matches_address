@@ -26,6 +26,11 @@ import { useFetchJob } from "../../../hooks/use-fetch-job";
 import { useFetchDatasetWithFilePath } from "../../../hooks/use-fetch-dataset-with-file-path";
 import { TextWithTooltip } from "../../../components/ui/text-with-tooltip";
 import { lang } from "../../../lang";
+import {
+  BreadcrumbBase,
+  BreadcrumbItem,
+} from "../../../components/ui/breadcrumb";
+import { ROUTES } from "../../../routes";
 
 const useStyles = makeStyles({
   root: {
@@ -121,6 +126,21 @@ export const ModelCreate = (): JSX.Element => {
 
   return (
     <form className={styles.root} onSubmit={onSubmit}>
+      <BreadcrumbBase
+        breadcrumbItem={[
+          {
+            children: "モデル管理",
+            href: ROUTES.MODEL.ROOT,
+          },
+          {
+            children: "作成",
+            current: true,
+            href: ROUTES.MODEL.CREATE,
+          },
+        ].map((item) => (
+          <BreadcrumbItem key={item.href} {...item} />
+        ))}
+      />
       <h2 className={styles.heading}>
         <a href="#model">
           <ArrowLeftFilled />

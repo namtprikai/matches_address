@@ -8,6 +8,8 @@ import {
 import { useFetchJobs } from "../../hooks/use-fetch-jobs";
 import { TableHeaderJobs } from "../../components/table-header-jobs";
 import { TableRowJobs } from "../../components/table-rows-jobs";
+import { BreadcrumbBase, BreadcrumbItem } from "../../components/ui/breadcrumb";
+import { ROUTES } from "../../routes";
 import { DebugCreateButtons } from "./_debug-create-buttuns";
 
 const useStyles = makeStyles({
@@ -45,6 +47,17 @@ export function Job(): JSX.Element {
 
   return (
     <div className={styles.root}>
+      <BreadcrumbBase
+        breadcrumbItem={[
+          {
+            children: "処理一覧",
+            current: true,
+            href: ROUTES.JOB.ROOT,
+          },
+        ].map((item) => (
+          <BreadcrumbItem key={item.href} {...item} />
+        ))}
+      />
       <h2 className={styles.heading}>処理一覧</h2>
 
       <Card className={styles.content}>

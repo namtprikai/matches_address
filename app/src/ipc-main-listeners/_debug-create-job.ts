@@ -128,7 +128,7 @@ const createmockResult = (type: InsertJob["type"]): InsertJobTask["result"] => {
     case "preprocess":
       return {
         taskResultType: "preprocess",
-        joining_rate: "43.21",
+        joining_rate: "0.4321",
       };
     case "ml":
       return {
@@ -141,7 +141,7 @@ const createmockResult = (type: InsertJob["type"]): InsertJobTask["result"] => {
         important_columns: [
           {
             column: "水道使用量",
-            value: "53.24",
+            value: "0.5324",
           },
           {
             column: "",

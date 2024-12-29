@@ -84,20 +84,18 @@ export function DetailWorkbook(): JSX.Element {
     <div className={styles.root}>
       <BreadcrumbBase
         breadcrumbItem={[
-          <BreadcrumbItem
-            key={ROUTES.ANALYSIS.WORKBOOK}
-            href={withHash(ROUTES.ANALYSIS.WORKBOOK)}
-          >
-            分析
-          </BreadcrumbItem>,
-          <BreadcrumbItem
-            key={ROUTES.ANALYSIS.WORKBOOK_DETAIL(id || "#")}
-            current
-            href={withHash(ROUTES.ANALYSIS.WORKBOOK_DETAIL(id || "#"))}
-          >
-            {workbook?.title ?? "詳細"}
-          </BreadcrumbItem>,
-        ]}
+          {
+            href: ROUTES.ANALYSIS.WORKBOOK,
+            children: "分析",
+          },
+          {
+            href: ROUTES.ANALYSIS.WORKBOOK_DETAIL(id || ""),
+            current: true,
+            children: workbook?.title ?? "詳細",
+          },
+        ].map((item) => (
+          <BreadcrumbItem key={item.href} {...item} />
+        ))}
       />
       <div className={styles.headingWithAction}>
         <h2 className={styles.heading}>{workbook?.title}</h2>
