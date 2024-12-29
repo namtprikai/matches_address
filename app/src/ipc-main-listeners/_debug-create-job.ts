@@ -233,8 +233,10 @@ const mockE001: PreprocessParameters = {
       id: 0,
       path: "",
       columns: {
-        building_id: "",
+        geometry: "",
       },
+      input_file_type: "csv",
+      data_type: "plateau",
     },
     urban_planning: {
       id: 0,
