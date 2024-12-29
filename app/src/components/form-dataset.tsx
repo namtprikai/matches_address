@@ -3,6 +3,8 @@ import {
   makeStyles,
   mergeClasses,
   Option,
+  Radio,
+  RadioGroup,
   tokens,
 } from "@fluentui/react-components";
 import { useEffect, useState } from "react";
@@ -57,6 +59,10 @@ const useStyles = makeStyles({
     display: "flex",
     flexDirection: "column",
     gap: "2px",
+  },
+  fieldInner: {
+    display: "grid",
+    gap: "4px",
   },
 });
 
@@ -161,9 +167,39 @@ export const FormDataset = ({
         <div
           // FormDatasetが横長の場合のスタイルだしわけ
           className={mergeClasses(
+            styles.fieldInner,
             appearance === "large" && styles.dropdownContainer,
           )}
         >
+          {isBuildingPolygon && (
+            <>
+              <Field label="データの種類">
+                <RadioGroup
+                  {...form?.register("data.building_polygon.data_type")}
+                >
+                  <Radio label="PLATEAUデータ" value="plateau" />
+                  <Radio label="家屋現況図" value="house_condition_report" />
+                </RadioGroup>
+              </Field>
+              <Field label="ファイル形式">
+                <Select
+                  {...form?.register("data.building_polygon.input_file_type")}
+                >
+                  {OUTPUT_FILE_TYPES.map((option) => (
+                    <option
+                      key={option.type}
+                      value={
+                        option.type as FormType["data"]["building_polygon"]["input_file_type"]
+                      }
+                    >
+                      {option.name}
+                    </option>
+                  ))}
+                </Select>
+              </Field>
+            </>
+          )}
+
           {value.columns
             ? Object.entries(value.columns).map(([key]) => {
                 const noColumns =
@@ -215,25 +251,6 @@ export const FormDataset = ({
                 );
               })
             : null}
-
-          {isBuildingPolygon && (
-            <Field label="ファイル形式">
-              <Select
-                {...form?.register("data.building_polygon.input_file_type")}
-              >
-                {OUTPUT_FILE_TYPES.map((option) => (
-                  <option
-                    key={option.type}
-                    value={
-                      option.type as FormType["data"]["building_polygon"]["input_file_type"]
-                    }
-                  >
-                    {option.name}
-                  </option>
-                ))}
-              </Select>
-            </Field>
-          )}
         </div>
       </div>
       <DialogImportDataset

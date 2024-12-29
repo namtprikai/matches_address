@@ -83,6 +83,7 @@ export const schema = z.object({
         building_id: z.string(),
       }),
       input_file_type: z.enum(["csv", "geojson", "geopackage"]),
+      data_type: z.enum(["plateau", "house_condition_report"]),
     }),
     urban_planning: z.object({
       id: z.number(),
@@ -179,6 +180,7 @@ export const useFormNormalization = ({
             building_id: "",
           },
           input_file_type: "csv",
+          data_type: "plateau",
         },
         urban_planning: { id: 0, path: "" },
         census: { id: 0, path: "" },
