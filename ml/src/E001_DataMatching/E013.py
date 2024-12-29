@@ -808,7 +808,7 @@ def set_columns(
 
     
 # すべてのデータを処理する関数を作成
-def process_all_data(suido_use_file, suido_status_file, juki_file, tatemono_file, reference_date, search_period, output_directory, job_id, columns, db_path=None):
+def process_all_data(suido_use_file, suido_status_file, juki_file, tatemono_file, reference_date, search_period, output_directory, job_id, db_path=None):
     """
     すべてのデータファイルを処理する
     Parameters
@@ -868,11 +868,6 @@ def process_all_data(suido_use_file, suido_status_file, juki_file, tatemono_file
 
         os.makedirs(output_directory, exist_ok=True)
 
-        if columns:
-            columns = json.loads(columns)
-            all_values = [value for sub_dict in columns.values() for value in sub_dict.values()]
-            set_columns(*all_values)
-        
         progress_percent_job = 25
         for file_key, processor_class in processors.items():
             if job_id:

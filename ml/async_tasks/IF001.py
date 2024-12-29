@@ -172,7 +172,6 @@ def main():
             search_period,
             output_directory,
             job_id,
-            json.dumps(columns),
             params.get('db_path')
         )
         create_or_update_job(job_id, "50")
@@ -208,11 +207,9 @@ def main():
         gpkg_path = params.get("urban_planning", None)
         if not gpkg_path:
             gpkg_path = params.get("census", None)
-            
-        if not gpkg_path:
-            raise Exception("Error: urban_planning or census field is required")
-        
-        gpkg_path = concatenate(params.get('output_path'), gpkg_path)
+
+        if gpkg_path:
+            gpkg_path = concatenate(params.get('output_path'), gpkg_path)
         
         tatemono_path = concatenate(params.get('output_path'), params.get('building_polygon'))
 

@@ -19,20 +19,21 @@ import random
 import string
 import argparse
 import sys
+import uuid
 import chardet
 import geopandas as gpd
 import pandas as pd
 import zipfile
 import shutil
 import subprocess
-import xml.etree.ElementTree as ET
 import glob
 from tqdm import tqdm
 from concurrent.futures import ThreadPoolExecutor
 from shapely import wkt, wkb
-from shapely.geometry import MultiPolygon, Point, Polygon
+from shapely.geometry import Point
 from pyproj import CRS, Transformer
 from shapely.ops import transform
+
 pd.set_option("display.max_columns", None)
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -97,7 +98,7 @@ COLUMNS = {
         'branchID': "建物ID 枝番",
         'geometry': "建物ポリゴン情報"
     },
-    "water_supply": {
+    "e14_merged": {
         'count': "人数",
         'count_age_under_15': "15歳以下人数",
         'count_age_under_15_ratio': "15歳以下割合",
@@ -329,20 +330,22 @@ def load_and_process_data(file_path, crs, building_id, is_tatemono=True):
 
     elif file_path.lower().endswith('.zip'):
         # ZIPファイルかどうかを確認し、処理
-        temp_dir = os.path.join(os.getcwd(), "temp_files")
+        temp_folder = str(uuid.uuid4())
+        temp_dir = os.path.join(os.getcwd(), temp_folder)
         os.makedirs(temp_dir, exist_ok=True)
-        extracted_files = extract_zip(file_path, temp_dir)
 
-        # shapefileを探す
+        extracted_files = extract_zip(file_path, temp_dir)
         shp_files = [f for f in extracted_files if f.endswith(".shp")]
 
         # shapefileが存在しない場合は、process_plateaugmlを実行
         if not shp_files:
-            # 空のGeoDataFrameを作成
-            buildings_gdf = gpd.GeoDataFrame()
-            output_gpkg_file = os.path.join(temp_dir, "output.gpkg")
-            process_plateaugml(file_path, output_gpkg_file, buildings_gdf)  # buildings_gdfを引数として渡す
-            gdf = gpd.read_file(output_gpkg_file)
+            output_dir = os.getcwd()
+            process_plateaugml(temp_dir, output_dir, crs)  # buildings_gdfを引数として渡す
+            bldg_gpkg_file = os.path.join(output_dir, "plateau_bldg.gpkg")
+            gdf = gpd.read_file(bldg_gpkg_file)
+
+            if temp_dir and os.path.isdir(temp_dir):
+                shutil.rmtree(temp_dir)
         else:
             # shapefileを読み込む
             gdf = gpd.read_file(shp_files[0])
@@ -774,74 +777,36 @@ def unzip_file(zip_file, extract_to):
     with zipfile.ZipFile(zip_file, 'r') as zip_ref:
         zip_ref.extractall(extract_to)
 
-def filter_elements(gml_file, output_file):
-    """
-    GMLファイルから指定された要素のみを抽出し、フィルタリングされたファイルを保存する。
-
-    Parameters
-    ----------
-    gml_file : str
-        入力のGMLファイルのパス。
-    output_file : str
-        フィルタリング後の出力ファイルのパス。
-    """
-    tree = ET.parse(gml_file)
-    root = tree.getroot()
-
-    # 残す要素のタグをリストにする
-    keep_tags = {
-        "{http://www.opengis.net/citygml/building/2.0}lod0RoofEdge",
-        "{http://www.opengis.net/citygml/building/2.0}class",
-        "{http://www.opengis.net/citygml/building/2.0}usage",
-        "{http://www.opengis.net/citygml/building/2.0}yearOfConstruction",
-        "{http://www.opengis.net/citygml/building/2.0}measuredHeight",
-        "{http://www.opengis.net/citygml/building/2.0}storeysAboveGround",
-        "{http://www.opengis.net/citygml/2.0}creationDate",
-        "{https://www.geospatial.jp/iur/uro/3.0}buildingDataQualityAttribute",
-        "{https://www.geospatial.jp/iur/uro/3.0}buildingDetailAttribute",
-        "{https://www.geospatial.jp/iur/uro/3.0}buildingIDAttribute"
-    }
-
-    namespace = {
-        'bldg': 'http://www.opengis.net/citygml/building/2.0',
-        'core': 'http://www.opengis.net/citygml/2.0',
-        'uro': 'https://www.geospatial.jp/iur/uro/3.0'
-    }
-
-    for building in root.findall(".//bldg:Building", namespace):
-        for elem in list(building):
-            if elem.tag not in keep_tags:
-                building.remove(elem)
-
-        # 残すべき要素が1つもない場合は建物自体を削除
-        if not any(elem.tag in keep_tags for elem in list(building)):
-            root.remove(building)
-
-    # 結果を一時ファイルに保存
-    tree.write(output_file, encoding="utf-8-sig", xml_declaration=True)
 
 def convert_gml_to_gpkg(gml_file):
     """
-    GMLファイルをGeoPackage形式に変換する。
+    GMLファイルをGeoPackage形式に変換し、LOD0データのみを抽出する。
 
     Parameters
     ----------
     gml_file : str
         GMLファイルのパス。
     """
-    filtered_gml_file = f"{gml_file[:-4]}_filtered.gml"
-
-    # フィルタリングされたファイルが既に存在する場合は処理をスキップ
-    if not os.path.exists(filtered_gml_file):
-        filter_elements(gml_file, filtered_gml_file)
-
     gpkg_file = f"{gml_file[:-4]}.gpkg"
-    cmd = ["ogr2ogr", "-f", "GPKG", gpkg_file, filtered_gml_file, "-dim", "3", "-skipfailures"]
-    print(f"Running command: {' '.join(cmd)}")
-    subprocess.run(cmd, capture_output=True, text=True)
 
-    # 一時ファイルの削除
-    os.remove(filtered_gml_file)
+    cmd = [
+        "ogr2ogr",
+        "-f", "GPKG",               # 出力フォーマットをGeoPackageに指定
+        "-dim", "2",                # 2次元に制限
+        "-nlt", "MULTIPOLYGON",     # 出力をマルチポリゴンに制限
+        "-skipfailures",            # 処理中に失敗をスキップ
+        gpkg_file,                  # 出力ファイル
+        gml_file                    # 入力ファイル
+    ]
+
+    # コマンドの実行
+    result = subprocess.run(cmd, capture_output=True, text=True)
+
+    # コマンド結果をログ出力
+    if result.returncode != 0:
+        print(f"Error: {result.stderr}")
+    else:
+        print(f"Successfully created {gpkg_file}")  
 
 def add_plateaugml_suffix(gdf):
     """
@@ -861,52 +826,7 @@ def add_plateaugml_suffix(gdf):
     return gdf
 
 
-def extract_geometries_from_gml(gml_file):
-    """
-    GMLファイルからジオメトリ（Polygon）を抽出する。
-
-    Parameters
-    ----------
-    gml_file : str
-        GMLファイルのパス。
-
-    Returns
-    -------
-    list
-        ポリゴンジオメトリのリスト。
-    """
-    tree = ET.parse(gml_file)
-    root = tree.getroot()
-
-    # GMLの名前空間を定義する
-    ns = {'gml': 'http://www.opengis.net/gml'}
-
-    # GMLファイル内のポリゴン要素を検索する
-    geometries = []
-    for geom in root.findall('.//gml:Polygon', ns):
-        pos_list = geom.find('.//gml:posList', ns)
-
-        if pos_list is not None:
-            coordinates = pos_list.text.strip().split()
-
-            # 座標の数が偶数個でなければスキップ
-            if len(coordinates) % 2 != 0:
-                print(f"Warning: {gml_file} の posList に奇数個の座標値が含まれています。スキップします。")
-                continue
-
-            # 緯度経度ペアを作成
-            try:
-                points = [(float(coordinates[i]), float(coordinates[i+1])) for i in range(0, len(coordinates), 2)]
-                polygon = Polygon(points)
-                geometries.append(polygon)
-            except (ValueError, IndexError) as e:
-                print(f"Error: {gml_file} からポリゴンを作成する際にエラーが発生しました: {e}")
-                continue
-
-    return geometries
-
-
-def process_plateaugml(input_zip_file, output_gpkg_file, buildings_gdf):
+def process_plateaugml(temp_dir, output_dir, crs):
     """
     ZIPファイルからGMLファイルを抽出し、GeoPackage形式に変換する処理。
     PLATEAUデータを建物データと空間結合する処理を含む。
@@ -920,27 +840,37 @@ def process_plateaugml(input_zip_file, output_gpkg_file, buildings_gdf):
     buildings_gdf : GeoDataFrame
         空間結合する建物データのGeoDataFrame。
     """
-    temp_dir = os.path.join(os.path.dirname(output_gpkg_file), "temp")
-    if not os.path.exists(temp_dir):
-        os.makedirs(temp_dir)
 
-    # ZIPファイルを解凍
-    unzip_file(input_zip_file, temp_dir)
+
+    ## 1. building
+    #"""
+    output_gpkg_file = os.path.join(output_dir, "plateau_bldg.gpkg")
 
     # 解凍されたディレクトリからudx/bldgフォルダ内のGMLファイルを取得
+    #temproal: gml_files = glob.glob(os.path.join(temp_dir, "udx", "bldg", "*.gml"))
     gml_files = glob.glob(os.path.join(temp_dir, "bldg", "*.gml"))
-
     # GMLファイルの処理
     with ThreadPoolExecutor(max_workers=4) as executor:
         list(tqdm(executor.map(convert_gml_to_gpkg, gml_files), total=len(gml_files)))
 
     # 生成されたGPKGファイルを結合
+    gdf_list = []
+    #temporal: gpkg_files = glob.glob(os.path.join(temp_dir, "udx", "bldg", "*.gpkg"))
     gpkg_files = glob.glob(os.path.join(temp_dir, "bldg", "*.gpkg"))
     gdf_plateu_all = gpd.GeoDataFrame()
     for gpkg_file in tqdm(gpkg_files):
-        gpkg_path = gpkg_file.replace("\\", "/")
-        gdf_plateu = gpd.read_file(gpkg_path)
-        gdf_plateu_all = pd.concat([gdf_plateu_all, gdf_plateu], axis=0)
+        try:
+            gdf = gpd.read_file(gpkg_file)
+            # CRSが定義されていない場合、crsを設定
+            if gdf.crs is None:
+                gdf.set_crs(crs, inplace=True)
+            # CRSを変換
+            gdf = gdf.to_crs(crs)
+            gdf_list.append(gdf)
+        except Exception as e:
+            continue
+    gdf_list = [gdf for gdf in gdf_list if not gdf.empty]
+    gdf_plateu_all = pd.concat(gdf_list, ignore_index=True)
 
     # gdf_plateu_allにCRSが設定されているか確認し、なければデフォルトでEPSG:4326を設定
     if gdf_plateu_all.crs is None:
@@ -949,103 +879,150 @@ def process_plateaugml(input_zip_file, output_gpkg_file, buildings_gdf):
 
     # 座標系変換（必要であれば他の座標系に変換）
     gdf_plateu_all = gdf_plateu_all.to_crs(epsg=4326)
-    
-    # 結果をGeoPackage形式で保存
     gdf_plateu_all.to_file(output_gpkg_file, driver="GPKG")
+    #"""
+
+    ## 2. landuse
+    """
+    output_gpkg_file = os.path.join(output_dir, "plateau_landuse.gpkg")
+    # 解凍されたディレクトリからudx/bldgフォルダ内のGMLファイルを取得
+    gml_files = glob.glob(os.path.join(temp_dir, "udx", "luse", "*.gml"))
+    
+    # GMLファイルの処理
+    with ThreadPoolExecutor(max_workers=4) as executor:
+        list(tqdm(executor.map(convert_gml_to_gpkg, gml_files), total=len(gml_files)))
+
+    # 生成されたGPKGファイルを結合
+    gdf_list = []
+    gpkg_files = glob.glob(os.path.join(temp_dir, "udx", "luse", "*.gpkg"))
+    gdf_plateu_all = gpd.GeoDataFrame()
+    for gpkg_file in tqdm(gpkg_files):
+        try:
+            gdf = gpd.read_file(gpkg_file)
+            # CRSが定義されていない場合、crsを設定
+            if gdf.crs is None:
+                gdf.set_crs(crs, inplace=True)
+            # CRSを変換
+            gdf = gdf.to_crs(crs)
+            gdf_list.append(gdf)
+        except Exception as e:
+            continue
+    gdf_list = [gdf for gdf in gdf_list if not gdf.empty]
+    gdf_plateu_all = pd.concat(gdf_list, ignore_index=True)
+
+    # gdf_plateu_allにCRSが設定されているか確認し、なければデフォルトでEPSG:4326を設定
+    if gdf_plateu_all.crs is None:
+        print("CRSが設定されていないため、EPSG:4326を設定します。")
+        gdf_plateu_all.set_crs(epsg=4326, inplace=True)
+
+    # 座標系変換（必要であれば他の座標系に変換）
+    gdf_plateu_all = gdf_plateu_all.to_crs(epsg=4326)
+    gdf_plateu_all.to_file(output_gpkg_file, driver="GPKG")
+    """
+
+    ## 3. urban plannning
+    """
+    output_gpkg_file = os.path.join(output_dir, "plateau_urbanplanning.gpkg")
+    # 解凍されたディレクトリからudx/bldgフォルダ内のGMLファイルを取得
+    gml_files = glob.glob(os.path.join(temp_dir, "udx", "urf", "*.gml"))
+    
+    # GMLファイルの処理
+    with ThreadPoolExecutor(max_workers=4) as executor:
+        list(tqdm(executor.map(convert_gml_to_gpkg, gml_files), total=len(gml_files)))
+
+    # 生成されたGPKGファイルを結合
+    gdf_list = []
+    gpkg_files = glob.glob(os.path.join(temp_dir, "udx", "urf", "*.gpkg"))
+    gdf_plateu_all = gpd.GeoDataFrame()
+    for gpkg_file in tqdm(gpkg_files):
+        try:
+            gdf = gpd.read_file(gpkg_file)
+            # CRSが定義されていない場合、crsを設定
+            if gdf.crs is None:
+                gdf.set_crs(crs, inplace=True)
+            # CRSを変換
+            gdf = gdf.to_crs(crs)
+            gdf_list.append(gdf)
+        except Exception as e:
+            continue
+    gdf_list = [gdf for gdf in gdf_list if not gdf.empty]
+    gdf_plateu_all = pd.concat(gdf_list, ignore_index=True)
+
+    # gdf_plateu_allにCRSが設定されているか確認し、なければデフォルトでEPSG:4326を設定
+    if gdf_plateu_all.crs is None:
+        print("CRSが設定されていないため、EPSG:4326を設定します。")
+        gdf_plateu_all.set_crs(epsg=4326, inplace=True)
+
+    # 座標系変換（必要であれば他の座標系に変換）
+    gdf_plateu_all = gdf_plateu_all.to_crs(epsg=4326)
+    gdf_plateu_all.to_file(output_gpkg_file, driver="GPKG")
+    """
 
     # 一時ファイルのクリーンアップ
-    shutil.rmtree(temp_dir)
+    #shutil.rmtree(temp_dir)
 
+def process_data(tatemono_path, e14_merged_path, gpkg_path, ken, sikuchoson, option, output_type, input_zip_file=None, output_path=None, job_id=None, db_path=None, building_id='buildingID', input_source=[]):
+    if db_path:
+        connect_sqllite(db_path)
+    task_id = None
+    if job_id:
+        task_id = create_or_update_job_task(job_id, progress_percent="0", preprocess_type="e016", error_code=None, error_msg=None, result=None)
+    # 座標系を設定
+    crs = get_transformer(ken, sikuchoson)
+    
+    # 建物データと水道データを読み込み、処理
+    tatemono = load_and_process_data(tatemono_path, crs, building_id)
+    e14_merged = load_and_process_data(e14_merged_path, crs, building_id)
 
+    if job_id:
+        create_or_update_job_task(job_id, progress_percent="20", preprocess_type="e016", error_code=None, error_msg=None, result=None, id= task_id)
+    tatemono.to_crs(crs, inplace=True)
+    e14_merged.to_crs(crs, inplace=True)
+    
+    # 水道データの全列を選択
+    point_selected_column = e14_merged.columns
 
-def process_data(tatemono_path, water_supply_path, gpkg_path, ken, sikuchoson, option, output_type, input_zip_file=None, output_path=None, job_id=None, db_path=None, building_id='buildingID', input_source=[]):
-    """
-    建物データと水道データを処理し、PLATEAU GMLデータも結合して結果を保存する
+    # 建物データと水道データを結合
+    tatemono_use_point, join_ratio = assign_points_to_buildings(tatemono, e14_merged, 2, crs, point_selected_column, option, building_id)
+    if job_id:
+        create_or_update_job_task(job_id, progress_percent="50", preprocess_type="e016", error_code=None, error_msg=None, result=None, id= task_id)
+    # 住居IDを追加
+    add_residenceID(tatemono_use_point, building_id)
+    
+    if job_id:
+        create_or_update_job_task(job_id, progress_percent="70", preprocess_type="e016", error_code=None, error_msg=None, result=None, id= task_id)
+    # 地域コードと町丁字名の付与
+    tatemono_use_point_add_keycode = add_keycode(tatemono_use_point, gpkg_path)
 
-    Parameters
-    ----------
-    tatemono_path : str
-        建物データのファイルパス
-    water_supply_path : str
-        水道データのファイルパス
-    gpkg_path : str
-        国勢調査の町丁字ポリゴンデータのGPKGファイルパス
-    ken : str
-        都道府県名
-    sikuchoson : str
-        市区町村名
-    option : str
-        オプション設定（交差結合、最近傍結合）
-    output_type : str
-        出力形式（'csv'または'gpkg'）
-    input_zip_file : str, optional
-        PLATEAU GMLデータのZIPファイルのパス（デフォルトはNone）
-    output_path : str, optional
-        出力ファイルのパス（デフォルトはNone）
-
-    Returns
-    -------
-    tuple
-        出力ファイルのパスと結合率
-    """
+    # 集合住宅のBuildingIDを削除（水道番号が3つ以上紐づいているbuildingIDを削除）
     try:
-        if db_path:
-            connect_sqllite(db_path)
-        task_id = None
-        if job_id:
-            task_id = create_or_update_job_task(job_id, progress_percent="0", preprocess_type="e016", error_code=None, error_msg=None, result=None)
-        # 座標系を設定
-        crs = get_transformer(ken, sikuchoson)
-        
-        # 建物データと水道データを読み込み、処理
-        tatemono = load_and_process_data(tatemono_path, crs, building_id)
-        water_supply = load_and_process_data(water_supply_path, crs, building_id)
+        suido_col = [ col for col in tatemono_use_point_add_keycode.columns if "水道番号" in col ][0]
+        bid_num_df = tatemono_use_point.groupby([building_id])[[suido_col]].count()
+        bid_num_over3 = bid_num_df.loc[bid_num_df[suido_col]>3]
+        tatemono_use_point_add_keycode = tatemono_use_point_add_keycode.loc[~tatemono_use_point_add_keycode[building_id].isin(bid_num_over3.index)]
+    except:
+        pass
 
-        if job_id:
-            create_or_update_job_task(job_id, progress_percent="20", preprocess_type="e016", error_code=None, error_msg=None, result=None, id= task_id)
-        tatemono.to_crs(crs, inplace=True)
-        water_supply.to_crs(crs, inplace=True)
-        
-        # 水道データの全列を選択
-        point_selected_column = water_supply.columns
+    # 結果を保存
+    if output_path is None:
+        output_path = os.path.join(os.getcwd(), f"D901.{output_type}")
 
-        # 建物データと水道データを結合
-        tatemono_use_point, join_ratio = assign_points_to_buildings(tatemono, water_supply, 2, crs, point_selected_column, option, building_id)
-        if job_id:
-            create_or_update_job_task(job_id, progress_percent="50", preprocess_type="e016", error_code=None, error_msg=None, result=None, id= task_id)
-        # 住居IDを追加
-        add_residenceID(tatemono_use_point, building_id)
-        
-        if job_id:
-            create_or_update_job_task(job_id, progress_percent="70", preprocess_type="e016", error_code=None, error_msg=None, result=None, id= task_id)
-        # 地域コードと町丁字名の付与
-        tatemono_use_point_add_keycode = add_keycode(tatemono_use_point, gpkg_path)
+    output_dir = os.path.dirname(output_path)
 
-        # 結果を保存
-        if output_path is None:
-            output_path = os.path.join(os.getcwd(), f"D901.{output_type}")
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
 
-        output_dir = os.path.dirname(output_path)
+    save_geodataframe(tatemono_use_point_add_keycode, output_path, output_type)
 
-        if not os.path.exists(output_dir):
-            os.makedirs(output_dir)
+    if job_id:
+        result = {
+            "joining_rate": join_ratio,
+            "input_source": input_source
+        }
+        create_or_update_job_task(job_id, progress_percent="100", preprocess_type="e016", error_code=None, error_msg=None, result=json.dumps(result, ensure_ascii=False), id= task_id, is_finish=True)
 
-        save_geodataframe(tatemono_use_point_add_keycode, output_path, output_type)
+    return output_path, join_ratio
 
-        if job_id:
-            result = {
-                "joining_rate": join_ratio,
-                "input_source": input_source
-            }
-            create_or_update_job_task(job_id, progress_percent="100", preprocess_type="e016", error_code=None, error_msg=None, result=json.dumps(result, ensure_ascii=False), id= task_id, is_finish=True)
-
-        return output_path, join_ratio
-    except Exception as e:
-        if ERROR_CODE is None:
-            set_error(ERROR_00018)
-        if task_id is not None:
-            create_or_update_job_task(job_id, progress_percent="", preprocess_type="e016", error_code=ERROR_CODE, error_msg=ERROR_MSG, result=json.dumps({}), id= task_id, is_finish=True)
-        raise Exception("空間結合処理中にエラーが発生しました。ジオメトリに不正がないか、ご確認ください。")
 
 def set_error(value, param_st1=None, param_st2=None):
     global ERROR_CODE
@@ -1061,7 +1038,7 @@ def set_error(value, param_st1=None, param_st2=None):
 def main():
     parser = argparse.ArgumentParser(description="E016 - 空間結合機能")
     parser.add_argument("--tatemono", required=True, help="建物データのファイルパス (CSV)")
-    parser.add_argument("--water_supply", required=True, help="水道データのファイルパス (CSV)")
+    parser.add_argument("--e14_merged", required=True, help="水道データのファイルパス (CSV)")
     parser.add_argument("--gpkg", required=True, help="国勢調査の町丁字ポリゴンデータのGPKGファイルパス")
     parser.add_argument("--ken", required=True, help="都道府県名")
     parser.add_argument("--sikuchoson", required=True, help="市区町村名")
@@ -1080,7 +1057,7 @@ def main():
     # データ処理を実行
     output_path, join_ratio = process_data(
         args.tatemono, 
-        args.water_supply, 
+        args.e14_merged, 
         args.gpkg, 
         args.ken, 
         args.sikuchoson, 

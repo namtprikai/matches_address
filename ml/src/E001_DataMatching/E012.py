@@ -105,10 +105,11 @@ OUTPUT_COLUMNS = {
     "geocoding": {
         "geocoding_address": "住所",
         "geocoding_lat": "lat",
-        "geocofing_lon": "long",
+        "geocofing_lon": "lon",
         "convert_geo_address": "正規化住所"
     }
 }
+OUTPUT_COLUMNS_INITIAL = OUTPUT_COLUMNS
 
 # 変換用の漢数字と半角数字の対応辞書
 kanji_to_number = {
@@ -357,11 +358,18 @@ class EachFileProcessor(DataProcessor):
             print(f"{file_key}の処理をスキップします。")
             return
         
+        cols = INPUT_COLUMNS[file_key]
+
+        # Rename columns
+        rename_columns = {}
+        for key, input_col in cols.items():
+                new_col = OUTPUT_COLUMNS_INITIAL[file_key].get(key, input_col)
+                rename_columns[input_col] = new_col
+
         if file_key == "suido_use":
+            df = df.rename(columns=rename_columns)
             self.save_csv(df, self.OUTPUT_PATHS[file_key])
         else:
-            cols = INPUT_COLUMNS[file_key]
-
             # 住所列が欠損している行を削除
             df = df.dropna(subset=cols[f"{file_key}_address"])
             
@@ -372,6 +380,8 @@ class EachFileProcessor(DataProcessor):
                         .apply(CleanData.convert_halfwidth_to_fullwidth)
                         .apply(CleanData.replace_single_katakana)
                         .apply(CleanData.convert_address))
+            
+            df = df.rename(columns=rename_columns)
             
             # 処理結果をCSVファイルとして保存
             self.save_csv(df, self.OUTPUT_PATHS[file_key])
