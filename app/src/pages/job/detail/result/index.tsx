@@ -4,6 +4,11 @@ import { useNavigate, useParams } from "react-router-dom";
 import { Button } from "../../../../components/ui/button";
 import { useFetchJobs } from "../../../../hooks/use-fetch-jobs";
 import { ErrorJobTaskInfo } from "../../../../components/error-job-task-info";
+import {
+  BreadcrumbBase,
+  BreadcrumbItem,
+} from "../../../../components/ui/breadcrumb";
+import { ROUTES } from "../../../../routes";
 
 const useStyles = makeStyles({
   root: {
@@ -66,6 +71,21 @@ export function ResultDetail(): JSX.Element {
   return (
     <div className={styles.pageContainer}>
       <div className={styles.root}>
+        <BreadcrumbBase
+          breadcrumbItem={[
+            {
+              children: "処理一覧",
+              href: ROUTES.JOB.ROOT,
+            },
+            {
+              children: "処理結果 - 判定結果",
+              current: true,
+              href: ROUTES.JOB.DETAIL_RESULT(id || ""),
+            },
+          ].map((item) => (
+            <BreadcrumbItem key={item.href} {...item} />
+          ))}
+        />
         <h2 className={styles.heading}>
           <Button
             appearance="subtle"
