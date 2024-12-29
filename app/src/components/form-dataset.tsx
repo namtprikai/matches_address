@@ -174,11 +174,17 @@ export const FormDataset = ({
           {isBuildingPolygon && (
             <>
               <Field label="データの種類">
-                <RadioGroup
-                  {...form?.register("data.building_polygon.data_type")}
-                >
-                  <Radio label="PLATEAUデータ" value="plateau" />
-                  <Radio label="家屋現況図" value="house_condition_report" />
+                <RadioGroup>
+                  <Radio
+                    label="PLATEAUデータ"
+                    value="plateau"
+                    {...form?.register("data.building_polygon.data_type")}
+                  />
+                  <Radio
+                    label="家屋現況図"
+                    value="house_condition_report"
+                    {...form?.register("data.building_polygon.data_type")}
+                  />
                 </RadioGroup>
               </Field>
               <Field label="ファイル形式">
@@ -207,6 +213,7 @@ export const FormDataset = ({
 
                 const noCSV =
                   isBuildingPolygon && buildingPolygoninputFileType !== "csv";
+
                 return (
                   <Field
                     key={key}

@@ -42,6 +42,8 @@ export const FormNormalization = ({
 
   const hasErrors = Object.keys(errors).length > 0;
 
+  console.error(errors);
+
   const onSubmit = handleSubmit(async (data) => {
     await window.ipcRenderer.invoke("execE001", {
       parameters: {
