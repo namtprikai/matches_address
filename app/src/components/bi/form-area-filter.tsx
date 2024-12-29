@@ -1,5 +1,10 @@
 import { Fragment, lazy, Suspense, useDeferredValue, useState } from "react";
-import { Dialog, DialogTrigger, makeStyles } from "@fluentui/react-components";
+import {
+  Dialog,
+  DialogTrigger,
+  makeStyles,
+  Spinner,
+} from "@fluentui/react-components";
 import { type FetchAreaGroupsArg } from "../../ipc-main-listeners/select-area-groups";
 import { Field } from "../ui/field";
 import { Button } from "../ui/button";
@@ -9,6 +14,7 @@ import { DialogTitle } from "../ui/dialog-title";
 import { DialogContent } from "../ui/dialog-content";
 import { DialogActions } from "../ui/dialog-actions";
 import { Input } from "../ui/input";
+import { useFetchAreaGroups } from "../../hooks/use-fetch-area-groups";
 
 const useStyles = makeStyles({
   selectedOptions: {
@@ -42,6 +48,67 @@ const AreaFilterFormOptions = lazy(() =>
   })),
 );
 
+type UseHandleClick = {
+  areas: string[];
+  onSave: (value: string[]) => void;
+  areaGroups: string[] | undefined;
+};
+
+/** 地域選択の振る舞いに関する機能を集約 */
+const useHandleAreas = ({
+  areas,
+  onSave,
+  areaGroups,
+}: UseHandleClick): {
+  handleClick: () => void;
+  handleAllClear: () => void;
+  handleAllCheck: () => void;
+  isAllCleared: boolean;
+  setSelectedAreas: (value: string[]) => void;
+  selectedAreas: string[];
+  searchFilteredData: string[] | undefined;
+  handleSearchText: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  searchText: string;
+} => {
+  const [selectedAreas, setSelectedAreas] = useState<string[]>(areas);
+  const isAllCleared = selectedAreas.length === 0;
+
+  const handleClick = (): void => {
+    onSave(selectedAreas);
+  };
+  const handleAllClear = (): void => {
+    setSelectedAreas([]);
+  };
+  const handleAllCheck = (): void => {
+    if (!searchFilteredData) return;
+    setSelectedAreas(searchFilteredData);
+  };
+
+  const [searchText, setSearchText] = useState("");
+  // 検索テキストの逐次変更でなく、再計算が終わるまで遅延させることで画面のチラつき・カクツキを減らす
+  // reference: https://ja.react.dev/reference/react/useDeferredValue#deferring-re-rendering-for-a-part-of-the-ui
+  const deferredSearchText = useDeferredValue(searchText);
+  const searchFilteredData = areaGroups?.filter(
+    (area) => area.includes(deferredSearchText.trim().replace("　", "")), // 余計な空白や文字列の削除
+  );
+
+  const handleSearchText = (e: React.ChangeEvent<HTMLInputElement>): void => {
+    setSearchText(e.target.value);
+  };
+
+  return {
+    handleClick,
+    handleAllClear,
+    handleAllCheck,
+    isAllCleared,
+    setSelectedAreas,
+    selectedAreas,
+    searchFilteredData,
+    handleSearchText,
+    searchText,
+  };
+};
+
 type Props = {
   areas: string[];
   onSave: (value: string[]) => void;
@@ -52,20 +119,27 @@ type Props = {
  */
 export const FormAreaFilter = (props: Props): JSX.Element => {
   const [open, setOpen] = useState(false);
-  const [selectedAreas, setSelectedAreas] = useState<string[]>(props.areas);
-  const [searchText, setSearchText] = useState("");
 
-  // 検索テキストの逐次変更でなく、再計算が終わるまで遅延させることで画面のチラつき・カクツキを減らす
-  // reference: https://ja.react.dev/reference/react/useDeferredValue#deferring-re-rendering-for-a-part-of-the-ui
-  const deferredSearchText = useDeferredValue(searchText);
+  const { data } = useFetchAreaGroups({
+    dataSetResultId: props.dataSetResultId,
+    unit: props.unit,
+  });
 
-  const handleClick = (): void => {
-    props.onSave(selectedAreas);
-  };
-
-  const handleAllClear = (): void => {
-    setSelectedAreas([]);
-  };
+  const {
+    handleClick,
+    handleAllClear,
+    handleAllCheck,
+    isAllCleared,
+    setSelectedAreas,
+    selectedAreas,
+    searchFilteredData,
+    searchText,
+    handleSearchText,
+  } = useHandleAreas({
+    areas: props.areas,
+    onSave: props.onSave,
+    areaGroups: data,
+  });
 
   const styles = useStyles();
 
@@ -108,9 +182,7 @@ export const FormAreaFilter = (props: Props): JSX.Element => {
             <DialogTitle
               action={
                 <Input
-                  onChange={(e) => {
-                    setSearchText(e.target.value);
-                  }}
+                  onChange={handleSearchText}
                   placeholder="地域を検索"
                   value={searchText}
                 />
@@ -119,20 +191,31 @@ export const FormAreaFilter = (props: Props): JSX.Element => {
               地域を選択
             </DialogTitle>
             <DialogContent border>
-              <Suspense fallback={<></>}>
+              <Suspense fallback={<Spinner />}>
                 <AreaFilterFormOptions
                   dataSetResultId={props.dataSetResultId}
                   onChange={setSelectedAreas}
-                  searchText={deferredSearchText} // 遅延評価された値を渡す
+                  searchFilteredData={searchFilteredData}
                   selectedAreas={selectedAreas}
                   unit={props.unit}
                 />
               </Suspense>
             </DialogContent>
             <DialogActions>
-              <Button appearance="outline" onClick={handleAllClear}>
-                すべてクリア
-              </Button>
+              {isAllCleared && (
+                <Button
+                  appearance="outline"
+                  disabled={data === undefined}
+                  onClick={handleAllCheck}
+                >
+                  すべて選択
+                </Button>
+              )}
+              {!isAllCleared && (
+                <Button appearance="outline" onClick={handleAllClear}>
+                  すべてクリア
+                </Button>
+              )}
               <DialogTrigger disableButtonEnhancement>
                 <Button appearance="primary" onClick={handleClick}>
                   保存
