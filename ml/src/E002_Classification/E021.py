@@ -518,6 +518,7 @@ def train_lgb_with_optuna(train_df, params, citycode_value, targetyear_value, ou
     if sqlite_enabled and job_id:
         create_or_update_job_task(job_id, progress_percent="60", preprocess_type=None, error_code=None, error_msg=None, result=json.dumps({}), id= task_id)
         create_or_update_job(job_id , "60")
+        
     # 各学習済みモデルをファイルに保存
     for i, model in enumerate(lgbm_models):
         if targetyear_value is not None:
@@ -816,194 +817,194 @@ def train_and_evaluate(db_path, input_file, output_path, explanatory_variables, 
         出力CSVファイルのパス
     """
     
-    """
+
     try:
-    """
 
-    # SQLiteの接続処理をエラーハンドリング付きで実行
-    sqlite_enabled = False
-    if db_path:
-        try:
-            connect_sqllite(db_path)
-            sqlite_enabled = True
-        except Exception as e:
-            print(f"SQLite接続に失敗しました: {e}. SQLiteを使用せずに続行します。")
-    
-    task_id = None
-    if sqlite_enabled and job_id:
-        task_id = create_or_update_job_task(job_id, progress_percent="0", preprocess_type=None, error_code=None, error_msg=None, result=json.dumps({}))
-        create_or_update_job(job_id, "0")
 
-    # データの読み込み
-    file_path = input_file
-    df = read_data(file_path, low_memory=False)
-    if df is None:
-        raise ValueError(f"ファイル {file_path} の読み込みに失敗しました。")
-    
+        # SQLiteの接続処理をエラーハンドリング付きで実行
+        sqlite_enabled = False
+        if db_path:
+            try:
+                connect_sqllite(db_path)
+                sqlite_enabled = True
+            except Exception as e:
+                print(f"SQLite接続に失敗しました: {e}. SQLiteを使用せずに続行します。")
+        
+        task_id = None
+        if sqlite_enabled and job_id:
+            task_id = create_or_update_job_task(job_id, progress_percent="0", preprocess_type=None, error_code=None, error_msg=None, result=json.dumps({}))
+            create_or_update_job(job_id, "0")
 
-    # 入力されたカラム名を取得し、以下該当カラムに適用させる
-    explanatory_vars = CONSTANTS["explanatory_variables"]
-    
-    # 入力された説明変数名からプレフィックス部分（例: "最小使用水量_suido_residence" → "最小使用水量"）を抽出
-    exp_cols = [col.split('_')[0] for col in explanatory_vars]
+        # データの読み込み
+        file_path = input_file
+        df = read_data(file_path, low_memory=False)
+        if df is None:
+            raise ValueError(f"ファイル {file_path} の読み込みに失敗しました。")
+        
 
-    # プレフィックスに基づいて、対応するデータフレームのカラムをマッピングする辞書を作成
-    explanatory_variables_dict = {}
-    for col in exp_cols:
-        if "akiya" not in col:
-            # 'gml_id' の場合は直接対応させる
-            if col == "gml_id":
-                explanatory_variables_dict[col] = "gml_id"
-            else:
-                # プレフィックスが部分一致するデータフレーム内のカラムを抽出
+        # 入力されたカラム名を取得し、以下該当カラムに適用させる
+        explanatory_vars = CONSTANTS["explanatory_variables"]
+        
+        # 入力された説明変数名からプレフィックス部分（例: "最小使用水量_suido_residence" → "最小使用水量"）を抽出
+        exp_cols = [col.split('_')[0] for col in explanatory_vars]
+
+        # プレフィックスに基づいて、対応するデータフレームのカラムをマッピングする辞書を作成
+        explanatory_variables_dict = {}
+        for col in exp_cols:
+            if "akiya" not in col:
+                # 'gml_id' の場合は直接対応させる
+                if col == "gml_id":
+                    explanatory_variables_dict[col] = "gml_id"
+                else:
+                    # プレフィックスが部分一致するデータフレーム内のカラムを抽出
+                    tar_colname = [col901 for col901 in df.columns if col in col901]
+                    if len(tar_colname) > 0:
+                        explanatory_variables_dict[col] = tar_colname[0]
+
+        # 特定のカラム（例: '最小使用水量', '平均使用水量'）が辞書に存在しない場合、データフレームから検索してマッピングに追加
+        for col in ['最小使用水量', '平均使用水量', '住定異動年月日', '登記日付']:
+            if col not in explanatory_variables_dict.keys():
                 tar_colname = [col901 for col901 in df.columns if col in col901]
                 if len(tar_colname) > 0:
                     explanatory_variables_dict[col] = tar_colname[0]
 
-    # 特定のカラム（例: '最小使用水量', '平均使用水量'）が辞書に存在しない場合、データフレームから検索してマッピングに追加
-    for col in ['最小使用水量', '平均使用水量', '住定異動年月日', '登記日付']:
-        if col not in explanatory_variables_dict.keys():
-            tar_colname = [col901 for col901 in df.columns if col in col901]
-            if len(tar_colname) > 0:
-                explanatory_variables_dict[col] = tar_colname[0]
 
-
-    
-    # 建物構造名称カラム, 登記日付の追加
-    adding_col_dict = {
-        "構造名称":"buildingStructureType",
-        "登記日付":"住定異動年月日",
-    }
-    for adding_col_name in adding_col_dict.keys():
-        if adding_col_name not in explanatory_variables_dict.keys():
-            explanatory_variables_dict[adding_col_name] = adding_col_name
-            check_tar_col = [ col for col in df.columns if adding_col_name in col ]
-            if len(check_tar_col) == 0:
-                check_alt_col = [ col for col in df.columns if adding_col_dict[adding_col_name] in col ]
-                if len(check_alt_col) > 0:
-                    df[explanatory_variables_dict[adding_col_name]] = df[check_alt_col[0]].copy()
+        
+        # 建物構造名称カラム, 登記日付の追加
+        adding_col_dict = {
+            "構造名称":"buildingStructureType",
+            "登記日付":"住定異動年月日",
+        }
+        for adding_col_name in adding_col_dict.keys():
+            if adding_col_name not in explanatory_variables_dict.keys():
+                explanatory_variables_dict[adding_col_name] = adding_col_name
+                check_tar_col = [ col for col in df.columns if adding_col_name in col ]
+                if len(check_tar_col) == 0:
+                    check_alt_col = [ col for col in df.columns if adding_col_dict[adding_col_name] in col ]
+                    if len(check_alt_col) > 0:
+                        df[explanatory_variables_dict[adding_col_name]] = df[check_alt_col[0]].copy()
+                    else:
+                        df[explanatory_variables_dict[adding_col_name]] = np.nan
                 else:
-                    df[explanatory_variables_dict[adding_col_name]] = np.nan
-            else:
-                explanatory_variables_dict[adding_col_name] = check_tar_col[0]
+                    explanatory_variables_dict[adding_col_name] = check_tar_col[0]
 
-    # 異常値除去
-    #condition = ((df['akiya_result_cleaned_flag'] == 1) & (df[explanatory_variables_dict["最小使用水量"]] > 20))
-    #df = df[~condition].reset_index(drop=True)
+        # 異常値除去
+        #condition = ((df['akiya_result_cleaned_flag'] == 1) & (df[explanatory_variables_dict["最小使用水量"]] > 20))
+        #df = df[~condition].reset_index(drop=True)
 
-    #condition = ((df['akiya_result_cleaned_flag'] == 0) & (df[explanatory_variables_dict["最小使用水量"]] < 2))
-    #df = df[~condition].reset_index(drop=True)
-    
-    #condition = ((df['akiya_result_cleaned_flag'] == 0) & (df[explanatory_variables_dict["平均使用水量"]] == 0))
-    #df = df[~condition].reset_index(drop=True)
+        #condition = ((df['akiya_result_cleaned_flag'] == 0) & (df[explanatory_variables_dict["最小使用水量"]] < 2))
+        #df = df[~condition].reset_index(drop=True)
+        
+        #condition = ((df['akiya_result_cleaned_flag'] == 0) & (df[explanatory_variables_dict["平均使用水量"]] == 0))
+        #df = df[~condition].reset_index(drop=True)
 
 
-    # '世帯コード'の重複を確認し、重複するレコードを削除
-    duplicates = df['世帯コード'].duplicated(keep=False)  # keep=False で全重複行をTrueとする
-    df = df[~duplicates].reset_index(drop=True)
-    condition = (df['住定期間'] < 1000)
-    df = df[~condition].reset_index(drop=True)
-    # '正規化住所'の重複を確認し、3件以上の重複がある場合、該当するすべてのレコードを削除
-    duplicate_counts = df['正規化住所'].value_counts()  # 各値の出現回数を取得
-    to_remove = duplicate_counts[duplicate_counts >= 2].index  # 3件以上の値を取得
-    df = df[~df['正規化住所'].isin(to_remove)].reset_index(drop=True)  # 該当値を除外
+        # '世帯コード'の重複を確認し、重複するレコードを削除
+        duplicates = df['世帯コード'].duplicated(keep=False)  # keep=False で全重複行をTrueとする
+        df = df[~duplicates].reset_index(drop=True)
+        condition = (df['住定期間'] < 1000)
+        df = df[~condition].reset_index(drop=True)
+        # '正規化住所'の重複を確認し、3件以上の重複がある場合、該当するすべてのレコードを削除
+        duplicate_counts = df['正規化住所'].value_counts()  # 各値の出現回数を取得
+        to_remove = duplicate_counts[duplicate_counts >= 2].index  # 3件以上の値を取得
+        df = df[~df['正規化住所'].isin(to_remove)].reset_index(drop=True)  # 該当値を除外
 
-    # modify dataset which has irreguralar cases
-    df.loc[df['最大使用水量_suido_residence'] > 30, '閉栓フラグ_suido_residence'] = 0
-    df.loc[df['最大使用水量_suido_residence'] > 30, 'akiya_result_cleaned_flag'] = 0
-    df.loc[(df['世帯人数'] == 1) & (df['最大年齢'] > 95), 'akiya_result_cleaned_flag'] = 1
-    df.loc[df['最小使用水量_suido_residence'] > 150, 'akiya_result_cleaned_flag'] = 0
-    df.loc[df['最大使用水量_suido_residence'] < 3, 'akiya_result_cleaned_flag'] = 1
+        # modify dataset which has irreguralar cases
+        df.loc[df['最大使用水量_suido_residence'] > 30, '閉栓フラグ_suido_residence'] = 0
+        df.loc[df['最大使用水量_suido_residence'] > 30, 'akiya_result_cleaned_flag'] = 0
+        df.loc[(df['世帯人数'] == 1) & (df['最大年齢'] > 95), 'akiya_result_cleaned_flag'] = 1
+        df.loc[df['最小使用水量_suido_residence'] > 150, 'akiya_result_cleaned_flag'] = 0
+        df.loc[df['最大使用水量_suido_residence'] < 3, 'akiya_result_cleaned_flag'] = 1
 
-    
-    if sqlite_enabled and job_id:
-        create_or_update_job_task(job_id, progress_percent="10", preprocess_type=None, error_code=None, error_msg=None, result=json.dumps({}), id=task_id)
-        create_or_update_job(job_id, "10")
-    learning_data = prepare_learning_data(df, explanatory_variables, explanatory_variables_dict)
-    
-    params = {
-        'test_size': float(test_size),
-        'n_splits': int(n_splits),
-        'undersample': undersample,
-        'undersample_ratio': float(undersample_ratio),
-        'threshold': float(threshold),
-        'hyperparameter_flag': hyperparameter_flag,
-        'n_trials': int(n_trials),
-        'lambda_l1': float(lambda_l1),
-        'lambda_l2': float(lambda_l2),
-        'num_leaves': int(num_leaves),
-        'feature_fraction': float(feature_fraction),
-        'bagging_fraction': float(bagging_fraction),
-        'bagging_freq': int(bagging_freq),
-        'min_data_in_leaf': int(min_data_in_leaf),
-    }
-    if sqlite_enabled and job_id:
-        create_or_update_job_task(job_id, progress_percent="20", preprocess_type=None, error_code=None, error_msg=None, result=json.dumps({}), id= task_id)
-        create_or_update_job(job_id , "20")
-    train_df, test_df = split_data(learning_data, params, explanatory_variables_dict)
-    
-    if sqlite_enabled and job_id:
-        create_or_update_job_task(job_id, progress_percent="30", preprocess_type=None, error_code=None, error_msg=None, result=json.dumps({}), id= task_id)
-        create_or_update_job(job_id , "30")
-    models, oof_pred, feature_importances_dict_train, model_zip_file_path = train_lgb_with_optuna(train_df, params, citycode_value, targetyear_value, output_path, job_id, task_id, sqlite_enabled)
-    
-    if sqlite_enabled and job_id:
-        create_or_update_job_task(job_id, progress_percent="80", preprocess_type=None, error_code=None, error_msg=None, result=json.dumps({}), id= task_id)
-        create_or_update_job(job_id , "80")
-    pred, score_dict, feature_importances_dict_test, feature_importance_plot = evaluate_models_on_test(test_df, models, params)
-    
-    if sqlite_enabled and job_id:
-        create_or_update_job_task(job_id, progress_percent="90", preprocess_type=None, error_code=None, error_msg=None, result=json.dumps({}), id= task_id)
-        create_or_update_job(job_id , "90")
+        
+        if sqlite_enabled and job_id:
+            create_or_update_job_task(job_id, progress_percent="10", preprocess_type=None, error_code=None, error_msg=None, result=json.dumps({}), id=task_id)
+            create_or_update_job(job_id, "10")
+        learning_data = prepare_learning_data(df, explanatory_variables, explanatory_variables_dict)
+        
+        params = {
+            'test_size': float(test_size),
+            'n_splits': int(n_splits),
+            'undersample': undersample,
+            'undersample_ratio': float(undersample_ratio),
+            'threshold': float(threshold),
+            'hyperparameter_flag': hyperparameter_flag,
+            'n_trials': int(n_trials),
+            'lambda_l1': float(lambda_l1),
+            'lambda_l2': float(lambda_l2),
+            'num_leaves': int(num_leaves),
+            'feature_fraction': float(feature_fraction),
+            'bagging_fraction': float(bagging_fraction),
+            'bagging_freq': int(bagging_freq),
+            'min_data_in_leaf': int(min_data_in_leaf),
+        }
+        if sqlite_enabled and job_id:
+            create_or_update_job_task(job_id, progress_percent="20", preprocess_type=None, error_code=None, error_msg=None, result=json.dumps({}), id= task_id)
+            create_or_update_job(job_id , "20")
+        train_df, test_df = split_data(learning_data, params, explanatory_variables_dict)
+        
+        if sqlite_enabled and job_id:
+            create_or_update_job_task(job_id, progress_percent="30", preprocess_type=None, error_code=None, error_msg=None, result=json.dumps({}), id= task_id)
+            create_or_update_job(job_id , "30")
+        models, oof_pred, feature_importances_dict_train, model_zip_file_path = train_lgb_with_optuna(train_df, params, citycode_value, targetyear_value, output_path, job_id, task_id, sqlite_enabled)
+        
+        if sqlite_enabled and job_id:
+            create_or_update_job_task(job_id, progress_percent="80", preprocess_type=None, error_code=None, error_msg=None, result=json.dumps({}), id= task_id)
+            create_or_update_job(job_id , "80")
+        pred, score_dict, feature_importances_dict_test, feature_importance_plot = evaluate_models_on_test(test_df, models, params)
+        
+        if sqlite_enabled and job_id:
+            create_or_update_job_task(job_id, progress_percent="90", preprocess_type=None, error_code=None, error_msg=None, result=json.dumps({}), id= task_id)
+            create_or_update_job(job_id , "90")
 
-    if citycode_value is not None:
-        output_file = f'{output_path}/data/{citycode_value}/E021/outputs/D902.csv'
-        feature_importance_plot = f'{output_path}/data/{citycode_value}/E021/outputs/{feature_importance_plot}'
-    else:
-        output_file = f'{output_path}/D902.csv'
-        feature_importance_plot = f'{output_path}/{feature_importance_plot}'
-    
-    updated_df = merge_and_save_results(df, pred, output_file)
-    plt.savefig(feature_importance_plot)
+        if citycode_value is not None:
+            output_file = f'{output_path}/data/{citycode_value}/E021/outputs/D902.csv'
+            feature_importance_plot = f'{output_path}/data/{citycode_value}/E021/outputs/{feature_importance_plot}'
+        else:
+            output_file = f'{output_path}/D902.csv'
+            feature_importance_plot = f'{output_path}/{feature_importance_plot}'
+        
+        updated_df = merge_and_save_results(df, pred, output_file)
+        plt.savefig(feature_importance_plot)
 
-    # Save evaluation metrics and feature importances
-    data_zip_file_path = save_metrics_and_importances(score_dict, feature_importances_dict_train, citycode_value, targetyear_value, output_path)
+        # Save evaluation metrics and feature importances
+        data_zip_file_path = save_metrics_and_importances(score_dict, feature_importances_dict_train, citycode_value, targetyear_value, output_path)
 
-    if sqlite_enabled and job_id:
-        create_or_update_job_task(job_id, progress_percent="95", preprocess_type=None, error_code=None, error_msg=None, result=json.dumps({}), id= task_id)
-        create_or_update_job(job_id , "95")
-    # Create a string with the evaluation results
-    result_str = (
-        #f"Feature Importance: {feature_importances_dict_test}\n" 
-        f"Confusion Matrix: {score_dict['cm']}\n"
-        f"Accuracy: {score_dict['accuracy']:.4f}\n"
-        f"Precision: {score_dict['precision']:.4f}\n"
-        f"Recall: {score_dict['recall']:.4f}\n"
-        f"F1 Score: {score_dict['f1']:.4f}\n"
-        f"Specificity: {score_dict['specificity']:.4f}\n"
-        )
-    
-    converted_data = [
-        {"column": item["feature"], "value": item["importance"]}
-        for item in feature_importances_dict_train
-    ]
-    
-    result = {
-        'accuracy': score_dict['accuracy'] * 100,
-        'f1Score': score_dict['f1'] * 100,
-        'specificity': score_dict['specificity'] * 100,
-        'precision': score_dict['precision'] * 100,
-        'recall': score_dict['recall'] * 100,
-        'important_columns': converted_data,
-    }
-    
-    # Update progress to complete
-    if sqlite_enabled and job_id:
-        create_or_update_job_task(job_id, progress_percent="100", preprocess_type=None, error_code=None, error_msg=None, result=json.dumps(result, ensure_ascii=False), id= task_id, is_finish=True)
-        create_or_update_job(job_id , "complete")
+        if sqlite_enabled and job_id:
+            create_or_update_job_task(job_id, progress_percent="95", preprocess_type=None, error_code=None, error_msg=None, result=json.dumps({}), id= task_id)
+            create_or_update_job(job_id , "95")
+        # Create a string with the evaluation results
+        result_str = (
+            #f"Feature Importance: {feature_importances_dict_test}\n" 
+            f"Confusion Matrix: {score_dict['cm']}\n"
+            f"Accuracy: {score_dict['accuracy']:.4f}\n"
+            f"Precision: {score_dict['precision']:.4f}\n"
+            f"Recall: {score_dict['recall']:.4f}\n"
+            f"F1 Score: {score_dict['f1']:.4f}\n"
+            f"Specificity: {score_dict['specificity']:.4f}\n"
+            )
+        
+        converted_data = [
+            {"column": item["feature"], "value": item["importance"]}
+            for item in feature_importances_dict_train
+        ]
+        
+        result = {
+            'accuracy': score_dict['accuracy'] * 100,
+            'f1Score': score_dict['f1'] * 100,
+            'specificity': score_dict['specificity'] * 100,
+            'precision': score_dict['precision'] * 100,
+            'recall': score_dict['recall'] * 100,
+            'important_columns': converted_data,
+        }
+        
+        # Update progress to complete
+        if sqlite_enabled and job_id:
+            create_or_update_job_task(job_id, progress_percent="100", preprocess_type=None, error_code=None, error_msg=None, result=json.dumps(result, ensure_ascii=False), id= task_id, is_finish=True)
+            create_or_update_job(job_id , "complete")
 
-    return result_str, feature_importance_plot, output_file, model_zip_file_path, data_zip_file_path
-    """
+        return result_str, feature_importance_plot, output_file, model_zip_file_path, data_zip_file_path
+
     except Exception as e:
         print(e)
         if ERROR_CODE is None:
@@ -1011,7 +1012,7 @@ def train_and_evaluate(db_path, input_file, output_path, explanatory_variables, 
         if task_id is not None:
             create_or_update_job_task(job_id, progress_percent="", preprocess_type=None, error_code=ERROR_CODE, error_msg=ERROR_MSG, result=json.dumps({}), id= task_id, is_finish=True)
         raise Exception("空き家判定の学習モデル構築中にエラーが発生しました。")
-    """
+
     
 def set_error(value, param_st1=None, param_st2=None):
     global ERROR_CODE
