@@ -117,7 +117,7 @@ def main():
             'juki': '住基',
             'suido_status': '水道',
             'touki': '登記',
-            'akiya_result': '空き家',
+            'akiya_result': '空き家調査',
             'geocoding': 'ジオコーディングデータ',
         }
 
@@ -226,7 +226,7 @@ def main():
             job_id,
             params.get('db_path'),
             params.get('building_polygon_column', 'buildingID'),
-            ["merge_result(E14)","建物ポリゴン"]
+            ["テキストマッチング結果", "建物ポリゴン"]
         )
 
         create_or_update_job(job_id, "complete")

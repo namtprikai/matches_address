@@ -429,7 +429,7 @@ def embedding_address(main_csv: io.BytesIO | str, sub_csv: io.BytesIO | str, mai
             ngram_rows = 0
             threshold_match_ratio = complete_match_ratio
         res = {
-            'joining_rate': (merged_rows + ngram_rows) / data_rows,
+            'joining_rate': (merged_rows + ngram_rows) / data_rows * 100,
             'input_source': input_source
         }
         if job_id:
