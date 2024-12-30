@@ -480,7 +480,7 @@ def process_and_predict(input_folder, input_file, model_directory, threshold, ou
                     explanatory_variables_dict[col] = "gml_id"
                 else:
                     # プレフィックスが部分一致するデータフレーム内のカラムを抽出
-                    tar_colname = [col901 for col901 in df.columns if col in col901]
+                    tar_colname = [col901 for col901 in prediction_data.columns if col in col901]
                     if len(tar_colname) > 0:
                         explanatory_variables_dict[col] = tar_colname[0]
     
