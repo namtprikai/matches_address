@@ -847,7 +847,6 @@ def process_plateaugml(temp_dir, output_dir, crs):
     output_gpkg_file = os.path.join(output_dir, "plateau_bldg.gpkg")
 
     # 解凍されたディレクトリからudx/bldgフォルダ内のGMLファイルを取得
-    #temproal: gml_files = glob.glob(os.path.join(temp_dir, "udx", "bldg", "*.gml"))
     gml_files = glob.glob(os.path.join(temp_dir, "bldg", "*.gml"))
     # GMLファイルの処理
     with ThreadPoolExecutor(max_workers=4) as executor:
@@ -855,7 +854,6 @@ def process_plateaugml(temp_dir, output_dir, crs):
 
     # 生成されたGPKGファイルを結合
     gdf_list = []
-    #temporal: gpkg_files = glob.glob(os.path.join(temp_dir, "udx", "bldg", "*.gpkg"))
     gpkg_files = glob.glob(os.path.join(temp_dir, "bldg", "*.gpkg"))
     gdf_plateu_all = gpd.GeoDataFrame()
     for gpkg_file in tqdm(gpkg_files):
@@ -962,67 +960,74 @@ def process_plateaugml(temp_dir, output_dir, crs):
     #shutil.rmtree(temp_dir)
 
 def process_data(tatemono_path, e14_merged_path, gpkg_path, ken, sikuchoson, option, output_type, input_zip_file=None, output_path=None, job_id=None, db_path=None, building_id='buildingID', input_source=[]):
-    if db_path:
-        connect_sqllite(db_path)
-    task_id = None
-    if job_id:
-        task_id = create_or_update_job_task(job_id, progress_percent="0", preprocess_type="e016", error_code=None, error_msg=None, result=None)
-    # 座標系を設定
-    crs = get_transformer(ken, sikuchoson)
-    
-    # 建物データと水道データを読み込み、処理
-    tatemono = load_and_process_data(tatemono_path, crs, building_id)
-    e14_merged = load_and_process_data(e14_merged_path, crs, building_id)
-
-    if job_id:
-        create_or_update_job_task(job_id, progress_percent="20", preprocess_type="e016", error_code=None, error_msg=None, result=None, id= task_id)
-    tatemono.to_crs(crs, inplace=True)
-    e14_merged.to_crs(crs, inplace=True)
-    
-    # 水道データの全列を選択
-    point_selected_column = e14_merged.columns
-
-    # 建物データと水道データを結合
-    tatemono_use_point, join_ratio = assign_points_to_buildings(tatemono, e14_merged, 2, crs, point_selected_column, option, building_id)
-    if job_id:
-        create_or_update_job_task(job_id, progress_percent="50", preprocess_type="e016", error_code=None, error_msg=None, result=None, id= task_id)
-    # 住居IDを追加
-    add_residenceID(tatemono_use_point, building_id)
-    
-    if job_id:
-        create_or_update_job_task(job_id, progress_percent="70", preprocess_type="e016", error_code=None, error_msg=None, result=None, id= task_id)
-    # 地域コードと町丁字名の付与
-    tatemono_use_point_add_keycode = add_keycode(tatemono_use_point, gpkg_path)
-
-    # 集合住宅のBuildingIDを削除（水道番号が3つ以上紐づいているbuildingIDを削除）
     try:
-        suido_col = [ col for col in tatemono_use_point_add_keycode.columns if "水道番号" in col ][0]
-        bid_num_df = tatemono_use_point.groupby([building_id])[[suido_col]].count()
-        bid_num_over3 = bid_num_df.loc[bid_num_df[suido_col]>3]
-        tatemono_use_point_add_keycode = tatemono_use_point_add_keycode.loc[~tatemono_use_point_add_keycode[building_id].isin(bid_num_over3.index)]
-    except:
-        pass
+        if db_path:
+            connect_sqllite(db_path)
+        task_id = None
+        if job_id:
+            task_id = create_or_update_job_task(job_id, progress_percent="0", preprocess_type="e016", error_code=None, error_msg=None, result=None)
+        # 座標系を設定
+        crs = get_transformer(ken, sikuchoson)
+        
+        # 建物データと水道データを読み込み、処理
+        tatemono = load_and_process_data(tatemono_path, crs, building_id)
+        e14_merged = load_and_process_data(e14_merged_path, crs, building_id)
 
-    # 結果を保存
-    if output_path is None:
-        output_path = os.path.join(os.getcwd(), f"D901.{output_type}")
+        if job_id:
+            create_or_update_job_task(job_id, progress_percent="20", preprocess_type="e016", error_code=None, error_msg=None, result=None, id= task_id)
+        tatemono.to_crs(crs, inplace=True)
+        e14_merged.to_crs(crs, inplace=True)
+        
+        # 水道データの全列を選択
+        point_selected_column = e14_merged.columns
 
-    output_dir = os.path.dirname(output_path)
+        # 建物データと水道データを結合
+        tatemono_use_point, join_ratio = assign_points_to_buildings(tatemono, e14_merged, 2, crs, point_selected_column, option, building_id)
+        if job_id:
+            create_or_update_job_task(job_id, progress_percent="50", preprocess_type="e016", error_code=None, error_msg=None, result=None, id= task_id)
+        # 住居IDを追加
+        add_residenceID(tatemono_use_point, building_id)
+        
+        if job_id:
+            create_or_update_job_task(job_id, progress_percent="70", preprocess_type="e016", error_code=None, error_msg=None, result=None, id= task_id)
+        # 地域コードと町丁字名の付与
+        tatemono_use_point_add_keycode = add_keycode(tatemono_use_point, gpkg_path)
 
-    if not os.path.exists(output_dir):
-        os.makedirs(output_dir)
+        # 集合住宅のBuildingIDを削除（水道番号が3つ以上紐づいているbuildingIDを削除）
+        try:
+            suido_col = [ col for col in tatemono_use_point_add_keycode.columns if "水道番号" in col ][0]
+            bid_num_df = tatemono_use_point.groupby([building_id])[[suido_col]].count()
+            bid_num_over3 = bid_num_df.loc[bid_num_df[suido_col]>3]
+            tatemono_use_point_add_keycode = tatemono_use_point_add_keycode.loc[~tatemono_use_point_add_keycode[building_id].isin(bid_num_over3.index)]
+        except:
+            pass
 
-    save_geodataframe(tatemono_use_point_add_keycode, output_path, output_type)
+        # 結果を保存
+        if output_path is None:
+            output_path = os.path.join(os.getcwd(), f"D901.{output_type}")
 
-    if job_id:
-        result = {
-            "joining_rate": join_ratio,
-            "input_source": input_source
-        }
-        create_or_update_job_task(job_id, progress_percent="100", preprocess_type="e016", error_code=None, error_msg=None, result=json.dumps(result, ensure_ascii=False), id= task_id, is_finish=True)
+        output_dir = os.path.dirname(output_path)
 
-    return output_path, join_ratio
+        if not os.path.exists(output_dir):
+            os.makedirs(output_dir)
 
+        save_geodataframe(tatemono_use_point_add_keycode, output_path, output_type)
+
+        if job_id:
+            result = {
+                "joining_rate": join_ratio,
+                "input_source": input_source
+            }
+            create_or_update_job_task(job_id, progress_percent="100", preprocess_type="e016", error_code=None, error_msg=None, result=json.dumps(result, ensure_ascii=False), id= task_id, is_finish=True)
+
+        return output_path, join_ratio
+    except Exception as e:
+        print(e)
+        if ERROR_CODE is None:
+            set_error(ERROR_00019)
+        if task_id is not None:
+            create_or_update_job_task(job_id, progress_percent="", preprocess_type="e016", error_code=ERROR_CODE, error_msg=ERROR_MSG, result=json.dumps({}), id= task_id, is_finish=True)
+        raise Exception("空間結合処理中にエラーが発生しました。ジオメトリに不正がないか、ご確認ください。")
 
 def set_error(value, param_st1=None, param_st2=None):
     global ERROR_CODE
