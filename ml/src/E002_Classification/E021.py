@@ -886,16 +886,35 @@ def train_and_evaluate(db_path, input_file, output_path, explanatory_variables, 
                     df[explanatory_variables_dict[adding_col_name]] = np.nan
             else:
                 explanatory_variables_dict[adding_col_name] = check_tar_col[0]
-    
-    # 異常値除去
-    condition = ((df['akiya_result_cleaned_flag'] == 1) & (df[explanatory_variables_dict["最小使用水量"]] > 20))
-    df = df[~condition].reset_index(drop=True)
 
-    condition = ((df['akiya_result_cleaned_flag'] == 0) & (df[explanatory_variables_dict["最小使用水量"]] < 2))
-    df = df[~condition].reset_index(drop=True)
+    # 異常値除去
+    #condition = ((df['akiya_result_cleaned_flag'] == 1) & (df[explanatory_variables_dict["最小使用水量"]] > 20))
+    #df = df[~condition].reset_index(drop=True)
+
+    #condition = ((df['akiya_result_cleaned_flag'] == 0) & (df[explanatory_variables_dict["最小使用水量"]] < 2))
+    #df = df[~condition].reset_index(drop=True)
     
-    condition = ((df['akiya_result_cleaned_flag'] == 0) & (df[explanatory_variables_dict["平均使用水量"]] == 0))
+    #condition = ((df['akiya_result_cleaned_flag'] == 0) & (df[explanatory_variables_dict["平均使用水量"]] == 0))
+    #df = df[~condition].reset_index(drop=True)
+
+
+    # '世帯コード'の重複を確認し、重複するレコードを削除
+    duplicates = df['世帯コード'].duplicated(keep=False)  # keep=False で全重複行をTrueとする
+    df = df[~duplicates].reset_index(drop=True)
+    condition = (df['住定期間'] < 1000)
     df = df[~condition].reset_index(drop=True)
+    # '正規化住所'の重複を確認し、3件以上の重複がある場合、該当するすべてのレコードを削除
+    duplicate_counts = df['正規化住所'].value_counts()  # 各値の出現回数を取得
+    to_remove = duplicate_counts[duplicate_counts >= 2].index  # 3件以上の値を取得
+    df = df[~df['正規化住所'].isin(to_remove)].reset_index(drop=True)  # 該当値を除外
+
+    # modify dataset which has irreguralar cases
+    df.loc[df['最大使用水量_suido_residence'] > 30, '閉栓フラグ_suido_residence'] = 0
+    df.loc[df['最大使用水量_suido_residence'] > 30, 'akiya_result_cleaned_flag'] = 0
+    df.loc[(df['世帯人数'] == 1) & (df['最大年齢'] > 95), 'akiya_result_cleaned_flag'] = 1
+    df.loc[df['最小使用水量_suido_residence'] > 150, 'akiya_result_cleaned_flag'] = 0
+    df.loc[df['最大使用水量_suido_residence'] < 3, 'akiya_result_cleaned_flag'] = 1
+
     
     if sqlite_enabled and job_id:
         create_or_update_job_task(job_id, progress_percent="10", preprocess_type=None, error_code=None, error_msg=None, result=json.dumps({}), id=task_id)
