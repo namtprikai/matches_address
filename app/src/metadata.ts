@@ -52,7 +52,7 @@ const NORMALIZATION_PARAMETER_LABEL: NormalizationParameterLabel = {
   structure_name: "建物構造名",
   registration_date: "登録年月日",
   vacant_house_id: "空き家ID",
-  building_id: "建物ID",
+  geometry: "ジオメトリー",
   reference_date: "判定したい日付",
   reference_data: "基準データ",
 };

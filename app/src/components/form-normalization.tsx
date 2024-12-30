@@ -31,15 +31,18 @@ export const FormNormalization = ({
   preprocessParameters,
   afterSubmit,
 }: Props): JSX.Element => {
+  const form = useFormNormalization({
+    defaultValues: preprocessParameters,
+  });
   const {
     handleSubmit,
     control,
     formState: { errors },
-  } = useFormNormalization({
-    defaultValues: preprocessParameters,
-  });
+  } = form;
 
   const hasErrors = Object.keys(errors).length > 0;
+
+  console.error(errors);
 
   const onSubmit = handleSubmit(async (data) => {
     await window.ipcRenderer.invoke("execE001", {
@@ -142,6 +145,7 @@ export const FormNormalization = ({
           render={({ field: { value, onChange } }) => (
             <FormDataset
               dataKey="buildingPolygon"
+              form={form}
               onChange={onChange}
               value={value}
             />

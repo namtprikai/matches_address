@@ -1,7 +1,6 @@
 import { memo } from "react";
 import { Checkbox, makeStyles } from "@fluentui/react-components";
 import { type FetchAreaGroupsArg } from "../../ipc-main-listeners/select-area-groups";
-import { useFetchAreaGroups } from "../../hooks/use-fetch-area-groups";
 
 const useStyles = makeStyles({
   options: {
@@ -15,29 +14,20 @@ const useStyles = makeStyles({
 });
 
 type Props = FetchAreaGroupsArg & {
-  searchText: string;
   selectedAreas: string[];
   onChange: (value: string[]) => void;
+  searchFilteredData: string[] | undefined;
 };
 
 /**
  * 地域フィルタ用の選択肢表示用コンポーネント
  */
 export const FormAreaFilterOptions = memo((props: Props) => {
-  const { data } = useFetchAreaGroups({
-    dataSetResultId: props.dataSetResultId,
-    unit: props.unit,
-  });
-
-  const searchFilteredData = data?.filter(
-    (area) => area.includes(props.searchText.trim().replace("　", "")), // 余計な空白や文字列の削除
-  );
-
   const styles = useStyles();
 
   return (
     <div className={styles.options}>
-      {searchFilteredData?.map((area, index) => {
+      {props.searchFilteredData?.map((area, index) => {
         return (
           <div key={index}>
             <Checkbox

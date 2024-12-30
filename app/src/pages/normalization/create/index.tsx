@@ -15,6 +15,11 @@ import { DialogContent } from "../../../components/ui/dialog-content";
 import { DialogActions } from "../../../components/ui/dialog-actions";
 import { useDialogState } from "../../../hooks/use-dialog-state";
 import { useFetchJob } from "../../../hooks/use-fetch-job";
+import {
+  BreadcrumbBase,
+  BreadcrumbItem,
+} from "../../../components/ui/breadcrumb";
+import { ROUTES } from "../../../routes";
 
 const useStyles = makeStyles({
   root: {
@@ -64,6 +69,21 @@ export function NormalizationCreate(): JSX.Element {
     <>
       <div className={styles.stickyWrapper}>
         <div className={styles.root}>
+          <BreadcrumbBase
+            breadcrumbItem={[
+              {
+                children: "名寄せ処理",
+                href: ROUTES.NORMALIZATION.ROOT,
+              },
+              {
+                children: "作成",
+                current: true,
+                href: ROUTES.NORMALIZATION.CREATE,
+              },
+            ].map((item) => (
+              <BreadcrumbItem key={item.href} {...item} />
+            ))}
+          />
           <h2 className={styles.heading}>名寄せ処理</h2>
           <div>
             {!isJobLoading ? (

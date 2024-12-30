@@ -39,6 +39,11 @@ import { useFetchDatasetColumns } from "../../../hooks/use-fetch-dataset-columns
 import { ErrorMessage } from "../../../components/error-message";
 import { TextWithTooltip } from "../../../components/ui/text-with-tooltip";
 import { lang } from "../../../lang";
+import {
+  BreadcrumbBase,
+  BreadcrumbItem,
+} from "../../../components/ui/breadcrumb";
+import { ROUTES } from "../../../routes";
 
 const useStyles = makeStyles({
   root: {
@@ -208,6 +213,21 @@ export const JobEvaluationCreate = (): JSX.Element => {
   return (
     <form onSubmit={onSubmit}>
       <div className={styles.root}>
+        <BreadcrumbBase
+          breadcrumbItem={[
+            {
+              children: "空き家判定",
+              href: ROUTES.EVALUATION.ROOT,
+            },
+            {
+              children: "作成",
+              current: true,
+              href: ROUTES.EVALUATION.CREATE,
+            },
+          ].map((item) => (
+            <BreadcrumbItem key={item.href} {...item} />
+          ))}
+        />
         <h2 className={styles.heading}>空き家推定</h2>
 
         <div className={styles.contents}>

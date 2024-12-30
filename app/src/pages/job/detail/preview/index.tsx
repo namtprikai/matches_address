@@ -12,6 +12,11 @@ import { Pagination } from "../../../../components/ui/pagination";
 import { useFetchBuildingPreview } from "../../../../hooks/use-fetch-preview-data";
 import { useFetchModelFiles } from "../../../../hooks/use-fetch-model-files";
 import { type PreviewData } from "../../../../ipc-main-listeners/select-building-preview";
+import {
+  BreadcrumbBase,
+  BreadcrumbItem,
+} from "../../../../components/ui/breadcrumb";
+import { ROUTES } from "../../../../routes";
 
 const useStyles = makeStyles({
   root: {
@@ -121,10 +126,25 @@ export function JobPreview(): JSX.Element {
 
   return (
     <div className={styles.root}>
-      <div className={styles.historyBack} onClick={handleBackToResultsClick}>
-        <ArrowLeftRegular />
-        処理結果に戻る
-      </div>
+      <BreadcrumbBase
+        breadcrumbItem={[
+          {
+            children: "処理一覧",
+            href: ROUTES.JOB.ROOT,
+          },
+          {
+            children: "処理結果 - 前処理",
+            href: ROUTES.JOB.DETAIL_PREPROCESS(id || ""),
+          },
+          {
+            children: "プレビュー",
+            current: true,
+            href: ROUTES.JOB.PREVIEW(id || ""),
+          },
+        ].map((item) => (
+          <BreadcrumbItem key={item.href} {...item} />
+        ))}
+      />
       <h2 className={styles.heading}>ファイルのプレビュー</h2>
       <div className={styles.previewWrapper}>
         <div className={styles.preview}>

@@ -34,14 +34,14 @@ export function Workbook(): JSX.Element {
     <div className={styles.root}>
       <BreadcrumbBase
         breadcrumbItem={[
-          <BreadcrumbItem
-            key={ROUTES.ANALYSIS.WORKBOOK}
-            current
-            href={withHash(ROUTES.ANALYSIS.WORKBOOK)}
-          >
-            分析
-          </BreadcrumbItem>,
-        ]}
+          {
+            children: "分析",
+            current: true,
+            href: ROUTES.ANALYSIS.WORKBOOK,
+          },
+        ].map((item) => (
+          <BreadcrumbItem key={item.href} {...item} />
+        ))}
       />
       <h2 className={styles.heading}>分析</h2>
       <Card className={styles.content}>
