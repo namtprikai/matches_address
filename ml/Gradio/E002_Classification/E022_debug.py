@@ -82,7 +82,7 @@ if __name__ == "__main__":
                 citycode = gr.Dropdown(
                     label="市区町村コードを選択（23201:豊橋市、23211:豊田市）", 
                     choices=["23201", "23211"], 
-                    value="23211", 
+                    value="23201", 
                     interactive=True
                 )
             with gr.Column():

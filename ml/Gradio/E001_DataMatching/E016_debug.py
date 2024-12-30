@@ -193,7 +193,8 @@ def generate_file_paths(citycode_value, targetyear_value):
     e14_merged_file = f'./data/{citycode_value}/E014/outputs/matched_data.csv'
     #tatemono_file = f'./data/{citycode_value}/E016/inputs/toyota_lod0_attributes.csv'
     # citygml format
-    tatemono_file = f'./data/{citycode_value}/E016/inputs/PLATEAU_建物データ_citygml_豊田市_アプリ読込用.zip'
+    #tatemono_file = f'./data/{citycode_value}/E016/inputs/PLATEAU_建物データ_citygml_豊田市_アプリ読込用.zip'
+    tatemono_file = f'./data/{citycode_value}/E016/inputs/PLATEAU_建物データ_citygml_豊橋市_アプリ読込用.zip'
     shp_file = f'./data/{citycode_value}/E016/inputs/r2ka23.gpkg'
     output_path = f'./data/{citycode_value}/E016/outputs/D901_{targetyear_value}.csv'
     return tatemono_file, e14_merged_file, shp_file, output_path
@@ -240,7 +241,7 @@ if __name__ == "__main__":
                 citycode = gr.Dropdown(
                     label="市区町村コードを選択（23201:豊橋市、23211:豊田市）", 
                     choices=["23201", "23211"], 
-                    value="23211", 
+                    value="23201", 
                     interactive=True
                 )
                 
