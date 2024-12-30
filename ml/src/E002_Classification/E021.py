@@ -217,7 +217,12 @@ def prepare_learning_data(df, explanatory_variables, explanatory_variables_dict)
 
         merged_variables = list(dict.fromkeys(chain(CONSTANTS['explanatory_variables'], explanatory_variables)))
         print(learning_data.head(),merged_variables, explanatory_variables)
-        learning_data = learning_data[merged_variables]
+        # `merged_variables` の中で `learning_data` に存在するカラムのみを選択
+        valid_columns = [col for col in merged_variables if col in learning_data.columns]
+
+        # 存在するカラムのみを使用してデータをフィルタリング
+        learning_data = learning_data[valid_columns]
+
     else:
         learning_data = learning_data[CONSTANTS['explanatory_variables']]
 
@@ -323,7 +328,7 @@ def split_data(df, params, explanatory_variables_dict):
 # - 出力：「D014　学習済みモデル【pkl】」
 
 @profile
-def train_lgb_with_optuna(train_df, params, citycode_value, targetyear_value, output_path, job_id=None, task_id=None):
+def train_lgb_with_optuna(train_df, params, citycode_value, targetyear_value, output_path, job_id=None, task_id=None, sqlite_enabled=False):
     """
     K-Fold交差検証とOptunaによるハイパーパラメータチューニングを用いてLightGBMモデルを学習する
    
@@ -349,7 +354,15 @@ def train_lgb_with_optuna(train_df, params, citycode_value, targetyear_value, ou
     # 学習データを特徴量（X）と目的変数（y）に分割
     id_train = train_df.copy()
     
-    X_train = train_df.drop(columns=[CONSTANTS['outcome_variable'], 'gml_id', '世帯コード', '水道番号'])
+    # 削除したいカラムをリストに指定
+    columns_to_drop = [CONSTANTS['outcome_variable'], 'gml_id', 'gml',  '世帯コード', '水道番号']
+
+    # 指定されたカラムのうち、`train_df` に存在するものだけを選択
+    columns_to_drop = [col for col in columns_to_drop if col in train_df.columns]
+
+    # 存在するカラムのみを削除
+    X_train = train_df.drop(columns=columns_to_drop)
+
     y_train = train_df[CONSTANTS['outcome_variable']]
     
     # クラスの重みを調整するためのポジティブ/ネガティブサンプルの比率を計算
@@ -422,7 +435,7 @@ def train_lgb_with_optuna(train_df, params, citycode_value, targetyear_value, ou
             'bagging_freq': params['bagging_freq'],
             'min_data_in_leaf': params['min_data_in_leaf'],
         })
-    if job_id:
+    if sqlite_enabled and job_id:
         create_or_update_job_task(job_id, progress_percent="40", preprocess_type=None, error_code=None, error_msg=None, result=json.dumps({}), id= task_id)
         create_or_update_job(job_id , "40")
     # 最良のハイパーパラメータを表示
@@ -480,7 +493,7 @@ def train_lgb_with_optuna(train_df, params, citycode_value, targetyear_value, ou
         # 学習済みモデルをリストに追加
         lgbm_models.append(model)
     
-    if job_id:
+    if sqlite_enabled and job_id:
         create_or_update_job_task(job_id, progress_percent="50", preprocess_type=None, error_code=None, error_msg=None, result=json.dumps({}), id= task_id)
         create_or_update_job(job_id , "50")
     # 全体の学習時間の終了
@@ -502,7 +515,7 @@ def train_lgb_with_optuna(train_df, params, citycode_value, targetyear_value, ou
         model_zip_file_path = f'{output_path}.zip'
     os.makedirs(output_file_path, exist_ok=True)
     
-    if job_id:
+    if sqlite_enabled and job_id:
         create_or_update_job_task(job_id, progress_percent="60", preprocess_type=None, error_code=None, error_msg=None, result=json.dumps({}), id= task_id)
         create_or_update_job(job_id , "60")
     # 各学習済みモデルをファイルに保存
@@ -522,7 +535,7 @@ def train_lgb_with_optuna(train_df, params, citycode_value, targetyear_value, ou
                     file_path = os.path.join(root, file)
                     # arcname をファイル名のみに設定して models/ フォルダを含めない
                     zipf.write(file_path, arcname=file)
-    if job_id:
+    if sqlite_enabled and job_id:
         create_or_update_job_task(job_id, progress_percent="70", preprocess_type=None, error_code=None, error_msg=None, result=json.dumps({}), id= task_id)
         create_or_update_job(job_id , "70")
     # 学習済みモデル、Out-of-fold予測、学習データの特徴量重要度を返す
@@ -557,6 +570,9 @@ def evaluate_models_on_test(test_df, models, params):
         特徴量重要度のプロット画像のファイルパス
     """
     # テストデータから識別子列を抽出
+    # temproal coding: "gml_id" が存在しない場合に "gml" を "gml_id" に変更
+    if "gml_id" not in test_df.columns and "gml" in test_df.columns:
+        test_df.rename(columns={"gml": "gml_id"}, inplace=True)
     id_test = test_df[["gml_id"]]
     # テストデータを識別するフラグを追加
     id_test["test_flg"] = 1
@@ -910,7 +926,7 @@ def train_and_evaluate(db_path, input_file, output_path, explanatory_variables, 
     if sqlite_enabled and job_id:
         create_or_update_job_task(job_id, progress_percent="30", preprocess_type=None, error_code=None, error_msg=None, result=json.dumps({}), id= task_id)
         create_or_update_job(job_id , "30")
-    models, oof_pred, feature_importances_dict_train, model_zip_file_path = train_lgb_with_optuna(train_df, params, citycode_value, targetyear_value, output_path, job_id, task_id)
+    models, oof_pred, feature_importances_dict_train, model_zip_file_path = train_lgb_with_optuna(train_df, params, citycode_value, targetyear_value, output_path, job_id, task_id, sqlite_enabled)
     
     if sqlite_enabled and job_id:
         create_or_update_job_task(job_id, progress_percent="80", preprocess_type=None, error_code=None, error_msg=None, result=json.dumps({}), id= task_id)
