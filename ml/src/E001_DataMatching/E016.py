@@ -281,7 +281,7 @@ def read_csv(path: str, **kwargs) -> pd.DataFrame:
         # print(f"ファイル {path} の読み込み中にエラーが発生しました: {e}")
         return None
 
-def load_and_process_data(file_path, crs, building_id, is_tatemono=True):
+def load_and_process_data(file_path, crs, geometry, file_type, data_type):
     """
     ファイルを読み込み、ジオメトリデータを処理してGeoDataFrameを作成する。
 
@@ -289,23 +289,31 @@ def load_and_process_data(file_path, crs, building_id, is_tatemono=True):
     ----------
     file_path : str
         読み込むファイルのパス。
-    is_tatemono : bool
-        建物データであるかどうかを示すフラグ（デフォルトはTrue）。
 
     Returns
     -------
     GeoDataFrame
         処理されたジオメトリデータを含むGeoDataFrame。
     """
-    if file_path.lower().endswith('.csv'):
+
+    file_extension = file_type
+    if not file_extension:
+        file_extension = file_path.split('.')[-1].lower()
+
+    if file_extension == 'csv':
         # CSVファイルを読み込む
         df = read_csv(file_path)
 
         if df is None:
             raise ValueError(f"ファイルの読み込みに失敗しました: {file_path}")
 
+        if geometry in df.columns:
+             # geometry列が文字列のデータのみを保持
+            df = df[df[geometry].apply(lambda x: isinstance(x, str))]
+            # geometry列をWKT形式からShapely geometryオブジェクトに変換
+            df[geometry] = df[geometry].apply(parse_wkt)
         # geometry列が存在するか確認
-        if 'geometry' in df.columns:
+        elif 'geometry' in df.columns:
             # geometry列が文字列のデータのみを保持
             df = df[df['geometry'].apply(lambda x: isinstance(x, str))]
             # geometry列をWKT形式からShapely geometryオブジェクトに変換
@@ -323,12 +331,18 @@ def load_and_process_data(file_path, crs, building_id, is_tatemono=True):
 
         # 無効なジオメトリを除外
         df = df[df['geometry'].notnull()]
+        if data_type == 'plateau':
+            df['building_id'] = df['building_id'].astype(str)
+        else:
+            if 'building_id' not in df.columns:
+                df['building_id'] = df.index + 1
+            df['building_id'] = df['building_id'].astype(str)
 
         # GeoDataFrameを作成
         gdf = gpd.GeoDataFrame(df, geometry='geometry', crs=4326)
         return gdf
 
-    elif file_path.lower().endswith('.zip'):
+    elif file_extension == 'zip':
         # ZIPファイルかどうかを確認し、処理
         temp_folder = str(uuid.uuid4())
         temp_dir = os.path.join(os.getcwd(), temp_folder)
@@ -355,8 +369,12 @@ def load_and_process_data(file_path, crs, building_id, is_tatemono=True):
             gdf.set_crs(crs, inplace=True)
 
         # buildingID列を追加
-        gdf[building_id] = gdf.index + 1
-        gdf[building_id] = gdf[building_id].astype(str)
+        if data_type == 'plateau':
+            gdf['building_id'] = gdf['building_id'].astype(str)
+        else:
+            if 'building_id' not in gdf.columns:
+                gdf['building_id'] = gdf.index + 1
+            gdf['building_id'] = gdf['building_id'].astype(str)
 
         return gdf
 
@@ -369,8 +387,12 @@ def load_and_process_data(file_path, crs, building_id, is_tatemono=True):
             gdf.set_crs(crs, inplace=True)
 
         # buildingID列を追加
-        gdf[building_id] = gdf.index + 1
-        gdf[building_id] = gdf[building_id].astype(str)
+        if data_type == 'plateau':
+            gdf['building_id'] = gdf['building_id'].astype(str)
+        else:
+            if 'building_id' not in gdf.columns:
+                gdf['building_id'] = gdf.index + 1
+            gdf['building_id'] = gdf['building_id'].astype(str)
 
         return gdf
 
@@ -539,7 +561,7 @@ def _drop_z(geom):
         return wkb.loads(wkb.dumps(geom, output_dimension=2))
     return geom  # 無効なジオメトリまたは空のジオメトリはそのまま返す
 
-def assign_points_to_buildings(buildings_gdf, points_gdf, mul, crs, point_selected_column, option, building_id):
+def assign_points_to_buildings(buildings_gdf, points_gdf, mul, crs, point_selected_column, option):
     """
     建物のジオメトリとポイントのジオメトリを結合し、ポイントを建物に割り当てる
     
@@ -629,7 +651,7 @@ def assign_points_to_buildings(buildings_gdf, points_gdf, mul, crs, point_select
         # IDが存在しない行
         dropped_rows = joined[joined['ID'].isna()]
         # IDが存在する行で'buildingID'をキーにして、'distance'が最小のものを抽出(空間結合による重複を削除)
-        result_gdf = joined.loc[filtered_gdf.groupby(building_id)['distance'].idxmin().tolist()]
+        result_gdf = joined.loc[filtered_gdf.groupby('building_id')['distance'].idxmin().tolist()]
         
         # IDあり（重複解消済み）とIDなしの結合
         combined_gdf = pd.concat([dropped_rows, result_gdf])
@@ -660,6 +682,7 @@ def assign_points_to_buildings(buildings_gdf, points_gdf, mul, crs, point_select
     unique_values_count = combined_gdf["ID"].nunique()
     join_ratio = round(unique_values_count/num_points*100, 2)
     combined_gdf = combined_gdf.drop(columns=["ID"])
+    combined_gdf.rename(columns={'building_id_left': 'building_id'}, inplace=True)
     return combined_gdf, join_ratio
 
 def generate_random_string(length=4):
@@ -681,7 +704,7 @@ def generate_random_string(length=4):
     # 指定された長さのランダムな文字列を生成して返す
     return ''.join(random.choice(characters) for i in range(length))
 
-def add_residenceID(gdf, building_id):
+def add_residenceID(gdf):
     """
     GeoDataFrameにresidenceID列を追加する
 
@@ -691,7 +714,7 @@ def add_residenceID(gdf, building_id):
         GeoDataFrame、'buildingID'列を含む必要がある
     """
     # 'buildingID'列とランダムに生成された文字列を結合して'residenceID'列を作成
-    gdf['residenceID'] = gdf[building_id].astype(str) + '-' + gdf.apply(lambda _: generate_random_string(), axis=1)
+    gdf['residenceID'] = gdf['building_id'].astype(str) + '-' + gdf.apply(lambda _: generate_random_string(), axis=1)
     
 def add_keycode(gdf, gpkg_path):
     """
@@ -959,7 +982,7 @@ def process_plateaugml(temp_dir, output_dir, crs):
     # 一時ファイルのクリーンアップ
     #shutil.rmtree(temp_dir)
 
-def process_data(tatemono_path, e14_merged_path, gpkg_path, ken, sikuchoson, option, output_type, input_zip_file=None, output_path=None, job_id=None, db_path=None, building_id='buildingID', input_source=[]):
+def process_data(tatemono_path, e14_merged_path, gpkg_path, ken, sikuchoson, option, output_type, output_path=None, job_id=None, db_path=None, geometry='geometry', input_source=[], file_type='', data_type='plateau'):
     try:
         if db_path:
             connect_sqllite(db_path)
@@ -970,8 +993,8 @@ def process_data(tatemono_path, e14_merged_path, gpkg_path, ken, sikuchoson, opt
         crs = get_transformer(ken, sikuchoson)
         
         # 建物データと水道データを読み込み、処理
-        tatemono = load_and_process_data(tatemono_path, crs, building_id)
-        e14_merged = load_and_process_data(e14_merged_path, crs, building_id)
+        tatemono = load_and_process_data(tatemono_path, crs, geometry, file_type, data_type)
+        e14_merged = load_and_process_data(e14_merged_path, crs, geometry, file_type, data_type)
 
         if job_id:
             create_or_update_job_task(job_id, progress_percent="20", preprocess_type="e016", error_code=None, error_msg=None, result=None, id= task_id)
@@ -982,11 +1005,11 @@ def process_data(tatemono_path, e14_merged_path, gpkg_path, ken, sikuchoson, opt
         point_selected_column = e14_merged.columns
 
         # 建物データと水道データを結合
-        tatemono_use_point, join_ratio = assign_points_to_buildings(tatemono, e14_merged, 2, crs, point_selected_column, option, building_id)
+        tatemono_use_point, join_ratio = assign_points_to_buildings(tatemono, e14_merged, 2, crs, point_selected_column, option)
         if job_id:
             create_or_update_job_task(job_id, progress_percent="50", preprocess_type="e016", error_code=None, error_msg=None, result=None, id= task_id)
         # 住居IDを追加
-        add_residenceID(tatemono_use_point, building_id)
+        add_residenceID(tatemono_use_point)
         
         if job_id:
             create_or_update_job_task(job_id, progress_percent="70", preprocess_type="e016", error_code=None, error_msg=None, result=None, id= task_id)
@@ -996,9 +1019,9 @@ def process_data(tatemono_path, e14_merged_path, gpkg_path, ken, sikuchoson, opt
         # 集合住宅のBuildingIDを削除（水道番号が3つ以上紐づいているbuildingIDを削除）
         try:
             suido_col = [ col for col in tatemono_use_point_add_keycode.columns if "水道番号" in col ][0]
-            bid_num_df = tatemono_use_point.groupby([building_id])[[suido_col]].count()
+            bid_num_df = tatemono_use_point.groupby(['building_id'])[[suido_col]].count()
             bid_num_over3 = bid_num_df.loc[bid_num_df[suido_col]>3]
-            tatemono_use_point_add_keycode = tatemono_use_point_add_keycode.loc[~tatemono_use_point_add_keycode[building_id].isin(bid_num_over3.index)]
+            tatemono_use_point_add_keycode = tatemono_use_point_add_keycode.loc[~tatemono_use_point_add_keycode['building_id'].isin(bid_num_over3.index)]
         except:
             pass
 
