@@ -22,6 +22,8 @@ import { useFetchRawDatasets } from "../../hooks/use-fetch-raw-datasets";
 import { useFetchNormalizedDatasets } from "../../hooks/use-fetch-normalized-datasets";
 import { saveDataSetFile } from "../../utils/save-data-set-file";
 import { useFetchDataSetResults } from "../../hooks/use-fetch-data-set-results";
+import { BreadcrumbBase, BreadcrumbItem } from "../../components/ui/breadcrumb";
+import { ROUTES } from "../../routes";
 
 const useStyles = makeStyles({
   root: {
@@ -160,6 +162,17 @@ export function Dataset(): JSX.Element {
 
   return (
     <div className={styles.root}>
+      <BreadcrumbBase
+        breadcrumbItem={[
+          {
+            href: ROUTES.DATASET,
+            current: true,
+            children: "データセット管理",
+          },
+        ].map((item) => (
+          <BreadcrumbItem key={item.href} {...item} />
+        ))}
+      />
       <div className={styles.header}>
         <h2 className={styles.heading}>データセット管理</h2>
         <TabList

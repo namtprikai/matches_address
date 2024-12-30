@@ -1,7 +1,7 @@
 import { useParams } from "react-router-dom";
 import { makeStyles, tokens } from "@fluentui/react-components";
 import { useFetchWorkbook } from "../hooks/use-fetch-workbook";
-import { ROUTES, withHash } from "../routes";
+import { ROUTES } from "../routes";
 import { TabListEditResultSheet } from "./tab-list-edit-result-sheet";
 import { SidebarEditResultView } from "./bi/sidebar-edit-result-view";
 import { PreviewResultSheet } from "./preview-result-sheet";
@@ -55,26 +55,22 @@ function Content(): JSX.Element {
     <div className={styles.content}>
       <BreadcrumbBase
         breadcrumbItem={[
-          <BreadcrumbItem
-            key={ROUTES.ANALYSIS.WORKBOOK}
-            href={withHash(ROUTES.ANALYSIS.WORKBOOK)}
-          >
-            分析
-          </BreadcrumbItem>,
-          <BreadcrumbItem
-            key={ROUTES.ANALYSIS.WORKBOOK_DETAIL(id || "#")}
-            href={withHash(ROUTES.ANALYSIS.WORKBOOK_DETAIL(id || "#"))}
-          >
-            {workbook?.title ?? "詳細"}
-          </BreadcrumbItem>,
-          <BreadcrumbItem
-            key={ROUTES.ANALYSIS.WORKBOOK_EDIT(id || "#")}
-            current
-            href={withHash(ROUTES.ANALYSIS.WORKBOOK_EDIT(id || "#"))}
-          >
-            編集
-          </BreadcrumbItem>,
-        ]}
+          {
+            children: "分析",
+            href: ROUTES.ANALYSIS.WORKBOOK,
+          },
+          {
+            children: "詳細",
+            href: ROUTES.ANALYSIS.WORKBOOK_DETAIL(id || ""),
+          },
+          {
+            children: "編集",
+            current: true,
+            href: ROUTES.ANALYSIS.WORKBOOK_EDIT(id || ""),
+          },
+        ].map((item) => (
+          <BreadcrumbItem key={item.href} {...item} />
+        ))}
       />
       <h2 className={styles.heading}>{workbook?.title}</h2>
       <TabListEditResultSheet workbookId={workbook?.id} />

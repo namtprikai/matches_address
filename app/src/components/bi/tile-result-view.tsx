@@ -31,6 +31,7 @@ import { Dropdown } from "../ui/dropdown";
 import { useFetchReferenceDates } from "../../hooks/use-fetch-reference-dates";
 import { useDialogState } from "../../hooks/use-dialog-state";
 import { DialogExportMessage } from "../dialog-export-message";
+import { OUTPUT_FILE_TYPES } from "../../config/file-types";
 import { TileViewStyle } from "./tile-view-style";
 
 type Props = {
@@ -382,21 +383,6 @@ function DeleteDialog({ onSubmit }: { onSubmit: () => void }): JSX.Element {
     </Dialog>
   );
 }
-
-const OUTPUT_FILE_TYPES = [
-  {
-    name: "CSV",
-    type: "csv",
-  },
-  {
-    name: "GeoJSON",
-    type: "geojson",
-  },
-  {
-    name: "GeoPackage",
-    type: "gpkg",
-  },
-];
 
 const OUTPUT_COORDINATES = [
   {

@@ -3,6 +3,8 @@ import { AddFilled } from "@fluentui/react-icons";
 import { useNavigate } from "react-router-dom";
 import { Button } from "../../components/ui/button";
 import { TableJobsByType } from "../../components/table-jobs-by-type";
+import { BreadcrumbBase, BreadcrumbItem } from "../../components/ui/breadcrumb";
+import { ROUTES } from "../../routes";
 
 const useStyles = makeStyles({
   root: {
@@ -30,6 +32,17 @@ export function JobEvaluation(): JSX.Element {
 
   return (
     <div className={styles.root}>
+      <BreadcrumbBase
+        breadcrumbItem={[
+          {
+            children: "空き家判定",
+            href: ROUTES.EVALUATION.ROOT,
+            current: true,
+          },
+        ].map((item) => (
+          <BreadcrumbItem key={item.href} {...item} />
+        ))}
+      />
       <h2 className={styles.heading}>空き家判定</h2>
 
       <Card className={styles.content}>
