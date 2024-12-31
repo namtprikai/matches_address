@@ -37,7 +37,7 @@ def main():
         'n_trials': json_dict.get('settings', {}).get('advanced', {}).get('n_trials', 100),
         'lambda_l1': json_dict.get('settings', {}).get('advanced', {}).get('lambda_l1', 0),
         'lambda_l2': json_dict.get('settings', {}).get('advanced', {}).get('lambda_l2', 0),
-        'num_leavs': json_dict.get('settings', {}).get('advanced', {}).get('num_leavs', 31),
+        'num_leaves': json_dict.get('settings', {}).get('advanced', {}).get('num_leaves', 31),
         'feature_fraction': json_dict.get('settings', {}).get('advanced', {}).get('feature_fraction', 1.0),
         'bagging_fraction': json_dict.get('settings', {}).get('advanced', {}).get('bagging_fraction', 1.0),
         'bagging_freq': json_dict.get('settings', {}).get('advanced', {}).get('bagging_freq', 0),
