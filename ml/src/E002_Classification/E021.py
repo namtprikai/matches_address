@@ -508,7 +508,7 @@ def train_lgb_with_optuna(train_df, params, citycode_value, targetyear_value, ou
 
     # モデルを保存するディレクトリ
     if citycode_value is not None:
-        output_file_path = f'{output_path}/data/{citycode_value}/E021/outputs/{str(uuid.uuid4())}'
+        output_file_path = f'{output_path}/data/{citycode_value}/E021/outputs/models'
         model_zip_file_path = f'{output_file_path}.zip'
     else:
         output_file_path = f'{output_path}'

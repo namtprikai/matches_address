@@ -13,6 +13,7 @@ import chardet
 import zipfile 
 import numpy as np
 import pandas as pd
+import re
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
 async_tasks_path = os.path.join(current_dir, '..', 'async_tasks')
@@ -251,7 +252,7 @@ def predict(models, new_data, required_features, threshold):
 
     return test_preds, test_preds_proba
 
-def insert_sqlite_and_export(input_data, data_set_result_id):
+def insert_sqlite(input_data, data_set_result_id):
     """
     指定されたデータをSQLiteデータベースに挿入し、同時にインポート可能な形式でファイルを出力する
 
@@ -546,12 +547,13 @@ def process_and_predict(input_folder, input_file, model_directory, threshold, ou
         input_data['predicted_label'] = test_preds
         input_data['predicted_probability'] = test_preds_proba
         input_data['geometry'] = geometry_data
-        output_dir = output_file.replace("D902.csv", "")
+        output_dir = re.sub(r"D902.*", "", output_file)
         os.makedirs(output_dir, exist_ok=True)
 
-        #insert SQLite
-        insert_sqlite_and_export(input_data, data_set_result_id)
         if sqlite_enabled and job_id:
+            #insert SQLite
+            insert_sqlite(input_data, data_set_result_id)
+
             create_or_update_job_task(job_id, progress_percent="90", preprocess_type=None, error_code=None, error_msg=None, result=json.dumps({}), id= task_id)
             create_or_update_job(job_id, process)
             process += process_init

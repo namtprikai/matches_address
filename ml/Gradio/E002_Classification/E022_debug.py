@@ -64,7 +64,6 @@ def on_submit(citycode_value, targetyear_value, threshold):
         , output_path
         , required_features
         , outcome_variable
-        , targetyear_value
     )
 
 if __name__ == "__main__":
