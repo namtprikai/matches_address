@@ -28,56 +28,57 @@ def process_summarization_gradio(akiya_pred_file, spatial_file, key_column):
     """
     メイン関数(Gradioのみ)　Summarization を実行
     """
-    print('現状のディレクトリ：')
-    print(os.getcwd())
+    # print('現状のディレクトリ：')
+    # print(os.getcwd())
     temp_dir = os.path.join(os.getcwd(), "temp_files/E032")
     os.makedirs(temp_dir, exist_ok=True)
+    process_summarization(akiya_pred_file, spatial_file, temp_dir, key_column)
 
-    # 空き家判定ファイルを移動
-    akiya_pred_path = move_uploaded_file(akiya_pred_file, temp_dir)
 
-    # ファイル拡張子を取得
-    file_ext = os.path.splitext(spatial_file.name)[1].lower()
+    # # 空き家判定ファイルを移動
+    # akiya_pred_path = move_uploaded_file(akiya_pred_file, temp_dir)
 
-    if file_ext == ".zip":
-        # zipファイルを解凍して Shapefile を取得
-        shp_file = extract_zip(spatial_file, temp_dir)
-        input_paths = {
-            "akiya_pred": akiya_pred_path,
-            "city_block": shp_file  # Shapefile のパスを直接格納
-        }
+    # # ファイル拡張子を取得
+    # file_ext = os.path.splitext(spatial_file.name)[1].lower()
 
-    elif file_ext == ".gpkg":
-        # GeoPackageファイルをそのまま使用
-        gpkg_path = move_uploaded_file(spatial_file, temp_dir)
-        input_paths = {
-            "akiya_pred": akiya_pred_path,
-            "city_block": gpkg_path
-        }
+    # if file_ext == ".zip":
+    #     # zipファイルを解凍して Shapefile を取得
+    #     shp_file = extract_zip(spatial_file, temp_dir)
+    #     input_paths = {
+    #         "akiya_pred": akiya_pred_path,
+    #         "city_block": shp_file  # Shapefile のパスを直接格納
+    #     }
 
-    elif file_ext == ".geojson":
-        # GeoJSONファイルをそのまま使用
-        geojson_path = move_uploaded_file(spatial_file, temp_dir)
-        input_paths = {
-            "akiya_pred": akiya_pred_path,
-            "city_block": geojson_path
-        }
+    # elif file_ext == ".gpkg":
+    #     # GeoPackageファイルをそのまま使用
+    #     gpkg_path = move_uploaded_file(spatial_file, temp_dir)
+    #     input_paths = {
+    #         "akiya_pred": akiya_pred_path,
+    #         "city_block": gpkg_path
+    #     }
 
-    elif file_ext == ".csv":
-        # CSVファイルをそのまま使用（WKTフォーマット）
-        csv_path = move_uploaded_file(spatial_file, temp_dir)
-        input_paths = {
-            "akiya_pred": akiya_pred_path,
-            "city_block": csv_path
-        }
+    # elif file_ext == ".geojson":
+    #     # GeoJSONファイルをそのまま使用
+    #     geojson_path = move_uploaded_file(spatial_file, temp_dir)
+    #     input_paths = {
+    #         "akiya_pred": akiya_pred_path,
+    #         "city_block": geojson_path
+    #     }
 
-    else:
-        raise ValueError(f"Unsupported file format: {file_ext}")
+    # elif file_ext == ".csv":
+    #     # CSVファイルをそのまま使用（WKTフォーマット）
+    #     csv_path = move_uploaded_file(spatial_file, temp_dir)
+    #     input_paths = {
+    #         "akiya_pred": akiya_pred_path,
+    #         "city_block": csv_path
+    #     }
 
-    # 出力ファイルのパスを設定
-    output_path = os.path.join(temp_dir, "D903.csv")
+    # else:
+    #     raise ValueError(f"Unsupported file format: {file_ext}")
 
-    Summarization(input_paths, output_path, key_column).process()
+    # # 出力ファイルのパスを設定
+    output_path = os.path.join(os.getcwd(), "temp_files/E032.csv")
+    # Summarization(input_paths, output_path, key_column).process()
 
     return output_path
 
@@ -124,12 +125,12 @@ if __name__ == "__main__":
     with gr.Blocks() as iface:
         akiya_pred_file = gr.File(
             label="【D902】空き家判定結果データを入力してください", 
-            value="../E002_Classification/data/23211/E022/outputs/D902_2023.csv",  # デフォルト値を設定
+            value="../E002_Classification/data/23201/E022/outputs/D902_2023.csv",  # デフォルト値を設定
             file_types=[".zip", ".gpkg", ".geojson", ".csv"]
             )
         spatial_file = gr.File(
             label="【D013】国勢調査小地域データ（町丁・字等）", 
-            value="./data/23211/E032/inputs/国勢調査_小地域R2_23211_豊田市.zip", 
+            value="./data/23211/E032/inputs/models.zip", 
             file_types=[".zip", ".gpkg", ".geojson", ".csv"]
             )
         key_column = gr.Dropdown(

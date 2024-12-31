@@ -98,6 +98,7 @@ def process_data_gradio(main_data_type,
         akiya_result_ID, akiya_result_address, akiya_result_lat, akiya_result_lon,
         geocoding_address, geocoding_lat, geocoding_lon
     )
+    set_output_column()
 
     # メインデータを決定
     if main_data_type == "suido_status":
