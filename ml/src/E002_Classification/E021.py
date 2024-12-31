@@ -264,7 +264,6 @@ def split_data(df, params, explanatory_variables_dict):
     # データを学習用とテスト用に分割
     # stratify = y で目的変数の分布を維持
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=params['test_size'], stratify = y, random_state = 42)
-    
     # アンダーサンプリングが有効な場合、学習セットを調整
     if params['undersample']:
         if y.value_counts(normalize=True)[1] < 0.02:
@@ -370,7 +369,10 @@ def train_lgb_with_optuna(train_df, params, citycode_value, targetyear_value, ou
 
     # K-Fold交差検証の初期化
     kf = KFold(n_splits=params['n_splits'], shuffle=True, random_state=42)
-    
+    categorical_features = X_train.select_dtypes(include=["object"]).columns.tolist()
+    for col in categorical_features:
+        X_train[col] = X_train[col].astype("category")
+
     # ハイパーパラメータ最適化のためのOptuna目的関数を定義
     def objective(trial):
         with warnings.catch_warnings():
@@ -399,7 +401,7 @@ def train_lgb_with_optuna(train_df, params, citycode_value, targetyear_value, ou
                 
             # モデルを学習
             model = lgb.LGBMClassifier(**lgb_params)
-            model.fit(X_tr, y_tr, eval_set=[(X_val, y_val)])
+            model.fit(X_tr, y_tr, eval_set=[(X_val, y_val)], categorical_feature=categorical_features)
                 
             # 検証セットで予測を行う
             preds = model.predict(X_val)
@@ -457,7 +459,7 @@ def train_lgb_with_optuna(train_df, params, citycode_value, targetyear_value, ou
         
         # 最良のハイパーパラメータでモデルを学習
         model = lgb.LGBMClassifier(**best_params)
-        model.fit(X_tr, y_tr, eval_set=[(X_val, y_val)])
+        model.fit(X_tr, y_tr, eval_set=[(X_val, y_val)], categorical_feature=categorical_features)
 
         # 特徴量重要度を計算
         feature_importances = pd.DataFrame({
@@ -584,6 +586,10 @@ def evaluate_models_on_test(test_df, models, params):
 
     # 精度と特徴量重要度情報を格納する空の辞書を作成
     score_dict = {}
+    categorical_features = X_test.select_dtypes(include=["object"]).columns.tolist()
+    for col in categorical_features:
+        if col in X_test.columns:
+            X_test[col] = X_test[col].astype("category")
     
     # 平均予測確率を格納する配列を初期化
     test_preds_proba = np.zeros(len(X_test))

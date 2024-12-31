@@ -106,7 +106,7 @@ def gradio_interface(input_file,test_size, n_splits, undersample, undersample_ra
     ]
     #result_str, feature_importances_file , output_file, model_zip_file_path, data_zip_file_path = train_and_evaluate(input_file, test_size, n_splits, undersample, undersample_ratio, threshold, hyperparameter_flag, n_trials, lambda_l1, lambda_l2, num_leaves, feature_fraction, bagging_fraction, bagging_freq, min_data_in_leaf, citycode_value, targetyear_value, job_id=333)
     result_str, feature_importances_file, output_file, model_zip_file_path, data_zip_file_path = train_and_evaluate(
-        db_path="./",
+        db_path=None,
         input_file=input_file,
         output_path="./",
         explanatory_variables=explanatory_variables,
