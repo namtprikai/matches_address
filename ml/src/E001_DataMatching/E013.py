@@ -391,7 +391,7 @@ class SuidoProcessor(DataProcessor):
             if len(new_date_columns) < 1:
                 raise ValueError("基準日が不正です。正シリフォーマットになっているか、もしくは正しい日付となっているかかご確認ください 。")
             # suido_useに欠損年月がある場合に開始日、終了日の日付を修正(そのほかもデータ期間中の期間に修正)
-            df_use = suido_pre_merged.copy()
+            df_use = suido_pre_merged.apply(lambda x:self.get_start_base_value(x,missing_month,new_date_columns), axis=1)
         
             # 統計量の計算
             df_use["最大使用水量"] = df_use[new_date_columns].max(axis=1)
@@ -440,6 +440,56 @@ class SuidoProcessor(DataProcessor):
         )
         
         return df
+    
+    def get_start_base_value(self, row, missing_month, date_columns):
+        cols_use = COLUMNS["suido_use"]
+        cols_status = COLUMNS["suido_status"]
+
+        if isinstance(self.reference_date, datetime):
+            reference_date = self.reference_date.strftime('%Y-%m')
+        else:
+            reference_date = self.reference_date
+
+        if len(missing_month)>0:
+            if pd.isnull(row[cols_status["usage_start_date"]]):
+                start_day = min(date_columns)
+            elif row[cols_status["usage_start_date"]] < min(date_columns):
+                start_day = min(date_columns)
+            elif (row[cols_status["usage_start_date"]] >= min(missing_month) )&(row[cols_status["usage_start_date"]] <= max(missing_month)):
+                start_day = (pd.to_datetime(max(missing_month)) + timedelta(days=31)).strftime('%Y-%m')
+            elif row[cols_status["usage_start_date"]] > reference_date:
+                start_day = reference_date
+            else:
+                start_day = row[cols_status["usage_start_date"]]
+
+        else:
+            if pd.isnull(row[cols_status["usage_start_date"]]):
+                start_day = min(date_columns)
+            elif row[cols_status["usage_start_date"]] < min(date_columns):
+                start_day = min(date_columns)
+            elif row[cols_status["usage_start_date"]] > reference_date:
+                start_day = reference_date
+            else:
+                start_day = row[cols_status["usage_start_date"]]
+
+        if pd.isnull(row[start_day]):
+            searching = True
+            col = row.index.get_loc(start_day)
+            while searching:
+                if row.index[col] >= reference_date :
+                    row['start_date_水道使用量'] = 0
+                    searching = False
+                elif pd.isnull(row.iloc[col]):
+                    col += 1
+                else:
+                    row['start_date_水道使用量'] = row.iloc[col]
+                    searching = False
+
+        else:
+            row['start_date_水道使用量'] = row[start_day]
+
+        row['reference_date_水道使用量'] = 0 if pd.isnull(row[reference_date]) else row[reference_date]
+        return row
 
     def process(self):
 
@@ -475,12 +525,33 @@ class SuidoProcessor(DataProcessor):
             # データの結合と整形
             cols_status = COLUMNS["suido_status"]
             df_suido = pd.merge(df_suido_operation[[cols_status["suido_number"], cols_status["suido_address"],'使用開始日', '使用中止日', "閉栓フラグ"]], 
-                                df_suido_stats, on=cols_status["suido_number"], how="inner")
+                                df_suido_stats, on=cols_status["suido_number"], how="left")
             
             # 1住所に異なる水道番号が5以上結びつく住所を排除
             multi_address = df_suido.groupby(cols_status["suido_address"])[cols_status["suido_number"]].nunique()\
             [df_suido.groupby(cols_status["suido_address"])[cols_status["suido_number"]].nunique()>5].index
             df_suido = df_suido.loc[~df_suido[cols_status["suido_address"]].isin(multi_address)].reset_index(drop=True)  
+
+            # df_suido の全てのカラムを確認
+            all_columns = df_suido.columns
+
+            # 「水道使用量変化率」以外のカラムの null を 0 で埋める
+            columns_to_fill_zero = [col for col in all_columns if col != "水道使用量変化率"]
+            df_suido[columns_to_fill_zero] = df_suido[columns_to_fill_zero].fillna(0)
+
+            # 「水道使用量変化率」の null を 1 で埋める
+            if "水道使用量変化率" in all_columns:
+                df_suido["水道使用量変化率"] = df_suido["水道使用量変化率"].fillna(1)
+
+            # 条件1: 最大使用水量, 平均使用水量, 最小使用水量, 合計使用水量がすべて0のとき
+            usage_columns = ["最大使用水量", "平均使用水量", "最小使用水量", "合計使用水量"]
+
+            # 条件1: 水道使用量変化率を1に設定
+            df_suido.loc[df_suido[usage_columns].sum(axis=1) == 0, "水道使用量変化率"] = 1
+
+            # 重複データを削除
+            df_suido = self.drop_duplicates(df_suido.sort_values(by="最大使用水量", ascending=False), 
+                                        subset=cols_status["suido_address"])
             
             # 出力カラムの選択
             df_suido = df_suido[self.OUTPUT_COLUMNS["suido"]]
