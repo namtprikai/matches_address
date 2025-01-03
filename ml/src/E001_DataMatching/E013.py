@@ -108,7 +108,7 @@ class DataProcessor:
         return result['encoding']
 
     @staticmethod
-    def read_csv(path, **kwargs):
+    def read_data(path, **kwargs):
         """
         CSVファイルまたはテキストファイルを読み込む
         Parameters
@@ -395,9 +395,9 @@ class SuidoProcessor(DataProcessor):
 
             # 変化率の計算 (基準日の使用量 / 開始日の使用量)
             df_use["水道使用量変化率"] = df_use.apply(
-            lambda row: (row["start_date_水道使用量"] - row["reference_date_水道使用量"])
-            if row["start_date_水道使用量"] == 0
-            else (row["start_date_水道使用量"] - row["reference_date_水道使用量"])/row["start_date_水道使用量"] , axis=1)
+                lambda row: row["reference_date_水道使用量"] / row["start_date_水道使用量"]
+                if pd.notnull(row["start_date_水道使用量"]) and row["start_date_水道使用量"] != 0
+                else 0, axis=1)
             
             # 出力するカラムを選択
             return df_use[[cols_use["suido_number"], "最大使用水量", "平均使用水量", "最小使用水量", "合計使用水量", "水道使用量変化率"]]
@@ -492,8 +492,8 @@ class SuidoProcessor(DataProcessor):
         
         try:
             # データの読み込み
-            df_suido_use = self.read_csv(self.INPUT_PATHS["suido_use"])
-            df_suido_status = self.read_csv(self.INPUT_PATHS["suido_status"])
+            df_suido_use = self.read_data(self.INPUT_PATHS["suido_use"])
+            df_suido_status = self.read_data(self.INPUT_PATHS["suido_status"])
 
             if df_suido_use is None or df_suido_status is None:
                 return
@@ -724,7 +724,7 @@ class JukiProcessor(DataProcessor):
 
     def process(self):
         # データの読み込み
-        df_juki = self.read_csv(self.INPUT_PATHS["juki"])
+        df_juki = self.read_data(self.INPUT_PATHS["juki"])
         
         if df_juki is None:
             return
@@ -822,7 +822,7 @@ class TatemonoProcessor(DataProcessor):
             処理結果はCSVファイルとして保存されます
         """
         # データの読み込み
-        df_tatemono = self.read_csv(self.INPUT_PATHS["tatemono"])
+        df_tatemono = self.read_data(self.INPUT_PATHS["tatemono"])
         if df_tatemono is None:
             return
         
