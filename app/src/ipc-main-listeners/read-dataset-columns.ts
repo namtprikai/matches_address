@@ -53,7 +53,7 @@ export const readDatasetColumns = (async (
   }
 
   const filePath = getFilePathInDatabaseDirectory(filename);
-  const fileType = await classifyFileType(filename);
+  const fileType = await classifyFileType(filePath); // zipファイルの場合は展開して判定するためファイルパスを引数にする
 
   switch (fileType) {
     case "csv": {
