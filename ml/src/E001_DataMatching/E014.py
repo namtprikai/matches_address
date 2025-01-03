@@ -424,7 +424,7 @@ def embedding_address(main_csv: io.BytesIO | str, sub_csv: io.BytesIO | str, mai
         else:
             threshold_match_ratio = f'結合元データとの閾値以上結合割合: {merged_rows / data_rows * 100:.2f}%'
         sub_complete_match_ratio = f'結合先データとの完全一致割合: {merged_rows / sub_data_rows * 100:.2f}%'
-        # sub_threshold_match_ratio = f'結合先データとの閾値以上結合割合: {(unique_row) / sub_data_rows * 100:.2f}%'
+        
         if ngram == 0:
             ngram_rows = 0
             threshold_match_ratio = complete_match_ratio
