@@ -484,24 +484,6 @@ def set_error(value, param_st1=None, param_st2=None):
     else:
         ERROR_MSG = value['message']
 
-def normalize_dates(df, column, formats=['%Y/%m/%d', '%d/%m/%Y', '%Y-%m-%d', '%m/%d/%Y', '%Y%m%d']):
-    # Initialize the temporary column with NaN values
-    temp_column = f'{column}_normalized'
-    df[temp_column] = np.nan
-
-    # Try the provided formats on the invalid values
-    for fmt in formats:
-        mask = df[temp_column].isna()
-        df.loc[mask, temp_column] = pd.to_datetime(
-            df.loc[mask, column], format=fmt, errors='coerce'
-        )
-
-    # Remove the time portion and keep only the date
-    df[temp_column] = pd.to_datetime(df[temp_column], errors='coerce')
-    df[column] = df[temp_column]
-    
-    return df.drop(f'{column}_normalized',axis=1)
-
 def main():
     parser = argparse.ArgumentParser(description="E014 - テキストマッチング機能")
     parser.add_argument("--main_csv", required=True, help="メインのCSVファイルのパス")

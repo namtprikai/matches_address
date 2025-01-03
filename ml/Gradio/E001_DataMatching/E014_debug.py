@@ -112,12 +112,12 @@ if __name__ == "__main__":
         
         file_input_1 = gr.File(
             label="csvファイルを入力してください",
-            value=f'./data/23211/E013/outputs/juki_residence_2023.csv',
+            value=f'./data/23201/E013/outputs/juki_residence_2023.csv',
             elem_id="csv"
         )
         file_input_2 = gr.File(
             label="csvファイルを入力してください",
-            value=f'./data/23211/E013/outputs/suido_residence_2023.csv',
+            value=f'./data/23201/E013/outputs/suido_residence_2023.csv',
             elem_id="csv"
         )
 
