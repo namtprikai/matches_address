@@ -254,35 +254,29 @@ class SuidoProcessor(DataProcessor):
                 self.reference_date = datetime.strptime(self.reference_date, "%Y-%m")
         
         self.START_DATE = (self.reference_date - relativedelta(years=self.SEARCH_PERIOD)).strftime("%Y-%m")
-        self.reference_date = self.reference_date.strftime("%Y-%m")
+        reference_month = self.reference_date.strftime("%Y-%m")  # 月単位に変換
 
         # start_date_水道使用量に対して次の月の値を確認するロジック
         start_date = pd.to_datetime(self.START_DATE)
-        found_start = False  # 値が見つかったかを示すフラグ
-
-        # 繰り返して次の月の値を探す
-        while start_date <= pd.to_datetime(self.reference_date):
+        while start_date <= pd.to_datetime(reference_month):
             next_month_str = start_date.strftime("%Y-%m")
             if next_month_str in df.columns:
-                # 値が見つかった場合はその月の値を設定
                 df["start_date_水道使用量"] = df[next_month_str].fillna(0)
-                found_start = True
                 break
             # 次の月に進む
-            start_date = start_date + relativedelta(months=2)  # 2ヶ月単位で次の月に進む
-
-        if not found_start:
-            df["start_date_水道使用量"] = 0  # 最後まで見つからなかった場合は0を設定
+            start_date += relativedelta(months=1)
+        else:
+            df["start_date_水道使用量"] = 0  # ループを抜けた場合は0
 
         # reference_date_水道使用量に対して前の月の値を確認するロジック
-        if self.reference_date not in df.columns:
-            prev_month = (pd.to_datetime(self.reference_date) - relativedelta(months=1)).strftime("%Y-%m")
+        if reference_month not in df.columns:
+            prev_month = (pd.to_datetime(reference_month) - relativedelta(months=1)).strftime("%Y-%m")
             if prev_month in df.columns:
                 df["reference_date_水道使用量"] = df[prev_month].fillna(0)
             else:
                 df["reference_date_水道使用量"] = 0  # NaNの場合、0に設定
         else:
-            df["reference_date_水道使用量"] = df[self.reference_date].fillna(0)  # NaNを0に置換
+            df["reference_date_水道使用量"] = df[reference_month].fillna(0)  # NaNを0に置換
 
         return df
 
