@@ -383,7 +383,8 @@ class SuidoProcessor(DataProcessor):
                     suido_pre_merged.loc[row, 'reference_date_水道使用量'] = 0
 
             if len(new_date_columns) < 1:
-                raise ValueError("基準日が不正です。正シリフォーマットになっているか、もしくは正しい日付となっているかかご確認ください 。")
+                # valueerror -> set_error(ERROR_0000X, path, encoding)
+                raise ValueError("基準日が不正です。正しいフォーマットになっているか、もしくは正しい日付となっているかかご確認ください 。")
             # suido_useに欠損年月がある場合に開始日、終了日の日付を修正(そのほかもデータ期間中の期間に修正)
             df_use = suido_pre_merged.apply(lambda x:self.get_start_base_value(x,missing_month,new_date_columns), axis=1)
         
