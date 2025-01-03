@@ -13,6 +13,7 @@ import sys
 from typing import List, Tuple
 import io
 import os
+import re
 import argparse
 import chardet
 import pandas as pd
@@ -251,6 +252,10 @@ def embedding_address(main_csv: io.BytesIO | str, sub_csv: io.BytesIO | str, mai
             sub_csv_name = os.path.splitext(os.path.basename(sub_csv.name))[0]
         else:
             sub_csv_name = os.path.splitext(os.path.basename(sub_csv))[0]
+
+        # アンダーバーと数字のパターンを削除
+        sub_csv_name = re.sub(r'_\d+$', '', sub_csv_name)
+
         
         # カラム名にファイル名を付与
         sub_df.columns = [f"{col}_{sub_csv_name}" if col != sub_column else col for col in sub_df.columns]
