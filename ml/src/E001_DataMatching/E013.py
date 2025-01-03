@@ -524,7 +524,7 @@ class SuidoProcessor(DataProcessor):
             
             # 1住所に異なる水道番号が5以上結びつく住所を排除
             multi_address = df_suido.groupby(cols_status["suido_address"])[cols_status["suido_number"]].nunique()\
-            [df_suido.groupby(cols_status["suido_address"])[cols_status["suido_number"]].nunique()>5].index
+            [df_suido.groupby(cols_status["suido_address"])[cols_status["suido_number"]].nunique()>4].index
             df_suido = df_suido.loc[~df_suido[cols_status["suido_address"]].isin(multi_address)].reset_index(drop=True)  
 
             # df_suido の全てのカラムを確認
