@@ -225,7 +225,7 @@ with gr.Blocks() as demo:
         with gr.Column():
             suido_number2_dropdown = gr.Dropdown(label="水道番号のカラム名", choices=["水道番号"], value="水道番号")
             meter_reading_date_dropdown = gr.Dropdown(label="検針年月日のカラム名", choices=["検針年月日"], value="検針年月日")
-            suido_usage_dropdown = gr.Dropdown(label="水道使用量のカラム名", choices=["水道使用量"], value="水道使用量")
+            suido_usage_dropdown = gr.Dropdown(label="水道使用量のカラム名", choices=["使用水量"], value="使用水量")
 
     with gr.Row():
         with gr.Column():
