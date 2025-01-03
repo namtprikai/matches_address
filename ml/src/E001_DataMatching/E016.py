@@ -327,6 +327,7 @@ def load_and_process_data(file_path, crs, geometry, file_type, data_type):
                     else None, axis=1
                 )
             else:
+                # KeyError -> set_error(ERROR_0000X, path, encoding)
                 raise KeyError("'geometry' 列または 'lat_geocoding_cleaned' と 'lon_geocoding_cleaned' 列が必要です")
 
         # 無効なジオメトリを除外
