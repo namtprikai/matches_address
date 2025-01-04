@@ -44,7 +44,9 @@ def main():
         'geocoding_columns': json_dict.get('data', {}).get('geocoding', {}).get('columns', {}),
         'census': json_dict.get('data', {}).get('census', {}).get('path', None),
         'building_polygon': json_dict.get('data', {}).get('building_polygon', {}).get('path', None),
-        'building_polygon_column': json_dict.get('data', {}).get('building_polygon', {}).get('columns', {}).get('building_id', None),
+        'building_polygon_column': json_dict.get('data', {}).get('building_polygon', {}).get('columns', {}).get('geometry', None),
+        'building_polygon_file_type': json_dict.get('data', {}).get('building_polygon', {}).get('input_file_type', None),
+        'building_polygon_data_type': json_dict.get('data', {}).get('building_polygon', {}).get('data_type', 'plateau'),
         'urban_planning': json_dict.get('data', {}).get('urban_planning', {}).get('path', None),
         'n_gram_size': json_dict.get('settings', {}).get('advanced', {}).get('n_gram_size', "2"),
         'similarity_threshold': json_dict.get('settings', {}).get('advanced', {}).get('similarity_threshold', "0.95"),
@@ -87,7 +89,7 @@ def main():
         "geocoding": {
             "geocoding_address": params.get("geocoding_columns", {}).get("address", "住所"),
             "geocoding_lat": params.get("geocoding_columns", {}).get("latitude", "lat"),
-            "geocoding_lon": params.get("geocoding_columns", {}).get("longitude", "long"),
+            "geocoding_lon": params.get("geocoding_columns", {}).get("longitude", "lon"),
         }
     }
 
@@ -98,7 +100,6 @@ def main():
     if params.get('joining_method') == 'nearest':
         join_option = '最近傍結合'
     search_period = "1"
-    input_zip_file = None
 
     job_id = None
     try:
@@ -116,8 +117,8 @@ def main():
         input_source_jp = {
             'juki': '住基',
             'suido_status': '水道',
-            'touki': '登記',
-            'akiya_result': '空き家',
+            'touki': '建物情報',
+            'akiya_result': '空き家調査',
             'geocoding': 'ジオコーディングデータ',
         }
 
@@ -221,12 +222,13 @@ def main():
             "豊田市",
             option,
             "csv",
-            input_zip_file,
             output_path_e016,
             job_id,
             params.get('db_path'),
-            params.get('building_polygon_column', 'buildingID'),
-            ["merge_result(E14)","建物ポリゴン"]
+            params.get('building_polygon_column', 'geometry'),
+            ["テキストマッチング結果", "建物ポリゴン"],
+            params.get('building_polygon_file_type'),
+            params.get('building_polygon_data_type')
         )
 
         create_or_update_job(job_id, "complete")

@@ -216,7 +216,13 @@ def prepare_learning_data(df, explanatory_variables, explanatory_variables_dict)
                 raise
 
         merged_variables = list(dict.fromkeys(chain(CONSTANTS['explanatory_variables'], explanatory_variables)))
-        learning_data = learning_data[merged_variables]
+        print(learning_data.head(),merged_variables, explanatory_variables)
+        # `merged_variables` の中で `learning_data` に存在するカラムのみを選択
+        valid_columns = [col for col in merged_variables if col in learning_data.columns]
+
+        # 存在するカラムのみを使用してデータをフィルタリング
+        learning_data = learning_data[valid_columns]
+
     else:
         learning_data = learning_data[CONSTANTS['explanatory_variables']]
 
@@ -258,7 +264,6 @@ def split_data(df, params, explanatory_variables_dict):
     # データを学習用とテスト用に分割
     # stratify = y で目的変数の分布を維持
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=params['test_size'], stratify = y, random_state = 42)
-    
     # アンダーサンプリングが有効な場合、学習セットを調整
     if params['undersample']:
         if y.value_counts(normalize=True)[1] < 0.02:
@@ -322,7 +327,7 @@ def split_data(df, params, explanatory_variables_dict):
 # - 出力：「D014　学習済みモデル【pkl】」
 
 @profile
-def train_lgb_with_optuna(train_df, params, citycode_value, targetyear_value, output_path, job_id=None, task_id=None):
+def train_lgb_with_optuna(train_df, params, citycode_value, targetyear_value, output_path, job_id=None, task_id=None, sqlite_enabled=False):
     """
     K-Fold交差検証とOptunaによるハイパーパラメータチューニングを用いてLightGBMモデルを学習する
    
@@ -347,7 +352,16 @@ def train_lgb_with_optuna(train_df, params, citycode_value, targetyear_value, ou
 
     # 学習データを特徴量（X）と目的変数（y）に分割
     id_train = train_df.copy()
-    X_train = train_df.drop(columns=[CONSTANTS['outcome_variable'], 'gml_id', '世帯コード', '水道番号'])
+    
+    # 削除したいカラムをリストに指定
+    columns_to_drop = [CONSTANTS['outcome_variable'], 'gml_id', 'gml',  '世帯コード', '水道番号']
+
+    # 指定されたカラムのうち、`train_df` に存在するものだけを選択
+    columns_to_drop = [col for col in columns_to_drop if col in train_df.columns]
+
+    # 存在するカラムのみを削除
+    X_train = train_df.drop(columns=columns_to_drop)
+
     y_train = train_df[CONSTANTS['outcome_variable']]
     
     # クラスの重みを調整するためのポジティブ/ネガティブサンプルの比率を計算
@@ -355,7 +369,10 @@ def train_lgb_with_optuna(train_df, params, citycode_value, targetyear_value, ou
 
     # K-Fold交差検証の初期化
     kf = KFold(n_splits=params['n_splits'], shuffle=True, random_state=42)
-    
+    categorical_features = X_train.select_dtypes(include=["object"]).columns.tolist()
+    for col in categorical_features:
+        X_train[col] = X_train[col].astype("category")
+
     # ハイパーパラメータ最適化のためのOptuna目的関数を定義
     def objective(trial):
         with warnings.catch_warnings():
@@ -384,7 +401,7 @@ def train_lgb_with_optuna(train_df, params, citycode_value, targetyear_value, ou
                 
             # モデルを学習
             model = lgb.LGBMClassifier(**lgb_params)
-            model.fit(X_tr, y_tr, eval_set=[(X_val, y_val)])
+            model.fit(X_tr, y_tr, eval_set=[(X_val, y_val)], categorical_feature=categorical_features)
                 
             # 検証セットで予測を行う
             preds = model.predict(X_val)
@@ -420,7 +437,7 @@ def train_lgb_with_optuna(train_df, params, citycode_value, targetyear_value, ou
             'bagging_freq': params['bagging_freq'],
             'min_data_in_leaf': params['min_data_in_leaf'],
         })
-    if job_id:
+    if sqlite_enabled and job_id:
         create_or_update_job_task(job_id, progress_percent="40", preprocess_type=None, error_code=None, error_msg=None, result=json.dumps({}), id= task_id)
         create_or_update_job(job_id , "40")
     # 最良のハイパーパラメータを表示
@@ -442,7 +459,7 @@ def train_lgb_with_optuna(train_df, params, citycode_value, targetyear_value, ou
         
         # 最良のハイパーパラメータでモデルを学習
         model = lgb.LGBMClassifier(**best_params)
-        model.fit(X_tr, y_tr, eval_set=[(X_val, y_val)])
+        model.fit(X_tr, y_tr, eval_set=[(X_val, y_val)], categorical_feature=categorical_features)
 
         # 特徴量重要度を計算
         feature_importances = pd.DataFrame({
@@ -478,7 +495,7 @@ def train_lgb_with_optuna(train_df, params, citycode_value, targetyear_value, ou
         # 学習済みモデルをリストに追加
         lgbm_models.append(model)
     
-    if job_id:
+    if sqlite_enabled and job_id:
         create_or_update_job_task(job_id, progress_percent="50", preprocess_type=None, error_code=None, error_msg=None, result=json.dumps({}), id= task_id)
         create_or_update_job(job_id , "50")
     # 全体の学習時間の終了
@@ -493,16 +510,17 @@ def train_lgb_with_optuna(train_df, params, citycode_value, targetyear_value, ou
 
     # モデルを保存するディレクトリ
     if citycode_value is not None:
-        output_file_path = f'{output_path}/data/{citycode_value}/E021/outputs/{str(uuid.uuid4())}'
+        output_file_path = f'{output_path}/data/{citycode_value}/E021/outputs/models'
         model_zip_file_path = f'{output_file_path}.zip'
     else:
         output_file_path = f'{output_path}'
         model_zip_file_path = f'{output_path}.zip'
     os.makedirs(output_file_path, exist_ok=True)
     
-    if job_id:
+    if sqlite_enabled and job_id:
         create_or_update_job_task(job_id, progress_percent="60", preprocess_type=None, error_code=None, error_msg=None, result=json.dumps({}), id= task_id)
         create_or_update_job(job_id , "60")
+        
     # 各学習済みモデルをファイルに保存
     for i, model in enumerate(lgbm_models):
         if targetyear_value is not None:
@@ -520,7 +538,7 @@ def train_lgb_with_optuna(train_df, params, citycode_value, targetyear_value, ou
                     file_path = os.path.join(root, file)
                     # arcname をファイル名のみに設定して models/ フォルダを含めない
                     zipf.write(file_path, arcname=file)
-    if job_id:
+    if sqlite_enabled and job_id:
         create_or_update_job_task(job_id, progress_percent="70", preprocess_type=None, error_code=None, error_msg=None, result=json.dumps({}), id= task_id)
         create_or_update_job(job_id , "70")
     # 学習済みモデル、Out-of-fold予測、学習データの特徴量重要度を返す
@@ -555,6 +573,9 @@ def evaluate_models_on_test(test_df, models, params):
         特徴量重要度のプロット画像のファイルパス
     """
     # テストデータから識別子列を抽出
+    # temproal coding: "gml_id" が存在しない場合に "gml" を "gml_id" に変更
+    if "gml_id" not in test_df.columns and "gml" in test_df.columns:
+        test_df.rename(columns={"gml": "gml_id"}, inplace=True)
     id_test = test_df[["gml_id"]]
     # テストデータを識別するフラグを追加
     id_test["test_flg"] = 1
@@ -565,6 +586,10 @@ def evaluate_models_on_test(test_df, models, params):
 
     # 精度と特徴量重要度情報を格納する空の辞書を作成
     score_dict = {}
+    categorical_features = X_test.select_dtypes(include=["object"]).columns.tolist()
+    for col in categorical_features:
+        if col in X_test.columns:
+            X_test[col] = X_test[col].astype("category")
     
     # 平均予測確率を格納する配列を初期化
     test_preds_proba = np.zeros(len(X_test))
@@ -798,38 +823,58 @@ def train_and_evaluate(db_path, input_file, output_path, explanatory_variables, 
         出力CSVファイルのパス
     """
     
+
     try:
-        # setup_directory()
+
+
+        # SQLiteの接続処理をエラーハンドリング付きで実行
+        sqlite_enabled = False
         if db_path:
-            connect_sqllite(db_path)
+            try:
+                connect_sqllite(db_path)
+                sqlite_enabled = True
+            except Exception as e:
+                print(f"SQLite接続に失敗しました: {e}. SQLiteを使用せずに続行します。")
+        
         task_id = None
-        if job_id:
+        if sqlite_enabled and job_id:
             task_id = create_or_update_job_task(job_id, progress_percent="0", preprocess_type=None, error_code=None, error_msg=None, result=json.dumps({}))
-            create_or_update_job(job_id , "0")
+            create_or_update_job(job_id, "0")
+
+        # データの読み込み
         file_path = input_file
         df = read_data(file_path, low_memory=False)
         if df is None:
             raise ValueError(f"ファイル {file_path} の読み込みに失敗しました。")
         
+
         # 入力されたカラム名を取得し、以下該当カラムに適用させる
         explanatory_vars = CONSTANTS["explanatory_variables"]
         
-        exp_cols = [ col.split('_')[0] for col in explanatory_vars ]
+        # 入力された説明変数名からプレフィックス部分（例: "最小使用水量_suido_residence" → "最小使用水量"）を抽出
+        exp_cols = [col.split('_')[0] for col in explanatory_vars]
+
+        # プレフィックスに基づいて、対応するデータフレームのカラムをマッピングする辞書を作成
         explanatory_variables_dict = {}
         for col in exp_cols:
             if "akiya" not in col:
-                tar_colname = [ col901 for col901 in df.columns if col in col901 ]
+                # 'gml_id' の場合は直接対応させる
+                if col == "gml_id":
+                    explanatory_variables_dict[col] = "gml_id"
+                else:
+                    # プレフィックスが部分一致するデータフレーム内のカラムを抽出
+                    tar_colname = [col901 for col901 in df.columns if col in col901]
+                    if len(tar_colname) > 0:
+                        explanatory_variables_dict[col] = tar_colname[0]
+
+        # 特定のカラム（例: '最小使用水量', '平均使用水量'）が辞書に存在しない場合、データフレームから検索してマッピングに追加
+        for col in ['最小使用水量', '平均使用水量', '住定異動年月日', '登記日付']:
+            if col not in explanatory_variables_dict.keys():
+                tar_colname = [col901 for col901 in df.columns if col in col901]
                 if len(tar_colname) > 0:
                     explanatory_variables_dict[col] = tar_colname[0]
 
-        CONSTANTS['explanatory_variables'] = [ explanatory_variables_dict[val] for val in explanatory_variables_dict.keys()] + [CONSTANTS['outcome_variable'],'gml_id']
-        explanatory_variables = [ explanatory_variables_dict[val] for val in explanatory_variables_dict.keys()] + [CONSTANTS['outcome_variable'],'gml_id']
-        
-        for col in ['最小使用水量', '平均使用水量','住定異動年月日', '登記日付']:
-            if col not in explanatory_variables_dict.keys():
-                tar_colname = [ col901 for col901 in df.columns if col in col901 ]
-                if len(tar_colname) > 0:
-                    explanatory_variables_dict[col] = tar_colname[0]
+
         
         # 建物構造名称カラム, 登記日付の追加
         adding_col_dict = {
@@ -848,20 +893,39 @@ def train_and_evaluate(db_path, input_file, output_path, explanatory_variables, 
                         df[explanatory_variables_dict[adding_col_name]] = np.nan
                 else:
                     explanatory_variables_dict[adding_col_name] = check_tar_col[0]
-        
-        # 異常値除去
-        condition = ((df['akiya_result_cleaned_flag'] == 1) & (df[explanatory_variables_dict["最小使用水量"]] > 20))
-        df = df[~condition].reset_index(drop=True)
 
-        condition = ((df['akiya_result_cleaned_flag'] == 0) & (df[explanatory_variables_dict["最小使用水量"]] < 2))
-        df = df[~condition].reset_index(drop=True)
+        # 異常値除去
+        #condition = ((df['akiya_result_cleaned_flag'] == 1) & (df[explanatory_variables_dict["最小使用水量"]] > 20))
+        #df = df[~condition].reset_index(drop=True)
+
+        #condition = ((df['akiya_result_cleaned_flag'] == 0) & (df[explanatory_variables_dict["最小使用水量"]] < 2))
+        #df = df[~condition].reset_index(drop=True)
         
-        condition = ((df['akiya_result_cleaned_flag'] == 0) & (df[explanatory_variables_dict["平均使用水量"]] == 0))
+        #condition = ((df['akiya_result_cleaned_flag'] == 0) & (df[explanatory_variables_dict["平均使用水量"]] == 0))
+        #df = df[~condition].reset_index(drop=True)
+
+
+        # '世帯コード'の重複を確認し、重複するレコードを削除
+        duplicates = df['世帯コード'].duplicated(keep=False)  # keep=False で全重複行をTrueとする
+        df = df[~duplicates].reset_index(drop=True)
+        condition = (df['住定期間'] < 1000)
         df = df[~condition].reset_index(drop=True)
+        # '正規化住所'の重複を確認し、3件以上の重複がある場合、該当するすべてのレコードを削除
+        duplicate_counts = df['正規化住所'].value_counts()  # 各値の出現回数を取得
+        to_remove = duplicate_counts[duplicate_counts >= 2].index  # 3件以上の値を取得
+        df = df[~df['正規化住所'].isin(to_remove)].reset_index(drop=True)  # 該当値を除外
+
+        # modify dataset which has irreguralar cases
+        df.loc[df['最大使用水量_suido_residence'] > 30, '閉栓フラグ_suido_residence'] = 0
+        df.loc[df['最大使用水量_suido_residence'] > 30, 'akiya_result_cleaned_flag'] = 0
+        df.loc[(df['世帯人数'] == 1) & (df['最大年齢'] > 95), 'akiya_result_cleaned_flag'] = 1
+        df.loc[df['最小使用水量_suido_residence'] > 150, 'akiya_result_cleaned_flag'] = 0
+        df.loc[df['最大使用水量_suido_residence'] < 3, 'akiya_result_cleaned_flag'] = 1
+
         
-        if job_id:
-            create_or_update_job_task(job_id, progress_percent="10", preprocess_type=None, error_code=None, error_msg=None, result=json.dumps({}), id= task_id)
-            create_or_update_job(job_id , "10")
+        if sqlite_enabled and job_id:
+            create_or_update_job_task(job_id, progress_percent="10", preprocess_type=None, error_code=None, error_msg=None, result=json.dumps({}), id=task_id)
+            create_or_update_job(job_id, "10")
         learning_data = prepare_learning_data(df, explanatory_variables, explanatory_variables_dict)
         
         params = {
@@ -880,24 +944,25 @@ def train_and_evaluate(db_path, input_file, output_path, explanatory_variables, 
             'bagging_freq': int(bagging_freq),
             'min_data_in_leaf': int(min_data_in_leaf),
         }
-        if job_id:
+        if sqlite_enabled and job_id:
             create_or_update_job_task(job_id, progress_percent="20", preprocess_type=None, error_code=None, error_msg=None, result=json.dumps({}), id= task_id)
             create_or_update_job(job_id , "20")
         train_df, test_df = split_data(learning_data, params, explanatory_variables_dict)
         
-        if job_id:
+        if sqlite_enabled and job_id:
             create_or_update_job_task(job_id, progress_percent="30", preprocess_type=None, error_code=None, error_msg=None, result=json.dumps({}), id= task_id)
             create_or_update_job(job_id , "30")
-        models, oof_pred, feature_importances_dict_train, model_zip_file_path = train_lgb_with_optuna(train_df, params, citycode_value, targetyear_value, output_path, job_id, task_id)
+        models, oof_pred, feature_importances_dict_train, model_zip_file_path = train_lgb_with_optuna(train_df, params, citycode_value, targetyear_value, output_path, job_id, task_id, sqlite_enabled)
         
-        if job_id:
+        if sqlite_enabled and job_id:
             create_or_update_job_task(job_id, progress_percent="80", preprocess_type=None, error_code=None, error_msg=None, result=json.dumps({}), id= task_id)
             create_or_update_job(job_id , "80")
         pred, score_dict, feature_importances_dict_test, feature_importance_plot = evaluate_models_on_test(test_df, models, params)
         
-        if job_id:
+        if sqlite_enabled and job_id:
             create_or_update_job_task(job_id, progress_percent="90", preprocess_type=None, error_code=None, error_msg=None, result=json.dumps({}), id= task_id)
             create_or_update_job(job_id , "90")
+
         if citycode_value is not None:
             output_file = f'{output_path}/data/{citycode_value}/E021/outputs/D902.csv'
             feature_importance_plot = f'{output_path}/data/{citycode_value}/E021/outputs/{feature_importance_plot}'
@@ -911,7 +976,7 @@ def train_and_evaluate(db_path, input_file, output_path, explanatory_variables, 
         # Save evaluation metrics and feature importances
         data_zip_file_path = save_metrics_and_importances(score_dict, feature_importances_dict_train, citycode_value, targetyear_value, output_path)
 
-        if job_id:
+        if sqlite_enabled and job_id:
             create_or_update_job_task(job_id, progress_percent="95", preprocess_type=None, error_code=None, error_msg=None, result=json.dumps({}), id= task_id)
             create_or_update_job(job_id , "95")
         # Create a string with the evaluation results
@@ -940,11 +1005,12 @@ def train_and_evaluate(db_path, input_file, output_path, explanatory_variables, 
         }
         
         # Update progress to complete
-        if job_id:
+        if sqlite_enabled and job_id:
             create_or_update_job_task(job_id, progress_percent="100", preprocess_type=None, error_code=None, error_msg=None, result=json.dumps(result, ensure_ascii=False), id= task_id, is_finish=True)
             create_or_update_job(job_id , "complete")
 
         return result_str, feature_importance_plot, output_file, model_zip_file_path, data_zip_file_path
+
     except Exception as e:
         print(e)
         if ERROR_CODE is None:
@@ -952,6 +1018,7 @@ def train_and_evaluate(db_path, input_file, output_path, explanatory_variables, 
         if task_id is not None:
             create_or_update_job_task(job_id, progress_percent="", preprocess_type=None, error_code=ERROR_CODE, error_msg=ERROR_MSG, result=json.dumps({}), id= task_id, is_finish=True)
         raise Exception("空き家判定の学習モデル構築中にエラーが発生しました。")
+
     
 def set_error(value, param_st1=None, param_st2=None):
     global ERROR_CODE

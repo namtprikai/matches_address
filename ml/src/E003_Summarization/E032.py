@@ -369,8 +369,10 @@ class Summarization:
         # summerized_gdf.to_csv(self.OUTPUT_PATH, encoding="utf-8-sig", index=False)
 
         # insert sqlite
-        # 今は一時的に停止
-        self.insert_data_set_detail_areas(summerized_gdf, self.data_set_result_id, self.key_column)
+        if self.data_set_result_id != 0:
+            self.insert_data_set_detail_areas(summerized_gdf, self.data_set_result_id, self.key_column)
+        else:
+            summerized_gdf.to_csv(self.OUTPUT_PATH, encoding="utf-8-sig", index=False)
 
 
 @staticmethod

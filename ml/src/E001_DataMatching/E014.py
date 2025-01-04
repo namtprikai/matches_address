@@ -13,6 +13,7 @@ import sys
 from typing import List, Tuple
 import io
 import os
+import re
 import argparse
 import chardet
 import pandas as pd
@@ -251,6 +252,10 @@ def embedding_address(main_csv: io.BytesIO | str, sub_csv: io.BytesIO | str, mai
             sub_csv_name = os.path.splitext(os.path.basename(sub_csv.name))[0]
         else:
             sub_csv_name = os.path.splitext(os.path.basename(sub_csv))[0]
+
+        # アンダーバーと数字のパターンを削除
+        sub_csv_name = re.sub(r'_\d+$', '', sub_csv_name)
+
         
         # カラム名にファイル名を付与
         sub_df.columns = [f"{col}_{sub_csv_name}" if col != sub_column else col for col in sub_df.columns]
@@ -424,12 +429,12 @@ def embedding_address(main_csv: io.BytesIO | str, sub_csv: io.BytesIO | str, mai
         else:
             threshold_match_ratio = f'結合元データとの閾値以上結合割合: {merged_rows / data_rows * 100:.2f}%'
         sub_complete_match_ratio = f'結合先データとの完全一致割合: {merged_rows / sub_data_rows * 100:.2f}%'
-        # sub_threshold_match_ratio = f'結合先データとの閾値以上結合割合: {(unique_row) / sub_data_rows * 100:.2f}%'
+        
         if ngram == 0:
             ngram_rows = 0
             threshold_match_ratio = complete_match_ratio
         res = {
-            'joining_rate': (merged_rows + ngram_rows) / data_rows,
+            'joining_rate': (merged_rows + ngram_rows) / data_rows * 100,
             'input_source': input_source
         }
         if job_id:
@@ -483,24 +488,6 @@ def set_error(value, param_st1=None, param_st2=None):
         ERROR_MSG = value['message'].format(param_st1=param_st1)
     else:
         ERROR_MSG = value['message']
-
-def normalize_dates(df, column, formats=['%Y/%m/%d', '%d/%m/%Y', '%Y-%m-%d', '%m/%d/%Y', '%Y%m%d']):
-    # Initialize the temporary column with NaN values
-    temp_column = f'{column}_normalized'
-    df[temp_column] = np.nan
-
-    # Try the provided formats on the invalid values
-    for fmt in formats:
-        mask = df[temp_column].isna()
-        df.loc[mask, temp_column] = pd.to_datetime(
-            df.loc[mask, column], format=fmt, errors='coerce'
-        )
-
-    # Remove the time portion and keep only the date
-    df[temp_column] = pd.to_datetime(df[temp_column], errors='coerce')
-    df[column] = df[temp_column]
-    
-    return df.drop(f'{column}_normalized',axis=1)
 
 def main():
     parser = argparse.ArgumentParser(description="E014 - テキストマッチング機能")

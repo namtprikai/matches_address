@@ -52,7 +52,7 @@ def on_submit(citycode_value, targetyear_value, threshold):
     required_features = [
         '世帯人数', '15歳未満人数', '15歳以上64歳以下人数', 
         '65歳以上人数', '15歳未満構成比', '15歳以上64歳以下構成比', '65歳以上構成比', '最大年齢', '最小年齢', '男女比', 
-        '住定期間', '水道使用量変化率_suido_residence_{}'.format(targetyear_value), '最大使用水量_suido_residence_{}'.format(targetyear_value), '合計使用水量_suido_residence_{}'.format(targetyear_value), '閉栓フラグ_suido_residence_{}'.format(targetyear_value), '構造名称_touki_residence', 
+        '住定期間', '水道使用量変化率_suido_residence', '最大使用水量_suido_residence', '合計使用水量_suido_residence', '閉栓フラグ_suido_residence', '構造名称_touki_residence', 
         '登記日付_touki_residence'
     ]
     outcome_variable = 'akiya_result_cleaned_flag'
@@ -64,7 +64,6 @@ def on_submit(citycode_value, targetyear_value, threshold):
         , output_path
         , required_features
         , outcome_variable
-        , targetyear_value
     )
 
 if __name__ == "__main__":
@@ -82,7 +81,7 @@ if __name__ == "__main__":
                 citycode = gr.Dropdown(
                     label="市区町村コードを選択（23201:豊橋市、23211:豊田市）", 
                     choices=["23201", "23211"], 
-                    value="23211", 
+                    value="23201", 
                     interactive=True
                 )
             with gr.Column():

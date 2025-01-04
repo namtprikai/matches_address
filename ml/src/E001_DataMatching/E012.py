@@ -559,7 +559,7 @@ def handle_optional_file(file, key, main_df, main_address_col, INPUT_COLUMNS):
     任意のファイルが指定されなかった場合、ダミーデータを生成し、ファイルが指定された場合はread_fileを使用する
     """
     if file is None or not os.path.exists(file):
-        print(f"{key}データが入力されていません。ダミーデータを生成します。")
+        print(f"{key}データが入力されていません。ダミーデータを生成します。 - ${file}")
         return generate_dummy_data(main_df, main_address_col, INPUT_COLUMNS[key])
     else:
         return read_file(file, key)  # read_file関数を使用してファイルを読み込む
@@ -605,8 +605,7 @@ def generate_dummy_data(main_df, main_address_col, DATA_COLUMNS):
             output_col = DATA_COLUMNS[col]
             # default_values辞書にあればその値、なければ"1"を使う
             dummy_data[output_col] = [default_values.get(col, '1')] * len(main_df)
-    dummy_data[main_address_col] = main_df[main_address_col]  # 住所はメインデータの住所をコピー
-    
+
     return pd.DataFrame(dummy_data)
 
 

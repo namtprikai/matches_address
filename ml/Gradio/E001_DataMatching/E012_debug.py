@@ -83,7 +83,7 @@ def process_data_gradio(main_data_type,
     すべてのデータファイルを処理する
     """
 
-    suido_status_file = "data/{}/E012/inputs/suido_status_{}.csv".format(citycode, targetyear)
+    suido_status_file = "data/{}/E012/inputs/suido_status.csv".format(citycode)
     suido_use_file = "data/{}/E012/inputs/suido_use_{}.csv".format(citycode, targetyear)
     juki_file = "data/{}/E012/inputs/juki_{}.csv".format(citycode, targetyear)
     touki_file = "data/{}/E012/inputs/touki.csv".format(citycode)
@@ -98,6 +98,7 @@ def process_data_gradio(main_data_type,
         akiya_result_ID, akiya_result_address, akiya_result_lat, akiya_result_lon,
         geocoding_address, geocoding_lat, geocoding_lon
     )
+    set_output_column()
 
     # メインデータを決定
     if main_data_type == "suido_status":
@@ -200,7 +201,7 @@ with gr.Blocks() as demo:
             citycode = gr.Dropdown(
                 label="市区町村コードを選択（23201:豊橋市、23211:豊田市）", 
                 choices=["23201", "23211"], 
-                value="23211", 
+                value="23201", 
                 interactive=True
             )
 
@@ -217,13 +218,14 @@ with gr.Blocks() as demo:
             suido_number_dropdown = gr.Dropdown(label="水道番号", choices=["水道番号"], value="水道番号")
             usage_status_dropdown = gr.Dropdown(label="開閉栓区分", choices=["開閉栓区分"], value="開閉栓区分")
             suido_status_address_dropdown = gr.Dropdown(label="設置場所", choices=["設置場所"], value="設置場所")
+            #suido_status_address_dropdown = gr.Dropdown(label="設置場所", choices=["住所"], value="住所")
             usage_start_date_dropdown = gr.Dropdown(label="使用開始日", choices=["使用開始日"], value="使用開始日")
             usage_end_date_dropdown = gr.Dropdown(label="使用中止日", choices=["使用中止日"], value="使用中止日")
 
         with gr.Column():
             suido_number2_dropdown = gr.Dropdown(label="水道番号のカラム名", choices=["水道番号"], value="水道番号")
             meter_reading_date_dropdown = gr.Dropdown(label="検針年月日のカラム名", choices=["検針年月日"], value="検針年月日")
-            suido_usage_dropdown = gr.Dropdown(label="水道使用量のカラム名", choices=["水道使用量"], value="水道使用量")
+            suido_usage_dropdown = gr.Dropdown(label="水道使用量のカラム名", choices=["使用水量"], value="使用水量")
 
     with gr.Row():
         with gr.Column():

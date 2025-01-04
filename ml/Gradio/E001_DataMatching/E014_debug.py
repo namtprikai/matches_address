@@ -43,20 +43,24 @@ def generate_file_paths(citycode_value, targetyear_value, targedataset):
         main_csv = f'./data/{citycode_value}/E013/outputs/juki_residence_{targetyear_value}.csv'
         sub_csv = f'./data/{citycode_value}/E013/outputs/suido_residence_2023.csv'
         output_path = f'./data/{citycode_value}/E014/outputs/matched_data.csv'
+        input_source = ["住基", "水道"]
     elif targedataset == "結果1-登記":
         main_csv = f'./data/{citycode_value}/E014/outputs/matched_data.csv'
         sub_csv = f'./data/{citycode_value}/E013/outputs/touki_residence.csv'
         output_path = f'./data/{citycode_value}/E014/outputs/matched_data.csv'
+        input_source = ["住基", "建物情報"]
     elif targedataset == "結果2-空き家調査":
         main_csv = f'./data/{citycode_value}/E014/outputs/matched_data.csv'
         sub_csv = f'./data/{citycode_value}/E012/outputs/akiya_result_cleaned.csv'
         output_path = f'./data/{citycode_value}/E014/outputs/matched_data.csv'
+        input_source = ["住基", "空き家調査"]
     elif targedataset == "結果3-ジオコーディング":
         main_csv = f'./data/{citycode_value}/E014/outputs/matched_data.csv'
         sub_csv = f'./data/{citycode_value}/E012/outputs/geocoding_cleaned.csv'
         output_path = f'./data/{citycode_value}/E014/outputs/matched_data.csv'
+        input_source = ["住基", "ジオコーディングデータ"]
 
-    return main_csv, sub_csv, output_path
+    return main_csv, sub_csv, output_path, input_source
 
 def update_column_dropdowns_and_radio_buttons(main_csv: io.BytesIO, sub_csv: io.BytesIO) -> Tuple[gr.Dropdown, gr.Dropdown, gr.Radio]:
     """
@@ -89,7 +93,7 @@ if __name__ == "__main__":
                 citycode = gr.Dropdown(
                     label="市区町村コードを選択（23201:豊橋市、23211:豊田市）", 
                     choices=["23201", "23211"], 
-                    value="23211", 
+                    value="23201", 
                     interactive=True
                 )
                 
@@ -108,12 +112,12 @@ if __name__ == "__main__":
         
         file_input_1 = gr.File(
             label="csvファイルを入力してください",
-            value=f'./data/23211/E013/outputs/juki_residence_2023.csv',
+            value=f'./data/23201/E013/outputs/juki_residence_2023.csv',
             elem_id="csv"
         )
         file_input_2 = gr.File(
             label="csvファイルを入力してください",
-            value=f'./data/23211/E013/outputs/suido_residence_2023.csv',
+            value=f'./data/23201/E013/outputs/suido_residence_2023.csv',
             elem_id="csv"
         )
 
@@ -137,7 +141,7 @@ if __name__ == "__main__":
             os.makedirs(f'./data/{citycode_value}/E014/outputs/', exist_ok=True)
 
             # ファイルパスを生成
-            main_csv, sub_csv, output_path = generate_file_paths(citycode_value, targetyear_value, targedataset_value)
+            main_csv, sub_csv, output_path, input_source = generate_file_paths(citycode_value, targetyear_value, targedataset_value)
 
             # 名寄せを実行
             return embedding_address(
@@ -149,7 +153,10 @@ if __name__ == "__main__":
                 output_path,
                 ngram_size,
                 similarity_threshold,
-                1000
+                1000,
+                None,
+                None,
+                input_source
             )
 
         match_button.click(

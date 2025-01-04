@@ -99,8 +99,38 @@ def gradio_interface(input_file,test_size, n_splits, undersample, undersample_ra
         出力CSVファイルのパス
     """
     # データ処理を実行
-    result_str, feature_importances_file , output_file, model_zip_file_path, data_zip_file_path = train_and_evaluate(input_file, test_size, n_splits, undersample, undersample_ratio, threshold, hyperparameter_flag, n_trials, lambda_l1, lambda_l2, num_leaves, feature_fraction, bagging_fraction, bagging_freq, min_data_in_leaf, citycode_value, targetyear_value)
- 
+    explanatory_variables = [
+        'gml_id', '世帯コード', '世帯人数', '15歳未満人数', '15歳以上64歳以下人数', 
+        '65歳以上人数', '15歳未満構成比', '15歳以上64歳以下構成比', '65歳以上構成比', '男女比', 
+        '住定期間', '水道番号_suido_residence', '水道使用量変化率_suido_residence', '最大使用水量_suido_residence', '平均使用水量_suido_residence', '閉栓フラグ_suido_residence', '構造名称_touki_residence', '登記日付_touki_residence', 'akiya_result_cleaned_flag'
+    ]
+    #result_str, feature_importances_file , output_file, model_zip_file_path, data_zip_file_path = train_and_evaluate(input_file, test_size, n_splits, undersample, undersample_ratio, threshold, hyperparameter_flag, n_trials, lambda_l1, lambda_l2, num_leaves, feature_fraction, bagging_fraction, bagging_freq, min_data_in_leaf, citycode_value, targetyear_value, job_id=333)
+    result_str, feature_importances_file, output_file, model_zip_file_path, data_zip_file_path = train_and_evaluate(
+        db_path=None,
+        input_file=input_file,
+        output_path="./",
+        explanatory_variables=explanatory_variables,
+        test_size=test_size,
+        n_splits=n_splits,
+        undersample=undersample,
+        undersample_ratio=undersample_ratio,
+        threshold=threshold,
+        hyperparameter_flag=hyperparameter_flag,
+        n_trials=n_trials,
+        lambda_l1=lambda_l1,
+        lambda_l2=lambda_l2,
+        num_leaves=num_leaves,
+        feature_fraction=feature_fraction,
+        bagging_fraction=bagging_fraction,
+        bagging_freq=bagging_freq,
+        min_data_in_leaf=min_data_in_leaf,
+        citycode_value=citycode_value,
+        targetyear_value=targetyear_value,
+        job_id=333
+    )
+
+
+    
     return result_str, feature_importances_file, output_file, model_zip_file_path, data_zip_file_path
 
 if __name__ == "__main__":
@@ -114,7 +144,7 @@ if __name__ == "__main__":
                 citycode = gr.Dropdown(
                     label="市区町村コードを選択（23201:豊橋市、23211:豊田市）", 
                     choices=["23201", "23211"], 
-                    value="23211", 
+                    value="23201", 
                     interactive=True
                 )
                 

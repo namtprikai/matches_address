@@ -13,6 +13,7 @@ import chardet
 import zipfile 
 import numpy as np
 import pandas as pd
+import re
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
 async_tasks_path = os.path.join(current_dir, '..', 'async_tasks')
@@ -251,7 +252,7 @@ def predict(models, new_data, required_features, threshold):
 
     return test_preds, test_preds_proba
 
-def insert_sqlite_and_export(input_data, data_set_result_id):
+def insert_sqlite(input_data, data_set_result_id):
     """
     指定されたデータをSQLiteデータベースに挿入し、同時にインポート可能な形式でファイルを出力する
 
@@ -421,10 +422,17 @@ def process_and_predict(input_folder, input_file, model_directory, threshold, ou
     try:
         process = (process/7)
         process_init = process
+        # SQLiteの接続処理をエラーハンドリング付きで実行
+        sqlite_enabled = False
         if db_path:
-            connect_sqllite(db_path)
+            try:
+                connect_sqllite(db_path)
+                sqlite_enabled = True
+            except Exception as e:
+                print(f"SQLite接続に失敗しました: {e}. SQLiteを使用せずに続行します。")
+
         task_id = None
-        if job_id:
+        if sqlite_enabled and job_id:
             task_id = create_or_update_job_task(job_id, progress_percent="0", preprocess_type=None, error_code=None, error_msg=None, result=json.dumps({}))
             create_or_update_job(job_id, process)
             process += process_init
@@ -436,7 +444,19 @@ def process_and_predict(input_folder, input_file, model_directory, threshold, ou
         print("入力データを読み込み中...")
         input_path = os.path.join(input_folder, input_file)
         input_data = read_csv(input_path)
-        if job_id:
+
+        # '世帯コード'の重複を確認し、重複するレコードを削除
+        duplicates = input_data['世帯コード'].duplicated(keep=False)  # keep=False で全重複行をTrueとする
+        input_data = input_data[~duplicates].reset_index(drop=True)
+        condition = (input_data['住定期間'] < 1000)
+        input_data = input_data[~condition].reset_index(drop=True)
+
+        # '正規化住所'の重複を確認し、3件以上の重複がある場合、該当するすべてのレコードを削除
+        duplicate_counts = input_data['正規化住所'].value_counts()  # 各値の出現回数を取得
+        to_remove = duplicate_counts[duplicate_counts >= 2].index  # 3件以上の値を取得
+        input_data = input_data[~input_data['正規化住所'].isin(to_remove)].reset_index(drop=True)  # 該当値を除外
+        
+        if sqlite_enabled and job_id:
             create_or_update_job_task(job_id, progress_percent="20", preprocess_type=None, error_code=None, error_msg=None, result=json.dumps({}), id= task_id)
             create_or_update_job(job_id, process)
             process += process_init
@@ -451,15 +471,23 @@ def process_and_predict(input_folder, input_file, model_directory, threshold, ou
         explanatory_vars = required_features
         
         exp_cols = [ col.split('_')[0] for col in explanatory_vars ]
+
+        
         explanatory_variables_dict = {}
         for col in exp_cols:
             if "akiya" not in col:
-                tar_colname = [ col901 for col901 in prediction_data.columns if col in col901 ]
-                if len(tar_colname) > 0:
-                    explanatory_variables_dict[col] = tar_colname[0]
-                
+                # 'gml_id' の場合は直接対応させる
+                if col == "gml_id":
+                    explanatory_variables_dict[col] = "gml_id"
+                else:
+                    # プレフィックスが部分一致するデータフレーム内のカラムを抽出
+                    tar_colname = [col901 for col901 in prediction_data.columns if col in col901]
+                    if len(tar_colname) > 0:
+                        explanatory_variables_dict[col] = tar_colname[0]
+    
+        # update required_features
         required_features = [ explanatory_variables_dict[val] for val in explanatory_variables_dict.keys()] 
-        
+
         for col in ['最小使用水量','平均使用水量','住定異動年月日','登記日付']:
             if col not in explanatory_variables_dict.keys():
                 tar_colname = [ col901 for col901 in prediction_data.columns if col in col901 ]
@@ -486,14 +514,14 @@ def process_and_predict(input_folder, input_file, model_directory, threshold, ou
             prediction_data[explanatory_variables_dict["構造名称"]] = prediction_data[explanatory_variables_dict["構造名称"]].astype("category")
 
 
-        if job_id:
+        if sqlite_enabled and job_id:
             create_or_update_job_task(job_id, progress_percent="30", preprocess_type=None, error_code=None, error_msg=None, result=json.dumps({}), id= task_id)
             create_or_update_job(job_id, process)
             process += process_init
         # 訓練済みモデルの読み込み
         print("訓練済みモデルを読み込み中...")
         models = load_models(model_directory)
-        if job_id:
+        if sqlite_enabled and job_id:
             create_or_update_job_task(job_id, progress_percent="50", preprocess_type=None, error_code=None, error_msg=None, result=json.dumps({}), id= task_id)
             create_or_update_job(job_id, process)
             process += process_init
@@ -501,14 +529,14 @@ def process_and_predict(input_folder, input_file, model_directory, threshold, ou
         print("特徴量をチェック中...")
         prediction_data, features_match, message = check_features(prediction_data, required_features, outcome_variable)
         if not features_match:
-            if job_id:
+            if sqlite_enabled and job_id:
                 raise
             return message, None
 
         # 予測の実行
         print("予測中...")
         test_preds, test_preds_proba = predict(models, prediction_data, required_features, threshold)
-        if job_id:
+        if sqlite_enabled and job_id:
             create_or_update_job_task(job_id, progress_percent="70", preprocess_type=None, error_code=None, error_msg=None, result=json.dumps({}), id= task_id)
             create_or_update_job(job_id, process)
             process += process_init
@@ -519,12 +547,13 @@ def process_and_predict(input_folder, input_file, model_directory, threshold, ou
         input_data['predicted_label'] = test_preds
         input_data['predicted_probability'] = test_preds_proba
         input_data['geometry'] = geometry_data
-        output_dir = output_file.replace("D902.csv", "")
+        output_dir = re.sub(r"D902.*", "", output_file)
         os.makedirs(output_dir, exist_ok=True)
 
-        #insert SQLite
-        insert_sqlite_and_export(input_data, data_set_result_id)
-        if job_id:
+        if sqlite_enabled and job_id:
+            #insert SQLite
+            insert_sqlite(input_data, data_set_result_id)
+
             create_or_update_job_task(job_id, progress_percent="90", preprocess_type=None, error_code=None, error_msg=None, result=json.dumps({}), id= task_id)
             create_or_update_job(job_id, process)
             process += process_init
@@ -536,7 +565,7 @@ def process_and_predict(input_folder, input_file, model_directory, threshold, ou
                 input_data.to_csv(output_file, index=False, encoding=encoding)
                 print(f"ファイルが {encoding} エンコーディングで正常に保存されました: {output_file}")
 
-                if job_id:
+                if sqlite_enabled and job_id:
                     create_or_update_job_task(job_id, progress_percent="100", preprocess_type=None, error_code=None, error_msg=None, result=json.dumps({}), id= task_id, is_finish=True)
                     create_or_update_job(job_id, process)
                     process += process_init
@@ -547,7 +576,7 @@ def process_and_predict(input_folder, input_file, model_directory, threshold, ou
                 # print(f"ファイル {output_file} を {encoding} エンコーディングで保存中にエラーが発生しました: {e}")
 
         # すべてのエンコーディングで保存に失敗した場合のメッセージ
-        if job_id:
+        if sqlite_enabled and job_id:
             raise
         return f"{output_file} への予測結果の保存に失敗しました", None
     except Exception as e:
