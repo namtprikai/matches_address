@@ -305,6 +305,7 @@ export const EditResultViewFields = ({ dataSetTitle }: Props): JSX.Element => {
           >
             {result_views.unit.enumValues.map((item) => {
               // 棒グラフの場合は集計単位を地域に固定する
+              // TODO: もっとマシな書き方がありそう
               if (style === "bar") {
                 if (item === "area") {
                   return (
