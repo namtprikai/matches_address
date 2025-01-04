@@ -33,10 +33,12 @@ const useStyles = makeStyles({
 });
 
 type Props = {
-  dataSetTitle: SelectDataSetResult["title"] | undefined;
+  dataSetResultTitle: SelectDataSetResult["title"] | undefined;
 };
 
-export const EditResultViewFields = ({ dataSetTitle }: Props): JSX.Element => {
+export const EditResultViewFields = ({
+  dataSetResultTitle,
+}: Props): JSX.Element => {
   const styles = useStyles();
   const { register, watch, control, setValue } =
     useFormContext<EditResultViewFormType>();
@@ -81,7 +83,7 @@ export const EditResultViewFields = ({ dataSetTitle }: Props): JSX.Element => {
         <Input
           className={styles.fontBlackInput}
           disabled
-          value={dataSetTitle || ""}
+          value={dataSetResultTitle || ""}
         />
       </Field>
       <Field label="ビューのタイトル">
