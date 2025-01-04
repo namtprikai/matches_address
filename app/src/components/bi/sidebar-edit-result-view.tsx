@@ -1,4 +1,3 @@
-import { AddFilled } from "@fluentui/react-icons";
 import {
   makeStyles,
   tokens,
@@ -12,10 +11,11 @@ import {
 import { useAtom } from "jotai";
 import { Suspense, useEffect, useState } from "react";
 import { useFetchDataSetResults } from "../../hooks/use-fetch-data-set-results";
-import { useFetchResultViews } from "../../hooks/use-fetch-result-views";
 import { selectedResultSheetIdAtom } from "../../state/selected-result-sheet-id-atom";
 import { Button } from "../ui/button";
 import { ListDataSetResults } from "../list-data-set-results";
+import { Field } from "../ui/field";
+import { Select } from "../ui/select";
 import { FormEditResultView } from "./form-edit-result-view";
 import { EditResultViewLayoutSort } from "./edit-result-view-layout-sort";
 
@@ -43,49 +43,43 @@ const useStyles = makeStyles({
 export const SidebarEditResultView = (): JSX.Element => {
   const styles = useStyles();
   const [selectedResultSheetId] = useAtom(selectedResultSheetIdAtom);
-  const { data: resultViews } = useFetchResultViews({
-    sheetId: selectedResultSheetId,
-  });
-  const [isAddView, setIsAddView] = useState(true);
 
+  const { data: dataSetResults } = useFetchDataSetResults();
+
+  /** データセットを選択 */
+  const [selectedDataSetId, setSelectedDataSetId] = useState<string>("");
   useEffect(() => {
-    setIsAddView(resultViews?.length === 0);
-  }, [resultViews?.length]);
+    if (dataSetResults) {
+      setSelectedDataSetId(String(dataSetResults[0]?.id));
+    }
+  }, [dataSetResults]);
+  /** */
 
   return (
     <InlineDrawer className={styles.drawer} open>
       <DrawerHeader>
-        <DrawerHeaderTitle
-          action={
-            isAddView ? undefined : (
-              <Button
-                disabled={resultViews?.length === 8}
-                icon={<AddFilled />}
-                onClick={() => {
-                  setIsAddView(true);
-                }}
-                shape="square"
-              />
-            )
-          }
-          className={styles.heading}
-        >
-          ビューを追加
+        <DrawerHeaderTitle className={styles.heading}>
+          ビューの設定
         </DrawerHeaderTitle>
       </DrawerHeader>
       <DrawerBody>
+        <Field label="データセットを選択">
+          <Select
+            onChange={(e) => setSelectedDataSetId(e.target.value)}
+            value={selectedDataSetId}
+          >
+            {dataSetResults?.map((item) => (
+              <option key={item.id} value={String(item.id)}>
+                {item.title || "タイトルなし"}
+              </option>
+            ))}
+          </Select>
+        </Field>
+
         <div className={styles.drawerBodyInner}>
           <Suspense>
-            {isAddView ? (
-              <AddView />
-            ) : (
-              <>
-                <FormEditResultView
-                  selectedResultSheetId={selectedResultSheetId}
-                />
-                <EditResultViewLayoutSort />
-              </>
-            )}
+            <FormEditResultView selectedResultSheetId={selectedResultSheetId} />
+            <EditResultViewLayoutSort />
           </Suspense>
         </div>
       </DrawerBody>

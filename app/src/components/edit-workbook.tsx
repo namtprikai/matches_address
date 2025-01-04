@@ -6,6 +6,7 @@ import { TabListEditResultSheet } from "./tab-list-edit-result-sheet";
 import { SidebarEditResultView } from "./bi/sidebar-edit-result-view";
 import { PreviewResultSheet } from "./preview-result-sheet";
 import { BreadcrumbBase, BreadcrumbItem } from "./ui/breadcrumb";
+import { ButtonCreateView } from "./button-create-view";
 
 const useStyles = makeStyles({
   root: {
@@ -73,6 +74,7 @@ function Content(): JSX.Element {
         ))}
       />
       <h2 className={styles.heading}>{workbook?.title}</h2>
+      <ButtonCreateView />
       <TabListEditResultSheet workbookId={workbook?.id} />
       <div>
         <PreviewResultSheet />
