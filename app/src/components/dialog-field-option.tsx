@@ -23,14 +23,14 @@ const useStyles = makeStyles({
 
 type Props = {
   option: TileViewFieldOption["option"];
-  value: string;
+  initialValue: string;
   onSave: (value: string[]) => void;
 };
 
 export const DialogFieldOption = ({
   option,
   onSave,
-  value: initialValue,
+  initialValue,
 }: Props): JSX.Element => {
   const styles = useStyles();
 
