@@ -7,11 +7,8 @@ import {
   DrawerBody,
 } from "@fluentui/react-components";
 import { useAtom } from "jotai";
-import { Suspense, useEffect, useState } from "react";
-import { useFetchDataSetResults } from "../../hooks/use-fetch-data-set-results";
+import { Suspense } from "react";
 import { selectedResultSheetIdAtom } from "../../state/selected-result-sheet-id-atom";
-import { Field } from "../ui/field";
-import { Select } from "../ui/select";
 import { FormEditResultView } from "./form-edit-result-view";
 import { EditResultViewLayoutSort } from "./edit-result-view-layout-sort";
 import { DebugCreateDatasets } from "./_debug-create-datasets";
@@ -41,17 +38,6 @@ export const SidebarEditResultView = (): JSX.Element => {
   const styles = useStyles();
   const [selectedResultSheetId] = useAtom(selectedResultSheetIdAtom);
 
-  const { data: dataSetResults } = useFetchDataSetResults();
-
-  /** データセットを選択 */
-  const [selectedDataSetId, setSelectedDataSetId] = useState<string>("");
-  useEffect(() => {
-    if (dataSetResults) {
-      setSelectedDataSetId(String(dataSetResults[0]?.id));
-    }
-  }, [dataSetResults]);
-  /** */
-
   return (
     <InlineDrawer className={styles.drawer} open>
       <DrawerHeader>
@@ -60,19 +46,6 @@ export const SidebarEditResultView = (): JSX.Element => {
         </DrawerHeaderTitle>
       </DrawerHeader>
       <DrawerBody>
-        <Field label="データセットを選択">
-          <Select
-            onChange={(e) => setSelectedDataSetId(e.target.value)}
-            value={selectedDataSetId}
-          >
-            {dataSetResults?.map((item) => (
-              <option key={item.id} value={String(item.id)}>
-                {item.title || "タイトルなし"}
-              </option>
-            ))}
-          </Select>
-        </Field>
-
         <div className={styles.drawerBodyInner}>
           <Suspense>
             <FormEditResultView selectedResultSheetId={selectedResultSheetId} />

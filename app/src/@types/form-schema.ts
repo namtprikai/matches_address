@@ -1,6 +1,7 @@
 import { type SelectResultView } from "../schema";
 
 export type EditResultViewFormType = {
+  dataSetResultId: number | undefined;
   title: string;
   style: SelectResultView["style"];
   unit: SelectResultView["unit"];

@@ -51,6 +51,7 @@ export const FormEditResultView = ({
   return (
     <FormComponent
       defaultValues={{
+        dataSetResultId: selectedResultView?.data_set_result_id ?? undefined,
         title: selectedResultView?.title ?? "",
         style: selectedResultView?.style ?? "map",
         unit: selectedResultView?.unit ?? "building",
@@ -84,9 +85,6 @@ function FormComponent({
   const { data: selectedResultView } = useFetchResultView({
     resultViewId: selectedResultViewId,
   });
-  const { data: dataSetResult } = useFetchDataSetResultItem({
-    dataSetResultId: selectedResultView?.data_set_result_id,
-  });
 
   const onSubmit = form.handleSubmit(async (data) => {
     if (!selectedResultViewId) return;
@@ -110,6 +108,7 @@ function FormComponent({
     await window.ipcRenderer.invoke("updateResultViews", {
       resultViewId: selectedResultViewId,
       value: {
+        data_set_result_id: data.dataSetResultId,
         title: data.title?.length === 0 ? undefined : data.title,
         style: data.style,
         unit: data.unit,
@@ -126,7 +125,7 @@ function FormComponent({
   return (
     <FormProvider {...form}>
       <form className={styles.form} onSubmit={onSubmit}>
-        <EditResultViewFields dataSetTitle={dataSetResult?.[0].title} />
+        <EditResultViewFields />
         <EditResultViewFilterFields resultView={selectedResultView} />
         <Button appearance="primary" type="submit">
           入力内容を保存する
