@@ -57,6 +57,8 @@ export const EditResultViewLayoutSort = (): JSX.Element => {
     void mutateResultViews();
   };
 
+  if (!selectedResultView) return <></>;
+
   return (
     <Field label="ビューの並び替え">
       <div className={styles.inner}>

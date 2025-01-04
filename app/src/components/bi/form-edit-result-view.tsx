@@ -121,7 +121,7 @@ function FormComponent({
     void mutateResultViews();
   });
 
-  return (
+  return selectedResultView ? (
     <FormProvider {...form}>
       <form className={styles.form} onSubmit={onSubmit}>
         <EditResultViewFields />
@@ -131,5 +131,7 @@ function FormComponent({
         </Button>
       </form>
     </FormProvider>
+  ) : (
+    <>ビューを選択してください</>
   );
 }

@@ -61,6 +61,7 @@ export const TabListEditResultSheet = ({
           );
           void mutate();
           setSelectedResultSheetId(insertedId);
+          setSelectedResultViewId(undefined);
         }}
         shape="square"
       >
@@ -78,7 +79,7 @@ export const TabListEditResultSheet = ({
             },
           );
           const firstView = resultViews.find((view) => view.layoutIndex === 1);
-          if (!firstView) return;
+          if (!firstView) return setSelectedResultViewId(undefined);
           setSelectedResultViewId(firstView.id);
         }}
         selectedValue={selectedResultSheetId}
