@@ -9,6 +9,8 @@ import { Button } from "./ui/button";
 const useStyles = makeStyles({
   button: {
     border: `1px dashed ${tokens.colorNeutralStroke2}`,
+    padding: tokens.spacingHorizontalL,
+    margin: `${tokens.spacingVerticalM} 0`,
   },
 });
 
@@ -36,8 +38,15 @@ export const ButtonCreateView = (): JSX.Element => {
     setSelectedResultViewId(insertedId);
   };
 
+  const isMaxViewLength = !!resultViews && resultViews.length >= 8;
+
   return (
-    <Button className={styles.button} onClick={handleClick} shape="square">
+    <Button
+      className={styles.button}
+      disabled={isMaxViewLength}
+      onClick={handleClick}
+      shape="rounded"
+    >
       新規でビューを作成
     </Button>
   );
