@@ -270,6 +270,9 @@ export function PreprocessDetail(): JSX.Element {
                       <TableRow key={item.id}>
                         <TableCell className={styles.tableCell}>
                           {PreprocessTypeMap[item.preprocess_type]}
+                          {item.result?.taskResultType === "preprocess"
+                            ? `(${JSON.parse(item.result.input_source).join(", ")})`
+                            : ""}
                         </TableCell>
                         <TableCell className={styles.tableCell}>
                           {PreprocessPercentTypeMap[item.preprocess_type]}
