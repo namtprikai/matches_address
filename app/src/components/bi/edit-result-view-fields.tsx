@@ -1,11 +1,6 @@
 import { useFieldArray, useFormContext } from "react-hook-form";
 import { Fragment } from "react/jsx-runtime";
-import { makeStyles } from "@fluentui/react-components";
-import {
-  result_views,
-  type SelectDataSetResult,
-  type SelectResultView,
-} from "../../schema";
+import { result_views, type SelectResultView } from "../../schema";
 import { LanguageMap } from "../../metadata";
 import { TILE_VIEW_CONFIG } from "../../config/tile-view-config";
 import { getResultViewFieldOption } from "../../utils/get-view-field-option";
@@ -25,16 +20,7 @@ import { useFetchDataSetResults } from "../../hooks/use-fetch-data-set-results";
 import { DynamicParameterInput } from "./dynamic-parameter-input";
 import { FormGroupingResultView } from "./form-grouping-result-view";
 
-const useStyles = makeStyles({
-  fontBlackInput: {
-    "& input": {
-      color: "black",
-    },
-  },
-});
-
 export const EditResultViewFields = (): JSX.Element => {
-  const styles = useStyles();
   const { register, watch, control, setValue } =
     useFormContext<EditResultViewFormType>();
 
