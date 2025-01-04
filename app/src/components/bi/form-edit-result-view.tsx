@@ -126,7 +126,10 @@ function FormComponent({
   return (
     <FormProvider {...form}>
       <form className={styles.form} onSubmit={onSubmit}>
-        <EditResultViewFields dataSetResultTitle={dataSetResult?.[0].title} />
+        <EditResultViewFields
+          dataSetResultId={dataSetResult?.[0].id}
+          dataSetResultTitle={dataSetResult?.[0].title}
+        />
         <EditResultViewFilterFields resultView={selectedResultView} />
         <Button appearance="primary" type="submit">
           入力内容を保存する

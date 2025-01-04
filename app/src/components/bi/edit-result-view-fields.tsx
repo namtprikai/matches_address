@@ -21,6 +21,9 @@ import { FieldLegend } from "../ui/field-legend";
 import { Field } from "../ui/field";
 import { Input } from "../ui/input";
 import { Select } from "../ui/select";
+import { useFetchReferenceDates } from "../../hooks/use-fetch-reference-dates";
+import { type ReferenceDate } from "../../ipc-main-listeners/select-reference-dates";
+import { formatDate } from "../../utils/format-date";
 import { DynamicParameterInput } from "./dynamic-parameter-input";
 import { FormGroupingResultView } from "./form-grouping-result-view";
 
@@ -34,12 +37,16 @@ const useStyles = makeStyles({
 
 type Props = {
   dataSetResultTitle: SelectDataSetResult["title"] | undefined;
+  dataSetResultId: SelectDataSetResult["id"] | undefined;
 };
 
 export const EditResultViewFields = ({
   dataSetResultTitle,
+  dataSetResultId,
 }: Props): JSX.Element => {
   const styles = useStyles();
+  const { data: referenceDates } = useFetchReferenceDates({ dataSetResultId });
+
   const { register, watch, control, setValue } =
     useFormContext<EditResultViewFormType>();
 
@@ -63,6 +70,39 @@ export const EditResultViewFields = ({
         type: "column",
       })),
     );
+  };
+
+  const handleStyleChange = (e: React.ChangeEvent<HTMLSelectElement>): void => {
+    const value = e.target.value as SelectResultView["style"];
+    if (!value) return;
+    // styleに合わせてparameterをリセット
+    resetParametersByStyle(value);
+    // 種類の値を更新
+    setValue("style", value);
+    // 集計単位の初期値を設定する
+    const unit = TILE_VIEW_CONFIG[value].fields[0].option[0].unit;
+    setValue("unit", unit);
+    // parametersに初期値を設定する
+    const defaultParameters = TILE_VIEW_CONFIG[value].fields.map((field) => ({
+      key: field.key,
+      value: field.option[0].value,
+      type: "column" as const,
+    }));
+
+    switch (value) {
+      case "line": {
+        const parameters = getLineParameters(referenceDates);
+        setValue("parameters", [...defaultParameters, ...parameters]);
+        return;
+      }
+      case "pie": {
+        const parameters = getPieParameters();
+        setValue("parameters", [...defaultParameters, ...parameters]);
+        return;
+      }
+      default:
+        setValue("parameters", defaultParameters);
+    }
   };
 
   const groupingFields = fields.filter((field) => {
@@ -92,28 +132,7 @@ export const EditResultViewFields = ({
       <Fieldset>
         <FieldLegend>設定</FieldLegend>
         <Field label="種類">
-          <Select
-            {...register("style")}
-            onChange={(e) => {
-              const value = e.target.value as SelectResultView["style"];
-              if (!value) return;
-              // styleに合わせてparameterをリセット
-              resetParametersByStyle(value);
-              // 種類の値を更新
-              setValue("style", value);
-              // 集計単位の初期値を設定する
-              const unit = TILE_VIEW_CONFIG[value].fields[0].option[0].unit;
-              setValue("unit", unit);
-              // parametersに初期値を設定する
-              setValue("parameters", [
-                ...TILE_VIEW_CONFIG[value].fields.map((field) => ({
-                  key: field.key,
-                  value: field.option[0].value,
-                  type: "column" as const,
-                })),
-              ]);
-            }}
-          >
+          <Select {...register("style")} onChange={handleStyleChange}>
             {result_views.style.enumValues.map((item) => (
               <option key={item} value={item}>
                 {LanguageMap["RESULT_VIEWS_STYLE"][item]}
@@ -335,3 +354,77 @@ export const EditResultViewFields = ({
     </>
   );
 };
+
+function getLineParameters(
+  referenceDates: ReferenceDate[] | undefined,
+): SelectResultView["parameters"] {
+  if (!referenceDates) return [];
+  const result: SelectResultView["parameters"] = referenceDates.map((date) => ({
+    key: `group_${(new Date().getTime() + Math.floor(10000 * Math.random())).toString(16)}` as "group_calc",
+    value: {
+      label: formatDate(date, "YYYY年"),
+      referenceColumnType: "date",
+      operation: "eq",
+      value: date,
+    },
+    type: "group",
+  }));
+
+  return result;
+}
+
+function getPieParameters(): SelectResultView["parameters"] {
+  const values: {
+    label: string;
+    startValue: number;
+    lastValue: number;
+    includesStart: boolean;
+    includesLast: boolean;
+  }[] = [
+    {
+      label: "空き家確率0~25%",
+      startValue: 0,
+      lastValue: 25,
+      includesStart: true,
+      includesLast: true,
+    },
+    {
+      label: "空き家確率25~50%",
+      startValue: 25,
+      lastValue: 50,
+      includesStart: true,
+      includesLast: true,
+    },
+    {
+      label: "空き家確率50~75%",
+      startValue: 50,
+      lastValue: 75,
+      includesStart: true,
+      includesLast: true,
+    },
+    {
+      label: "空き家確率75~100%",
+      startValue: 75,
+      lastValue: 100,
+      includesStart: true,
+      includesLast: true,
+    },
+  ];
+
+  const result: SelectResultView["parameters"] = values.map((value) => ({
+    key: `group_${(new Date().getTime() + Math.floor(10000 * Math.random())).toString(16)}` as "group_calc",
+    value: {
+      label: value.label,
+      referenceColumnType: "float",
+      operation: "range",
+      value: 0,
+      startValue: value.startValue,
+      includesStart: value.includesStart,
+      lastValue: value.lastValue,
+      includesLast: value.includesLast,
+    },
+    type: "group",
+  }));
+
+  return result;
+}
