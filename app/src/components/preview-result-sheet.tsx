@@ -59,6 +59,8 @@ export const PreviewResultSheet = (): JSX.Element | null => {
 
   const resultViewsGridTemplate = (() => {
     switch (data.length) {
+      case 1:
+        return "";
       case 2:
         return styles.template2th;
       case 3:
@@ -66,7 +68,7 @@ export const PreviewResultSheet = (): JSX.Element | null => {
       case 4:
         return styles.template4th;
       default:
-        return "";
+        return styles.template4th;
     }
   })();
 
