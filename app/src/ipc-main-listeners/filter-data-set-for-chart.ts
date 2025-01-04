@@ -208,6 +208,7 @@ export const filterDataSetForChart = ((
         return db
           .select({
             [groupLabel]: sql.raw(`${groupLabel}`),
+            [x]: sql.raw(`${x}`),
             [y]: sql.raw(`${cal}(${y}) as ${y}`),
           })
           .from(subQuery.as("groups"))
