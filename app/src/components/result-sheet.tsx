@@ -55,6 +55,8 @@ export const ResultSheet = ({ sheetId }: Props): JSX.Element => {
   const resultViewsGridTemplate = (() => {
     if (!data) return "";
     switch (data.length) {
+      case 1:
+        return "";
       case 2:
         return styles.template2th;
       case 3:
@@ -62,7 +64,7 @@ export const ResultSheet = ({ sheetId }: Props): JSX.Element => {
       case 4:
         return styles.template4th;
       default:
-        return "";
+        return styles.template4th;
     }
   })();
 
