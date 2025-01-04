@@ -74,11 +74,11 @@ function Content(): JSX.Element {
         ))}
       />
       <h2 className={styles.heading}>{workbook?.title}</h2>
-      <ButtonCreateView />
       <TabListEditResultSheet workbookId={workbook?.id} />
       <div>
         <PreviewResultSheet />
       </div>
+      <ButtonCreateView />
     </div>
   );
 }

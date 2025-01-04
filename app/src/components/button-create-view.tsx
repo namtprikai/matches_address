@@ -1,11 +1,21 @@
 import { useAtom } from "jotai";
+import { makeStyles, tokens } from "@fluentui/react-components";
 import { selectedResultSheetIdAtom } from "../state/selected-result-sheet-id-atom";
 import { useFetchResultViews } from "../hooks/use-fetch-result-views";
 import { useFetchDataSetResults } from "../hooks/use-fetch-data-set-results";
+import { selectedResultViewIdAtom } from "../state/selected-result-view-id-atom";
 import { Button } from "./ui/button";
 
+const useStyles = makeStyles({
+  button: {
+    border: `1px dashed ${tokens.colorNeutralStroke2}`,
+  },
+});
+
 export const ButtonCreateView = (): JSX.Element => {
+  const styles = useStyles();
   const { data: dataSetResults } = useFetchDataSetResults();
+  const [, setSelectedResultViewId] = useAtom(selectedResultViewIdAtom);
   const [selectedResultSheetId] = useAtom(selectedResultSheetIdAtom);
   const { data: resultViews, mutate } = useFetchResultViews({
     sheetId: selectedResultSheetId,
@@ -23,11 +33,12 @@ export const ButtonCreateView = (): JSX.Element => {
       },
     );
     await mutate();
+    setSelectedResultViewId(insertedId);
   };
 
   return (
-    <div>
-      <Button onClick={handleClick}>新規</Button>
-    </div>
+    <Button className={styles.button} onClick={handleClick} shape="square">
+      新規でビューを作成
+    </Button>
   );
 };
