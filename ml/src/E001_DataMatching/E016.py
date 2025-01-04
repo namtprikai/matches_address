@@ -333,7 +333,7 @@ def load_and_process_data(file_path, crs, geometry, file_type, data_type):
         # 無効なジオメトリを除外
         df = df[df['geometry'].notnull()]
         if data_type == 'plateau':
-            df['building_id'] = df['building_id'].astype(str)
+            df['building_id'] = df['buildingID'].astype(str)
         else:
             if 'building_id' not in df.columns:
                 df['building_id'] = df.index + 1
@@ -371,7 +371,7 @@ def load_and_process_data(file_path, crs, geometry, file_type, data_type):
 
         # buildingID列を追加
         if data_type == 'plateau':
-            gdf['building_id'] = gdf['building_id'].astype(str)
+            gdf['building_id'] = gdf['buildingID'].astype(str)
         else:
             if 'building_id' not in gdf.columns:
                 gdf['building_id'] = gdf.index + 1
@@ -389,7 +389,7 @@ def load_and_process_data(file_path, crs, geometry, file_type, data_type):
 
         # buildingID列を追加
         if data_type == 'plateau':
-            gdf['building_id'] = gdf['building_id'].astype(str)
+            gdf['building_id'] = gdf['buildingID'].astype(str)
         else:
             if 'building_id' not in gdf.columns:
                 gdf['building_id'] = gdf.index + 1
