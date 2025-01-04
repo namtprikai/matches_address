@@ -4,6 +4,7 @@ import { useFetchResultViews } from "../hooks/use-fetch-result-views";
 import { selectedResultSheetIdAtom } from "../state/selected-result-sheet-id-atom";
 import { TileResultView } from "./bi/tile-result-view";
 import { EmptyResultViews } from "./empty-result-views";
+import { ButtonCreateView } from "./button-create-view";
 
 const useStyles = makeStyles({
   root: {
@@ -84,6 +85,7 @@ export const PreviewResultSheet = (): JSX.Element | null => {
           />
         ))}
       </div>
+      {data.length !== 0 && <ButtonCreateView />}
     </div>
   );
 };

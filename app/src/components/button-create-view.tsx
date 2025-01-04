@@ -1,5 +1,6 @@
 import { useAtom } from "jotai";
 import { makeStyles, tokens } from "@fluentui/react-components";
+import { AddFilled } from "@fluentui/react-icons";
 import { selectedResultSheetIdAtom } from "../state/selected-result-sheet-id-atom";
 import { useFetchResultViews } from "../hooks/use-fetch-result-views";
 import { useFetchDataSetResults } from "../hooks/use-fetch-data-set-results";
@@ -44,10 +45,11 @@ export const ButtonCreateView = (): JSX.Element => {
     <Button
       className={styles.button}
       disabled={isMaxViewLength}
+      icon={<AddFilled fontSize={16} />}
       onClick={handleClick}
       shape="rounded"
     >
-      新規でビューを作成
+      ビューを追加
     </Button>
   );
 };

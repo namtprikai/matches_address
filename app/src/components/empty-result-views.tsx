@@ -1,16 +1,12 @@
-import {
-  Body1,
-  Body1Stronger,
-  makeStyles,
-  tokens,
-} from "@fluentui/react-components";
+import { Body1Stronger, makeStyles, tokens } from "@fluentui/react-components";
+import { ButtonCreateView } from "./button-create-view";
 
 const useStyles = makeStyles({
   empty: {
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
-    height: "60vh", // 仮
+    height: "60vh",
   },
   emptyContainer: {
     display: "flex",
@@ -40,7 +36,7 @@ export const EmptyResultViews = (): JSX.Element => {
         <img alt="empty" className={styles.emptyImage} src="Graph.png" />
         <div className={styles.emptyText}>
           <Body1Stronger>表示するビューがありません。</Body1Stronger>
-          <Body1>左のメニューからビューを追加しましょう</Body1>
+          <ButtonCreateView />
         </div>
       </div>
     </div>

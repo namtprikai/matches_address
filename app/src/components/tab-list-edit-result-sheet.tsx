@@ -50,7 +50,7 @@ export const TabListEditResultSheet = ({
     <div className={styles.root}>
       <Button
         appearance="subtle"
-        icon={<AddFilled />}
+        icon={<AddFilled fontSize={16} />}
         onClick={async () => {
           const { insertedId } = await window.ipcRenderer.invoke(
             "insertResultSheets",

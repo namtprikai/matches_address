@@ -6,7 +6,6 @@ import { TabListEditResultSheet } from "./tab-list-edit-result-sheet";
 import { SidebarEditResultView } from "./bi/sidebar-edit-result-view";
 import { PreviewResultSheet } from "./preview-result-sheet";
 import { BreadcrumbBase, BreadcrumbItem } from "./ui/breadcrumb";
-import { ButtonCreateView } from "./button-create-view";
 
 const useStyles = makeStyles({
   root: {
@@ -78,7 +77,6 @@ function Content(): JSX.Element {
       <div>
         <PreviewResultSheet />
       </div>
-      <ButtonCreateView />
     </div>
   );
 }
