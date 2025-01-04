@@ -41,7 +41,8 @@ export const EditResultViewFilterFields = ({
 }): JSX.Element => {
   const styles = useStyles();
 
-  const { register, watch, control } = useFormContext<EditResultViewFormType>();
+  const { register, watch, control, setValue } =
+    useFormContext<EditResultViewFormType>();
 
   const { fields, replace } = useFieldArray({
     control,
@@ -100,6 +101,10 @@ export const EditResultViewFilterFields = ({
             value={style === "map" ? "" : year?.start}
             {...register("year.start")}
             disabled={style === "map"}
+            onChange={(e) => {
+              const yearStart = e.target.value;
+              setValue("year", { start: yearStart, end: year?.end });
+            }}
           >
             <option value="">下限なし</option>
             {yearItems?.map((item) => (
@@ -113,6 +118,10 @@ export const EditResultViewFilterFields = ({
             value={style === "map" ? "" : year?.end}
             {...register("year.end")}
             disabled={style === "map"}
+            onChange={(e) => {
+              const yearEnd = e.target.value;
+              setValue("year", { start: year?.start, end: yearEnd });
+            }}
           >
             <option value="">上限なし</option>
             {yearItems?.map((item) => (
