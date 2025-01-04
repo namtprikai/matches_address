@@ -80,6 +80,20 @@ export const DialogFieldOption = ({
             })}
           </DialogContent>
           <DialogActions position="end">
+            <Button
+              onClick={() => {
+                setValue(option.map(({ value }) => value));
+              }}
+            >
+              すべて選択
+            </Button>
+            <Button
+              onClick={() => {
+                setValue([]);
+              }}
+            >
+              すべてクリア
+            </Button>
             <DialogTrigger>
               <Button appearance="primary" onClick={handleClick} size="medium">
                 保存

@@ -16,6 +16,7 @@ export const TILE_VIEW_CONFIG = {
         type: "select", // フィールドの入力方法を指定
         option: [
           // ドロップダウンやセレクトボックスの選択肢を指定
+          { unit: "building", value: "predicted_probability" },
           { unit: "building", value: "household_size" },
           { unit: "building", value: "members_under_15" },
           { unit: "building", value: "members_15_to_64" },
@@ -32,7 +33,6 @@ export const TILE_VIEW_CONFIG = {
           { unit: "building", value: "inland_flooding_risk_depth" },
           { unit: "building", value: "river_flooding_risk_rank" },
           { unit: "building", value: "river_flooding_risk_depth" },
-          { unit: "building", value: "predicted_probability" },
         ],
         grouping: true,
       },
@@ -41,6 +41,7 @@ export const TILE_VIEW_CONFIG = {
         label: "値",
         type: "select",
         option: [
+          { unit: "building", value: "predicted_probability" },
           { unit: "building", value: "household_size" },
           { unit: "building", value: "members_under_15" },
           { unit: "building", value: "members_15_to_64" },
@@ -57,7 +58,6 @@ export const TILE_VIEW_CONFIG = {
           { unit: "building", value: "inland_flooding_risk_depth" },
           { unit: "building", value: "river_flooding_risk_rank" },
           { unit: "building", value: "river_flooding_risk_depth" },
-          { unit: "building", value: "predicted_probability" },
         ],
         grouping: false,
       },
@@ -69,10 +69,7 @@ export const TILE_VIEW_CONFIG = {
         key: "xAxis",
         label: "X軸",
         type: "select",
-        option: [
-          { unit: "building", value: "area_group" },
-          { unit: "building", value: "normalized_address" },
-        ],
+        option: [{ unit: "area", value: "area_group" }],
         grouping: true,
       },
       {
@@ -80,13 +77,10 @@ export const TILE_VIEW_CONFIG = {
         label: "Y軸",
         type: "select",
         option: [
-          { unit: "building", value: "household_size" },
-          { unit: "building", value: "members_under_15" },
-          { unit: "building", value: "members_15_to_64" },
-          { unit: "building", value: "members_over_65" },
-          { unit: "building", value: "percentage_15_to_64" },
-          { unit: "building", value: "percentage_over_65" },
-          { unit: "building", value: "predicted_probability" },
+          { unit: "area", value: "predicted_probability" },
+          { unit: "area", value: "young_population_ratio" },
+          { unit: "area", value: "elderly_population_ratio" },
+          { unit: "area", value: "vacant_house_count" },
         ],
         grouping: false,
       },
@@ -111,13 +105,13 @@ export const TILE_VIEW_CONFIG = {
         label: "Y軸",
         type: "select",
         option: [
+          { unit: "building", value: "predicted_probability" },
           { unit: "building", value: "household_size" },
           { unit: "building", value: "members_under_15" },
           { unit: "building", value: "members_15_to_64" },
           { unit: "building", value: "members_over_65" },
           { unit: "building", value: "percentage_15_to_64" },
           { unit: "building", value: "percentage_over_65" },
-          { unit: "building", value: "predicted_probability" },
         ],
         grouping: false,
       },
@@ -322,7 +316,7 @@ if (import.meta.vitest) {
 
       for (const field of fields) {
         const buildingOptionValues = field.option
-          .filter((option) => option.unit === "building")
+          .filter((option) => option.unit === "area") // 棒グラフの場合は集計単位を地域に固定する
           .map((option) => option.value);
 
         expect(buildingOptionValues).toEqual(

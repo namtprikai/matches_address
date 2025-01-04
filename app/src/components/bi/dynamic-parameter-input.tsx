@@ -75,7 +75,6 @@ export const DynamicParameterInput = forwardRef<
             onChange={props.onChange}
             value={props.value}
           >
-            <option value="">選択してください</option>
             <DynamicColumnOptions
               fieldOption={props.fieldOption}
               type={props.type}

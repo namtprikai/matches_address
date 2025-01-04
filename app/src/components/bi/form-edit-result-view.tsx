@@ -4,7 +4,7 @@ import { makeStyles } from "@fluentui/react-components";
 import { useEffect } from "react";
 import { type EditResultViewFormType } from "../../@types/form-schema";
 import { selectedResultViewIdAtom } from "../../state/selected-result-view-id-atom";
-import { type SelectResultView } from "../../schema";
+import { type SelectResultSheet, type SelectResultView } from "../../schema";
 import { useFetchDataSetResultItem } from "../../hooks/use-fetch-data-set-result-item";
 import { useFetchResultView } from "../../hooks/use-fetch-result-view";
 import { useFetchResultViews } from "../../hooks/use-fetch-result-views";
@@ -23,12 +23,62 @@ export const FormEditResultView = ({
   selectedResultSheetId,
 }: {
   selectedResultSheetId: number | undefined;
-}): JSX.Element => {
-  const styles = useStyles();
+}): JSX.Element | null => {
   const [selectedResultViewId, setSelectedResultViewId] = useAtom(
     selectedResultViewIdAtom,
   );
-  const { data: resultViews, mutate: mutateResultViews } = useFetchResultViews({
+  const { data: resultViews } = useFetchResultViews({
+    sheetId: selectedResultSheetId,
+  });
+  const { data: selectedResultView, isLoading: isSelectedResultViewLoading } =
+    useFetchResultView({
+      resultViewId: selectedResultViewId,
+    });
+  const selectedYear = selectedResultView?.parameters?.find(
+    (parameter) => parameter.key === "year" && parameter.type === "filter",
+  )?.value;
+
+  useEffect(() => {
+    if (!resultViews || resultViews.length === 0) return;
+    const firstView = resultViews.find((view) => view.layoutIndex === 1);
+    setSelectedResultViewId((prev) => prev || firstView?.id);
+  }, [resultViews, setSelectedResultViewId]);
+
+  if (isSelectedResultViewLoading) {
+    return null;
+  }
+
+  return (
+    <FormComponent
+      defaultValues={{
+        title: selectedResultView?.title ?? "",
+        style: selectedResultView?.style ?? "map",
+        unit: selectedResultView?.unit ?? "building",
+        parameters: selectedResultView?.parameters ?? [],
+        year: {
+          start: selectedYear?.start,
+          end: selectedYear?.end,
+        },
+        areas: [],
+      }}
+      selectedResultSheetId={selectedResultSheetId}
+      selectedResultViewId={selectedResultViewId}
+    />
+  );
+};
+
+function FormComponent({
+  defaultValues,
+  selectedResultSheetId,
+  selectedResultViewId,
+}: {
+  defaultValues: EditResultViewFormType;
+  selectedResultSheetId: SelectResultSheet["id"] | undefined;
+  selectedResultViewId: SelectResultView["id"] | undefined;
+}): JSX.Element {
+  const styles = useStyles();
+  const form = useForm<EditResultViewFormType>({ defaultValues });
+  const { mutate: mutateResultViews } = useFetchResultViews({
     sheetId: selectedResultSheetId,
   });
   const { data: selectedResultView } = useFetchResultView({
@@ -37,42 +87,8 @@ export const FormEditResultView = ({
   const { data: dataSetResult } = useFetchDataSetResultItem({
     dataSetResultId: selectedResultView?.data_set_result_id,
   });
-  const methods = useForm<EditResultViewFormType>();
 
-  useEffect(() => {
-    if (!resultViews || resultViews.length === 0) return;
-    const firstView = resultViews.find((view) => view.layoutIndex === 1);
-    setSelectedResultViewId((prev) => prev || firstView?.id);
-  }, [resultViews, setSelectedResultViewId]);
-
-  useEffect(() => {
-    // parametersがスキーマではNotNull()になっているけど最初のデータがない時はnullなので、nullチェックを入れる
-    // FIXME: スキーマをnullableに修正すべきかも
-    const selectedYear = selectedResultView?.parameters?.find(
-      (parameter) => parameter.key === "year" && parameter.type === "filter",
-    )?.value;
-
-    methods.reset({
-      title: selectedResultView?.title ?? "",
-      style: selectedResultView?.style ?? "map",
-      unit: selectedResultView?.unit ?? "building",
-      parameters: selectedResultView?.parameters ?? [],
-      year: {
-        start: selectedYear?.start,
-        end: selectedYear?.end,
-      },
-      areas: [],
-    });
-    methods.setValue("title", selectedResultView?.title ?? "");
-  }, [
-    methods,
-    selectedResultView?.parameters,
-    selectedResultView?.style,
-    selectedResultView?.title,
-    selectedResultView?.unit,
-  ]);
-
-  const onSubmit = methods.handleSubmit(async (data) => {
+  const onSubmit = form.handleSubmit(async (data) => {
     if (!selectedResultViewId) return;
 
     const parameters = data.parameters;
@@ -108,7 +124,7 @@ export const FormEditResultView = ({
   });
 
   return (
-    <FormProvider {...methods}>
+    <FormProvider {...form}>
       <form className={styles.form} onSubmit={onSubmit}>
         <EditResultViewFields dataSetTitle={dataSetResult?.[0].title} />
         <EditResultViewFilterFields resultView={selectedResultView} />
@@ -118,4 +134,4 @@ export const FormEditResultView = ({
       </form>
     </FormProvider>
   );
-};
+}
