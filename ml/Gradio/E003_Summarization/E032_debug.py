@@ -125,12 +125,14 @@ if __name__ == "__main__":
     with gr.Blocks() as iface:
         akiya_pred_file = gr.File(
             label="【D902】空き家判定結果データを入力してください", 
-            value="../E002_Classification/data/23211/E022/outputs/D902_2023.csv",  # デフォルト値を設定
+            #value="../E002_Classification/data/23211/E022/outputs/D902_2023.csv",  # デフォルト値を設定
+            value="../E002_Classification/data/23201/E022/outputs/D902_2023.csv",  # デフォルト値を設定
             file_types=[".zip", ".gpkg", ".geojson", ".csv"]
             )
         spatial_file = gr.File(
             label="【D013】国勢調査小地域データ（町丁・字等）", 
-            value="./data/23211/E032/inputs/国勢調査_小地域R2_23211_豊田市.zip", 
+            #value="./data/23211/E032/inputs/census_polygon_R2_23211_Toyota.zip", 
+            value="./data/23201/E032/inputs/census_polygon_R2_23201_Toyohashi.zip", 
             file_types=[".zip", ".gpkg", ".geojson", ".csv"]
             )
         key_column = gr.Dropdown(

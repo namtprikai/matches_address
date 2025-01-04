@@ -108,7 +108,7 @@ class DataProcessor:
         return result['encoding']
 
     @staticmethod
-    def read_csv(path, **kwargs):
+    def read_data(path, **kwargs):
         """
         CSVファイルまたはテキストファイルを読み込む
         Parameters
@@ -254,35 +254,29 @@ class SuidoProcessor(DataProcessor):
                 self.reference_date = datetime.strptime(self.reference_date, "%Y-%m")
         
         self.START_DATE = (self.reference_date - relativedelta(years=self.SEARCH_PERIOD)).strftime("%Y-%m")
-        self.reference_date = self.reference_date.strftime("%Y-%m")
+        reference_month = self.reference_date.strftime("%Y-%m")  # 月単位に変換
 
         # start_date_水道使用量に対して次の月の値を確認するロジック
         start_date = pd.to_datetime(self.START_DATE)
-        found_start = False  # 値が見つかったかを示すフラグ
-
-        # 繰り返して次の月の値を探す
-        while start_date <= pd.to_datetime(self.reference_date):
+        while start_date <= pd.to_datetime(reference_month):
             next_month_str = start_date.strftime("%Y-%m")
             if next_month_str in df.columns:
-                # 値が見つかった場合はその月の値を設定
                 df["start_date_水道使用量"] = df[next_month_str].fillna(0)
-                found_start = True
                 break
             # 次の月に進む
-            start_date = start_date + relativedelta(months=2)  # 2ヶ月単位で次の月に進む
-
-        if not found_start:
-            df["start_date_水道使用量"] = 0  # 最後まで見つからなかった場合は0を設定
+            start_date += relativedelta(months=1)
+        else:
+            df["start_date_水道使用量"] = 0  # ループを抜けた場合は0
 
         # reference_date_水道使用量に対して前の月の値を確認するロジック
-        if self.reference_date not in df.columns:
-            prev_month = (pd.to_datetime(self.reference_date) - relativedelta(months=1)).strftime("%Y-%m")
+        if reference_month not in df.columns:
+            prev_month = (pd.to_datetime(reference_month) - relativedelta(months=1)).strftime("%Y-%m")
             if prev_month in df.columns:
                 df["reference_date_水道使用量"] = df[prev_month].fillna(0)
             else:
                 df["reference_date_水道使用量"] = 0  # NaNの場合、0に設定
         else:
-            df["reference_date_水道使用量"] = df[self.reference_date].fillna(0)  # NaNを0に置換
+            df["reference_date_水道使用量"] = df[reference_month].fillna(0)  # NaNを0に置換
 
         return df
 
@@ -389,7 +383,8 @@ class SuidoProcessor(DataProcessor):
                     suido_pre_merged.loc[row, 'reference_date_水道使用量'] = 0
 
             if len(new_date_columns) < 1:
-                raise ValueError("基準日が不正です。正シリフォーマットになっているか、もしくは正しい日付となっているかかご確認ください 。")
+                # valueerror -> set_error(ERROR_0000X, path, encoding)
+                raise ValueError("基準日が不正です。正しいフォーマットになっているか、もしくは正しい日付となっているかかご確認ください 。")
             # suido_useに欠損年月がある場合に開始日、終了日の日付を修正(そのほかもデータ期間中の期間に修正)
             df_use = suido_pre_merged.apply(lambda x:self.get_start_base_value(x,missing_month,new_date_columns), axis=1)
         
@@ -401,9 +396,9 @@ class SuidoProcessor(DataProcessor):
 
             # 変化率の計算 (基準日の使用量 / 開始日の使用量)
             df_use["水道使用量変化率"] = df_use.apply(
-            lambda row: (row["start_date_水道使用量"] - row["reference_date_水道使用量"])
-            if row["start_date_水道使用量"] == 0
-            else (row["start_date_水道使用量"] - row["reference_date_水道使用量"])/row["start_date_水道使用量"] , axis=1)
+                lambda row: row["reference_date_水道使用量"] / row["start_date_水道使用量"]
+                if pd.notnull(row["start_date_水道使用量"]) and row["start_date_水道使用量"] != 0
+                else 0, axis=1)
             
             # 出力するカラムを選択
             return df_use[[cols_use["suido_number"], "最大使用水量", "平均使用水量", "最小使用水量", "合計使用水量", "水道使用量変化率"]]
@@ -498,8 +493,8 @@ class SuidoProcessor(DataProcessor):
         
         try:
             # データの読み込み
-            df_suido_use = self.read_csv(self.INPUT_PATHS["suido_use"])
-            df_suido_status = self.read_csv(self.INPUT_PATHS["suido_status"])
+            df_suido_use = self.read_data(self.INPUT_PATHS["suido_use"])
+            df_suido_status = self.read_data(self.INPUT_PATHS["suido_status"])
 
             if df_suido_use is None or df_suido_status is None:
                 return
@@ -529,7 +524,7 @@ class SuidoProcessor(DataProcessor):
             
             # 1住所に異なる水道番号が5以上結びつく住所を排除
             multi_address = df_suido.groupby(cols_status["suido_address"])[cols_status["suido_number"]].nunique()\
-            [df_suido.groupby(cols_status["suido_address"])[cols_status["suido_number"]].nunique()>5].index
+            [df_suido.groupby(cols_status["suido_address"])[cols_status["suido_number"]].nunique()>4].index
             df_suido = df_suido.loc[~df_suido[cols_status["suido_address"]].isin(multi_address)].reset_index(drop=True)  
 
             # df_suido の全てのカラムを確認
@@ -730,7 +725,7 @@ class JukiProcessor(DataProcessor):
 
     def process(self):
         # データの読み込み
-        df_juki = self.read_csv(self.INPUT_PATHS["juki"])
+        df_juki = self.read_data(self.INPUT_PATHS["juki"])
         
         if df_juki is None:
             return
@@ -828,7 +823,7 @@ class TatemonoProcessor(DataProcessor):
             処理結果はCSVファイルとして保存されます
         """
         # データの読み込み
-        df_tatemono = self.read_csv(self.INPUT_PATHS["tatemono"])
+        df_tatemono = self.read_data(self.INPUT_PATHS["tatemono"])
         if df_tatemono is None:
             return
         
