@@ -23,4 +23,3 @@ gradio==4.31.0
 gradio-client==0.16.2
 pyinstaller==6.11.0
 imbalanced-learn==0.12.4
-gdal==3.9.2
