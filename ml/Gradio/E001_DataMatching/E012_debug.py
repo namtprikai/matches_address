@@ -76,7 +76,7 @@ def process_data_gradio(main_data_type,
     suido_number2, meter_reading_date, suido_usage,
     setai_code, juki_address, birth, gender, move_date,
     touki_address, structure, registration_date,
-    akiya_result_ID, akiya_result_address, akiya_result_lat, akiya_result_lon,
+    akiya_result_address,
     geocoding_address, geocoding_lat, geocoding_lon, citycode, targetyear
 ):
     """
@@ -95,7 +95,7 @@ def process_data_gradio(main_data_type,
         suido_number2, meter_reading_date, suido_usage,
         setai_code, juki_address, birth, gender, move_date,
         touki_address, structure, registration_date,
-        akiya_result_ID, akiya_result_address, akiya_result_lat, akiya_result_lon,
+        akiya_result_address,
         geocoding_address, geocoding_lat, geocoding_lon
     )
     set_output_column()
@@ -236,10 +236,7 @@ with gr.Blocks() as demo:
             move_date_dropdown = gr.Dropdown(label="住定異動年月日", choices=["住定異動年月日"], value="住定異動年月日")
 
         with gr.Column():
-            akiya_result_ID_dropdown = gr.Dropdown(label="ID", choices=["ID"], value="ID")
             akiya_result_address_dropdown = gr.Dropdown(label="住所", choices=["住所"], value="住所")
-            akiya_result_lat_dropdown = gr.Dropdown(label="緯度", choices=["緯度"], value="緯度")
-            akiya_result_lon_dropdown = gr.Dropdown(label="経度", choices=["経度"], value="経度")
 
     with gr.Row():
         with gr.Column():
@@ -272,7 +269,7 @@ with gr.Blocks() as demo:
             suido_number2_dropdown, meter_reading_date_dropdown, suido_usage_dropdown,
             setai_code_dropdown, juki_address_dropdown, birth_dropdown, gender_dropdown, move_date_dropdown,
             touki_address_dropdown, structure_dropdown, registration_date_dropdown,
-            akiya_result_ID_dropdown, akiya_result_address_dropdown, akiya_result_lat_dropdown, akiya_result_lon_dropdown,
+            akiya_result_address_dropdown,
             geocoding_address_dropdown, geocoding_lat_dropdown, geocoding_lon_dropdown, citycode, targetyear
         ],
         outputs=[
