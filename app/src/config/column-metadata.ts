@@ -109,7 +109,7 @@ export const AREA_DATASET_COLUMN_METADATA = {
     unit: "棟",
   },
   predicted_probability: {
-    label: "予測確率",
+    label: "空き家確率",
     type: "float",
     groupable: true,
     unit: "%",
@@ -197,7 +197,7 @@ export const BUILDING_DATASET_COLUMN_METADATA = {
     unit: "%",
   },
   predicted_probability: {
-    label: "予測確率",
+    label: "空き家確率",
     type: "float",
     groupable: true,
     unit: "%",
