@@ -3,7 +3,8 @@ import { useAtom } from "jotai";
 import { useFetchResultViews } from "../hooks/use-fetch-result-views";
 import { selectedResultSheetIdAtom } from "../state/selected-result-sheet-id-atom";
 import { TileResultView } from "./bi/tile-result-view";
-import { EmptyResultViews } from "./empty-result-views";
+import { ButtonCreateView } from "./button-create-view";
+import { EmptyEditResultViews } from "./empty-edit-result-views";
 
 const useStyles = makeStyles({
   root: {
@@ -55,10 +56,12 @@ export const PreviewResultSheet = (): JSX.Element | null => {
 
   if (!data) return null;
 
-  if (data.length === 0) return <EmptyResultViews />;
+  if (data.length === 0) return <EmptyEditResultViews />;
 
   const resultViewsGridTemplate = (() => {
     switch (data.length) {
+      case 1:
+        return "";
       case 2:
         return styles.template2th;
       case 3:
@@ -66,7 +69,7 @@ export const PreviewResultSheet = (): JSX.Element | null => {
       case 4:
         return styles.template4th;
       default:
-        return "";
+        return styles.template4th;
     }
   })();
 
@@ -82,6 +85,7 @@ export const PreviewResultSheet = (): JSX.Element | null => {
           />
         ))}
       </div>
+      {data.length !== 0 && <ButtonCreateView />}
     </div>
   );
 };

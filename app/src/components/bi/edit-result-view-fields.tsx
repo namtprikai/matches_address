@@ -1,11 +1,6 @@
 import { useFieldArray, useFormContext } from "react-hook-form";
 import { Fragment } from "react/jsx-runtime";
-import { makeStyles } from "@fluentui/react-components";
-import {
-  result_views,
-  type SelectDataSetResult,
-  type SelectResultView,
-} from "../../schema";
+import { result_views, type SelectResultView } from "../../schema";
 import { LanguageMap } from "../../metadata";
 import { TILE_VIEW_CONFIG } from "../../config/tile-view-config";
 import { getResultViewFieldOption } from "../../utils/get-view-field-option";
@@ -21,32 +16,20 @@ import { FieldLegend } from "../ui/field-legend";
 import { Field } from "../ui/field";
 import { Input } from "../ui/input";
 import { Select } from "../ui/select";
-import { useFetchReferenceDates } from "../../hooks/use-fetch-reference-dates";
+import { useFetchDataSetResults } from "../../hooks/use-fetch-data-set-results";
 import { type ReferenceDate } from "../../ipc-main-listeners/select-reference-dates";
 import { formatDate } from "../../utils/format-date";
+import { useFetchReferenceDates } from "../../hooks/use-fetch-reference-dates";
 import { DynamicParameterInput } from "./dynamic-parameter-input";
 import { FormGroupingResultView } from "./form-grouping-result-view";
 
-const useStyles = makeStyles({
-  fontBlackInput: {
-    "& input": {
-      color: "black",
-    },
-  },
-});
-
 type Props = {
-  dataSetResultTitle: SelectDataSetResult["title"] | undefined;
-  dataSetResultId: SelectDataSetResult["id"] | undefined;
+  dataSetResultId: SelectResultView["data_set_result_id"];
 };
 
 export const EditResultViewFields = ({
-  dataSetResultTitle,
   dataSetResultId,
 }: Props): JSX.Element => {
-  const styles = useStyles();
-  const { data: referenceDates } = useFetchReferenceDates({ dataSetResultId });
-
   const { register, watch, control, setValue } =
     useFormContext<EditResultViewFormType>();
 
@@ -71,6 +54,10 @@ export const EditResultViewFields = ({
       })),
     );
   };
+
+  const { data: referenceDates } = useFetchReferenceDates({
+    dataSetResultId,
+  });
 
   const handleStyleChange = (e: React.ChangeEvent<HTMLSelectElement>): void => {
     const value = e.target.value as SelectResultView["style"];
@@ -117,14 +104,18 @@ export const EditResultViewFields = ({
     (f) => f.key === "group_calc" && f.type === "group_option",
   );
 
+  const { data: dataSetResults } = useFetchDataSetResults();
+
   return (
     <>
-      <Field label="データセット">
-        <Input
-          className={styles.fontBlackInput}
-          disabled
-          value={dataSetResultTitle || ""}
-        />
+      <Field label="データセットを選択">
+        <Select {...register("dataSetResultId")}>
+          {dataSetResults?.map((item) => (
+            <option key={item.id} value={item.id}>
+              {item.title || "タイトルなし"}
+            </option>
+          ))}
+        </Select>
       </Field>
       <Field label="ビューのタイトル">
         <Input placeholder="選択中のビューのタイトル" {...register("title")} />
