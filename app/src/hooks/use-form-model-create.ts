@@ -35,7 +35,7 @@ export const useFormModelCreate = (): UseFormReturn<FormType> => {
         advanced: {
           test_size: 0.3,
           n_splits: 3,
-          undersample: true,
+          undersample: false,
           undersample_ratio: 3.0,
           threshold: 0.3,
           hyperparameter_flag: false,
