@@ -61,13 +61,19 @@ export const AreaPopup = forwardRef<HTMLDivElement, Props>(
             <div className={styles.item}>
               <span className={styles.itemLabel}>若年層率</span>
               <span className={styles.itemValue}>
-                {properties.young_population_ratio}%
+                {properties.young_population_ratio !== null
+                  ? (properties.young_population_ratio * 100).toFixed(0)
+                  : "??"}
+                %
               </span>
             </div>
             <div className={styles.item}>
               <span className={styles.itemLabel}>高年者率</span>
               <span className={styles.itemValue}>
-                {properties.elderly_population_ratio}%
+                {properties.elderly_population_ratio !== null
+                  ? (properties.elderly_population_ratio * 100).toFixed(0)
+                  : "??"}
+                %
               </span>
             </div>
           </div>
@@ -78,7 +84,10 @@ export const AreaPopup = forwardRef<HTMLDivElement, Props>(
             </h3>
             <div className={styles.item}>
               <span className={styles.itemLabel}>面積</span>
-              <span className={styles.itemValue}>{properties.area}m2</span>
+              <span className={styles.itemValue}>
+                {properties.area !== null ? properties.area.toFixed(0) : "??"}
+                m2
+              </span>
             </div>
             <div className={styles.item}>
               <span className={styles.itemLabel}>空き家件数</span>
