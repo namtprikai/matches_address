@@ -37,6 +37,7 @@ export const DialogFieldOption = ({
   const [value, setValue] = useState<string[]>(
     initialValue.length > 0 ? initialValue.split(",") : [],
   );
+  const isAllCleared = value.length === 0;
 
   const handleClick = (): void => {
     onSave(value);
@@ -80,20 +81,23 @@ export const DialogFieldOption = ({
             })}
           </DialogContent>
           <DialogActions position="end">
-            <Button
-              onClick={() => {
-                setValue(option.map(({ value }) => value));
-              }}
-            >
-              すべて選択
-            </Button>
-            <Button
-              onClick={() => {
-                setValue([]);
-              }}
-            >
-              すべてクリア
-            </Button>
+            {isAllCleared ? (
+              <Button
+                onClick={() => {
+                  setValue(option.map(({ value }) => value));
+                }}
+              >
+                すべて選択
+              </Button>
+            ) : (
+              <Button
+                onClick={() => {
+                  setValue([]);
+                }}
+              >
+                すべてクリア
+              </Button>
+            )}
             <DialogTrigger>
               <Button appearance="primary" onClick={handleClick} size="medium">
                 保存
