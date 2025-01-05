@@ -227,7 +227,7 @@ def gradio_interface(tatemono_file, e14_merged_file, shp_file, ken, sikuchoson, 
     # 結合オプションを設定（0: 交差結合、1: 最近傍結合）
     option = 0 if join_option == "交差結合" else 1
     # データ処理を実行
-    output_path, join_ratio = process_data(tatemono_file, e14_merged_file, shp_file, ken, sikuchoson, option, output_format, output_path, None, None, 'geometry', [], None, 'house_condition_report')
+    output_path, join_ratio = process_data(tatemono_file, e14_merged_file, shp_file, ken, sikuchoson, option, output_format, output_path, None, None, 'geometry', [], None, 'plateau')
     # 結果を返す
     return output_path, f"結合率: {join_ratio}%"
 

@@ -579,8 +579,15 @@ def evaluate_models_on_test(test_df, models, params):
     id_test = test_df[["gml_id"]]
     # テストデータを識別するフラグを追加
     id_test["test_flg"] = 1
+
+    # 削除したいカラムをリストに指定
+    columns_to_drop = [CONSTANTS['outcome_variable'], 'gml_id', 'gml',  '世帯コード', '水道番号']
+
+    # 指定されたカラムのうち、`test_df` に存在するものだけを選択
+    columns_to_drop = [col for col in columns_to_drop if col in test_df.columns]
+
     # 非特徴量列を除いて特徴量行列を作成
-    X_test = test_df.drop(columns=[CONSTANTS['outcome_variable'], 'gml_id', '世帯コード', '水道番号'])
+    X_test = test_df.drop(columns=columns_to_drop)
     # 真のラベルを抽出
     y_test = test_df[CONSTANTS['outcome_variable']]
 
