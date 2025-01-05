@@ -52,7 +52,7 @@ export const DialogFieldOption = ({
         <DialogBody>
           <DialogTitle>カラムを選択</DialogTitle>
           <DialogContent border>
-            {option.map(({ value: optionValue, unit }) => {
+            {option.map(({ value: optionValue }) => {
               const columnMetadata =
                 optionValue in BUILDING_DATASET_COLUMN_METADATA
                   ? BUILDING_DATASET_COLUMN_METADATA[
@@ -63,7 +63,7 @@ export const DialogFieldOption = ({
               if (columnMetadata === null) return null;
               return (
                 <Checkbox
-                  key={optionValue + unit}
+                  key={optionValue}
                   checked={value.includes(optionValue)}
                   id={optionValue}
                   label={columnMetadata?.label}
