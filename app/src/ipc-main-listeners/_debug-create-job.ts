@@ -67,7 +67,7 @@ export const _debugCreateJob = (async (
           result: {
             taskResultType: "preprocess",
             joining_rate: "93.21",
-            input_source: '["住基", "水道"]',
+            input_source: ["住基", "水道"],
           },
         });
         await tx.insert(job_tasks).values({
@@ -78,7 +78,7 @@ export const _debugCreateJob = (async (
           result: {
             taskResultType: "preprocess",
             joining_rate: "73.21",
-            input_source: '["住基", "水道"]',
+            input_source: ["住基", "水道"],
           },
         });
       } else {
@@ -137,7 +137,7 @@ const createmockResult = (type: InsertJob["type"]): InsertJobTask["result"] => {
       return {
         taskResultType: "preprocess",
         joining_rate: "0.4321",
-        input_source: '["住基", "水道"]',
+        input_source: ["住基", "水道"],
       };
     case "ml":
       return {
@@ -162,7 +162,7 @@ const createmockResult = (type: InsertJob["type"]): InsertJobTask["result"] => {
       return {
         taskResultType: "preprocess",
         joining_rate: "0",
-        input_source: '["住基", "水道"]',
+        input_source: ["住基", "水道"],
       };
   }
 };
