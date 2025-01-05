@@ -19,7 +19,6 @@ import {
   Caption1,
 } from "@fluentui/react-components";
 import { MoreVerticalRegular } from "@fluentui/react-icons";
-import { Link } from "react-router-dom";
 
 import { useState } from "react";
 import { formatDate } from "../utils/format-date";
