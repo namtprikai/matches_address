@@ -126,7 +126,7 @@ export const DynamicParameterInput = forwardRef<
       <Field label={props.fieldOption.label}>
         <div className={styles.layout}>
           <div>
-            {props.value.split(",").length === 1 ? (
+            {!props.value || props.value.split(",").length === 0 ? (
               <p className={styles.noSelectedLabel}>カラムを選択してください</p>
             ) : (
               <div className={styles.selectedOptions}>
@@ -153,7 +153,9 @@ export const DynamicParameterInput = forwardRef<
             <DialogFieldOption
               initialValue={props.value}
               onSave={props.onSave}
-              option={props.fieldOption.option}
+              option={props.fieldOption.option.filter(
+                (option) => option.unit === props.unit,
+              )}
             />
           </div>
         </div>
