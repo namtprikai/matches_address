@@ -126,7 +126,7 @@ export const DynamicParameterInput = forwardRef<
       <Field label={props.fieldOption.label}>
         <div className={styles.layout}>
           <div>
-            {!props.value || props.value.split(",").length === 0 ? (
+            {!props.value ? (
               <p className={styles.noSelectedLabel}>カラムを選択してください</p>
             ) : (
               <div className={styles.selectedOptions}>
