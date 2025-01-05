@@ -1,13 +1,17 @@
 import { useCallback, useEffect, useState } from "react";
 import { type ChartProps } from "../@types/charts";
 import { type FilterDataSetForChartArgs } from "../ipc-main-listeners/filter-data-set-for-chart";
+import { usePagination, type UsePaginationReturnType } from "./use-pagination";
+
+type ReturnType = {
+  chartProps: ChartProps;
+  refetch: () => Promise<void>;
+  pagination: UsePaginationReturnType;
+};
 
 export const useFetchFilterDataSetForChart = (
   props: FilterDataSetForChartArgs,
-): {
-  chartProps: ChartProps;
-  refetch: () => Promise<void>;
-} => {
+): ReturnType => {
   const [chartProps, setChartProps] = useState<
     | ChartProps
     | {
@@ -21,22 +25,29 @@ export const useFetchFilterDataSetForChart = (
     yAxisColumn: { type: "number" },
   });
 
-  const fetchFilteredDataSetForChart = useCallback(async (): Promise<void> => {
-    const result = await window.ipcRenderer.invoke(
-      "filterDataSetForChart",
-      props,
-    );
-    setChartProps(result);
-  }, [props]);
+  const pagination = usePagination(100);
+
+  const fetchFilteredDataSetDetailForChart =
+    useCallback(async (): Promise<void> => {
+      const result = await window.ipcRenderer.invoke("filterDataSetForChart", {
+        ...props,
+        limit: pagination.limitPerPage,
+        offset: pagination.limitPerPage * (pagination.page - 1),
+      });
+      setChartProps(result);
+    }, [pagination.limitPerPage, pagination.page, props]);
 
   useEffect(() => {
-    fetchFilteredDataSetForChart().catch(console.error);
-  }, [fetchFilteredDataSetForChart]);
+    fetchFilteredDataSetDetailForChart().catch(console.error);
+  }, [
+    fetchFilteredDataSetDetailForChart,
+    pagination.limitPerPage,
+    pagination.page,
+  ]);
 
   return {
     chartProps,
-    refetch: async () => {
-      return;
-    },
+    refetch: fetchFilteredDataSetDetailForChart,
+    pagination,
   };
 };

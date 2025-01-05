@@ -28,6 +28,8 @@ export type FilterDataSetForChartArgs = {
     startValue: string | undefined;
     endValue: string | undefined;
   };
+  limit?: number;
+  offset?: number;
 } & (
   | {
       type: "building";
@@ -54,6 +56,8 @@ export const filterDataSetForChart = ((
     filterByYear,
     filterByAreas,
     groupingCalc: cal = "avg",
+    limit = 100,
+    offset = 0,
   }: FilterDataSetForChartArgs,
 ): FilterDataSetForChartResponse => {
   if (type === "area") {
@@ -109,7 +113,6 @@ export const filterDataSetForChart = ((
           .from(subQuery.as("groups"))
           .groupBy(sql.raw(`${groupLabel}`))
           .having(sql.raw(`${groupLabel} <> ''`))
-          .limit(100)
           .all() as Record<`${string}_group`, string> &
           {
             [k in typeof y]: number;
@@ -120,7 +123,8 @@ export const filterDataSetForChart = ((
         .select()
         .from(filterSubQuery)
         .where(eq(filterSubQuery.data_set_result_id, resultId))
-        .limit(100)
+        .limit(limit)
+        .offset(offset)
         .all();
     };
     const all = getAll();
@@ -209,7 +213,7 @@ export const filterDataSetForChart = ((
           .from(subQuery.as("groups"))
           .groupBy(sql.raw(`${groupLabel}`))
           .having(sql.raw(`${groupLabel} <> ''`))
-          .limit(100)
+          .limit(limit)
           .all() as Record<`${string}_group`, string> &
           {
             [k in typeof y]: number;
@@ -220,7 +224,8 @@ export const filterDataSetForChart = ((
         .select()
         .from(filterSubQuery)
         .where(eq(filterSubQuery.data_set_result_id, resultId))
-        .limit(100)
+        .limit(limit)
+        .offset(offset)
         .all();
     };
     const all = getAll();
