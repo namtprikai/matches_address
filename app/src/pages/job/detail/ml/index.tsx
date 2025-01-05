@@ -228,7 +228,12 @@ export function MlDetail(): JSX.Element {
         }))
       : [];
 
-  const xAxisLabels = Array.from({ length: 11 }, (_, i) => i * 10);
+  // 取りうる値の最大値を取得し、10分割してxAxisLabelsを作成
+  const maxValue = Math.max(...chartData.map((data) => data.value || 0));
+  const roundedMaxValue = Math.ceil(maxValue / 10) * 10;
+  const xAxisLabels = Array.from({ length: 11 }, (_, i) =>
+    ((roundedMaxValue / 10) * i).toFixed(1),
+  );
 
   return (
     <div className={styles.pageContainer}>
@@ -358,7 +363,7 @@ export function MlDetail(): JSX.Element {
                         style={{ width: `${data.value || 0}%` }}
                       ></div>
                       <Text style={{ marginLeft: tokens.spacingHorizontalS }}>
-                        {data.value ? data.value.toFixed(1) : "--"}%
+                        {data.value ? data.value.toFixed(1) : "--"}
                       </Text>
                     </div>
                   ))}
@@ -372,11 +377,11 @@ export function MlDetail(): JSX.Element {
                         key={index}
                         style={{
                           position: "absolute",
-                          left: `${label}%`,
+                          left: `${(index * 100) / 10}%`,
                           transform: "translateX(-50%)",
                         }}
                       >
-                        <Text className={styles.xAxisLabel}>{label}%</Text>
+                        <Text className={styles.xAxisLabel}>{label}</Text>
                       </div>
                     ))}
                   </div>
