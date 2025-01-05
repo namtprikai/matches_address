@@ -151,17 +151,7 @@ export const FormNormalization = ({
             />
           )}
         />
-        <Controller
-          control={control}
-          name="data.urban_planning"
-          render={({ field: { value, onChange } }) => (
-            <FormDataset
-              dataKey="urbanPlanning"
-              onChange={onChange}
-              value={value}
-            />
-          )}
-        />
+
         <Controller
           control={control}
           name="data.census"

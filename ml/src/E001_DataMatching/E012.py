@@ -54,10 +54,7 @@ INPUT_COLUMNS = {
         "registration_date": None
     },
     "akiya_result": {
-        "akiya_result_ID": None,
         "akiya_result_address": None,
-        "akiya_result_lat": None,
-        "akiya_result_lon": None
     },
     "geocoding": {
         "geocoding_address": None,
@@ -96,10 +93,7 @@ OUTPUT_COLUMNS = {
         "convert_touki_address": "正規化住所"
     },
     "akiya_result": {
-        "akiya_result_ID": "ID",
         "akiya_result_address": "住所",
-        "akiya_result_lat": "経度",
-        "akiya_result_lon": "緯度",
         "convert_akiya_address": "正規化住所"
     },
     "geocoding": {
@@ -402,7 +396,7 @@ def set_columns(
     suido_number2, meter_reading_date, suido_usage,
     setai_code, juki_address, birth, gender, move_date,
     touki_address, structure, registration_date,
-    akiya_result_ID, akiya_result_address, akiya_result_lat, akiya_result_lon,
+    akiya_result_address,
     geocoding_address, geocoding_lat, geocoding_lon
 ):
     """
@@ -434,10 +428,7 @@ def set_columns(
     INPUT_COLUMNS["touki"]["registration_date"] = registration_date
     
     # akiya_resultセクション
-    INPUT_COLUMNS["akiya_result"]["akiya_result_ID"] = akiya_result_ID
     INPUT_COLUMNS["akiya_result"]["akiya_result_address"] = akiya_result_address
-    INPUT_COLUMNS["akiya_result"]["akiya_result_lat"] = akiya_result_lat
-    INPUT_COLUMNS["akiya_result"]["akiya_result_lon"] = akiya_result_lon
     
     # geocodingセクション
     INPUT_COLUMNS["geocoding"]["geocoding_address"] = geocoding_address

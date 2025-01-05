@@ -50,7 +50,7 @@ export const TabListEditResultSheet = ({
     <div className={styles.root}>
       <Button
         appearance="subtle"
-        icon={<AddFilled />}
+        icon={<AddFilled fontSize={16} />}
         onClick={async () => {
           const { insertedId } = await window.ipcRenderer.invoke(
             "insertResultSheets",
@@ -61,6 +61,7 @@ export const TabListEditResultSheet = ({
           );
           void mutate();
           setSelectedResultSheetId(insertedId);
+          setSelectedResultViewId(undefined);
         }}
         shape="square"
       >
@@ -78,7 +79,7 @@ export const TabListEditResultSheet = ({
             },
           );
           const firstView = resultViews.find((view) => view.layoutIndex === 1);
-          if (!firstView) return;
+          if (!firstView) return setSelectedResultViewId(undefined);
           setSelectedResultViewId(firstView.id);
         }}
         selectedValue={selectedResultSheetId}

@@ -81,10 +81,7 @@ def main():
             "registration_date":  params.get("touki_columns", {}).get("registration_date")
         },
         "akiya_result": {
-            "akiya_result_ID": params.get("akiya_result_columns", {}).get("vacant_house_id"),
-            "akiya_result_address": params.get("akiya_result_columns", {}).get("address"),
-            "akiya_result_lat":params.get("akiya_result_columns", {}).get("latitude"),
-            "akiya_result_lon": params.get("akiya_result_columns", {}).get("longitude")
+            "akiya_result_address": params.get("akiya_result_columns", {}).get("address", "住所")
         },
         "geocoding": {
             "geocoding_address": params.get("geocoding_columns", {}).get("address", "住所"),

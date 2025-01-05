@@ -12,3 +12,14 @@ export const OUTPUT_FILE_TYPES = [
     type: "geopackage",
   },
 ];
+
+export const BUILDING_FILE_TYPES = [
+  {
+    name: "CSV",
+    type: "csv",
+  },
+  {
+    name: "GeoPackage",
+    type: "geopackage",
+  },
+];

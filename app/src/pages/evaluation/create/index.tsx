@@ -216,7 +216,7 @@ export const JobEvaluationCreate = (): JSX.Element => {
         <BreadcrumbBase
           breadcrumbItem={[
             {
-              children: "空き家判定",
+              children: "空き家推定",
               href: ROUTES.EVALUATION.ROOT,
             },
             {

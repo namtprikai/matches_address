@@ -19,8 +19,8 @@ import { useFetchDatasetColumns } from "../hooks/use-fetch-dataset-columns";
 import { type PreprocessParameters } from "../@types/job-parameters";
 import { useFetchDatasetWithFilePath } from "../hooks/use-fetch-dataset-with-file-path";
 import { lang } from "../lang";
-import { OUTPUT_FILE_TYPES } from "../config/file-types";
 import { type schema } from "../hooks/use-form-normalization";
+import { BUILDING_FILE_TYPES } from "../config/file-types";
 import { Dropdown } from "./ui/dropdown";
 import { Field } from "./ui/field";
 import { DialogImportDataset } from "./dialog-import-dataset";
@@ -69,7 +69,7 @@ const useStyles = makeStyles({
 interface Value {
   id: PreprocessParameters["data"]["resident_registry"]["id"]; // ひとまずresident_registryの型を使う
   path: PreprocessParameters["data"]["resident_registry"]["path"] | undefined;
-  columns?: Record<string, string | undefined>; // 都市計画決定情報データと国勢調査データにカラムがないためoptionalを指定する
+  columns?: Record<string, string | undefined>; // 国勢調査データにカラムがないためoptionalを指定する
 }
 
 type FormType = z.infer<typeof schema>;
@@ -191,7 +191,7 @@ export const FormDataset = ({
                 <Select
                   {...form?.register("data.building_polygon.input_file_type")}
                 >
-                  {OUTPUT_FILE_TYPES.map((option) => (
+                  {BUILDING_FILE_TYPES.map((option) => (
                     <option
                       key={option.type}
                       value={

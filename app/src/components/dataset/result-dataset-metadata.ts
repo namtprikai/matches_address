@@ -25,7 +25,7 @@ const buildingMetadata: Record<keyof SelectDataSetDetailBuilding, Item> = {
   //   label: "KEY_CODE",
   // },
   reference_date: {
-    label: "基準日",
+    label: "推定日",
   },
   normalized_address: {
     label: "正規化住所",
@@ -335,7 +335,7 @@ const areaMetadata: Record<keyof SelectDataSetDetailArea, Item> = {
     label: "data_set_result_id",
   },
   reference_date: {
-    label: "基準日",
+    label: "推定日",
     unit: "",
   },
   area_group: {

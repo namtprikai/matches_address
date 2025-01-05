@@ -1,6 +1,5 @@
 import { useFieldArray, useFormContext } from "react-hook-form";
 import { Fragment } from "react/jsx-runtime";
-import { makeStyles } from "@fluentui/react-components";
 import { result_views, type SelectResultView } from "../../schema";
 import { LanguageMap } from "../../metadata";
 import { TILE_VIEW_CONFIG } from "../../config/tile-view-config";
@@ -17,23 +16,11 @@ import { FieldLegend } from "../ui/field-legend";
 import { Field } from "../ui/field";
 import { Input } from "../ui/input";
 import { Select } from "../ui/select";
+import { useFetchDataSetResults } from "../../hooks/use-fetch-data-set-results";
 import { DynamicParameterInput } from "./dynamic-parameter-input";
 import { FormGroupingResultView } from "./form-grouping-result-view";
 
-const useStyles = makeStyles({
-  fontBlackInput: {
-    "& input": {
-      color: "black",
-    },
-  },
-});
-
-type Props = {
-  dataSetTitle?: string | null | undefined;
-};
-
-export const EditResultViewFields = ({ dataSetTitle }: Props): JSX.Element => {
-  const styles = useStyles();
+export const EditResultViewFields = (): JSX.Element => {
   const { register, watch, control, setValue } =
     useFormContext<EditResultViewFormType>();
 
@@ -71,14 +58,18 @@ export const EditResultViewFields = ({ dataSetTitle }: Props): JSX.Element => {
     (f) => f.key === "group_calc" && f.type === "group_option",
   );
 
+  const { data: dataSetResults } = useFetchDataSetResults();
+
   return (
     <>
-      <Field label="データセット">
-        <Input
-          className={styles.fontBlackInput}
-          disabled
-          value={dataSetTitle || ""}
-        />
+      <Field label="データセットを選択">
+        <Select {...register("dataSetResultId")}>
+          {dataSetResults?.map((item) => (
+            <option key={item.id} value={item.id}>
+              {item.title || "タイトルなし"}
+            </option>
+          ))}
+        </Select>
       </Field>
       <Field label="ビューのタイトル">
         <Input placeholder="選択中のビューのタイトル" {...register("title")} />
@@ -89,11 +80,23 @@ export const EditResultViewFields = ({ dataSetTitle }: Props): JSX.Element => {
           <Select
             {...register("style")}
             onChange={(e) => {
-              const value = e.target.value as keyof SelectResultView["style"];
+              const value = e.target.value as SelectResultView["style"];
+              if (!value) return;
               // styleに合わせてparameterをリセット
               resetParametersByStyle(value);
               // 種類の値を更新
               setValue("style", value);
+              // 集計単位の初期値を設定する
+              const unit = TILE_VIEW_CONFIG[value].fields[0].option[0].unit;
+              setValue("unit", unit);
+              // parametersに初期値を設定する
+              setValue("parameters", [
+                ...TILE_VIEW_CONFIG[value].fields.map((field) => ({
+                  key: field.key,
+                  value: field.option[0].value,
+                  type: "column" as const,
+                })),
+              ]);
             }}
           >
             {result_views.style.enumValues.map((item) => (
@@ -288,6 +291,19 @@ export const EditResultViewFields = ({ dataSetTitle }: Props): JSX.Element => {
             }}
           >
             {result_views.unit.enumValues.map((item) => {
+              // 棒グラフの場合は集計単位を地域に固定する
+              // TODO: もっとマシな書き方がありそう
+              if (style === "bar") {
+                if (item === "area") {
+                  return (
+                    <option key={item} value={item}>
+                      {LanguageMap["RESULT_VIEWS_UNIT"][item]}
+                    </option>
+                  );
+                }
+                return null;
+              }
+
               if (item === "area" && style !== "map" && style !== "table") {
                 return <Fragment key={item}></Fragment>;
               }

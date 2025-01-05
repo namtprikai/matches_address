@@ -74,10 +74,6 @@ export const FormNormalizationSettings = ({
             }}
           >
             <Radio
-              label={LanguageMap.NORMALIZATION_DATA_LABEL["waterStatus"]}
-              value={"water_status"}
-            />
-            <Radio
               label={LanguageMap.NORMALIZATION_DATA_LABEL["residentRegistry"]}
               value={"resident_registry"}
             />

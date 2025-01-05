@@ -168,9 +168,9 @@ export const data_set_detail_buildings = sqliteTable(
     area_group: text("area_group"),
 
     /**
-     * 基準日
+     * 推定日
      *
-     * 判定の基準となる日付
+     * 推定の基準となる日付
      *
      * YYYY-MM-DD形式の文字列
      */
@@ -495,9 +495,9 @@ export const data_set_detail_areas = sqliteTable("data_set_detail_areas", {
   data_set_result_id: integer("data_set_result_id"),
 
   /**
-   * 基準日
+   * 推定日
    *
-   * 判定の基準となる日付
+   * 推定の基準となる日付
    *
    * YYYY-MM-DD形式の文字列
    */

@@ -11,12 +11,12 @@ export const updateResultViews = (async (
   _: unknown,
   {
     resultViewId,
-    value: { title, style, unit, parameters },
+    value: { data_set_result_id, title, style, unit, parameters },
   }: { resultViewId: number; value: InsertResultView },
 ): Promise<SelectResultView[]> => {
   const res = await db
     .update(result_views)
-    .set({ title, style, unit, parameters })
+    .set({ data_set_result_id, title, style, unit, parameters })
     .where(eq(result_views.id, resultViewId))
     .returning();
   return res;

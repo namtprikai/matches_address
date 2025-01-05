@@ -78,7 +78,7 @@ export function ResultDetail(): JSX.Element {
               href: ROUTES.JOB.ROOT,
             },
             {
-              children: "処理結果 - 判定結果",
+              children: "処理結果 - 推定結果",
               current: true,
               href: ROUTES.JOB.DETAIL_RESULT(id || ""),
             },
@@ -104,14 +104,14 @@ export function ResultDetail(): JSX.Element {
           <span>
             {isError
               ? "空き家推定に失敗しました。"
-              : "処理が完了しました。判定結果はデータセット>空き家判定結果データタブから確認できます。"}
+              : "処理が完了しました。推定結果はデータセット>空き家推定結果データタブから確認できます。"}
           </span>
           {id && <ErrorJobTaskInfo jobId={Number(id)} />}
         </div>
       </div>
       <div className={styles.restartButtonWrapper}>
         <Button appearance="primary" onClick={() => navigate(`/evaluation`)}>
-          空き家判定画面へ
+          空き家推定画面へ
         </Button>
       </div>
     </div>

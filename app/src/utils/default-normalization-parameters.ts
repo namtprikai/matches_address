@@ -11,7 +11,7 @@ export const defaultNormalizationParameters: z.infer<
   typeof normalizationSchema
 > = {
   settings: {
-    reference_data: "water_status",
+    reference_data: "resident_registry",
     reference_date: "2021-01-01",
     advanced: {
       similarity_threshold: 0.95,
@@ -64,10 +64,7 @@ export const defaultNormalizationParameters: z.infer<
       id: 0,
       path: "",
       columns: {
-        vacant_house_id: "",
         address: "",
-        latitude: "",
-        longitude: "",
       },
     },
     geocoding: {
@@ -88,7 +85,6 @@ export const defaultNormalizationParameters: z.infer<
       input_file_type: "csv",
       data_type: "plateau",
     },
-    urban_planning: { id: 0, path: "" },
     census: { id: 0, path: "" },
   },
 };
