@@ -999,8 +999,8 @@ def process_data(tatemono_path, e14_merged_path, gpkg_path, ken, sikuchoson, opt
         crs = get_transformer(ken, sikuchoson)
         
         # 建物データと水道データを読み込み、処理
-        tatemono = load_and_process_data(tatemono_path, crs, geometry, file_type, data_type='plateau')
-        e14_merged = load_and_process_data(e14_merged_path, crs, geometry, file_type, data_type)
+        tatemono = load_and_process_data(tatemono_path, crs, geometry, file_type, data_type)
+        e14_merged = load_and_process_data(e14_merged_path, crs, geometry, file_type, None)
 
         if job_id:
             create_or_update_job_task(job_id, progress_percent="20", preprocess_type="e016", error_code=None, error_msg=None, result=None, id= task_id)
