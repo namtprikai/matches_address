@@ -269,7 +269,7 @@ const mockBuildModel = {
       undersample: true,
       undersample_ratio: 3,
       threshold: 0.3,
-      hyperparameter_flag: true,
+      hyperparameter_flag: false,
       n_trials: 100,
       lambda_l1: 0,
       lambda_l2: 0,
