@@ -196,6 +196,28 @@ export const filterDataSetForChart = ((
 
       if (groupingConditions && groupingConditions.length > 0) {
         const groupLabel = `${x}_group` as const;
+        // FIXME: 現状単位が%の場合は、groupingConditionsとして与えられる値も0-100の範囲になっている。
+        // しかし、DBには0-1の範囲で保存されているため、どこかで単位が%のあたいかどうかを見て100で割る必要がある。
+        // 一旦今は力技で、floatの場合かつ0-100の範囲の場合は100で割ることにしている。
+        groupingConditions.forEach((condition) => {
+          const isFloat = condition.referenceColumnType === "float";
+          const isValueInZeroToOne =
+            "value" in condition &&
+            0 <= (condition.value as number) &&
+            (condition.value as number) <= 100;
+          const isStartValueAndLastValueInZeroToHundred =
+            "startValue" in condition &&
+            "lastValue" in condition &&
+            0 <= (condition.startValue as number) &&
+            (condition.lastValue as number) <= 100;
+          if (isFloat && isValueInZeroToOne) {
+            condition.value = (condition.value as number) / 100;
+          }
+          if (isFloat && isStartValueAndLastValueInZeroToHundred) {
+            condition.startValue = (condition.startValue as number) / 100;
+            condition.lastValue = (condition.lastValue as number) / 100;
+          }
+        });
 
         const subQuery = subQueryFromConditions(
           db,
