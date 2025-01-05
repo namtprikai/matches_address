@@ -107,11 +107,13 @@ export const EditResultViewFilterFields = ({
             }}
           >
             <option value="">下限なし</option>
-            {yearItems?.map((item) => (
-              <option key={item} value={item}>
-                {item}
-              </option>
-            ))}
+            {yearItems
+              ?.sort((a, b) => a.localeCompare(b))
+              .map((item) => (
+                <option key={item} value={item}>
+                  {item}
+                </option>
+              ))}
           </Select>
           <span>〜</span>
           <Select
@@ -124,11 +126,13 @@ export const EditResultViewFilterFields = ({
             }}
           >
             <option value="">上限なし</option>
-            {yearItems?.map((item) => (
-              <option key={item} value={item}>
-                {item}
-              </option>
-            ))}
+            {yearItems
+              ?.sort((a, b) => a.localeCompare(b))
+              .map((item) => (
+                <option key={item} value={item}>
+                  {item}
+                </option>
+              ))}
           </Select>
         </div>
       </Field>
