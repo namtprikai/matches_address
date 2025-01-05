@@ -49,7 +49,7 @@ def main():
         else:
             file_path = f"{output_directory}.{params.get('output_format')}"
         
-        params = {
+        new_params = {
             'data_set_results_id': params.get('data_set_results_id'),
             'target_unit': params.get('target_unit'),
             'output_format': params.get('output_format'),
@@ -57,7 +57,7 @@ def main():
             'reference_date': params.get('reference_date'),
             'output_path': file_path
         }
-        E033(params, job_id, params.get('db_path'))
+        E033(new_params, job_id, params.get('db_path'))
         create_or_update_job(job_id, "complete")
 
         create_job_results(job_id, f"{random_str}.{params.get('output_format')}")
