@@ -333,9 +333,8 @@ def load_and_process_data(file_path, crs, geometry, file_type, data_type):
         # 無効なジオメトリを除外
         df = df[df['geometry'].notnull()]
         if data_type == 'plateau':
-            if 'buildingID' not in df.columns:
-                df['buildingID'] = df.index + 1
             df['building_id'] = df['buildingID'].astype(str)
+            del df['buildingID']
         else:
             if 'building_id' not in df.columns:
                 df['building_id'] = df.index + 1
@@ -373,9 +372,8 @@ def load_and_process_data(file_path, crs, geometry, file_type, data_type):
 
         # buildingID列を追加
         if data_type == 'plateau':
-            if 'buildingID' not in gdf.columns:
-                gdf['buildingID'] = gdf.index + 1
             gdf['building_id'] = gdf['buildingID'].astype(str)
+            del gdf['buildingID']
         else:
             if 'building_id' not in gdf.columns:
                 gdf['building_id'] = gdf.index + 1
@@ -386,16 +384,15 @@ def load_and_process_data(file_path, crs, geometry, file_type, data_type):
     else:
         # その他の非CSVファイルを読み込む
         gdf = gpd.read_file(file_path)
-        print("gdf", gdf)
+
         if gdf.crs is None:
             # データのCRSを指定（EPSG:4326）
             gdf.set_crs(crs, inplace=True)
 
         # buildingID列を追加
         if data_type == 'plateau':
-            if 'buildingID' not in gdf.columns:
-                gdf['buildingID'] = gdf.index + 1
             gdf['building_id'] = gdf['buildingID'].astype(str)
+            del gdf['buildingID']
         else:
             if 'building_id' not in gdf.columns:
                 gdf['building_id'] = gdf.index + 1
@@ -618,6 +615,7 @@ def assign_points_to_buildings(buildings_gdf, points_gdf, mul, crs, point_select
     # クイックルックアップのための辞書を作成する
     geometry_dict = points_gdf.set_index('ID')['geometry'].to_dict()
 
+    # 結合オプションを設定（0: 交差結合、1: 最近傍結合）
     if option == 1:
         # 空間インデックスを作成
         if not points_gdf.has_sindex:
@@ -653,10 +651,15 @@ def assign_points_to_buildings(buildings_gdf, points_gdf, mul, crs, point_select
         joined["distance"] = joined.apply(lambda row: row["centroid"].distance(geometry_dict[row["ID"]]) if row["centroid"] is not None and row["ID"] in geometry_dict else None, axis=1)
         #　sjoinでindexが重複しているので、リセット
         joined = joined.reset_index(drop=True)
+        if 'building_id_left' in joined.columns:
+            joined = joined.rename(columns={'building_id_right': 'building_id'})
+        print(joined.head())
         # IDが存在する行
         filtered_gdf = joined.dropna(subset=['ID'])
+        
         # IDが存在しない行
         dropped_rows = joined[joined['ID'].isna()]
+        
         # IDが存在する行で'buildingID'をキーにして、'distance'が最小のものを抽出(空間結合による重複を削除)
         result_gdf = joined.loc[filtered_gdf.groupby('building_id')['distance'].idxmin().tolist()]
         
@@ -721,6 +724,7 @@ def add_residenceID(gdf):
         GeoDataFrame、'buildingID'列を含む必要がある
     """
     # 'buildingID'列とランダムに生成された文字列を結合して'residenceID'列を作成
+    gdf = gdf.reset_index(drop=True)
     gdf['residenceID'] = gdf['building_id'].astype(str) + '-' + gdf.apply(lambda _: generate_random_string(), axis=1)
     
 def add_keycode(gdf, gpkg_path):
@@ -771,10 +775,7 @@ def save_geodataframe(gdf, output_path, output_type):
                 return
             except Exception as e:
                 set_error(ERROR_00016, output_path, encoding)
-                # print(f"ファイル {output_path} を {encoding} エンコーディングでGeoPackage形式で保存中にエラーが発生しました: {e}")
-        
-        # print(f"ファイル {output_path} をいずれのエンコーディングでもGeoPackage形式で保存できませんでした。")
-
+ 
     elif output_type == 'csv':
         # CSV形式で保存 
         for encoding in encodings:
@@ -784,9 +785,6 @@ def save_geodataframe(gdf, output_path, output_type):
                 return
             except Exception as e:
                 set_error(ERROR_00017, output_path, encoding)
-                # print(f"ファイル {output_path} を {encoding} エンコーディングでCSV形式で保存中にエラーが発生しました: {e}")
-        
-        # print(f"ファイル {output_path} をいずれのエンコーディングでもCSV形式で保存できませんでした。")
 
     else:
         # サポートされていない出力形式が指定された場合、例外を発生させる
@@ -834,6 +832,7 @@ def convert_gml_to_gpkg(gml_file):
 
     # コマンド結果をログ出力
     if result.returncode != 0:
+        # KeyError -> set_error(ERROR_0000X, path, encoding)
         print(f"Error: {result.stderr}")
     else:
         print(f"Successfully created {gpkg_file}")  
@@ -989,7 +988,7 @@ def process_plateaugml(temp_dir, output_dir, crs):
     # 一時ファイルのクリーンアップ
     #shutil.rmtree(temp_dir)
 
-def process_data(tatemono_path, e14_merged_path, gpkg_path, ken, sikuchoson, option, output_type, output_path=None, job_id=None, db_path=None, geometry='geometry', input_source=[], file_type='', data_type='plateau'):
+def process_data(tatemono_path, e14_merged_path, gpkg_path, ken, sikuchoson, option, output_type, output_path=None, job_id=None, db_path=None, geometry='geometry', input_source=[], file_type='', data_type=''):
     try:
         if db_path:
             connect_sqllite(db_path)
@@ -1001,7 +1000,7 @@ def process_data(tatemono_path, e14_merged_path, gpkg_path, ken, sikuchoson, opt
         
         # 建物データと水道データを読み込み、処理
         tatemono = load_and_process_data(tatemono_path, crs, geometry, file_type, data_type)
-        e14_merged = load_and_process_data(e14_merged_path, crs, geometry, file_type, data_type)
+        e14_merged = load_and_process_data(e14_merged_path, crs, geometry, file_type, None)
 
         if job_id:
             create_or_update_job_task(job_id, progress_percent="20", preprocess_type="e016", error_code=None, error_msg=None, result=None, id= task_id)
@@ -1027,7 +1026,7 @@ def process_data(tatemono_path, e14_merged_path, gpkg_path, ken, sikuchoson, opt
         try:
             suido_col = [ col for col in tatemono_use_point_add_keycode.columns if "水道番号" in col ][0]
             bid_num_df = tatemono_use_point.groupby(['building_id'])[[suido_col]].count()
-            bid_num_over3 = bid_num_df.loc[bid_num_df[suido_col]>3]
+            bid_num_over3 = bid_num_df.loc[bid_num_df[suido_col]>2]
             tatemono_use_point_add_keycode = tatemono_use_point_add_keycode.loc[~tatemono_use_point_add_keycode['building_id'].isin(bid_num_over3.index)]
         except:
             pass
