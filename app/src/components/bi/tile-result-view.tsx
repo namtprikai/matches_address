@@ -297,7 +297,7 @@ function DownloadDialog({
               </Dropdown>
             </div>
             <div className={styles.dropdown}>
-              <label id="reference-date">判定日</label>
+              <label id="reference-date">推定日</label>
               {selectedReferenceDate && (
                 <Dropdown
                   aria-labelledby="reference-date"

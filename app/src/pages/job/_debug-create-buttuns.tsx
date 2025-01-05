@@ -95,7 +95,7 @@ export const DebugCreateButtons = (): JSX.Element => {
           }}
           size="small"
         >
-          判定開始
+          推定開始
         </Button>
         <Button
           onClick={() => {
@@ -108,7 +108,7 @@ export const DebugCreateButtons = (): JSX.Element => {
           }}
           size="small"
         >
-          判定完了
+          推定完了
         </Button>
         <Button
           onClick={() => {
@@ -121,7 +121,7 @@ export const DebugCreateButtons = (): JSX.Element => {
           }}
           size="small"
         >
-          判定失敗
+          推定失敗
         </Button>
         <Button
           onClick={() => {
@@ -135,7 +135,7 @@ export const DebugCreateButtons = (): JSX.Element => {
           }}
           size="small"
         >
-          判定結果ダウンロード準備開始
+          推定結果ダウンロード準備開始
         </Button>
         <Button
           onClick={() => {
@@ -148,7 +148,7 @@ export const DebugCreateButtons = (): JSX.Element => {
           }}
           size="small"
         >
-          判定結果ダウンロード準備完了
+          推定結果ダウンロード準備完了
         </Button>
         <Button
           onClick={() => {
@@ -161,7 +161,7 @@ export const DebugCreateButtons = (): JSX.Element => {
           }}
           size="small"
         >
-          判定結果ダウンロード準備失敗
+          推定結果ダウンロード準備失敗
         </Button>
       </div>
     </div>

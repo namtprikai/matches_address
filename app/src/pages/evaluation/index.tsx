@@ -35,7 +35,7 @@ export function JobEvaluation(): JSX.Element {
       <BreadcrumbBase
         breadcrumbItem={[
           {
-            children: "空き家判定",
+            children: "空き家推定",
             href: ROUTES.EVALUATION.ROOT,
             current: true,
           },
@@ -43,7 +43,7 @@ export function JobEvaluation(): JSX.Element {
           <BreadcrumbItem key={item.href} {...item} />
         ))}
       />
-      <h2 className={styles.heading}>空き家判定</h2>
+      <h2 className={styles.heading}>空き家推定</h2>
 
       <Card className={styles.content}>
         <Button
@@ -59,7 +59,7 @@ export function JobEvaluation(): JSX.Element {
           }}
           size="small"
         >
-          空き家判定を始める
+          空き家推定を始める
         </Button>
 
         <h4>処理一覧</h4>

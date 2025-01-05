@@ -64,7 +64,7 @@ export function Map({ type, dataSetResultId, areas }: Props): JSX.Element {
           </div>
         </div>
         <div className={styles.filter}>
-          <div>判定日</div>
+          <div>推定日</div>
           <div>
             <ReferenceDateDropdown
               referenceDates={referenceDates}

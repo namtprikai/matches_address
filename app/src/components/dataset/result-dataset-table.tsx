@@ -355,7 +355,7 @@ function SelectUnitDialog({
           <DialogTitle>{title}</DialogTitle>
           <DialogContent>
             <p>
-              空き家判定結果データは以下の2つのデータが含まれます。
+              空き家推定結果データは以下の2つのデータが含まれます。
               どちらか選択してください。
             </p>
             <Field className={styles.radioGroup}>
@@ -454,7 +454,7 @@ function RowMenu({
 }
 
 /**
- * 判定結果データのカラム名を日本語名に変換したり値に単位を付与したりする。
+ * 推定結果データのカラム名を日本語名に変換したり値に単位を付与したりする。
  * @param {any} data:ResultDataSetsResponse
  * @returns {any}
  */

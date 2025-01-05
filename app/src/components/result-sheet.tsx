@@ -46,7 +46,7 @@ type Props = {
 };
 
 /**
- * 判定結果シートの表示
+ * 推定結果シートの表示
  */
 export const ResultSheet = ({ sheetId }: Props): JSX.Element => {
   const styles = useStyles();

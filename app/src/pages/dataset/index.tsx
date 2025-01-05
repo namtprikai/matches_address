@@ -273,7 +273,7 @@ function DummyDataButtons(): JSX.Element {
 
   const handleAddResult = async (): Promise<void> => {
     await window.ipcRenderer.invoke("_debugCreateWorkshopData", {
-      title: `判定結果データ`,
+      title: `推定結果データ`,
     });
     await mutateResult();
   };
@@ -289,7 +289,7 @@ function DummyDataButtons(): JSX.Element {
         シード・正規化済みデータを追加する
       </FUIButton>
       <FUIButton onClick={handleAddResult} size="small">
-        判定結果データを追加する
+        推定結果データを追加する
       </FUIButton>
     </div>
   );

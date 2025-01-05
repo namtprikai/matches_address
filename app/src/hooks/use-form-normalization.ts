@@ -6,7 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 export const schema = z.object({
   settings: z.object({
     // 設定値の変更
-    reference_data: z.enum(["water_status", "resident_registry"]),
+    reference_data: z.enum(["resident_registry"]),
     reference_date: z.string(),
     advanced: z.object({
       similarity_threshold: z.coerce.number().default(0.95),
@@ -82,12 +82,8 @@ export const schema = z.object({
       columns: z.object({
         geometry: z.string(),
       }),
-      input_file_type: z.enum(["csv", "geojson", "geopackage"]),
+      input_file_type: z.enum(["csv", "geopackage"]),
       data_type: z.enum(["plateau", "house_condition_report"]),
-    }),
-    urban_planning: z.object({
-      id: z.number(),
-      path: z.string(),
     }),
     census: z.object({
       id: z.number(),
@@ -105,7 +101,7 @@ export const useFormNormalization = ({
   return useForm<FormType>({
     defaultValues: defaultValues ?? {
       settings: {
-        reference_data: "water_status",
+        reference_data: "resident_registry",
         reference_date: "2021-01-01",
         advanced: {
           similarity_threshold: 0.95,
@@ -182,7 +178,6 @@ export const useFormNormalization = ({
           input_file_type: "csv",
           data_type: "plateau",
         },
-        urban_planning: { id: 0, path: "" },
         census: { id: 0, path: "" },
       },
     },

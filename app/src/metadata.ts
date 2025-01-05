@@ -53,7 +53,7 @@ const NORMALIZATION_PARAMETER_LABEL: NormalizationParameterLabel = {
   registration_date: "登録年月日",
   vacant_house_id: "空き家ID",
   geometry: "ジオメトリー",
-  reference_date: "判定したい日付",
+  reference_date: "推定したい日付",
   reference_data: "基準データ",
 };
 
@@ -65,7 +65,6 @@ const NORMALIZATION_DATA_LABEL = {
   vacantHouse: "空き家データ",
   geocoding: "ジオコーディングデータ",
   buildingPolygon: "建物ポリゴンデータ",
-  urbanPlanning: "都市計画決定情報データ",
   census: "国勢調査データ",
 };
 
