@@ -5,7 +5,6 @@ import { useEffect } from "react";
 import { type EditResultViewFormType } from "../../@types/form-schema";
 import { selectedResultViewIdAtom } from "../../state/selected-result-view-id-atom";
 import { type SelectResultSheet, type SelectResultView } from "../../schema";
-import { useFetchDataSetResultItem } from "../../hooks/use-fetch-data-set-result-item";
 import { useFetchResultView } from "../../hooks/use-fetch-result-view";
 import { useFetchResultViews } from "../../hooks/use-fetch-result-views";
 import { Button } from "../ui/button";
@@ -51,6 +50,7 @@ export const FormEditResultView = ({
   return (
     <FormComponent
       defaultValues={{
+        dataSetResultId: selectedResultView?.data_set_result_id ?? undefined,
         title: selectedResultView?.title ?? "",
         style: selectedResultView?.style ?? "map",
         unit: selectedResultView?.unit ?? "building",
@@ -84,9 +84,6 @@ function FormComponent({
   const { data: selectedResultView } = useFetchResultView({
     resultViewId: selectedResultViewId,
   });
-  const { data: dataSetResult } = useFetchDataSetResultItem({
-    dataSetResultId: selectedResultView?.data_set_result_id,
-  });
 
   const onSubmit = form.handleSubmit(async (data) => {
     if (!selectedResultViewId) return;
@@ -110,6 +107,7 @@ function FormComponent({
     await window.ipcRenderer.invoke("updateResultViews", {
       resultViewId: selectedResultViewId,
       value: {
+        data_set_result_id: data.dataSetResultId,
         title: data.title?.length === 0 ? undefined : data.title,
         style: data.style,
         unit: data.unit,
@@ -123,15 +121,17 @@ function FormComponent({
     void mutateResultViews();
   });
 
-  return (
+  return selectedResultView ? (
     <FormProvider {...form}>
       <form className={styles.form} onSubmit={onSubmit}>
-        <EditResultViewFields dataSetTitle={dataSetResult?.[0].title} />
+        <EditResultViewFields />
         <EditResultViewFilterFields resultView={selectedResultView} />
         <Button appearance="primary" type="submit">
           入力内容を保存する
         </Button>
       </form>
     </FormProvider>
+  ) : (
+    <>ビューを選択してください</>
   );
 }
