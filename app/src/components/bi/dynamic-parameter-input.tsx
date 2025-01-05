@@ -151,9 +151,9 @@ export const DynamicParameterInput = forwardRef<
           </div>
           <div>
             <DialogFieldOption
+              initialValue={props.value}
               onSave={props.onSave}
               option={props.fieldOption.option}
-              value={props.value}
             />
           </div>
         </div>
