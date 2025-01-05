@@ -369,36 +369,26 @@ function getPieParameters(): SelectResultView["parameters"] {
     label: string;
     startValue: number;
     lastValue: number;
-    includesStart: boolean;
-    includesLast: boolean;
   }[] = [
     {
       label: "空き家確率0~25%",
       startValue: 0,
       lastValue: 25,
-      includesStart: true,
-      includesLast: true,
     },
     {
       label: "空き家確率25~50%",
       startValue: 25,
       lastValue: 50,
-      includesStart: true,
-      includesLast: true,
     },
     {
       label: "空き家確率50~75%",
       startValue: 50,
       lastValue: 75,
-      includesStart: true,
-      includesLast: true,
     },
     {
       label: "空き家確率75~100%",
       startValue: 75,
       lastValue: 100,
-      includesStart: true,
-      includesLast: true,
     },
   ];
 
@@ -410,9 +400,9 @@ function getPieParameters(): SelectResultView["parameters"] {
       operation: "range",
       value: 0,
       startValue: value.startValue,
-      includesStart: value.includesStart,
+      includesStart: true,
       lastValue: value.lastValue,
-      includesLast: value.includesLast,
+      includesLast: true,
     },
     type: "group",
   }));
