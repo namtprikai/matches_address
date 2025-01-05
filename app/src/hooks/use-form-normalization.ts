@@ -61,10 +61,7 @@ export const schema = z.object({
       id: z.number(),
       path: z.string(),
       columns: z.object({
-        vacant_house_id: z.string(),
         address: z.string(),
-        latitude: z.string(),
-        longitude: z.string(),
       }),
     }),
     geocoding: z.object({
@@ -154,10 +151,7 @@ export const useFormNormalization = ({
           id: 0,
           path: "",
           columns: {
-            vacant_house_id: "",
             address: "",
-            latitude: "",
-            longitude: "",
           },
         },
         geocoding: {

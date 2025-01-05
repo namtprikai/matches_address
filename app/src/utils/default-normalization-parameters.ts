@@ -64,10 +64,7 @@ export const defaultNormalizationParameters: z.infer<
       id: 0,
       path: "",
       columns: {
-        vacant_house_id: "",
         address: "",
-        latitude: "",
-        longitude: "",
       },
     },
     geocoding: {

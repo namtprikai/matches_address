@@ -224,10 +224,7 @@ const mockE001: PreprocessParameters = {
       id: 0,
       path: "",
       columns: {
-        vacant_house_id: "",
         address: "",
-        latitude: "",
-        longitude: "",
       },
     },
     geocoding: {
