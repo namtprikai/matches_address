@@ -109,25 +109,6 @@ export function MapComponent({
       switch (type) {
         case "building":
           {
-            const setBuildingMapCenter = async (): Promise<void> => {
-              const result = await window.ipcRenderer.invoke(
-                "selectBuildingsInBatches",
-                {
-                  dataSetResultId,
-                  referenceDate: selectedDate,
-                  batchSize: 1,
-                  areas,
-                },
-              );
-
-              if (!result?.length) return;
-              const [firstItem] = result;
-              const firstGeometry = wktToGeoJSON(firstItem.geometry);
-              if (!firstGeometry) return;
-              const center = getCenter(firstGeometry);
-              mapInstance.setCenter([center[0], center[1]]);
-            };
-
             const addBuildingLayers = async (): Promise<void> => {
               let lastId = 0;
 
@@ -187,31 +168,11 @@ export function MapComponent({
             };
 
             void addBuildingLayers();
-            void setBuildingMapCenter();
           }
           break;
 
         case "area":
           {
-            const setAreaMapCenter = async (): Promise<void> => {
-              const result = await window.ipcRenderer.invoke(
-                "selectAreasInBatches",
-                {
-                  dataSetResultId,
-                  referenceDate: selectedDate,
-                  batchSize: 1,
-                  areas,
-                },
-              );
-
-              if (!result?.length) return;
-              const [firstItem] = result;
-              const firstGeometry = wktToGeoJSON(firstItem.geometry);
-              if (!firstGeometry) return;
-              const center: [number, number] = getCenter(firstGeometry);
-              mapInstance.setCenter(center);
-            };
-
             const addAreaLayers = async (): Promise<void> => {
               let lastId = 0;
 
@@ -253,7 +214,6 @@ export function MapComponent({
               }
             };
 
-            void setAreaMapCenter();
             void addAreaLayers();
           }
           break;
