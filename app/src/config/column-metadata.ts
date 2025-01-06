@@ -203,7 +203,7 @@ export const BUILDING_DATASET_COLUMN_METADATA = {
     unit: "%",
   },
   predicted_label: {
-    label: "予測推定",
+    label: "空き家推定結果",
     type: "boolean",
     groupable: true,
     unit: "",

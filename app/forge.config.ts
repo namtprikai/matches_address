@@ -15,8 +15,8 @@ const config: ForgeConfig = {
   rebuildConfig: {},
   makers: [
     new MakerSquirrel({
-      authors: "links-akiya",
-      description: "links-akiya app",
+      authors: "国土交通省総合政策局情報政策課",
+      description: "行政データと機械学習技術を用いた地域空き家推定システム",
     }),
     new MakerZIP({}, ["darwin"]),
     new MakerRpm({}),

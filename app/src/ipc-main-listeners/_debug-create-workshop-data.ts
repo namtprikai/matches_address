@@ -20,46 +20,34 @@ export const _debugCreateWorkshopData = (async (
     .returning({ dataSetResultsId: data_set_results.id })
     .get();
 
-  const buildings = await (async () => {
-    // TODO: 建物データは大きそうなので分割してインサートしないとメモリリークするかも
-    const filePath = getFilePathInDummyData("D902_workshop.csv");
-    const converted = await convertCsvToObject(filePath);
-    return converted.data;
-  })();
-
-  await Promise.all(
-    buildings.map(
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars -- idや作成日時はinsertしないようにする
-      async ({ id, created_at, updated_at, ...rest }) => {
-        await db
-          .insert(data_set_detail_buildings)
-          .values({
-            ...(rest as unknown as InsertDataSetDetailBuilding), // 想定通りのデータがくるので型エラーを無視する
-            data_set_result_id: dataSetResultsId,
-          })
-          .execute();
-      },
-    ),
+  // Process buildings
+  await convertCsvToObject(
+    getFilePathInDummyData("D902_workshop.csv"),
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars -- idや作成日時はinsertしないようにする
+    async ({ id, created_at, updated_at, ...rest }) => {
+      await db
+        .insert(data_set_detail_buildings)
+        .values({
+          ...(rest as unknown as InsertDataSetDetailBuilding),
+          data_set_result_id: dataSetResultsId,
+        })
+        .execute();
+    },
   );
 
-  const areas = await (async () => {
-    const filePath = getFilePathInDummyData("D903_workshop.csv");
-    const converted = await convertCsvToObject(filePath);
-    return converted.data;
-  })();
+  // Process areas
+  await convertCsvToObject(
+    getFilePathInDummyData("D903_workshop.csv"),
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars -- idや作成日時はinsertしないようにする
 
-  await Promise.all(
-    areas.map(
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars -- idや作成日時はinsertしないようにする
-      async ({ id, created_at, updated_at, ...rest }) => {
-        await db
-          .insert(data_set_detail_areas)
-          .values({
-            ...(rest as unknown as InsertDataSetDetailArea), // 想定通りのデータがくるので型エラーを無視する
-            data_set_result_id: dataSetResultsId,
-          })
-          .execute();
-      },
-    ),
+    async ({ id, created_at, updated_at, ...rest }) => {
+      await db
+        .insert(data_set_detail_areas)
+        .values({
+          ...(rest as unknown as InsertDataSetDetailArea),
+          data_set_result_id: dataSetResultsId,
+        })
+        .execute();
+    },
   );
 }) satisfies IpcMainListener;
