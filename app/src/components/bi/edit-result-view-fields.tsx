@@ -1,4 +1,4 @@
-import { useFieldArray, useFormContext } from "react-hook-form";
+import { useFormContext, useWatch } from "react-hook-form";
 import { Fragment } from "react/jsx-runtime";
 import { result_views, type SelectResultView } from "../../schema";
 import { LanguageMap } from "../../metadata";
@@ -30,27 +30,24 @@ type Props = {
 export const EditResultViewFields = ({
   dataSetResultId,
 }: Props): JSX.Element => {
-  const { register, watch, control, setValue } =
+  const { register, control, setValue } =
     useFormContext<EditResultViewFormType>();
 
-  const style = watch("style");
-  const unit = watch("unit");
-  const parameters = watch("parameters");
-
-  const { fields, replace, update } = useFieldArray({
+  const [parameters, style, unit] = useWatch({
     control,
-    name: "parameters",
+    name: ["parameters", "style", "unit"],
   });
 
   const resetParametersByStyle = (style: SelectResultView["style"]): void => {
     if (!style) return;
     const option = TILE_VIEW_CONFIG[style];
     if (!option) return;
-    replace(
+    setValue(
+      "parameters",
       option.fields.map((field) => ({
         key: field.key,
         value: "",
-        type: "column",
+        type: "column" as const,
       })),
     );
   };
@@ -92,15 +89,15 @@ export const EditResultViewFields = ({
     }
   };
 
-  const groupingFields = fields.filter((field) => {
+  const groupingFields = parameters.filter((field) => {
     return field.type === "group";
   });
 
-  const columnFields = fields.filter((field) => {
+  const columnFields = parameters.filter((field) => {
     return field.type === "column";
   });
 
-  const groupCalc = fields.find(
+  const groupCalc = parameters.find(
     (f) => f.key === "group_calc" && f.type === "group_option",
   );
 
@@ -161,24 +158,32 @@ export const EditResultViewFields = ({
                     ];
 
               return (
-                <Fragment key={field.id}>
+                <Fragment key={field.key}>
                   <DynamicParameterInput
                     type={fieldOption.type}
                     {...register(`parameters.${index}.value`)}
                     fieldOption={fieldOption}
                     onChange={(e) => {
                       if (field.key === "label" || field.key === "xAxis") {
-                        const parametersWithoutGroup = fields.filter((f) => {
-                          return f.type !== "group";
-                        });
-                        replace(parametersWithoutGroup);
+                        const parametersWithoutGroup = parameters.filter(
+                          (f) => {
+                            return f.type !== "group";
+                          },
+                        );
+                        setValue("parameters", parametersWithoutGroup);
                       }
 
-                      update(index, {
-                        key: field.key,
-                        value: e.target.value,
-                        type: "column",
+                      const newParameters = parameters.map((parameter, i) => {
+                        if (i === index) {
+                          return {
+                            key: field.key,
+                            value: e.target.value,
+                            type: "column" as const,
+                          };
+                        }
+                        return parameter;
                       });
+                      setValue("parameters", newParameters);
                     }}
                     unit={unit}
                     value={field.value}
@@ -190,14 +195,14 @@ export const EditResultViewFields = ({
                         columnLabel={columnMetadata?.label}
                         columnType={columnMetadata?.type}
                         onSave={(parameters) => {
-                          const prevOtherParameters = fields.filter((f) => {
+                          const prevOtherParameters = parameters.filter((f) => {
                             return f.type !== "group";
                           });
                           const newParameters = [
                             ...prevOtherParameters,
                             ...parameters,
                           ] as SelectResultView["parameters"]; // union の型推論が効きづらいため、明示的に型を指定;
-                          replace(newParameters);
+                          setValue("parameters", newParameters);
                         }}
                         parameters={groupingFields}
                         unit={columnMetadata?.unit}
@@ -214,9 +219,11 @@ export const EditResultViewFields = ({
                       groupingFields.length > 0 && (
                         <Select
                           onChange={(e) => {
-                            const prevOtherParameters = fields.filter((f) => {
-                              return f.type !== "group_option";
-                            });
+                            const prevOtherParameters = parameters.filter(
+                              (f) => {
+                                return f.type !== "group_option";
+                              },
+                            );
                             const newParameters = [
                               ...prevOtherParameters,
                               {
@@ -228,7 +235,7 @@ export const EditResultViewFields = ({
                                 type: "group_option",
                               },
                             ] as SelectResultView["parameters"]; // union の型推論が効きづらいため、明示的に型を指定;
-                            replace(newParameters);
+                            setValue("parameters", newParameters);
                           }}
                           value={groupCalc?.value}
                         >
@@ -248,7 +255,7 @@ export const EditResultViewFields = ({
                 <DynamicParameterInput
                   type={fieldOption.type}
                   {...register(`parameters.${index}.value`)}
-                  key={field.id}
+                  key={field.key}
                   fieldOption={fieldOption}
                   multiple={fieldOption.multiple ?? false}
                   onChange={(_, data) => {
@@ -267,11 +274,18 @@ export const EditResultViewFields = ({
                         })
                       : [...prevValue, data.optionValue];
 
-                    update(index, {
-                      key: field.key,
-                      value: newValue.join(","),
-                      type: "column",
+                    const newParameters = parameters.map((parameter, i) => {
+                      if (i === index) {
+                        return {
+                          key: field.key,
+                          value: newValue.join(","),
+                          type: "column" as const,
+                        };
+                      }
+                      return parameter;
                     });
+
+                    setValue("parameters", newParameters);
                   }}
                   unit={unit}
                   value={field.value}
@@ -285,15 +299,21 @@ export const EditResultViewFields = ({
                 <DynamicParameterInput
                   type="dialog"
                   {...register(`parameters.${index}.value`)}
-                  key={field.id}
+                  key={field.key}
                   fieldOption={fieldOption}
                   multiple={fieldOption.multiple ?? false}
                   onSave={(newValue) => {
-                    update(index, {
-                      key: field.key,
-                      value: newValue.join(","),
-                      type: "column",
+                    const newParameters = parameters.map((parameter, i) => {
+                      if (i === index) {
+                        return {
+                          key: field.key,
+                          value: newValue.join(","),
+                          type: "column" as const,
+                        };
+                      }
+                      return parameter;
                     });
+                    setValue("parameters", newParameters);
                   }}
                   unit={unit}
                   value={field.value}
