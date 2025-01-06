@@ -41,6 +41,5 @@ export const selectAreaGroups = (async (
           );
 
   const areas = result.map((r) => r.area_group);
-
-  return areas.filter((g) => g !== null).sort();
+  return areas.filter((g): g is string => g !== null && g !== "").sort();
 }) satisfies IpcMainListener;

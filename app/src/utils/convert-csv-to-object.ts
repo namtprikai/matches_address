@@ -1,57 +1,55 @@
-import { readFile } from "fs/promises";
+import { createReadStream } from "fs";
 import { parse } from "csv-parse";
 
 interface Result {
-  data: Record<string, string>[];
   meta: {
     fields: string[];
     rowCount: number;
   };
 }
 
-export async function convertCsvToObject(filePath: string): Promise<Result> {
+export async function convertCsvToObject(
+  filePath: string,
+  onData: (record: Record<string, string>) => Promise<void>,
+): Promise<Result> {
   try {
-    // ファイルを読み込む
-    const fileContent = await readFile(filePath, {
-      encoding: "utf8",
-    });
+    return new Promise((resolve, reject) => {
+      let headers: string[] = [];
+      let rowCount = 0;
 
-    // CSVをパースしてPromiseを返す
-    const parseAsync = (): Promise<Result> => {
-      return new Promise((resolve, reject) => {
-        const records: Result["data"] = [];
-        const parser = parse(fileContent, {
-          columns: true, // 1行目をヘッダーとして扱う
-          skip_empty_lines: true, // 空行をスキップ
-          trim: true, // 値の前後の空白を削除
-          bom: true, // BOMを自動的に処理
-        });
+      const parser = parse({
+        columns: true,
+        skip_empty_lines: true,
+        trim: true,
+        bom: true,
+      });
 
-        parser.on("readable", () => {
-          let record;
-          while ((record = parser.read()) !== null) {
-            records.push(record);
-          }
-        });
-
-        parser.on("end", () => {
-          const headers = Object.keys(records[0] || {});
+      createReadStream(filePath, { encoding: "utf8" })
+        .pipe(parser)
+        .on("headers", (headerRow) => {
+          headers = headerRow;
+        })
+        .on("data", (record) => {
+          parser.pause();
+          onData(record)
+            .then(() => {
+              rowCount++;
+              parser.resume();
+            })
+            .catch(reject);
+        })
+        .on("end", () => {
           resolve({
-            data: records,
             meta: {
               fields: headers,
-              rowCount: records.length,
+              rowCount,
             },
           });
-        });
-
-        parser.on("error", (err) => {
+        })
+        .on("error", (err) => {
           reject(new Error(`CSVのパースに失敗しました: ${err.message}`));
         });
-      });
-    };
-
-    return await parseAsync();
+    });
   } catch (error) {
     console.error("CSVの処理中にエラーが発生しました:", error);
     throw error;

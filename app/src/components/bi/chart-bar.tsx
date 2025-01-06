@@ -13,7 +13,6 @@ import { useState } from "react";
 import { CHART_COLORS } from "../../config/chart-colors";
 import { useFetchFilterDataSetForChart } from "../../hooks/use-fetch-filtered-data-set-for-chart";
 import { type FilterDataSetForChartArgs } from "../../ipc-main-listeners/filter-data-set-for-chart";
-import { CustomTooltip } from "../custom-tooltip";
 import { Pagination } from "../ui/pagination";
 
 export type ChartBarProps = FilterDataSetForChartArgs;
@@ -83,7 +82,6 @@ export const ChartBar = (props: ChartBarProps): JSX.Element => {
           />
           <ReTooltip
             active={activeToolTip}
-            content={<CustomTooltip />}
             cursor={false}
             isAnimationActive={false}
             position={tooltipPosition}

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { makeStyles, tokens } from "@fluentui/react-components";
 import { useFetchReferenceDates } from "../../../hooks/use-fetch-reference-dates";
 import {
@@ -36,7 +36,13 @@ export function Map({ type, dataSetResultId, areas }: Props): JSX.Element {
     medium: true,
     high: true,
   });
-  const { data: referenceDates } = useFetchReferenceDates({ dataSetResultId });
+  const { data: rawReferenceDates } = useFetchReferenceDates({
+    dataSetResultId,
+  });
+  const referenceDates = useMemo(
+    () => rawReferenceDates?.sort((a, b) => b.localeCompare(a)),
+    [rawReferenceDates],
+  );
   const [selectedDate, setSelectedDate] = useState<string | undefined>(
     referenceDates?.[0],
   );

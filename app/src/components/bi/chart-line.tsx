@@ -14,7 +14,6 @@ import {
   Tooltip as FUIToolTip,
   makeStyles,
 } from "@fluentui/react-components";
-import { type ActiveShape } from "recharts/types/util/types";
 import { CHART_COLORS } from "../../config/chart-colors";
 import { useFetchFilterDataSetForChart } from "../../hooks/use-fetch-filtered-data-set-for-chart";
 import { type FilterDataSetForChartArgs } from "../../ipc-main-listeners/filter-data-set-for-chart";

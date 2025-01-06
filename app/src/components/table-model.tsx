@@ -12,14 +12,12 @@ import {
   MenuPopover,
   MenuList,
   MenuItem,
-  Link as FUILink,
   mergeClasses,
   Dialog,
   Textarea,
   Caption1,
 } from "@fluentui/react-components";
 import { MoreVerticalRegular } from "@fluentui/react-icons";
-import { Link } from "react-router-dom";
 
 import { useState } from "react";
 import { formatDate } from "../utils/format-date";
@@ -180,18 +178,7 @@ const TableRowItem = ({
 
   return (
     <TableRow key={item.id}>
-      <TableCell>
-        <Link to={`/analysis/model/${item.id}`}>
-          <FUILink
-            as="span"
-            style={{
-              fontWeight: 600,
-            }}
-          >
-            {item.file_name}
-          </FUILink>
-        </Link>
-      </TableCell>
+      <TableCell>{item.file_name}</TableCell>
       <TableCell>
         {item.note && (
           <Caption1 className={styles.note}>

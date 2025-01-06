@@ -23,20 +23,21 @@ const useStyles = makeStyles({
 
 type Props = {
   option: TileViewFieldOption["option"];
-  value: string;
+  initialValue: string;
   onSave: (value: string[]) => void;
 };
 
 export const DialogFieldOption = ({
   option,
   onSave,
-  value: initialValue,
+  initialValue,
 }: Props): JSX.Element => {
   const styles = useStyles();
 
   const [value, setValue] = useState<string[]>(
     initialValue.length > 0 ? initialValue.split(",") : [],
   );
+  const isAllCleared = value.length === 0;
 
   const handleClick = (): void => {
     onSave(value);
@@ -80,20 +81,23 @@ export const DialogFieldOption = ({
             })}
           </DialogContent>
           <DialogActions position="end">
-            <Button
-              onClick={() => {
-                setValue(option.map(({ value }) => value));
-              }}
-            >
-              すべて選択
-            </Button>
-            <Button
-              onClick={() => {
-                setValue([]);
-              }}
-            >
-              すべてクリア
-            </Button>
+            {isAllCleared ? (
+              <Button
+                onClick={() => {
+                  setValue(option.map(({ value }) => value));
+                }}
+              >
+                すべて選択
+              </Button>
+            ) : (
+              <Button
+                onClick={() => {
+                  setValue([]);
+                }}
+              >
+                すべてクリア
+              </Button>
+            )}
             <DialogTrigger>
               <Button appearance="primary" onClick={handleClick} size="medium">
                 保存
