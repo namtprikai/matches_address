@@ -11,13 +11,30 @@ import { Protocol } from "pmtiles";
 import { makeStyles } from "@fluentui/react-components";
 import { type Geometry } from "geojson";
 import { wktToGeoJSON } from "betterknown";
-import { type VacancyLevels } from "../vacancy-level-checkbox";
+import {
+  type VacancyLevel,
+  type VacancyLevels,
+} from "../vacancy-level-checkbox";
 import { addBuildingLayer } from "./add-building-layer";
 import { type BuildingProperties } from "./building-popup";
 import { addAreaLayer } from "./add-area-layer";
 
-export const PREDICTED_PROBABILITY_HIGH = 0.8;
-export const PREDICTED_PROBABILITY_MEDIUM = 0.3;
+export const PREDICTED_PROBABILITY: Record<
+  "building" | "area",
+  Record<VacancyLevel, number>
+> = {
+  building: {
+    low: 0,
+    medium: 0.3,
+    high: 0.8,
+  },
+  area: {
+    low: 0,
+    medium: 0.04,
+    high: 0.11,
+  },
+};
+
 const INITIAL_CENTER: [number, number] = [137.120435, 34.990565];
 
 const useMapComponentStyles = makeStyles({
@@ -287,7 +304,7 @@ export function MapComponent({
           filters.push([
             "<",
             ["get", "predicted_probability"],
-            PREDICTED_PROBABILITY_MEDIUM,
+            PREDICTED_PROBABILITY[type].medium,
           ]);
         }
         if (vacancyLevels.medium) {
@@ -296,16 +313,20 @@ export function MapComponent({
             [
               ">=",
               ["get", "predicted_probability"],
-              PREDICTED_PROBABILITY_MEDIUM,
+              PREDICTED_PROBABILITY[type].medium,
             ],
-            ["<", ["get", "predicted_probability"], PREDICTED_PROBABILITY_HIGH],
+            [
+              "<",
+              ["get", "predicted_probability"],
+              PREDICTED_PROBABILITY[type].high,
+            ],
           ]);
         }
         if (vacancyLevels.high) {
           filters.push([
             ">=",
             ["get", "predicted_probability"],
-            PREDICTED_PROBABILITY_HIGH,
+            PREDICTED_PROBABILITY[type].high,
           ]);
         }
 
@@ -318,6 +339,7 @@ export function MapComponent({
     [
       layerIds,
       mapInstance,
+      type,
       vacancyLevels.high,
       vacancyLevels.low,
       vacancyLevels.medium,

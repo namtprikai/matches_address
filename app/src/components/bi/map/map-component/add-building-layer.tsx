@@ -4,7 +4,7 @@ import { wktToGeoJSON } from "betterknown";
 import { type GeoJsonProperties, type Geometry, type Feature } from "geojson";
 import { type SelectDataSetDetailBuilding } from "../../../../schema";
 import { BuildingPopup, type BuildingProperties } from "./building-popup";
-import { PREDICTED_PROBABILITY_HIGH, PREDICTED_PROBABILITY_MEDIUM } from ".";
+import { PREDICTED_PROBABILITY } from ".";
 
 export function addBuildingLayer(
   map: Map,
@@ -48,6 +48,8 @@ export function addBuildingLayer(
     },
   });
 
+  const { medium, high } = PREDICTED_PROBABILITY["building"];
+
   map.addLayer({
     id: layerId,
     type: "fill",
@@ -57,9 +59,9 @@ export function addBuildingLayer(
     paint: {
       "fill-color": [
         "case",
-        [">=", ["get", "predicted_probability"], PREDICTED_PROBABILITY_HIGH],
+        [">=", ["get", "predicted_probability"], high],
         "#C4314B", // 赤 (80以上)
-        [">=", ["get", "predicted_probability"], PREDICTED_PROBABILITY_MEDIUM],
+        [">=", ["get", "predicted_probability"], medium],
         "#FFA929", // 黄 (30以上80未満)
         "#1B8C63", // 青 (30未満)
       ],
@@ -71,9 +73,9 @@ export function addBuildingLayer(
       ],
       "fill-outline-color": [
         "case",
-        [">=", ["get", "predicted_probability"], PREDICTED_PROBABILITY_HIGH],
+        [">=", ["get", "predicted_probability"], high],
         "#C4314B", // 赤 (80以上)
-        [">=", ["get", "predicted_probability"], PREDICTED_PROBABILITY_MEDIUM],
+        [">=", ["get", "predicted_probability"], medium],
         "#FFA929", // 黄 (30以上80未満)
         "#1B8C63", // 青 (30未満)
       ],

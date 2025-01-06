@@ -2,7 +2,7 @@ import { forwardRef } from "react";
 import { mergeClasses } from "@fluentui/react-components";
 import { type SelectDataSetDetailArea } from "../../../../schema";
 import styles from "./area-popup.module.css";
-import { PREDICTED_PROBABILITY_HIGH, PREDICTED_PROBABILITY_MEDIUM } from ".";
+import { PREDICTED_PROBABILITY } from ".";
 
 export type AreaProperties = Pick<
   SelectDataSetDetailArea,
@@ -24,9 +24,11 @@ export const AreaPopup = forwardRef<HTMLDivElement, Props>(
     const { predicted_probability } = properties;
     const predictedProbabilityColorStyle = (() => {
       if (predicted_probability === null) return;
-      if (predicted_probability >= PREDICTED_PROBABILITY_HIGH) {
+      if (predicted_probability >= PREDICTED_PROBABILITY["area"].high) {
         return styles.high;
-      } else if (predicted_probability >= PREDICTED_PROBABILITY_MEDIUM) {
+      } else if (
+        predicted_probability >= PREDICTED_PROBABILITY["area"].medium
+      ) {
         return styles.medium;
       } else {
         return styles.low;
