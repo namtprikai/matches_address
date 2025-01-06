@@ -17,6 +17,7 @@ export const TILE_VIEW_CONFIG = {
         option: [
           // ドロップダウンやセレクトボックスの選択肢を指定
           { unit: "building", value: "predicted_probability" },
+          { unit: "building", value: "predicted_label" },
           { unit: "building", value: "household_size" },
           { unit: "building", value: "members_under_15" },
           { unit: "building", value: "members_15_to_64" },
@@ -42,6 +43,7 @@ export const TILE_VIEW_CONFIG = {
         type: "select",
         option: [
           { unit: "building", value: "predicted_probability" },
+          { unit: "building", value: "predicted_label" },
           { unit: "building", value: "household_size" },
           { unit: "building", value: "members_under_15" },
           { unit: "building", value: "members_15_to_64" },
@@ -106,6 +108,7 @@ export const TILE_VIEW_CONFIG = {
         type: "select",
         option: [
           { unit: "building", value: "predicted_probability" },
+          { unit: "building", value: "predicted_label" },
           { unit: "building", value: "household_size" },
           { unit: "building", value: "members_under_15" },
           { unit: "building", value: "members_15_to_64" },

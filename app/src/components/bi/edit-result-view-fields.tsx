@@ -376,18 +376,18 @@ function getPieParameters(): SelectResultView["parameters"] {
       lastValue: 25,
     },
     {
-      label: "空き家確率25~50%",
-      startValue: 25,
+      label: "空き家確率26~50%",
+      startValue: 26,
       lastValue: 50,
     },
     {
-      label: "空き家確率50~75%",
-      startValue: 50,
+      label: "空き家確率51~75%",
+      startValue: 51,
       lastValue: 75,
     },
     {
-      label: "空き家確率75~100%",
-      startValue: 75,
+      label: "空き家確率76~100%",
+      startValue: 76,
       lastValue: 100,
     },
   ];
