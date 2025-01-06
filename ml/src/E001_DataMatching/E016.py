@@ -730,7 +730,7 @@ def add_residenceID(gdf):
     """
     # 'buildingID'列とランダムに生成された文字列を結合して'residenceID'列を作成
     gdf = gdf.reset_index(drop=True)
-    gdf['residenceID'] = gdf['building_id'].astype(str) + '-' + gdf.apply(lambda row: generate_random_string(), axis=1)
+    gdf['residenceID'] = gdf['building_id'].astype(str) + '-' + gdf.apply(lambda _: generate_random_string(), axis=1)
     
 def add_keycode(gdf, gpkg_path):
     """
