@@ -643,6 +643,9 @@ def assign_points_to_buildings(buildings_gdf, points_gdf, mul, crs, point_select
             gpd.GeoSeries(combined_gdf['geometry_plateau'], crs=combined_gdf.crs), crs
         )
         combined_gdf = gpd.GeoDataFrame(combined_gdf, geometry='geometry')
+        if 'building_id_left' in combined_gdf.columns and 'building_id' not in combined_gdf.columns:
+            combined_gdf.rename(columns={'building_id_left': 'building_id'}, inplace=True)
+
     else:
         # 空間結合(交差)の実行（ここで、水道のデータが2つ以上結合されている場合があるので、最も近いもののみを残す）
         joined = gpd.sjoin(points_gdf, buildings_gdf, how='left', predicate='intersects')
@@ -651,9 +654,12 @@ def assign_points_to_buildings(buildings_gdf, points_gdf, mul, crs, point_select
         joined["distance"] = joined.apply(lambda row: row["centroid"].distance(geometry_dict[row["ID"]]) if row["centroid"] is not None and row["ID"] in geometry_dict else None, axis=1)
         #　sjoinでindexが重複しているので、リセット
         joined = joined.reset_index(drop=True)
-        if 'building_id_left' in joined.columns:
-            joined = joined.rename(columns={'building_id_right': 'building_id'})
-        print(joined.head())
+        if 'building_id_left' in joined.columns and 'building_id' not in joined.columns:
+            if 'building_id_right' in joined.columns:
+                joined = joined.rename(columns={'building_id_right': 'building_id'})
+            else:
+                joined = joined.rename(columns={'building_id_left': 'building_id'})
+
         # IDが存在する行
         filtered_gdf = joined.dropna(subset=['ID'])
         
@@ -692,7 +698,6 @@ def assign_points_to_buildings(buildings_gdf, points_gdf, mul, crs, point_select
     unique_values_count = combined_gdf["ID"].nunique()
     join_ratio = round(unique_values_count/num_points*100, 2)
     combined_gdf = combined_gdf.drop(columns=["ID"])
-    combined_gdf.rename(columns={'building_id_left': 'building_id'}, inplace=True)
     return combined_gdf, join_ratio
 
 def generate_random_string(length=4):
