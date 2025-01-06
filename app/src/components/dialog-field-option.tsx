@@ -4,7 +4,7 @@ import {
   DialogTrigger,
   makeStyles,
 } from "@fluentui/react-components";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { type TileViewFieldOption } from "../@types/charts";
 import { BUILDING_DATASET_COLUMN_METADATA } from "../config/column-metadata";
 import { DialogSurface } from "./ui/dialog-surface";
@@ -23,25 +23,33 @@ const useStyles = makeStyles({
 
 type Props = {
   option: TileViewFieldOption["option"];
-  initialValue: string;
+  currentValue: string;
   onSave: (value: string[]) => void;
 };
 
 export const DialogFieldOption = ({
   option,
   onSave,
-  initialValue,
+  currentValue,
 }: Props): JSX.Element => {
   const styles = useStyles();
 
   const [value, setValue] = useState<string[]>(
-    initialValue.length > 0 ? initialValue.split(",") : [],
+    currentValue.length > 0 ? currentValue.split(",") : [],
   );
   const isAllCleared = value.length === 0;
 
   const handleClick = (): void => {
     onSave(value);
   };
+
+  // 選択した値を更新する。特に集計単位の変更時にダイアログの値をリセットするため
+  useEffect(
+    function updateValue() {
+      setValue(currentValue.length > 0 ? currentValue.split(",") : []);
+    },
+    [currentValue],
+  );
 
   return (
     <Dialog>
