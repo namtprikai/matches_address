@@ -14,12 +14,13 @@ import {
   type VacancyLevel,
   type VacancyLevels,
 } from "../vacancy-level-checkbox";
+import { type MapProps } from "..";
 import { addBuildingLayer } from "./add-building-layer";
 import { type BuildingProperties } from "./building-popup";
 import { addAreaLayer } from "./add-area-layer";
 
 export const PREDICTED_PROBABILITY: Record<
-  "building" | "area",
+  MapProps["type"],
   Record<VacancyLevel, number>
 > = {
   building: {
