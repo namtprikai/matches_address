@@ -10,7 +10,6 @@ import {
 import { Protocol } from "pmtiles";
 import { makeStyles } from "@fluentui/react-components";
 import { type Geometry } from "geojson";
-import { wktToGeoJSON } from "betterknown";
 import {
   type VacancyLevel,
   type VacancyLevels,
