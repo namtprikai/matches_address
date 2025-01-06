@@ -12,7 +12,6 @@ import {
   MenuPopover,
   MenuList,
   MenuItem,
-  Link as FUILink,
   mergeClasses,
   Dialog,
   Textarea,
@@ -179,19 +178,7 @@ const TableRowItem = ({
 
   return (
     <TableRow key={item.id}>
-      <TableCell>
-        {/* MEMO: もともとリンクにしていたが、現状飛ばす先のページがないためコメントアウト。仕様によってはそもそもリンクを外すでも良さそう。 */}
-        {/* <Link to={`/analysis/model/${item.id}`}> */}
-        <FUILink
-          as="span"
-          style={{
-            fontWeight: 600,
-          }}
-        >
-          {item.file_name}
-        </FUILink>
-        {/* </Link> */}
-      </TableCell>
+      <TableCell>{item.file_name}</TableCell>
       <TableCell>
         {item.note && (
           <Caption1 className={styles.note}>
