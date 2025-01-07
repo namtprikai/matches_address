@@ -23,13 +23,13 @@ const useStyles = makeStyles({
   },
 });
 
-interface Props {
+export interface MapProps {
   dataSetResultId: number;
   type: "building" | "area";
   areas: string[] | undefined;
 }
 
-export function Map({ type, dataSetResultId, areas }: Props): JSX.Element {
+export function Map({ type, dataSetResultId, areas }: MapProps): JSX.Element {
   const styles = useStyles();
   const [vacancyLevels, setVacancyLevels] = useState<VacancyLevels>({
     low: true,
@@ -65,6 +65,7 @@ export function Map({ type, dataSetResultId, areas }: Props): JSX.Element {
           <div>
             <VacancyLevelCheckbox
               setVacancyLevels={setVacancyLevels}
+              type={type}
               vacancyLevels={vacancyLevels}
             />
           </div>
