@@ -44,10 +44,11 @@ def main():
         connect_sqllite(params.get('db_path'))
 
         job_id = create_or_update_job(None ,"", "export", os.getpid(), 0, args.parameters)
+        output_format = params.get('output_format')
         if params.get('output_format') == 'geopackage':
-            file_path = f"{output_directory}.gpkg"
-        else:
-            file_path = f"{output_directory}.{params.get('output_format')}"
+            output_format = 'gpkg'
+
+        file_path = f"{output_directory}.{output_format}"
         
         new_params = {
             'data_set_results_id': params.get('data_set_results_id'),
@@ -60,7 +61,7 @@ def main():
         E033(new_params, job_id, params.get('db_path'))
         create_or_update_job(job_id, "complete")
 
-        create_job_results(job_id, f"{random_str}.{params.get('output_format')}")
+        create_job_results(job_id, f"{random_str}.{output_format}")
     except Exception as e:
         print(e)
         if job_id:
