@@ -11,12 +11,21 @@ const config: ForgeConfig = {
   packagerConfig: {
     asar: true,
     extraResource: ["../ml/dist", "drizzle", "../app/dummy-data"],
+    osxSign: {},
+    win32metadata: {
+      CompanyName: "国土交通省総合政策局情報政策課",
+      FileDescription: "行政データと機械学習技術を用いた地域空き家推定システム",
+      OriginalFilename: "links-soma.exe",
+      ProductName: "LINKS SOMA 空き家推定システム",
+      InternalName: "links-soma",
+    },
   },
   rebuildConfig: {},
   makers: [
     new MakerSquirrel({
       authors: "国土交通省総合政策局情報政策課",
       description: "行政データと機械学習技術を用いた地域空き家推定システム",
+      noMsi: true,
     }),
     new MakerZIP({}, ["darwin"]),
     new MakerRpm({}),
