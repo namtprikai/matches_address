@@ -384,7 +384,7 @@ function DeleteDialog({ onSubmit }: { onSubmit: () => void }): JSX.Element {
   );
 }
 
-const OUTPUT_COORDINATES = [
+export const OUTPUT_COORDINATES = [
   {
     name: "EPSG:4326 (WGS84)",
     code: "4326",
