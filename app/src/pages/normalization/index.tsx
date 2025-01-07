@@ -62,7 +62,6 @@ export function Normalization(): JSX.Element {
           名寄せ処理を始める
         </Button>
 
-        <h4>処理一覧</h4>
         <TableJobsByType jobType="preprocess" />
       </Card>
     </div>
