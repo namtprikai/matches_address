@@ -21,7 +21,10 @@ const fetcher = async ([jobId, type, page, limitPerPage, _key]: [
     page,
     limitPerPage,
   };
-  const result = await window.ipcRenderer.invoke("selectJobs", params);
+  const result = await window.ipcRenderer.invoke(
+    "selectJobsWithPagination",
+    params,
+  );
   return result;
 };
 
