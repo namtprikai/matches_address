@@ -73,7 +73,7 @@ export const FormFilteringResultView = ({
           <Button appearance="primary" size="medium">
             {countActiveOptions === 0
               ? "フィルターを追加"
-              : `フェイルターを編集：${countActiveOptions}件設定中`}
+              : `フィルターを編集：${countActiveOptions}件設定中`}
           </Button>
         ) : (
           <Button appearance="outline" size="small">

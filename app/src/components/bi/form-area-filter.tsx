@@ -1,4 +1,11 @@
-import { Fragment, lazy, Suspense, useDeferredValue, useState } from "react";
+import {
+  Fragment,
+  lazy,
+  Suspense,
+  useDeferredValue,
+  useEffect,
+  useState,
+} from "react";
 import {
   Dialog,
   DialogTrigger,
@@ -95,6 +102,14 @@ const useHandleAreas = ({
   const handleSearchText = (e: React.ChangeEvent<HTMLInputElement>): void => {
     setSearchText(e.target.value);
   };
+
+  // 選択した値を更新する。特に集計単位の変更時にダイアログの値をリセットするため
+  useEffect(
+    function updateAreas() {
+      setSelectedAreas(areas);
+    },
+    [areas],
+  );
 
   return {
     handleClick,
