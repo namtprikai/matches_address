@@ -36,13 +36,9 @@ export function Map({ type, dataSetResultId, areas }: Props): JSX.Element {
     medium: true,
     high: true,
   });
-  const { data: rawReferenceDates } = useFetchReferenceDates({
+  const { data: referenceDates } = useFetchReferenceDates({
     dataSetResultId,
   });
-  const referenceDates = useMemo(
-    () => rawReferenceDates?.sort((a, b) => b.localeCompare(a)),
-    [rawReferenceDates],
-  );
   const [selectedDate, setSelectedDate] = useState<string | undefined>(
     referenceDates?.[0],
   );
