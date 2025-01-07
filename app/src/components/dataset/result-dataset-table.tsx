@@ -215,10 +215,10 @@ function Row({
     limitPerPage: pagination.limitPerPage,
   });
 
+  // TODO: Pythonの処理を呼び出す
   const handleDownload = async (): Promise<void> => {
     switch (selectedUnit) {
       case "building": {
-        // TODO: 全件取得する
         const data = await window.ipcRenderer.invoke(
           "selectBuildingsInBatches",
           {
@@ -231,7 +231,6 @@ function Row({
         break;
       }
       case "area": {
-        // TODO: 全件取得する
         const data = await window.ipcRenderer.invoke("selectAreasInBatches", {
           dataSetResultId: item.id,
           batchSize: 100,
