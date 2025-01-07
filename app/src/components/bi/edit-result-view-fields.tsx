@@ -238,9 +238,9 @@ export const EditResultViewFields = ({
                           }}
                           value={groupCalc?.value}
                         >
+                          <option value="count">総件数（世帯数）</option>
                           <option value="avg">値の平均</option>
                           <option value="sum">値の合計</option>
-                          <option value="count">総件数（世帯数）</option>
                         </Select>
                       )
                   }
