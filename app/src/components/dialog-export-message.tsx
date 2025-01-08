@@ -18,7 +18,10 @@ export const DialogExportMessage = ({ dialogState }: Props): JSX.Element => {
 
   return (
     <Dialog
-      onOpenChange={(_, { open }) => setIsDialogOpen(open)}
+      onOpenChange={(e, { open }) => {
+        e.stopPropagation();
+        setIsDialogOpen(open);
+      }}
       open={isDialogOpen}
     >
       <DialogSurface>

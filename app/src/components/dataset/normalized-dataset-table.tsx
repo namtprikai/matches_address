@@ -228,10 +228,6 @@ function Row({
           }
           datasetName={item.file_name}
           dialogState={dataPreviewDialogState}
-          onDelete={onDelete}
-          onDownload={async () => {
-            await handleDownload();
-          }}
         />
       </TableCell>
       <TableCell>{formatDate(item.updated_at, "YYYY/MM/DD")}</TableCell>

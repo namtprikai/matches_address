@@ -21,6 +21,7 @@ import {
   Radio,
   RadioGroup,
   DialogTrigger,
+  Option,
 } from "@fluentui/react-components";
 import {
   ArrowDownloadRegular,
@@ -31,7 +32,6 @@ import {
   type SetStateAction,
   type MouseEvent,
   useState,
-  type ReactElement,
 } from "react";
 import { Button } from "../ui/button";
 import { useFetchDataSetResults } from "../../hooks/use-fetch-data-set-results";
@@ -43,13 +43,18 @@ import { DialogTitle } from "../ui/dialog-title";
 import { DialogContent } from "../ui/dialog-content";
 import { DialogActions } from "../ui/dialog-actions";
 import { DialogSurface } from "../ui/dialog-surface";
-import { downloadObjectsAsCSV } from "../../utils/download-objects-as-csv";
 import {
   type ResultDataSetsResponse,
   useFetchResultDataSetsWithPagination,
 } from "../../hooks/use-fetch-result-data-sets-with-pagination";
 import { usePagination } from "../../hooks/use-pagination";
 import { Pagination } from "../ui/pagination";
+import { Dropdown } from "../ui/dropdown";
+import { OUTPUT_COORDINATES } from "../bi/tile-result-view";
+import { OUTPUT_FILE_TYPES } from "../../config/file-types";
+import { useFetchReferenceDates } from "../../hooks/use-fetch-reference-dates";
+import { type ReferenceDate } from "../../ipc-main-listeners/select-reference-dates";
+import { DialogExportMessage } from "../dialog-export-message";
 import { DeleteRowDialog } from "./delete-row-dialog";
 import { EditNameDialog } from "./edit-name-dialog";
 import { DataPreviewDialog } from "./data-preview-dialog";
@@ -83,6 +88,14 @@ const useStyles = makeStyles({
   radioGroup: {
     marginTop: tokens.spacingVerticalM,
     marginLeft: "-8px",
+  },
+  dropdown: {
+    display: "flex",
+    flexDirection: "column",
+    gap: tokens.spacingVerticalXS,
+    "& > label": {
+      fontSize: "12px",
+    },
   },
 });
 
@@ -205,6 +218,7 @@ function Row({
 }: RowProps): JSX.Element {
   const styles = useStyles();
   const dataPreviewDialogState = useDialogState(false);
+  const exportDialogState = useDialogState(false);
   const [selectedUnit, setSelectedUnit] =
     useState<ResultDataSetUnit>("building");
   const pagination = usePagination(50);
@@ -214,38 +228,8 @@ function Row({
     page: pagination.page,
     limitPerPage: pagination.limitPerPage,
   });
-
-  const handleDownload = async (): Promise<void> => {
-    switch (selectedUnit) {
-      case "building": {
-        // TODO: 全件取得する
-        const data = await window.ipcRenderer.invoke(
-          "selectBuildingsInBatches",
-          {
-            dataSetResultId: item.id,
-            batchSize: 100,
-          },
-        );
-        if (!data) return;
-        void downloadObjectsAsCSV(data, item.title || "");
-        break;
-      }
-      case "area": {
-        // TODO: 全件取得する
-        const data = await window.ipcRenderer.invoke("selectAreasInBatches", {
-          dataSetResultId: item.id,
-          batchSize: 100,
-        });
-        if (!data) return;
-        void downloadObjectsAsCSV(data, item.title || "");
-        break;
-      }
-      default: {
-        const exhaustiveCheck: never = selectedUnit;
-        throw new Error(`Unhandled unit: ${exhaustiveCheck}`);
-      }
-    }
-  };
+  const { data: referenceDates, isLoading: isLoadingReferenceDates } =
+    useFetchReferenceDates({ dataSetResultId: item.id });
 
   return (
     <>
@@ -261,23 +245,13 @@ function Row({
         />
         <TableCell>
           <SelectUnitDialog
-            buttonText="プレビューを見る"
-            dialogTriggerChildren={
-              <Button
-                appearance="transparent"
-                className={styles.datasetButton}
-                onClick={(e) => e.stopPropagation()}
-              >
-                {item.title}
-              </Button>
-            }
+            datasetName={item.title}
             onChange={(unit) => setSelectedUnit(unit)}
             onSubmit={() => {
               pagination.handlePageChange(1);
               pagination.handleLimitPerPageChange(50);
               dataPreviewDialogState.setIsOpen(true);
             }}
-            title="データのプレビュー"
           />
           <DataPreviewDialog
             content={
@@ -291,30 +265,18 @@ function Row({
             datasetName={item.title}
             dialogState={dataPreviewDialogState}
             hideTrigger
-            onDelete={onDelete}
-            onDownload={async () => {
-              await handleDownload();
-            }}
           />
         </TableCell>
         <TableCell>{formatDate(item.updated_at, "YYYY/MM/DD")}</TableCell>
         <TableCell className={styles.actions}>
-          <SelectUnitDialog
-            buttonText="ダウンロード"
-            dialogTriggerChildren={
-              <Button
-                appearance="subtle"
-                aria-label="ダウンロード"
-                icon={<ArrowDownloadRegular />}
-                onClick={(e) => e.stopPropagation()}
-              />
-            }
-            onChange={(unit) => setSelectedUnit(unit)}
-            onSubmit={() => {
-              void handleDownload();
-            }}
-            title="データのダウンロード"
-          />
+          {isLoadingReferenceDates ? null : (
+            <DownloadDialog
+              dataSetResultId={item.id}
+              onSubmit={() => exportDialogState.setIsOpen(true)}
+              referenceDates={referenceDates || []}
+            />
+          )}
+          <DialogExportMessage dialogState={exportDialogState} />
           <RowMenu item={item} onDelete={onDelete} />
         </TableCell>
       </TableRow>
@@ -322,18 +284,164 @@ function Row({
   );
 }
 
+function DownloadDialog({
+  referenceDates,
+  dataSetResultId,
+  onSubmit,
+}: {
+  referenceDates: ReferenceDate[];
+  dataSetResultId: SelectDataSetResult["id"];
+  onSubmit: () => void;
+}): JSX.Element {
+  const styles = useStyles();
+  const { isOpen, setIsOpen } = useDialogState(false);
+  const [selectedUnit, setSelectedUnit] =
+    useState<ResultDataSetUnit>("building");
+  const [selectedFileType, setSelectedFileType] = useState(
+    OUTPUT_FILE_TYPES[0].type,
+  );
+  const [selectedCoordinate, setSelectedCoordinate] = useState(
+    OUTPUT_COORDINATES[0].code,
+  );
+  const [selectedReferenceDate, setSelectedReferenceDate] = useState<string>(
+    referenceDates[0],
+  );
+
+  const handleDownload = async (): Promise<void> => {
+    await window.ipcRenderer
+      .invoke("exportData", {
+        data: {
+          parameterType: "export",
+          data_set_results_id: dataSetResultId,
+          target_unit: selectedUnit,
+          output_file_type: selectedFileType,
+          output_coordinate: selectedCoordinate,
+          reference_date: selectedReferenceDate,
+        },
+      })
+      .then(onSubmit);
+  };
+
+  return (
+    <Dialog onOpenChange={(_, { open }) => setIsOpen(open)} open={isOpen}>
+      <DialogTrigger disableButtonEnhancement>
+        <Button
+          appearance="subtle"
+          aria-label="ダウンロード"
+          icon={<ArrowDownloadRegular />}
+          onClick={(e) => e.stopPropagation()}
+        />
+      </DialogTrigger>
+      <DialogSurface onClick={(e) => e.stopPropagation()}>
+        <DialogBody>
+          <DialogTitle>データのダウンロード</DialogTitle>
+          <DialogContent>
+            <div>
+              <p>
+                空き家推定結果データは以下の2つのデータが含まれます。
+                どちらか選択してください。
+              </p>
+              <Field className={styles.radioGroup}>
+                <RadioGroup
+                  defaultValue={selectedUnit}
+                  onChange={(_, data) =>
+                    setSelectedUnit(data.value as ResultDataSetUnit)
+                  }
+                >
+                  <Radio label="建物単位" value="building" />
+                  <Radio label="地域単位" value="area" />
+                </RadioGroup>
+              </Field>
+            </div>
+
+            <div className={styles.dropdown}>
+              <label id="output-file-type">出力ファイル形式</label>
+              <Dropdown
+                aria-labelledby="output-file-type"
+                defaultSelectedOptions={[OUTPUT_FILE_TYPES[0].type]}
+                defaultValue={OUTPUT_FILE_TYPES[0].name}
+                onOptionSelect={(_, data) =>
+                  data.optionValue && setSelectedFileType(data.optionValue)
+                }
+              >
+                {OUTPUT_FILE_TYPES.map((option) => (
+                  <Option
+                    key={option.type}
+                    text={option.name}
+                    value={option.type}
+                  >
+                    {option.name}
+                  </Option>
+                ))}
+              </Dropdown>
+            </div>
+            <div className={styles.dropdown}>
+              <label id="output-coordinate">出力座標系</label>
+              <Dropdown
+                aria-labelledby="output-coordinate"
+                defaultSelectedOptions={[OUTPUT_COORDINATES[0].code]}
+                defaultValue={OUTPUT_COORDINATES[0].name}
+                onOptionSelect={(_, data) =>
+                  data.optionValue && setSelectedCoordinate(data.optionValue)
+                }
+              >
+                {OUTPUT_COORDINATES.map((option) => (
+                  <Option
+                    key={option.code}
+                    text={option.name}
+                    value={option.code}
+                  >
+                    {option.name}
+                  </Option>
+                ))}
+              </Dropdown>
+            </div>
+            <div className={styles.dropdown}>
+              <label id="reference-date">推定日</label>
+              {selectedReferenceDate && (
+                <Dropdown
+                  aria-labelledby="reference-date"
+                  defaultSelectedOptions={[selectedReferenceDate]}
+                  defaultValue={selectedReferenceDate}
+                  onOptionSelect={(_, data) =>
+                    setSelectedReferenceDate(data.optionValue || "")
+                  }
+                >
+                  {referenceDates?.map((date) => (
+                    <Option key={date} value={date}>
+                      {date}
+                    </Option>
+                  ))}
+                </Dropdown>
+              )}
+            </div>
+          </DialogContent>
+          <DialogActions>
+            <Button
+              appearance="primary"
+              onClick={() => {
+                void handleDownload();
+                setIsOpen(false);
+              }}
+              size="medium"
+            >
+              ダウンロード準備を開始する
+            </Button>
+          </DialogActions>
+        </DialogBody>
+      </DialogSurface>
+    </Dialog>
+  );
+}
+
 function SelectUnitDialog({
-  title,
-  buttonText,
+  datasetName,
   onChange,
   onSubmit,
-  dialogTriggerChildren,
 }: {
-  title: string;
-  buttonText: string;
+  datasetName: string | null;
   onChange: (unit: ResultDataSetUnit) => void;
   onSubmit: () => void;
-  dialogTriggerChildren: ReactElement;
 }): JSX.Element {
   const styles = useStyles();
   const [open, setOpen] = useState(false);
@@ -348,11 +456,17 @@ function SelectUnitDialog({
       open={open}
     >
       <DialogTrigger disableButtonEnhancement>
-        {dialogTriggerChildren}
+        <Button
+          appearance="transparent"
+          className={styles.datasetButton}
+          onClick={(e) => e.stopPropagation()}
+        >
+          {datasetName}
+        </Button>
       </DialogTrigger>
       <DialogSurface onClick={(e) => e.stopPropagation()}>
         <DialogBody>
-          <DialogTitle>{title}</DialogTitle>
+          <DialogTitle>データのプレビュー</DialogTitle>
           <DialogContent>
             <p>
               空き家推定結果データは以下の2つのデータが含まれます。
@@ -379,7 +493,7 @@ function SelectUnitDialog({
               }}
               size="medium"
             >
-              {buttonText}
+              プレビューを見る
             </Button>
           </DialogActions>
         </DialogBody>

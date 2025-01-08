@@ -1,4 +1,4 @@
-import { eq } from "drizzle-orm";
+import { eq, desc } from "drizzle-orm";
 import {
   data_set_detail_buildings,
   type SelectDataSetDetailBuilding,
@@ -21,7 +21,8 @@ export const selectReferenceDates = (async (
       reference_date: data_set_detail_buildings.reference_date,
     })
     .from(data_set_detail_buildings)
-    .where(eq(data_set_detail_buildings.data_set_result_id, dataSetResultId));
+    .where(eq(data_set_detail_buildings.data_set_result_id, dataSetResultId))
+    .orderBy(desc(data_set_detail_buildings.reference_date));
 
   return result.map((r) => r.reference_date);
 }) satisfies IpcMainListener;
