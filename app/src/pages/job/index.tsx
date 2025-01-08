@@ -72,18 +72,20 @@ export function Job(): JSX.Element {
       <h2 className={styles.heading}>処理一覧</h2>
 
       <Card className={styles.content}>
-        <div className={styles.paginationWrapper}>
-          <Pagination {...pagination} />
-        </div>
         {hasData ? (
-          <Table className={styles.table}>
-            <TableHeaderJobs />
-            <TableBody>
-              {data.map((item) => (
-                <TableRowJobs key={item.id} item={item} />
-              ))}
-            </TableBody>
-          </Table>
+          <>
+            <div className={styles.paginationWrapper}>
+              <Pagination {...pagination} />
+            </div>
+            <Table className={styles.table}>
+              <TableHeaderJobs />
+              <TableBody>
+                {data.map((item) => (
+                  <TableRowJobs key={item.id} item={item} />
+                ))}
+              </TableBody>
+            </Table>
+          </>
         ) : (
           <div className={styles.noData}>現在表示できる処理はありません</div>
         )}

@@ -75,13 +75,17 @@ export const TableJobsByType = ({ jobType }: Props): JSX.Element => {
     return <p className={styles.notFound}>現在実行中の処理はありません</p>;
   }
 
+  const hasData = data && data.length > 0;
+
   return (
     <>
       <div className={styles.header}>
         <h4 className={styles.h4}>処理一覧</h4>
-        <div className={styles.paginationWrapper}>
-          <Pagination {...pagination} />
-        </div>
+        {hasData && (
+          <div className={styles.paginationWrapper}>
+            <Pagination {...pagination} />
+          </div>
+        )}
       </div>
       <Table className={styles.table}>
         <TableHeaderJobs />
