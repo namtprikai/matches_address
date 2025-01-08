@@ -238,9 +238,9 @@ export const EditResultViewFields = ({
                           }}
                           value={groupCalc?.value}
                         >
-                          <option value="count">総件数（世帯数）</option>
                           <option value="avg">値の平均</option>
                           <option value="sum">値の合計</option>
+                          <option value="count">総件数（世帯数）</option>
                         </Select>
                       )
                   }
@@ -367,7 +367,13 @@ function getLineParameters(
     type: "group",
   }));
 
-  return result;
+  const groupingOption = {
+    key: "group_calc",
+    type: "group_option",
+    value: "avg",
+  };
+
+  return [...result, groupingOption] as SelectResultView["parameters"];
 }
 
 function getPieParameters(): SelectResultView["parameters"] {
@@ -413,5 +419,11 @@ function getPieParameters(): SelectResultView["parameters"] {
     type: "group",
   }));
 
-  return result;
+  const groupingOption = {
+    key: "group_calc",
+    type: "group_option",
+    value: "count",
+  };
+
+  return [...result, groupingOption] as SelectResultView["parameters"];
 }

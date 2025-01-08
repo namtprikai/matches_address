@@ -108,7 +108,7 @@ export const BuildingPopup = forwardRef<HTMLDivElement, Props>(
             <div className={styles.item}>
               <span className={styles.itemLabel}>水道使用状況</span>
               <span className={styles.itemValue}>
-                {properties.water_disconnection_flag === 1 ? "開" : "閉"}
+                {properties.water_disconnection_flag === 0 ? "開" : "閉"}
               </span>
             </div>
           </div>

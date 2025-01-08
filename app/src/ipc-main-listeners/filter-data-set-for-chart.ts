@@ -60,6 +60,24 @@ export const filterDataSetForChart = ((
     offset = 0,
   }: FilterDataSetForChartArgs,
 ): FilterDataSetForChartResponse => {
+  // ページネーションのためにoffsetを調整する関数。現在総件数を超えたOffsetが指定された場合は、最終ページのOffsetに調整する。
+  // できればクエリのインターフェースを、page, perPageとして、それらを元にoffsetを計算するようにしたい。
+  const getAdjustedOffset = (
+    totalCount: number,
+    requestedOffset: number,
+    pageLimit: number,
+  ): number => {
+    if (requestedOffset >= totalCount) {
+      // Calculate the offset for the last page
+      const lastPageOffset = Math.max(
+        0,
+        Math.floor((totalCount - 1) / pageLimit) * pageLimit,
+      );
+      return lastPageOffset;
+    }
+    return requestedOffset;
+  };
+
   if (type === "area") {
     // eslint-disable-next-line @typescript-eslint/explicit-function-return-type -- ignore
     const getAll = () => {
@@ -119,12 +137,24 @@ export const filterDataSetForChart = ((
           }[];
       }
 
+      // Get total count first
+      const totalCount = Number(
+        db
+          .select({ count: sql`count(*)` })
+          .from(filterSubQuery)
+          .where(eq(filterSubQuery.data_set_result_id, resultId))
+          .get()?.count ?? 0,
+      );
+
+      // Adjust offset based on total count
+      const adjustedOffset = getAdjustedOffset(totalCount, offset, limit);
+
       return db
         .select()
         .from(filterSubQuery)
         .where(eq(filterSubQuery.data_set_result_id, resultId))
         .limit(limit)
-        .offset(offset)
+        .offset(adjustedOffset)
         .all();
     };
     const all = getAll();
@@ -243,12 +273,24 @@ export const filterDataSetForChart = ((
           }[]; // drizzle側で型補完が効かないため、型を指定
       }
 
+      // Get total count first
+      const totalCount = Number(
+        db
+          .select({ count: sql`count(*)` })
+          .from(filterSubQuery)
+          .where(eq(filterSubQuery.data_set_result_id, resultId))
+          .get()?.count ?? 0,
+      );
+
+      // Adjust offset based on total count
+      const adjustedOffset = getAdjustedOffset(totalCount, offset, limit);
+
       return db
         .select()
         .from(filterSubQuery)
         .where(eq(filterSubQuery.data_set_result_id, resultId))
         .limit(limit)
-        .offset(offset)
+        .offset(adjustedOffset)
         .all();
     };
     const all = getAll();

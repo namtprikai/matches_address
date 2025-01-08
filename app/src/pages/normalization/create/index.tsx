@@ -140,7 +140,7 @@ export function NormalizationCreate(): JSX.Element {
                       navigator("/normalization");
                     }}
                   >
-                    処理のステータスを確認する
+                    処理のステータスを確認
                   </Button>
                 </DialogActions>
               </DialogBody>

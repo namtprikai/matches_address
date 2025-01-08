@@ -29,7 +29,7 @@ export const DialogModelMessage = ({ dialogState }: Props): JSX.Element => {
           </DialogContent>
           <DialogActions>
             <Button appearance="primary" onClick={() => navigator("/model")}>
-              処理のステータスを確認する
+              処理のステータスを確認
             </Button>
           </DialogActions>
         </DialogBody>

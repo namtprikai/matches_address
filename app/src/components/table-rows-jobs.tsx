@@ -5,6 +5,7 @@ import {
   tokens,
   TableCell,
   mergeClasses,
+  Spinner,
 } from "@fluentui/react-components";
 import { useNavigate } from "react-router-dom";
 import { type SelectJob } from "../schema";
@@ -31,6 +32,11 @@ const useStyles = makeStyles({
       backgroundColor: tokens.colorNeutralBackground1Hover,
       cursor: "pointer",
     },
+  },
+  statusContainer: {
+    display: "flex",
+    alignItems: "center",
+    gap: "8px",
   },
   statusCellContainer: {
     display: "flex",
@@ -88,17 +94,20 @@ export const TableRowJobs = ({ item }: { item: SelectJob }): JSX.Element => {
           : "不明"}
       </TableCell>
       <TableCell className={styles.tableCell}>
-        <div className={styles.statusCellContainer}>
-          <span
-            className={mergeClasses(
-              styles.statusCell,
-              item.status === "error" && styles.statusCellError,
-              item.status === "complete" && styles.statusCellComplete,
-            )}
-          >
-            {statusInfo.label}
-          </span>
-          {statusInfo.icon}
+        <div className={styles.statusContainer}>
+          <div className={styles.statusCellContainer}>
+            <span
+              className={mergeClasses(
+                styles.statusCell,
+                item.status === "error" && styles.statusCellError,
+                item.status === "complete" && styles.statusCellComplete,
+              )}
+            >
+              {statusInfo.label}
+            </span>
+            {statusInfo.icon}
+          </div>
+          {item.status === "" && <Spinner size="tiny" />}
         </div>
       </TableCell>
       <TableCell className={styles.tableCell}>

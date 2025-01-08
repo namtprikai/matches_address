@@ -515,9 +515,8 @@ export const JobEvaluationCreate = (): JSX.Element => {
                     analysisStartDialogState.setIsOpen(false);
                     navigate("/evaluation");
                   }}
-                  size="medium"
                 >
-                  処理のステータスを確認する
+                  処理のステータスを確認
                 </Button>
               </DialogActions>
             </DialogBody>

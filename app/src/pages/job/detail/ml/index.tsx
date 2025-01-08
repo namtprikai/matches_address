@@ -166,6 +166,14 @@ const useStyles = makeStyles({
     borderRadius: tokens.borderRadiusSmall,
     width: "100%",
   },
+  callout: {
+    backgroundColor: "#ecf2ef",
+    color: "#09583B",
+    padding: `${tokens.spacingVerticalS} ${tokens.spacingHorizontalM}`,
+    borderRadius: tokens.borderRadiusSmall,
+    width: "100%",
+    marginTop: tokens.spacingVerticalS,
+  },
   saveWithNameButton: {
     backgroundColor: "#09583B",
     color: "#fff",
@@ -341,6 +349,28 @@ export function MlDetail(): JSX.Element {
                 学習データ量が少なすぎます。正答率を上げるためには、〇〇以上のデータに修正して再実行をしてください。
               </div>
             )}
+            <div className={styles.callout}>
+              <Text>
+                各指標について：
+                <ul style={{ margin: "8px 0 0 20px", padding: 0 }}>
+                  <li>
+                    正解率：全てのケースのうち、空き家と非空き家を正しく判定できた割合
+                  </li>
+                  <li>
+                    F値：適合率と再現率のバランスを示す指標。空き家判定の総合的な性能を表す
+                  </li>
+                  <li>
+                    特異度：実際に非空き家である物件を、正しく非空き家と判定できた割合
+                  </li>
+                  <li>
+                    適合率：空き家と判定した物件のうち、実際に空き家だった割合
+                  </li>
+                  <li>
+                    再現率：実際の空き家のうち、正しく空き家と判定できた割合
+                  </li>
+                </ul>
+              </Text>
+            </div>
           </div>
           {/* 棒グラフ */}
           <div className={styles.columnContainer}>
