@@ -33,6 +33,7 @@ from shapely import wkt, wkb
 from shapely.geometry import Point
 from pyproj import CRS, Transformer
 from shapely.ops import transform
+from pandas.errors import ParserError
 
 pd.set_option("display.max_columns", None)
 
@@ -259,13 +260,20 @@ def read_csv(path: str, **kwargs) -> pd.DataFrame:
             raise ValueError(f"CSVファイル以外は対応していません: {file_extension}")
         
         # 複数のエンコーディングを試行                
-        encodings = ['utf-8-sig']
+        encodings = [
+                        'utf-8-sig','euc_jp','shift_jis','cp932','shift_jis_2004','shift_jisx0213',
+                        'euc_jis_2004','euc_jisx0213','iso2022_jp','iso2022_jp_1','iso2022_jp_2',
+                        'iso2022_jp_2004','iso2022_jp_3','iso2022_jp_ext',
+                    ]
         for encoding in encodings:
             try:
                 # 各エンコーディングでファイルの読み込みを試みる
                 return pd.read_csv(path, encoding=encoding, **kwargs)
             except UnicodeDecodeError:
                 # デコードエラーが発生した場合、次のエンコーディングを試す
+                continue
+            except ParserError:
+                # ParserErrorが発生した場合、次のエンコーディングを試す
                 continue
         
         # 自動でエンコーディングを検出し、再度読み込みを試みる
@@ -1005,7 +1013,7 @@ def process_data(tatemono_path, e14_merged_path, gpkg_path, ken, sikuchoson, opt
         
         # 建物データと水道データを読み込み、処理
         tatemono = load_and_process_data(tatemono_path, crs, geometry, file_type, data_type)
-        e14_merged = load_and_process_data(e14_merged_path, crs, geometry, file_type, None)
+        e14_merged = load_and_process_data(e14_merged_path, crs, None, 'csv', None)
 
         if job_id:
             create_or_update_job_task(job_id, progress_percent="20", preprocess_type="e016", error_code=None, error_msg=None, result=None, id= task_id)

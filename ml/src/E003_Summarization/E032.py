@@ -18,6 +18,8 @@ from shapely import wkt
 from datetime import datetime
 import argparse
 import chardet
+from pandas.errors import ParserError
+import fiona
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
 async_tasks_path = os.path.join(current_dir, '..', 'async_tasks')
@@ -305,6 +307,61 @@ class Summarization:
             set_error(ERROR_20013)
             raise
             # print(f"Error when insert SQLite: {e}")
+
+    def read_file(self, path: str, **kwargs):
+        """
+        CSVファイルを読み込む
+        
+        Parameters
+        ----------
+        path : str
+            読み込むファイルのパス
+        **kwargs : dict
+            pandas.read_csv に渡す追加のキーワード引数
+        
+        Returns
+        -------
+        pd.DataFrame
+            読み込まれたデータフレーム、エラー時はNone
+        """
+        try:
+            # ファイルの拡張子を取得し、小文字に変換
+            file_extension = os.path.splitext(path)[1].lower()
+            
+            allowed_file_extension = ['.shp','.gpkg','.geojson','.csv']
+            # allowed_file_extensionファイル以外の場合はエラーを発生させる
+            if file_extension not in allowed_file_extension:
+                raise ValueError(f"shapefile, GeoPackage, GeoJSON, CSV形式以外のファイル形式には対応していません。: {file_extension}")
+            
+            # 複数のエンコーディングを試行                
+            encodings = [
+                            'utf-8-sig','euc_jp','shift_jis','cp932','shift_jis_2004','shift_jisx0213',
+                            'euc_jis_2004','euc_jisx0213','iso2022_jp','iso2022_jp_1','iso2022_jp_2',
+                            'iso2022_jp_2004','iso2022_jp_3','iso2022_jp_ext',
+                        ]
+            for encoding in encodings:
+                try:
+                    # 各エンコーディングでファイルの読み込みを試みる
+                    if file_extension == '.csv':
+                        return pd.read_csv(path, encoding=encoding, **kwargs)
+                    else:
+                        with fiona.Env(encoding=encoding):
+                            return gpd.read_file(path)
+
+                except UnicodeDecodeError:
+                    # デコードエラーが発生した場合、次のエンコーディングを試す
+                    continue
+                except ParserError:
+                    # ParserErrorが発生した場合、次のエンコーディングを試す
+                    continue
+            
+            # 適切なエンコーディングが見つからない場合、エラーを発生させる
+            raise ValueError(f"適切なエンコーディングが見つかりませんでした: {path}")
+        except Exception as e:
+            # 何らかの例外が発生した場合、エラーメッセージを表示してNoneを返す
+            set_error(ERROR_00014, path)
+            # print(f"ファイル {path} の読み込み中にエラーが発生しました: {e}")
+            return None
     
     def process(self):
         # データを読み込む
@@ -325,16 +382,16 @@ class Summarization:
         # city_block のファイル形式に応じて読み込み
         if "shp" in self.INPUT_PATHS["city_block"]:
             print("Reading shapefile...")
-            city_block_gdf = gpd.read_file(self.INPUT_PATHS["city_block"], encoding="Shift-JIS")
+            city_block_gdf = self.read_file(self.INPUT_PATHS["city_block"])
         elif "gpkg" in self.INPUT_PATHS["city_block"]:
             print("Reading GeoPackage...")
-            city_block_gdf = gpd.read_file(self.INPUT_PATHS["city_block"])
+            city_block_gdf = self.read_file(self.INPUT_PATHS["city_block"])
         elif "geojson" in self.INPUT_PATHS["city_block"]:
             print("Reading GeoJSON...")
-            city_block_gdf = gpd.read_file(self.INPUT_PATHS["city_block"], encoding="Shift-JIS")
+            city_block_gdf = self.read_file(self.INPUT_PATHS["city_block"])
         elif "csv" in self.INPUT_PATHS["city_block"]:
             print("Reading CSV with WKT...")
-            city_block_df = pd.read_csv(self.INPUT_PATHS["city_block"])
+            city_block_df = self.read_file(self.INPUT_PATHS["city_block"])
 
             if "geometry" in city_block_df.columns:
                 city_block_df["geometry"] = city_block_df["geometry"].apply(load_wkt)  # WKT形式からジオメトリを生成
