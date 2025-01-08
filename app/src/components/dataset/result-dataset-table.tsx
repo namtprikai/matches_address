@@ -43,7 +43,6 @@ import { DialogTitle } from "../ui/dialog-title";
 import { DialogContent } from "../ui/dialog-content";
 import { DialogActions } from "../ui/dialog-actions";
 import { DialogSurface } from "../ui/dialog-surface";
-import { downloadObjectsAsCSV } from "../../utils/download-objects-as-csv";
 import {
   type ResultDataSetsResponse,
   useFetchResultDataSetsWithPagination,
@@ -232,37 +231,6 @@ function Row({
   const { data: referenceDates, isLoading: isLoadingReferenceDates } =
     useFetchReferenceDates({ dataSetResultId: item.id });
 
-  // TODO: Pythonの処理を呼び出す
-  const handleDownload = async (): Promise<void> => {
-    switch (selectedUnit) {
-      case "building": {
-        const data = await window.ipcRenderer.invoke(
-          "selectBuildingsInBatches",
-          {
-            dataSetResultId: item.id,
-            batchSize: 100,
-          },
-        );
-        if (!data) return;
-        void downloadObjectsAsCSV(data, item.title || "");
-        break;
-      }
-      case "area": {
-        const data = await window.ipcRenderer.invoke("selectAreasInBatches", {
-          dataSetResultId: item.id,
-          batchSize: 100,
-        });
-        if (!data) return;
-        void downloadObjectsAsCSV(data, item.title || "");
-        break;
-      }
-      default: {
-        const exhaustiveCheck: never = selectedUnit;
-        throw new Error(`Unhandled unit: ${exhaustiveCheck}`);
-      }
-    }
-  };
-
   return (
     <>
       <TableRow
@@ -297,10 +265,6 @@ function Row({
             datasetName={item.title}
             dialogState={dataPreviewDialogState}
             hideTrigger
-            onDelete={onDelete}
-            onDownload={async () => {
-              await handleDownload();
-            }}
           />
         </TableCell>
         <TableCell>{formatDate(item.updated_at, "YYYY/MM/DD")}</TableCell>

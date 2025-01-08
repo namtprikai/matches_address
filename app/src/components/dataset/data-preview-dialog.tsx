@@ -4,22 +4,14 @@ import {
   makeStyles,
   tokens,
 } from "@fluentui/react-components";
-import {
-  ArrowLeftRegular,
-  ArrowDownloadRegular,
-  DeleteRegular,
-} from "@fluentui/react-icons";
+import { ArrowLeftRegular } from "@fluentui/react-icons";
 import { type ReactElement } from "react";
 import { DialogSurface } from "../ui/dialog-surface";
 import { DialogBody } from "../ui/dialog-body";
 import { DialogTitle } from "../ui/dialog-title";
 import { DialogContent } from "../ui/dialog-content";
 import { Button } from "../ui/button";
-import {
-  type ReturnUseDialogState,
-  useDialogState,
-} from "../../hooks/use-dialog-state";
-import { DeleteRowDialog } from "./delete-row-dialog";
+import { type ReturnUseDialogState } from "../../hooks/use-dialog-state";
 
 const useStyles = makeStyles({
   dialogTitle: {
@@ -46,13 +38,6 @@ const useStyles = makeStyles({
       textDecoration: "none",
     },
   },
-  iconButton: {
-    border: ` 1px solid ${tokens.colorNeutralStroke2}`,
-    borderRadius: tokens.borderRadiusMedium,
-    "&:hover, &:active, &:focus, &:focus-within": {
-      border: `1px solid #BDBDBD`,
-    },
-  },
   tableContainer: {
     overflowX: "auto",
   },
@@ -71,8 +56,6 @@ interface Props {
   content: ReactElement;
   dialogState: ReturnUseDialogState;
   datasetName: string | null;
-  onDownload: () => void;
-  onDelete: () => void;
   hideTrigger?: boolean;
 }
 
@@ -80,17 +63,10 @@ export function DataPreviewDialog({
   content,
   dialogState,
   datasetName,
-  onDownload,
-  onDelete,
   hideTrigger,
 }: Props): JSX.Element {
   const styles = useStyles();
   const { isOpen, setIsOpen } = dialogState;
-  const deleteDialogState = useDialogState(false);
-
-  const handleOpenDeleteDialog = (): void => {
-    deleteDialogState.setIsOpen(true);
-  };
 
   return (
     <>
@@ -124,31 +100,12 @@ export function DataPreviewDialog({
               />
               {datasetName}
             </div>
-            <div className={styles.actions}>
-              <Button
-                appearance="outline"
-                className={styles.iconButton}
-                icon={<ArrowDownloadRegular />}
-                onClick={onDownload}
-              />
-              <Button
-                appearance="outline"
-                className={styles.iconButton}
-                icon={<DeleteRegular />}
-                onClick={handleOpenDeleteDialog}
-              />
-            </div>
           </DialogTitle>
           <DialogBody>
             <DialogContent className={styles.content}>{content}</DialogContent>
           </DialogBody>
         </DialogSurface>
       </Dialog>
-      <DeleteRowDialog
-        dialogState={deleteDialogState}
-        fileName={datasetName || ""}
-        onDelete={onDelete}
-      />
     </>
   );
 }
