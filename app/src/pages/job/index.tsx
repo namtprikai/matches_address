@@ -5,11 +5,13 @@ import {
   Table,
   TableBody,
 } from "@fluentui/react-components";
-import { useFetchJobs } from "../../hooks/use-fetch-jobs";
+import { useFetchJobsWithPagination } from "../../hooks/use-fetch-jobs-with-pagination";
 import { TableHeaderJobs } from "../../components/table-header-jobs";
 import { TableRowJobs } from "../../components/table-rows-jobs";
 import { BreadcrumbBase, BreadcrumbItem } from "../../components/ui/breadcrumb";
 import { ROUTES } from "../../routes";
+import { Pagination } from "../../components/ui/pagination";
+import { usePagination } from "../../hooks/use-pagination";
 import { DebugCreateButtons } from "./_debug-create-buttuns";
 
 const useStyles = makeStyles({
@@ -37,11 +39,20 @@ const useStyles = makeStyles({
     color: "#616161",
     fontSize: tokens.fontSizeBase300,
   },
+  paginationWrapper: {
+    display: "flex",
+    width: "100%",
+    justifyContent: "flex-end",
+  },
 });
 
 export function Job(): JSX.Element {
   const styles = useStyles();
-  const { data } = useFetchJobs();
+  const pagination = usePagination(50);
+  const { data } = useFetchJobsWithPagination({
+    page: pagination.page,
+    limitPerPage: pagination.limitPerPage,
+  });
 
   const hasData = data && data.length > 0;
 
@@ -62,14 +73,19 @@ export function Job(): JSX.Element {
 
       <Card className={styles.content}>
         {hasData ? (
-          <Table className={styles.table}>
-            <TableHeaderJobs />
-            <TableBody>
-              {data.map((item) => (
-                <TableRowJobs key={item.id} item={item} />
-              ))}
-            </TableBody>
-          </Table>
+          <>
+            <div className={styles.paginationWrapper}>
+              <Pagination {...pagination} />
+            </div>
+            <Table className={styles.table}>
+              <TableHeaderJobs />
+              <TableBody>
+                {data.map((item) => (
+                  <TableRowJobs key={item.id} item={item} />
+                ))}
+              </TableBody>
+            </Table>
+          </>
         ) : (
           <div className={styles.noData}>現在表示できる処理はありません</div>
         )}

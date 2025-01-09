@@ -62,7 +62,6 @@ export function JobEvaluation(): JSX.Element {
           空き家推定を始める
         </Button>
 
-        <h4>処理一覧</h4>
         <TableJobsByType jobType="result" />
       </Card>
     </div>

@@ -49,7 +49,6 @@ export function Model(): JSX.Element {
 
         <TableModel />
 
-        <h4>処理一覧</h4>
         <TableJobsByType jobType="ml" />
       </Card>
 

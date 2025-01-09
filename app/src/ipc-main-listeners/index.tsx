@@ -68,6 +68,7 @@ import { selectNormalizedDatasetWithFilePath } from "./select-normalized-dataset
 import { selectBuildingPreview } from "./select-building-preview";
 import { selectRawDatasetWithFilePath } from "./select-raw-dataset-with-file-path";
 import { filterDataSetForChartPie } from "./filter-data-set-for-chart-pie";
+import { selectJobsWithPagination } from "./select-jobs-with-pagination";
 
 export const ipcMainListeners = {
   helloFromPython,
@@ -136,6 +137,7 @@ export const ipcMainListeners = {
   selectJob,
   selectNormalizedDatasetWithFilePath,
   selectRawDatasetWithFilePath,
+  selectJobsWithPagination,
 };
 
 export const execFileAsync = promisify(execFile);

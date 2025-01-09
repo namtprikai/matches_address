@@ -4,8 +4,10 @@ import {
   makeStyles,
   tokens,
 } from "@fluentui/react-components";
-import { useFetchJobs } from "../hooks/use-fetch-jobs";
+import { useFetchJobsWithPagination } from "../hooks/use-fetch-jobs-with-pagination";
 import { type SelectJob } from "../schema";
+import { Pagination } from "../components/ui/pagination";
+import { usePagination } from "../hooks/use-pagination";
 import { TableHeaderJobs } from "./table-header-jobs";
 import { TableRowJobs } from "./table-rows-jobs";
 
@@ -37,6 +39,20 @@ const useStyles = makeStyles({
     color: "#616161",
     fontSize: tokens.fontSizeBase300,
   },
+  header: {
+    display: "flex",
+    width: "100%",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  h4: {
+    width: "100%",
+  },
+  paginationWrapper: {
+    display: "flex",
+    width: "100%",
+    justifyContent: "flex-end",
+  },
 });
 
 type Props = {
@@ -46,7 +62,12 @@ type Props = {
 export const TableJobsByType = ({ jobType }: Props): JSX.Element => {
   const styles = useStyles();
 
-  const { data } = useFetchJobs(undefined, jobType);
+  const pagination = usePagination(50);
+  const { data } = useFetchJobsWithPagination({
+    type: jobType,
+    page: pagination.page,
+    limitPerPage: pagination.limitPerPage,
+  });
 
   if (data === undefined) return <></>;
 
@@ -54,14 +75,26 @@ export const TableJobsByType = ({ jobType }: Props): JSX.Element => {
     return <p className={styles.notFound}>現在実行中の処理はありません</p>;
   }
 
+  const hasData = data && data.length > 0;
+
   return (
-    <Table className={styles.table}>
-      <TableHeaderJobs />
-      <TableBody>
-        {data.map((item) => (
-          <TableRowJobs key={item.id} item={item} />
-        ))}
-      </TableBody>
-    </Table>
+    <>
+      <div className={styles.header}>
+        <h4 className={styles.h4}>処理一覧</h4>
+        {hasData && (
+          <div className={styles.paginationWrapper}>
+            <Pagination {...pagination} />
+          </div>
+        )}
+      </div>
+      <Table className={styles.table}>
+        <TableHeaderJobs />
+        <TableBody>
+          {data.map((item) => (
+            <TableRowJobs key={item.id} item={item} />
+          ))}
+        </TableBody>
+      </Table>
+    </>
   );
 };
