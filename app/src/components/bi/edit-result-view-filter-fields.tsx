@@ -1,5 +1,5 @@
 import { makeStyles, tokens } from "@fluentui/react-components";
-import { useFormContext, useWatch } from "react-hook-form";
+import { useFieldArray, useFormContext, useWatch } from "react-hook-form";
 import { Suspense } from "react";
 import { type EditResultViewFormType } from "../../@types/form-schema";
 import { TILE_VIEW_CONFIG } from "../../config/tile-view-config";
@@ -44,12 +44,17 @@ export const EditResultViewFilterFields = ({
   const { register, control, setValue } =
     useFormContext<EditResultViewFormType>();
 
-  const [parameters, year, unit, style] = useWatch({
+  const { replace } = useFieldArray({
+    control,
+    name: "parameters",
+  });
+
+  const [currentParameters, year, unit, style] = useWatch({
     control,
     name: ["parameters", "year", "unit", "style"],
   });
 
-  const areaFilter = parameters.find(
+  const areaFilter = currentParameters.find(
     (f) => f.key === "area" && f.type === "filter",
   );
 
@@ -72,7 +77,7 @@ export const EditResultViewFilterFields = ({
   );
 
   // parameterのうちフィルタ条件のフィールドのみを取得
-  const filteredParameters = parameters.filter((field) => {
+  const filteredCurrentParameters = currentParameters.filter((field) => {
     return (
       field.type === "filter" && field.key !== "year" && field.key !== "area"
     );
@@ -138,7 +143,7 @@ export const EditResultViewFilterFields = ({
           areas={areas}
           dataSetResultId={resultView?.data_set_result_id ?? undefined}
           onSave={(values) => {
-            const excludedYearParameters = parameters.filter((f) => {
+            const excludedYearParameters = currentParameters.filter((f) => {
               if (f.type === "filter" && f.key === "area") {
                 return false;
               }
@@ -146,7 +151,7 @@ export const EditResultViewFilterFields = ({
               return true;
             });
 
-            setValue("parameters", [
+            replace([
               ...excludedYearParameters,
               {
                 type: "filter",
@@ -161,7 +166,7 @@ export const EditResultViewFilterFields = ({
 
       <FormFilteringParameters
         onSave={(parameters) => {
-          const prevOtherParameters = parameters.filter((f) => {
+          const prevOtherParameters = currentParameters.filter((f) => {
             return f.type !== "filter" || f.key === "year" || f.key === "area";
           });
           const newParameters = [
@@ -169,10 +174,10 @@ export const EditResultViewFilterFields = ({
             ...parameters,
           ] as SelectResultView["parameters"]; // union の型推論が効きづらいため、明示的に型を指定;
 
-          setValue("parameters", newParameters);
+          replace(newParameters);
         }}
         options={options}
-        parameters={filteredParameters}
+        parameters={filteredCurrentParameters}
         unit={unit ?? "building"}
       />
     </Fieldset>
