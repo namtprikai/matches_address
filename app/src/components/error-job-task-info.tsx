@@ -21,7 +21,13 @@ export const ErrorJobTaskInfo = ({ jobId }: Props): JSX.Element => {
         return (
           task.error_msg && (
             <li key={task.id} className={styles.li}>
-              <Caption1Strong>{task.error_msg}</Caption1Strong>
+              <Caption1Strong>
+                {task.error_msg}
+                {task.result?.taskResultType === "preprocess" &&
+                task.result.input_source
+                  ? `(${task.result.input_source.join(", ")})`
+                  : ""}
+              </Caption1Strong>
             </li>
           )
         );
