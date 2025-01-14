@@ -11,6 +11,7 @@ import { useNavigate } from "react-router-dom";
 import { type SelectJob } from "../schema";
 import { formatDate } from "../utils/format-date";
 import { type JobType, TYPE_DISPLAY_MAP } from "../config/job-type-display-map";
+import { TableRowMenu } from "./ui/table-row-menu";
 
 const useStyles = makeStyles({
   table: {
@@ -65,6 +66,12 @@ const useStyles = makeStyles({
     color: "#616161",
     fontSize: tokens.fontSizeBase300,
   },
+  tableCellMenu: {
+    padding: `${tokens.spacingVerticalS} ${tokens.spacingHorizontalM}`,
+    fontSize: tokens.fontSizeBase200,
+    display: "flex",
+    justifyContent: "flex-end",
+  },
 });
 
 export const TableRowJobs = ({ item }: { item: SelectJob }): JSX.Element => {
@@ -76,6 +83,14 @@ export const TableRowJobs = ({ item }: { item: SelectJob }): JSX.Element => {
   const clickable =
     !(item.type === null) &&
     (item.status === "complete" || item.status === "error");
+
+  const handleDelete = async (): Promise<void> => {
+    try {
+      await window.ipcRenderer.invoke("deleteJob", { id: item.id });
+    } catch (error) {
+      console.error("Failed to delete job:", error);
+    }
+  };
 
   return (
     <TableRow
@@ -119,6 +134,9 @@ export const TableRowJobs = ({ item }: { item: SelectJob }): JSX.Element => {
         >
           {item.is_named ? "完了" : "未"}
         </span>
+      </TableCell>
+      <TableCell className={styles.tableCellMenu}>
+        <TableRowMenu item={item} onDelete={handleDelete} />
       </TableCell>
     </TableRow>
   );
