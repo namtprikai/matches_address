@@ -63,7 +63,7 @@ export const TableJobsByType = ({ jobType }: Props): JSX.Element => {
   const styles = useStyles();
 
   const pagination = usePagination(50);
-  const { data } = useFetchJobsWithPagination({
+  const { data, mutate } = useFetchJobsWithPagination({
     type: jobType,
     page: pagination.page,
     limitPerPage: pagination.limitPerPage,
@@ -76,6 +76,15 @@ export const TableJobsByType = ({ jobType }: Props): JSX.Element => {
   }
 
   const hasData = data && data.length > 0;
+
+  // 削除に成功した場合データを再取得する
+  const handleDeleteSuccess = async (): Promise<void> => {
+    try {
+      await mutate();
+    } catch (error) {
+      console.error("Failed to mutate", error);
+    }
+  };
 
   return (
     <>
@@ -91,7 +100,11 @@ export const TableJobsByType = ({ jobType }: Props): JSX.Element => {
         <TableHeaderJobs />
         <TableBody>
           {data.map((item) => (
-            <TableRowJobs key={item.id} item={item} />
+            <TableRowJobs
+              key={item.id}
+              item={item}
+              onDeleteSuccess={handleDeleteSuccess}
+            />
           ))}
         </TableBody>
       </Table>

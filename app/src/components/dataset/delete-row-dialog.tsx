@@ -35,7 +35,7 @@ export function DeleteRowDialog({
           <DialogTitle>「{fileName}」を削除しますか？</DialogTitle>
           {jobMenu && (
             <DialogContent>
-              選択した処理結果と、処理に紐づく「名前をつけて保存」していないファイルは
+              選択した処理結果と処理に紐づく「名前をつけて保存」をしていないファイルは
               同時に削除されます。
               <br />
               よろしいですか？

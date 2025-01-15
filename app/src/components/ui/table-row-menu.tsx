@@ -51,7 +51,7 @@ export function TableRowMenu({
         <MenuPopover onClick={(e) => e.stopPropagation()}>
           <MenuList>
             <MenuItem
-              disabled={item.status !== "complete"}
+              disabled={item.status !== "complete" || item.is_named}
               onClick={() => {
                 deleteDialogState.setIsOpen(true);
               }}

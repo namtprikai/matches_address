@@ -74,7 +74,13 @@ const useStyles = makeStyles({
   },
 });
 
-export const TableRowJobs = ({ item }: { item: SelectJob }): JSX.Element => {
+export const TableRowJobs = ({
+  item,
+  onDeleteSuccess,
+}: {
+  item: SelectJob;
+  onDeleteSuccess: () => void;
+}): JSX.Element => {
   const styles = useStyles();
   const navigator = useNavigate();
 
@@ -87,6 +93,7 @@ export const TableRowJobs = ({ item }: { item: SelectJob }): JSX.Element => {
   const handleDelete = async (): Promise<void> => {
     try {
       await window.ipcRenderer.invoke("deleteJob", { id: item.id });
+      onDeleteSuccess();
     } catch (error) {
       console.error("Failed to delete job:", error);
     }
