@@ -4,17 +4,19 @@ import { useEffect, useRef, useState } from "react";
 import {
   addProtocol,
   type FilterSpecification,
+  type LngLatLike,
   Map,
   removeProtocol,
 } from "maplibre-gl";
 import { Protocol } from "pmtiles";
 import { makeStyles } from "@fluentui/react-components";
-import { type Geometry } from "geojson";
+import { wktToGeoJSON } from "betterknown";
 import {
   type VacancyLevel,
   type VacancyLevels,
 } from "../vacancy-level-checkbox";
 import { type MapProps } from "..";
+import { type SelectDataSetDetailBuilding } from "../../../../schema";
 import { addBuildingLayer } from "./add-building-layer";
 import { type BuildingProperties } from "./building-popup";
 import { addAreaLayer } from "./add-area-layer";
@@ -83,7 +85,6 @@ export function MapComponent({
       const initializedMap = new Map({
         container: containerEl,
         style: "protomaps-basemaps.json",
-        center: INITIAL_CENTER,
         zoom: 14,
         maxZoom: 22,
         minZoom: 6,
@@ -98,6 +99,25 @@ export function MapComponent({
       };
     },
     [isMounted],
+  );
+
+  useEffect(
+    function setMapCenterEffect() {
+      if (!mapInstance) return;
+      void (async () => {
+        const geometry = await getGeometry({
+          type,
+          dataSetResultId,
+          selectedDate,
+          areas,
+        });
+        const center = await getCenter(geometry);
+        if (!center) return;
+        mapInstance.setCenter(center);
+      })();
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- 地図の中心を維持するために地図の初期化時のみ実行する
+    [mapInstance],
   );
 
   useEffect(
@@ -309,14 +329,65 @@ export function MapComponent({
   return <div ref={containerRef} className={styles.map} />;
 }
 
-function getCenter(geometry: Geometry): [number, number] {
-  if (geometry?.type === "Polygon") {
-    const [lng, lat] = geometry.coordinates[0][0];
-    return [lng, lat];
-  } else if (geometry?.type === "MultiPolygon") {
-    const [lng, lat] = geometry.coordinates[0][0][0];
-    return [lng, lat];
-  } else {
-    return INITIAL_CENTER;
+const getGeometry = async ({
+  type,
+  dataSetResultId,
+  selectedDate,
+  areas,
+}: {
+  type: MapProps["type"];
+  dataSetResultId: MapProps["dataSetResultId"];
+  selectedDate: string | undefined;
+  areas: MapProps["areas"];
+}): Promise<string | undefined> => {
+  switch (type) {
+    case "building": {
+      const result = await window.ipcRenderer.invoke(
+        "selectBuildingsInBatches",
+        {
+          dataSetResultId,
+          referenceDate: selectedDate,
+          batchSize: 1,
+          areas,
+        },
+      );
+      return result?.[0].geometry;
+    }
+    case "area": {
+      const result = await window.ipcRenderer.invoke("selectAreasInBatches", {
+        dataSetResultId,
+        referenceDate: selectedDate,
+        batchSize: 1,
+        areas,
+      });
+      return result?.[0].geometry;
+    }
+    default: {
+      const exhaustiveCheck: never = type;
+      throw new Error(`Unhandled type: ${exhaustiveCheck}`);
+    }
   }
+};
+
+async function getCenter(
+  geometry: SelectDataSetDetailBuilding["geometry"] | undefined,
+): Promise<LngLatLike | undefined> {
+  if (!geometry) return undefined;
+
+  const geojson = wktToGeoJSON(geometry);
+  if (!geojson) return;
+  const center: LngLatLike | undefined = (() => {
+    if (!geojson) return undefined;
+    if (geojson.type === "Polygon") {
+      const [lng, lat] = geojson.coordinates[0][0];
+      return [lng, lat];
+    }
+    if (geojson.type === "MultiPolygon") {
+      const [lng, lat] = geojson.coordinates[0][0][0];
+      return [lng, lat];
+    }
+    return undefined;
+  })();
+
+  return center;
 }
