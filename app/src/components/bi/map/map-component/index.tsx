@@ -371,12 +371,12 @@ const getGeometry = async ({
 async function getCenter(
   geometry: SelectDataSetDetailBuilding["geometry"] | undefined,
 ): Promise<LngLatLike | undefined> {
-  if (!geometry) return undefined;
+  if (!geometry) return;
 
   const geojson = wktToGeoJSON(geometry);
   if (!geojson) return;
   const center: LngLatLike | undefined = (() => {
-    if (!geojson) return undefined;
+    if (!geojson) return;
     if (geojson.type === "Polygon") {
       const [lng, lat] = geojson.coordinates[0][0];
       return [lng, lat];
@@ -385,7 +385,7 @@ async function getCenter(
       const [lng, lat] = geojson.coordinates[0][0][0];
       return [lng, lat];
     }
-    return undefined;
+    return;
   })();
 
   return center;
