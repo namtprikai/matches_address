@@ -1,6 +1,7 @@
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState } from "react";
 import { makeStyles, tokens } from "@fluentui/react-components";
 import { useFetchReferenceDates } from "../../../hooks/use-fetch-reference-dates";
+import { type SelectDataSetResult } from "../../../schema";
 import {
   VacancyLevelCheckbox,
   type VacancyLevels,
@@ -24,7 +25,7 @@ const useStyles = makeStyles({
 });
 
 export interface MapProps {
-  dataSetResultId: number;
+  dataSetResultId: SelectDataSetResult["id"];
   type: "building" | "area";
   areas: string[] | undefined;
 }
