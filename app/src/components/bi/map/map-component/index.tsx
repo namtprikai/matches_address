@@ -37,7 +37,7 @@ export const PREDICTED_PROBABILITY: Record<
   },
 };
 
-const INITIAL_CENTER: [number, number] = [139.7671, 35.6812]; // 東京駅
+const INITIAL_CENTER: LngLatLike = [139.7671, 35.6812]; // 東京駅
 
 const useMapComponentStyles = makeStyles({
   map: {
