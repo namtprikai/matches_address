@@ -57,23 +57,35 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
-          cache: "npm"
+
+      # npm のキャッシュを復元
+      - name: Cache node_modules
+        uses: actions/cache@v4
+        id: npm-cache
+        with:
+          path: |
+            **/node_modules
+            ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
 
       # 依存関係のインストール
       - name: Install dependencies
         env:
           HUSKY: "0"
         run: |
-          npm ci
+          if [ "${{ steps.npm-cache.outputs.cache-hit }}" != 'true' ]; then
+            echo "Cache miss. Installing dependencies..."
+            npm ci
+          else
+            echo "Cache hit. Skipping npm ci..."
+          fi
           cd ml && poetry install --no-root && poetry run pip install pyinstaller
-          cd ../app && npm ci
 
-      # Pythonスクリプトのビルド
-      - name: Build Python scripts
-        working-directory: ./ml
-        run: |
-          poetry run pip install pyinstaller
-          ../build.sh
+      # Turborepo を使用したビルド
+      - name: Build with Turborepo
+        run: npm run make
 
       # MLビルド成果物の確認
       - name: Check ML build artifacts
@@ -108,6 +120,7 @@ jobs:
       - name: Build Electron app
         run: npm run make
 
+      # アプリがビルドされたか確認
       - name: Check Electron build artifacts
         shell: pwsh
         run: |
