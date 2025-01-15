@@ -112,8 +112,7 @@ export function MapComponent({
           areas,
         });
         const center = await getCenter(geometry);
-        if (!center) return;
-        mapInstance.setCenter(center);
+        mapInstance.setCenter(center || INITIAL_CENTER);
       })();
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps -- 地図の中心を維持するために地図の初期化時のみ実行する
