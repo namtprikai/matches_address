@@ -55,7 +55,7 @@ import { OUTPUT_FILE_TYPES } from "../../config/file-types";
 import { useFetchReferenceDates } from "../../hooks/use-fetch-reference-dates";
 import { type ReferenceDate } from "../../ipc-main-listeners/select-reference-dates";
 import { DialogExportMessage } from "../dialog-export-message";
-import { DeleteRowDialog } from "./delete-row-dialog";
+import { DeleteDataSetRowDialog } from "./delete-dataset-row-dialog";
 import { EditNameDialog } from "./edit-name-dialog";
 import { DataPreviewDialog } from "./data-preview-dialog";
 import { DataPreviewTable } from "./data-preview-table";
@@ -558,7 +558,7 @@ function RowMenu({
         initialName={item.title}
         onSubmit={handleEditName}
       />
-      <DeleteRowDialog
+      <DeleteDataSetRowDialog
         dialogState={deleteDialogState}
         fileName={item.title || ""}
         onDelete={onDelete}

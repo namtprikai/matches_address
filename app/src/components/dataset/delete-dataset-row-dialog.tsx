@@ -11,14 +11,12 @@ interface Props {
   fileName: string;
   onDelete?: () => void;
   dialogState: ReturnUseDialogState;
-  jobMenu?: boolean;
 }
 
-export function DeleteRowDialog({
+export function DeleteDataSetRowDialog({
   fileName,
   onDelete,
   dialogState,
-  jobMenu = false,
 }: Props): JSX.Element {
   const { isOpen, setIsOpen } = dialogState;
 
@@ -33,21 +31,9 @@ export function DeleteRowDialog({
       <DialogSurface onClick={(e) => e.stopPropagation()}>
         <DialogBody>
           <DialogTitle>「{fileName}」を削除しますか？</DialogTitle>
-          {jobMenu && (
-            <DialogContent>
-              選択した処理結果と処理に紐づく「名前をつけて保存」をしていないファイルは
-              同時に削除されます。
-              <br />
-              よろしいですか？
-              <br />
-              *削除したデータを復元することはできません
-            </DialogContent>
-          )}
-          {!jobMenu && (
-            <DialogContent>
-              削除したデータを復元することはできません
-            </DialogContent>
-          )}
+          <DialogContent>
+            削除したデータを復元することはできません
+          </DialogContent>
 
           <DialogActions>
             <Button appearance="primary" onClick={onDelete} size="medium">

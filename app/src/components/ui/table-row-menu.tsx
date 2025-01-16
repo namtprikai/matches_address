@@ -7,7 +7,7 @@ import {
   Button,
 } from "@fluentui/react-components";
 import { MoreVerticalRegular } from "@fluentui/react-icons";
-import { DeleteRowDialog } from "../../components/dataset/delete-row-dialog";
+import { DialogDeleteJob } from "../dialog-delete-job";
 import { useDialogState } from "../../hooks/use-dialog-state";
 import { type SelectJob } from "../../schema";
 import {
@@ -61,10 +61,9 @@ export function TableRowMenu({
           </MenuList>
         </MenuPopover>
       </Menu>
-      <DeleteRowDialog
+      <DialogDeleteJob
         dialogState={deleteDialogState}
         fileName={itemName}
-        jobMenu
         onDelete={handleConfirmDelete}
       />
     </>
