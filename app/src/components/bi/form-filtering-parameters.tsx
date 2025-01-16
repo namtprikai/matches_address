@@ -160,7 +160,7 @@ export const FormFilteringParameters = ({
 }: Props): JSX.Element => {
   const [open, setOpen] = useState(false);
 
-  const { control, register, handleSubmit } = useForm({
+  const { control, register, handleSubmit, setValue, watch } = useForm({
     defaultValues: {
       parameters: props.parameters,
     },
@@ -285,6 +285,10 @@ export const FormFilteringParameters = ({
                     unit: props.unit,
                     key: field.value.referenceColumn,
                   });
+
+                  const internalVal =
+                    (watch(`parameters.${index}.value.value`) as number) ?? 0;
+                  const displayVal = (internalVal * 100).toFixed(0);
 
                   /**
                    * カラムの型がbooleanの場合
@@ -518,16 +522,19 @@ export const FormFilteringParameters = ({
                       {field.value.operation !== "range" && (
                         <>
                           <Input
-                            defaultValue={
-                              field.value.value
-                                ? field.value.value.toString()
-                                : ""
-                            }
-                            {...register(`parameters.${index}.value.value`)}
-                            className={styles.inputValue}
-                            placeholder="値"
+                            onChange={(e) => {
+                              let typedVal = parseFloat(e.target.value);
+                              if (isNaN(typedVal)) typedVal = 0;
+                              typedVal = Math.max(0, Math.min(100, typedVal));
+                              setValue(
+                                `parameters.${index}.value.value`,
+                                typedVal / 100,
+                              );
+                            }}
                             type="number"
+                            value={displayVal}
                           />
+
                           {metadata?.unit ?? ""}
                         </>
                       )}
