@@ -50,7 +50,7 @@ jobs:
       - name: Install Poetry
         run: |
           python -m pip install --upgrade pip
-          pip install poetry
+          pip install poetry==1.8.3
 
       # Node.js環境のセットアップ
       - name: Setup Node.js
@@ -65,7 +65,10 @@ jobs:
           HUSKY: "0"
         run: |
           npm ci
-          cd ml && poetry install --no-root && poetry run pip install pyinstaller
+          cd ml
+          poetry lock --no-update
+          poetry install --no-root
+          poetry run pip install pyinstaller
 
       # Turborepo を使用したビルド
       - name: Build with Turborepo
