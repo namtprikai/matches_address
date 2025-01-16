@@ -9,15 +9,17 @@ import { Button } from "./ui/button";
 
 interface Props {
   fileName: string;
-  onDelete?: () => void;
+  onDelete?: (id: number) => void;
   dialogState: ReturnUseDialogState;
   jobMenu?: boolean;
+  id: number;
 }
 
 export function DialogDeleteJob({
   fileName,
   onDelete,
   dialogState,
+  id,
 }: Props): JSX.Element {
   const { isOpen, setIsOpen } = dialogState;
 
@@ -42,7 +44,11 @@ export function DialogDeleteJob({
           </DialogContent>
 
           <DialogActions>
-            <Button appearance="primary" onClick={onDelete} size="medium">
+            <Button
+              appearance="primary"
+              onClick={() => onDelete?.(id)}
+              size="medium"
+            >
               削除
             </Button>
           </DialogActions>

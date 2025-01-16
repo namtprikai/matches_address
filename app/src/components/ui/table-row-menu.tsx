@@ -20,7 +20,7 @@ export function TableRowMenu({
   onDelete,
 }: {
   item: SelectJob;
-  onDelete?: () => void;
+  onDelete?: (id: number) => void;
 }): JSX.Element {
   const deleteDialogState = useDialogState(false);
   const itemName =
@@ -28,10 +28,10 @@ export function TableRowMenu({
       ? TYPE_DISPLAY_MAP[item.type as JobType]
       : "不明";
 
-  const handleConfirmDelete = async (): Promise<void> => {
+  const handleConfirmDelete = async (id: number): Promise<void> => {
     if (!onDelete) return;
     try {
-      await onDelete();
+      await onDelete(id);
     } finally {
       deleteDialogState.setIsOpen(false);
     }
@@ -64,6 +64,7 @@ export function TableRowMenu({
       <DialogDeleteJob
         dialogState={deleteDialogState}
         fileName={itemName}
+        id={item.id}
         onDelete={handleConfirmDelete}
       />
     </>

@@ -78,11 +78,12 @@ export const TableJobsByType = ({ jobType }: Props): JSX.Element => {
   const hasData = data && data.length > 0;
 
   // 削除に成功した場合データを再取得する
-  const handleDeleteSuccess = async (): Promise<void> => {
+  const handleDeleteSuccess = async (id: number): Promise<void> => {
     try {
+      await window.ipcRenderer.invoke("deleteJob", { id });
       await mutate();
     } catch (error) {
-      console.error("Failed to mutate", error);
+      console.error("Failed to delete job:", error);
     }
   };
 
