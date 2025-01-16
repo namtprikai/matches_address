@@ -2,6 +2,6 @@
   "name": "ml",
   "private": true,
   "scripts": {
-    "build": ""
+    "build": "node -e \"if(process.platform==='win32'){require('child_process').execSync('bash build.sh')}else{require('child_process').execSync('./build.sh')}\""
   }
 }
