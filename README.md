@@ -53,7 +53,7 @@ npm run make
 sudo xcodebuild -license
 ```
 
-ライセンスに同意した後、再度 sh build.sh を実行する
+ライセンスに同意した後、再度ビルドコマンドを実行する
 
 ## マイグレーションファイルの追加
 
