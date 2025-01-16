@@ -52,7 +52,7 @@ export const BuildingPopup = forwardRef<HTMLDivElement, Props>(
           <div>
             <span className={styles.predictedProbability}>
               {properties.predicted_probability !== null
-                ? (properties.predicted_probability * 100).toFixed(0)
+                ? Math.floor(properties.predicted_probability * 1000) / 10
                 : "??"}
               %
             </span>

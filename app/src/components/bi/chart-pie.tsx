@@ -62,7 +62,10 @@ export const ChartPie = (props: ChartPieProps): JSX.Element => {
       return (
         <div className={styles.tooltip}>
           <p className="desc">
-            {label}: {value}
+            {label}:{" "}
+            {typeof value === "number" && props.unit === "%"
+              ? Math.floor(value * 1000) / 10
+              : value}
             {props.unit ?? ""}
           </p>
         </div>

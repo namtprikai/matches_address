@@ -145,7 +145,7 @@ export const filterDataSetForChartPie = ((
         const yValue = formatChartValue(row[y] as number) as number;
         return {
           x: groupingConditions ? groupingConditions[index]?.label : xValue,
-          y: scaleValue(yValue, columnYMetadata.unit),
+          y: yValue,
         };
       }),
 
@@ -261,7 +261,7 @@ export const filterDataSetForChartPie = ((
       data: all.map((row, index) => {
         const xValue = (() => {
           if (columnXMetadata.type === "float") {
-            return scaleValue(row[x] as number, columnXMetadata.unit);
+            return row[x] as number;
           }
           return row[x] as string;
         })();
@@ -269,7 +269,7 @@ export const filterDataSetForChartPie = ((
 
         return {
           x: groupingConditions ? groupingConditions[index]?.label : xValue,
-          y: scaleValue(yValue, columnYMetadata.unit),
+          y: yValue,
         };
       }),
 
@@ -296,8 +296,3 @@ export const filterDataSetForChartPie = ((
     },
   };
 }) satisfies IpcMainListener;
-
-function scaleValue(value: number, unit: string): number {
-  // 小数点第一位まで表示する
-  return unit === "%" ? Math.round(value * 1000) / 10 : value;
-}

@@ -7,7 +7,7 @@ export const formatChartValue = (
     percentage?: boolean;
     type: ChartColumnType;
   },
-  digits = 2,
+  digits = 3,
   // eslint-disable-next-line @typescript-eslint/explicit-function-return-type -- 型推論を利用するため
 ) => {
   if (typeof value !== "number") {

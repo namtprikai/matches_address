@@ -114,7 +114,10 @@ const CustomizedActiveDot = ({
 export const ChartLine = (props: ChartLineProps): JSX.Element => {
   const { chartProps } = useFetchFilterDataSetForChart(props);
 
-  const data = chartProps.data;
+  const data = chartProps.data.map((d) => ({
+    ...d,
+    y: chartProps.yAxisColumn.unit === "%" ? Math.floor(d.y * 1000) / 10 : d.y,
+  }));
 
   if (props.x == null || props.y == null) {
     return <div>パラメーターの値を正しく設定してください</div>;

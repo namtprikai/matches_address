@@ -20,7 +20,10 @@ export type ChartBarProps = FilterDataSetForChartArgs;
 export const ChartBar = (props: ChartBarProps): JSX.Element => {
   const { chartProps, pagination } = useFetchFilterDataSetForChart(props);
 
-  const data = chartProps.data;
+  const data = chartProps.data.map((d) => ({
+    ...d,
+    y: chartProps.yAxisColumn.unit === "%" ? Math.floor(d.y * 1000) / 10 : d.y,
+  }));
 
   const [tooltipPosition, setTooltipPosition] = useState<{
     x: number;
