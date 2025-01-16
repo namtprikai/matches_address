@@ -7,6 +7,14 @@
 1. [chubu.pmtiles.zip](https://drive.google.com/file/d/1OKhf6Xsbd2nhwOT_A_LNGowJ3Tv4zpOj/view?usp=drive_link)をダウンロードする
 2. 上記の zip ファイルを解凍して`chubu.pmtiles`を`app/public`配下に配置する
 
+### poetry をローカル環境にインストールする
+
+https://python-poetry.org/docs/#installation
+
+### Pyinstaller をローカル環境にインストールする
+
+https://pyinstaller.org/en/stable/installation.html
+
 ## development
 
 パッケージをインストールする
