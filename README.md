@@ -35,7 +35,17 @@ cp app/public/dummy-data.csv app/database
 npm run make
 ```
 
-結果は `app/out` に出力される
+ビルドしたアプリは `app/out` に出力される
+
+### Mac で `You have not agreed to the Xcode license agreements...` というエラーが出る場合
+
+ターミナルで以下のコマンドを実行して Xcode のライセンスに同意する
+
+```
+sudo xcodebuild -license
+```
+
+ライセンスに同意した後、再度 sh build.sh を実行する
 
 ## マイグレーションファイルの追加
 
