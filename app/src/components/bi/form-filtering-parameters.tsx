@@ -393,8 +393,8 @@ export const FormFilteringParameters = ({
                             <span>〜</span>
                             <Input
                               defaultValue={
-                                field.value.startValue
-                                  ? field.value.startValue.toString()
+                                field.value.lastValue
+                                  ? field.value.lastValue.toString()
                                   : ""
                               }
                               placeholder="終了値"
@@ -497,8 +497,8 @@ export const FormFilteringParameters = ({
                           <span>〜</span>
                           <Input
                             defaultValue={
-                              field.value.startValue
-                                ? field.value.startValue.toString()
+                              field.value.lastValue
+                                ? field.value.lastValue.toString()
                                 : ""
                             }
                             placeholder="終了値"
