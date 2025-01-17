@@ -85,6 +85,13 @@ function FormComponent({
     resultViewId: selectedResultViewId,
   });
 
+  useEffect(
+    function resetForm() {
+      form.reset(defaultValues);
+    },
+    [defaultValues, form],
+  );
+
   const onSubmit = form.handleSubmit(async (data) => {
     if (!selectedResultViewId) return;
 
