@@ -160,7 +160,7 @@ export const FormFilteringParameters = ({
 }: Props): JSX.Element => {
   const [open, setOpen] = useState(false);
 
-  const { control, register, handleSubmit, setValue, watch } = useForm({
+  const { control, register, handleSubmit, setValue } = useForm({
     defaultValues: {
       parameters: props.parameters,
     },
@@ -286,10 +286,6 @@ export const FormFilteringParameters = ({
                     key: field.value.referenceColumn,
                   });
 
-                  const internalVal =
-                    (watch(`parameters.${index}.value.value`) as number) ?? 0;
-                  const displayVal = (internalVal * 100).toFixed(0);
-
                   /**
                    * カラムの型がbooleanの場合
                    */
@@ -366,17 +362,28 @@ export const FormFilteringParameters = ({
                         {field.value.operation === "range" && (
                           <>
                             <Input
+                              className={styles.inputRangeValue}
                               defaultValue={
                                 field.value.startValue
                                   ? field.value.startValue.toString()
                                   : ""
                               }
+                              max={100}
+                              min={0}
+                              onBlur={(e) => {
+                                const parsed = parseFloat(e.target.value);
+                                const value =
+                                  metadata?.unit === "%"
+                                    ? Math.max(0, Math.min(100, parsed))
+                                    : parsed;
+                                e.target.value = `${value}`;
+                                setValue(
+                                  `parameters.${index}.value.startValue`,
+                                  value,
+                                );
+                              }}
                               placeholder="開始値"
                               type="date"
-                              {...register(
-                                `parameters.${index}.value.startValue`,
-                              )}
-                              className={styles.inputRangeValue}
                             />
                             <div className={styles.includesField}>
                               <span>含</span>
@@ -392,17 +399,28 @@ export const FormFilteringParameters = ({
                             </div>
                             <span>〜</span>
                             <Input
+                              className={styles.inputRangeValue}
                               defaultValue={
                                 field.value.lastValue
                                   ? field.value.lastValue.toString()
                                   : ""
                               }
+                              max={100}
+                              min={0}
+                              onBlur={(e) => {
+                                const parsed = parseFloat(e.target.value);
+                                const value =
+                                  metadata?.unit === "%"
+                                    ? Math.max(0, Math.min(100, parsed))
+                                    : parsed;
+                                e.target.value = `${value}`;
+                                setValue(
+                                  `parameters.${index}.value.lastValue`,
+                                  value,
+                                );
+                              }}
                               placeholder="終了値"
                               type="date"
-                              {...register(
-                                `parameters.${index}.value.lastValue`,
-                              )}
-                              className={styles.inputRangeValue}
                             />
                             <div className={styles.includesField}>
                               <span>含</span>
@@ -471,17 +489,28 @@ export const FormFilteringParameters = ({
                       {field.value.operation === "range" && (
                         <>
                           <Input
+                            className={styles.inputRangeValue}
                             defaultValue={
                               field.value.startValue
                                 ? field.value.startValue.toString()
                                 : ""
                             }
+                            max={100}
+                            min={0}
+                            onBlur={(e) => {
+                              const parsed = parseFloat(e.target.value);
+                              const value =
+                                metadata?.unit === "%"
+                                  ? Math.max(0, Math.min(100, parsed))
+                                  : parsed;
+                              e.target.value = `${value}`;
+                              setValue(
+                                `parameters.${index}.value.startValue`,
+                                value,
+                              );
+                            }}
                             placeholder="開始値"
                             type="number"
-                            {...register(
-                              `parameters.${index}.value.startValue`,
-                            )}
-                            className={styles.inputRangeValue}
                           />
                           {metadata?.unit ?? ""}
                           <div className={styles.includesField}>
@@ -496,15 +525,28 @@ export const FormFilteringParameters = ({
                           </div>
                           <span>〜</span>
                           <Input
+                            className={styles.inputRangeValue}
                             defaultValue={
                               field.value.lastValue
                                 ? field.value.lastValue.toString()
                                 : ""
                             }
+                            max={100}
+                            min={0}
+                            onBlur={(e) => {
+                              const parsed = parseFloat(e.target.value);
+                              const value =
+                                metadata?.unit === "%"
+                                  ? Math.max(0, Math.min(100, parsed))
+                                  : parsed;
+                              e.target.value = `${value}`;
+                              setValue(
+                                `parameters.${index}.value.lastValue`,
+                                value,
+                              );
+                            }}
                             placeholder="終了値"
                             type="number"
-                            {...register(`parameters.${index}.value.lastValue`)}
-                            className={styles.inputRangeValue}
                           />
                           {metadata?.unit ?? ""}
                           <div className={styles.includesField}>
@@ -522,19 +564,29 @@ export const FormFilteringParameters = ({
                       {field.value.operation !== "range" && (
                         <>
                           <Input
-                            onChange={(e) => {
-                              let typedVal = parseFloat(e.target.value);
-                              if (isNaN(typedVal)) typedVal = 0;
-                              typedVal = Math.max(0, Math.min(100, typedVal));
+                            className={styles.inputValue}
+                            defaultValue={
+                              field.value.value
+                                ? field.value.value.toString()
+                                : ""
+                            }
+                            max={100}
+                            min={0}
+                            onBlur={(e) => {
+                              const parsed = parseFloat(e.target.value);
+                              const value =
+                                metadata?.unit === "%"
+                                  ? Math.max(0, Math.min(100, parsed))
+                                  : parsed;
+                              e.target.value = `${value}`;
                               setValue(
                                 `parameters.${index}.value.value`,
-                                typedVal / 100,
+                                value,
                               );
                             }}
+                            placeholder="値"
                             type="number"
-                            value={displayVal}
                           />
-
                           {metadata?.unit ?? ""}
                         </>
                       )}
