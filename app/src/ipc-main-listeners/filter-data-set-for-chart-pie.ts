@@ -6,7 +6,6 @@ import {
   type ChartProps,
   type FilterCondition,
 } from "../@types/charts";
-import { formatChartValue } from "../utils/format-chart-value";
 import { subQueryFromConditions } from "../utils/subquery-grouping";
 import {
   type AREA_DATASET_COLUMN,
@@ -142,7 +141,7 @@ export const filterDataSetForChartPie = ((
           }
           return row[x] as string;
         })();
-        const yValue = formatChartValue(row[y] as number) as number;
+        const yValue = row[y] as number;
         return {
           x: groupingConditions ? groupingConditions[index]?.label : xValue,
           y: yValue,
@@ -265,7 +264,7 @@ export const filterDataSetForChartPie = ((
           }
           return row[x] as string;
         })();
-        const yValue = formatChartValue(row[y] as number) as number;
+        const yValue = row[y] as number;
 
         return {
           x: groupingConditions ? groupingConditions[index]?.label : xValue,
