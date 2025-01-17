@@ -23,7 +23,7 @@ export const formatTableValue = (
   }
 
   if (typeof value === "number" && metadata?.unit === "%") {
-    return (value * 100).toFixed(0);
+    return Math.floor(value * 1000) / 10;
   }
 
   return Number(value.toFixed(digits));

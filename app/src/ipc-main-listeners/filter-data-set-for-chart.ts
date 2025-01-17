@@ -6,7 +6,6 @@ import {
   type ChartProps,
   type FilterCondition,
 } from "../@types/charts";
-import { formatChartValue } from "../utils/format-chart-value";
 import { subQueryFromConditions } from "../utils/subquery-grouping";
 import {
   type AREA_DATASET_COLUMN,
@@ -171,10 +170,10 @@ export const filterDataSetForChart = ((
           }
           return row[x] as string;
         })();
-        const yValue = formatChartValue(row[y] as number) as number;
+        const yValue = row[y] as number;
         return {
           x: xValue,
-          y: scaleValue(yValue, columnYMetadata.unit),
+          y: yValue,
         };
       }),
 
@@ -302,15 +301,15 @@ export const filterDataSetForChart = ((
       data: all.map((row) => {
         const xValue = (() => {
           if (columnXMetadata.type === "float") {
-            return scaleValue(row[x] as number, columnXMetadata.unit);
+            return row[x] as number;
           }
           return row[x] as string;
         })();
-        const yValue = formatChartValue(row[y] as number) as number;
+        const yValue = row[y] as number;
 
         return {
           x: xValue,
-          y: scaleValue(yValue, columnYMetadata.unit),
+          y: yValue,
         };
       }),
 
@@ -337,8 +336,3 @@ export const filterDataSetForChart = ((
     },
   };
 }) satisfies IpcMainListener;
-
-function scaleValue(value: number, unit: string): number {
-  // 小数点第一位まで表示する
-  return unit === "%" ? Math.round(value * 1000) / 10 : value;
-}
