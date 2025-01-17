@@ -114,7 +114,14 @@ const CustomizedActiveDot = ({
 export const ChartLine = (props: ChartLineProps): JSX.Element => {
   const { chartProps } = useFetchFilterDataSetForChart(props);
 
-  const data = chartProps.data;
+  const isPercentValue =
+    props.groupingCalc === "avg" && chartProps.yAxisColumn.unit === "%";
+  const data = chartProps.data.map((d) => ({
+    ...d,
+    y: isPercentValue
+      ? Math.floor(d.y * 1000) / 10
+      : Number.parseFloat(d.y.toFixed(1)), // floatな値を扱うことがあるため、桁が溢れないように小数点第一位まで表示する
+  }));
 
   if (props.x == null || props.y == null) {
     return <div>パラメーターの値を正しく設定してください</div>;

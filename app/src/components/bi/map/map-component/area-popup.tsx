@@ -47,7 +47,7 @@ export const AreaPopup = forwardRef<HTMLDivElement, Props>(
           <div>
             <span className={styles.predictedProbability}>
               {properties.predicted_probability !== null
-                ? (properties.predicted_probability * 100).toFixed(0)
+                ? Math.floor(properties.predicted_probability * 1000) / 10
                 : "??"}
               %
             </span>
@@ -64,7 +64,7 @@ export const AreaPopup = forwardRef<HTMLDivElement, Props>(
               <span className={styles.itemLabel}>若年層率</span>
               <span className={styles.itemValue}>
                 {properties.young_population_ratio !== null
-                  ? (properties.young_population_ratio * 100).toFixed(0)
+                  ? Math.floor(properties.young_population_ratio * 1000) / 10
                   : "??"}
                 %
               </span>
@@ -73,7 +73,7 @@ export const AreaPopup = forwardRef<HTMLDivElement, Props>(
               <span className={styles.itemLabel}>高年者率</span>
               <span className={styles.itemValue}>
                 {properties.elderly_population_ratio !== null
-                  ? (properties.elderly_population_ratio * 100).toFixed(0)
+                  ? Math.floor(properties.elderly_population_ratio * 1000) / 10
                   : "??"}
                 %
               </span>
@@ -87,7 +87,9 @@ export const AreaPopup = forwardRef<HTMLDivElement, Props>(
             <div className={styles.item}>
               <span className={styles.itemLabel}>面積</span>
               <span className={styles.itemValue}>
-                {properties.area !== null ? properties.area.toFixed(0) : "??"}
+                {properties.area !== null
+                  ? Math.floor(properties.area * 1000) / 10
+                  : "??"}
                 m2
               </span>
             </div>
