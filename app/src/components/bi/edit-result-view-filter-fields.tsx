@@ -9,6 +9,7 @@ import { Field } from "../ui/field";
 import { Select } from "../ui/select";
 import { Fieldset } from "../ui/fieldset";
 import { FieldLegend } from "../ui/field-legend";
+import { type GroupingCondition } from "../../@types/charts";
 import { FormFilteringParameters } from "./form-filtering-parameters";
 import { FormAreaFilter } from "./form-area-filter";
 
@@ -166,12 +167,40 @@ export const EditResultViewFilterFields = ({
 
       <FormFilteringParameters
         onSave={(parameters) => {
+          const customizedParameters = parameters.map((p) => ({
+            ...p,
+            value: {
+              ...p.value,
+              value:
+                "value" in p.value && p.value.value !== undefined
+                  ? parsePercentageValue({
+                      value: p.value.value,
+                      referenceColumnType: p.value.referenceColumnType,
+                    })
+                  : undefined,
+              startValue:
+                "startValue" in p.value && p.value.startValue !== undefined
+                  ? parsePercentageValue({
+                      value: p.value.startValue,
+                      referenceColumnType: p.value.referenceColumnType,
+                    })
+                  : undefined,
+              lastValue:
+                "lastValue" in p.value && p.value.lastValue !== undefined
+                  ? parsePercentageValue({
+                      value: p.value.lastValue,
+                      referenceColumnType: p.value.referenceColumnType,
+                    })
+                  : undefined,
+            },
+          }));
+
           const prevOtherParameters = currentParameters.filter((f) => {
             return f.type !== "filter" || f.key === "year" || f.key === "area";
           });
           const newParameters = [
             ...prevOtherParameters,
-            ...parameters,
+            ...customizedParameters,
           ] as SelectResultView["parameters"]; // union の型推論が効きづらいため、明示的に型を指定;
 
           replace(newParameters);
@@ -183,3 +212,15 @@ export const EditResultViewFilterFields = ({
     </Fieldset>
   );
 };
+
+function parsePercentageValue({
+  value,
+  referenceColumnType,
+}: {
+  value: string | number;
+  referenceColumnType: GroupingCondition["referenceColumnType"];
+}): string | number {
+  if (typeof value === "string") return value;
+  if (referenceColumnType === "float") return value / 100;
+  return value;
+}

@@ -160,7 +160,7 @@ export const FormFilteringParameters = ({
 }: Props): JSX.Element => {
   const [open, setOpen] = useState(false);
 
-  const { control, register, handleSubmit } = useForm({
+  const { control, register, handleSubmit, setValue } = useForm({
     defaultValues: {
       parameters: props.parameters,
     },
@@ -362,17 +362,28 @@ export const FormFilteringParameters = ({
                         {field.value.operation === "range" && (
                           <>
                             <Input
+                              className={styles.inputRangeValue}
                               defaultValue={
                                 field.value.startValue
                                   ? field.value.startValue.toString()
                                   : ""
                               }
+                              max={100}
+                              min={0}
+                              onBlur={(e) => {
+                                const parsed = parseFloat(e.target.value);
+                                const value =
+                                  metadata?.unit === "%"
+                                    ? Math.max(0, Math.min(100, parsed))
+                                    : parsed;
+                                e.target.value = `${value}`;
+                                setValue(
+                                  `parameters.${index}.value.startValue`,
+                                  value,
+                                );
+                              }}
                               placeholder="開始値"
                               type="date"
-                              {...register(
-                                `parameters.${index}.value.startValue`,
-                              )}
-                              className={styles.inputRangeValue}
                             />
                             <div className={styles.includesField}>
                               <span>含</span>
@@ -388,17 +399,28 @@ export const FormFilteringParameters = ({
                             </div>
                             <span>〜</span>
                             <Input
+                              className={styles.inputRangeValue}
                               defaultValue={
-                                field.value.startValue
-                                  ? field.value.startValue.toString()
+                                field.value.lastValue
+                                  ? field.value.lastValue.toString()
                                   : ""
                               }
+                              max={100}
+                              min={0}
+                              onBlur={(e) => {
+                                const parsed = parseFloat(e.target.value);
+                                const value =
+                                  metadata?.unit === "%"
+                                    ? Math.max(0, Math.min(100, parsed))
+                                    : parsed;
+                                e.target.value = `${value}`;
+                                setValue(
+                                  `parameters.${index}.value.lastValue`,
+                                  value,
+                                );
+                              }}
                               placeholder="終了値"
                               type="date"
-                              {...register(
-                                `parameters.${index}.value.lastValue`,
-                              )}
-                              className={styles.inputRangeValue}
                             />
                             <div className={styles.includesField}>
                               <span>含</span>
@@ -467,17 +489,28 @@ export const FormFilteringParameters = ({
                       {field.value.operation === "range" && (
                         <>
                           <Input
+                            className={styles.inputRangeValue}
                             defaultValue={
                               field.value.startValue
                                 ? field.value.startValue.toString()
                                 : ""
                             }
+                            max={100}
+                            min={0}
+                            onBlur={(e) => {
+                              const parsed = parseFloat(e.target.value);
+                              const value =
+                                metadata?.unit === "%"
+                                  ? Math.max(0, Math.min(100, parsed))
+                                  : parsed;
+                              e.target.value = `${value}`;
+                              setValue(
+                                `parameters.${index}.value.startValue`,
+                                value,
+                              );
+                            }}
                             placeholder="開始値"
                             type="number"
-                            {...register(
-                              `parameters.${index}.value.startValue`,
-                            )}
-                            className={styles.inputRangeValue}
                           />
                           {metadata?.unit ?? ""}
                           <div className={styles.includesField}>
@@ -492,15 +525,28 @@ export const FormFilteringParameters = ({
                           </div>
                           <span>〜</span>
                           <Input
+                            className={styles.inputRangeValue}
                             defaultValue={
-                              field.value.startValue
-                                ? field.value.startValue.toString()
+                              field.value.lastValue
+                                ? field.value.lastValue.toString()
                                 : ""
                             }
+                            max={100}
+                            min={0}
+                            onBlur={(e) => {
+                              const parsed = parseFloat(e.target.value);
+                              const value =
+                                metadata?.unit === "%"
+                                  ? Math.max(0, Math.min(100, parsed))
+                                  : parsed;
+                              e.target.value = `${value}`;
+                              setValue(
+                                `parameters.${index}.value.lastValue`,
+                                value,
+                              );
+                            }}
                             placeholder="終了値"
                             type="number"
-                            {...register(`parameters.${index}.value.lastValue`)}
-                            className={styles.inputRangeValue}
                           />
                           {metadata?.unit ?? ""}
                           <div className={styles.includesField}>
@@ -518,13 +564,26 @@ export const FormFilteringParameters = ({
                       {field.value.operation !== "range" && (
                         <>
                           <Input
+                            className={styles.inputValue}
                             defaultValue={
                               field.value.value
                                 ? field.value.value.toString()
                                 : ""
                             }
-                            {...register(`parameters.${index}.value.value`)}
-                            className={styles.inputValue}
+                            max={100}
+                            min={0}
+                            onBlur={(e) => {
+                              const parsed = parseFloat(e.target.value);
+                              const value =
+                                metadata?.unit === "%"
+                                  ? Math.max(0, Math.min(100, parsed))
+                                  : parsed;
+                              e.target.value = `${value}`;
+                              setValue(
+                                `parameters.${index}.value.value`,
+                                value,
+                              );
+                            }}
                             placeholder="値"
                             type="number"
                           />
