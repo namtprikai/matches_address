@@ -81,9 +81,10 @@ function FormComponent({
   const { mutate: mutateResultViews } = useFetchResultViews({
     sheetId: selectedResultSheetId,
   });
-  const { data: selectedResultView } = useFetchResultView({
-    resultViewId: selectedResultViewId,
-  });
+  const { data: selectedResultView, mutate: mutateResultView } =
+    useFetchResultView({
+      resultViewId: selectedResultViewId,
+    });
 
   useEffect(
     function resetForm() {
@@ -125,6 +126,7 @@ function FormComponent({
       },
     });
 
+    void mutateResultView();
     void mutateResultViews();
   });
 
