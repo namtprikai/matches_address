@@ -81,7 +81,6 @@ jobs:
           poetry lock --no-update
           poetry install --no-root
           poetry run pip install pyinstaller
-          cd ..
 
       # Turborepo を使用したビルド
       - name: Build with Turborepo
