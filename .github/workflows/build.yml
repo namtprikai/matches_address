@@ -77,12 +77,17 @@ jobs:
         run: |
           npm ci
           cd ml
+          poetry env use python3.11
           poetry lock --no-update
           poetry install --no-root
           poetry run pip install pyinstaller
+          cd ..
 
       # Turborepo を使用したビルド
       - name: Build with Turborepo
+        env:
+          HOME: ${{ github.workspace }}
+          USERPROFILE: ${{ github.workspace }}
         run: npm run make
 
       # MLビルド成果物の確認
@@ -113,10 +118,6 @@ jobs:
             echo "❌ IF004.exe not found"
             exit 1
           )
-
-      # Electronアプリのビルド
-      - name: Build Electron app
-        run: npm run make
 
       # アプリがビルドされたか確認
       - name: Check Electron build artifacts
