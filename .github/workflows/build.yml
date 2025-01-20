@@ -114,10 +114,6 @@ jobs:
             exit 1
           )
 
-      # Electronアプリのビルド
-      - name: Build Electron app
-        run: npm run make
-
       # アプリがビルドされたか確認
       - name: Check Electron build artifacts
         shell: pwsh
