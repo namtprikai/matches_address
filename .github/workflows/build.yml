@@ -84,9 +84,6 @@ jobs:
 
       # Turborepo を使用したビルド
       - name: Build with Turborepo
-        env:
-          HOME: ${{ github.workspace }}
-          USERPROFILE: ${{ github.workspace }}
         run: npm run make
 
       # MLビルド成果物の確認
