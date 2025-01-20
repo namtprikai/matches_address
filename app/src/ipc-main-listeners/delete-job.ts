@@ -1,6 +1,7 @@
 import { eq } from "drizzle-orm";
 import { jobs, job_tasks, job_results, type SelectJob } from "../schema";
 import { db } from "../utils/db";
+import { deleteDataSetFile } from "../utils/delete-dataset-file";
 import { type IpcMainListener } from ".";
 
 export const deleteJob = (async (
@@ -8,13 +9,20 @@ export const deleteJob = (async (
   { id }: { id: SelectJob["id"] },
 ): Promise<void> => {
   await db.transaction(async (tx) => {
-    // 1) job_tasks を先に削除
-    await tx.delete(job_tasks).where(eq(job_tasks.job_id, id)).run();
+    const results = await tx
+      .select()
+      .from(job_results)
+      .where(eq(job_results.job_id, id))
+      .all();
 
-    // 2) job_results を削除
+    results.forEach((r) => {
+      deleteDataSetFile(r.file_path);
+    });
+
     await tx.delete(job_results).where(eq(job_results.job_id, id)).run();
 
-    // 3) jobs を最後に削除
+    await tx.delete(job_tasks).where(eq(job_tasks.job_id, id)).run();
+
     await tx.delete(jobs).where(eq(jobs.id, id)).run();
   });
 }) satisfies IpcMainListener;
