@@ -1,0 +1,61 @@
+name: Test Turbo
+
+on:
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: "Branch to build"
+        required: true
+        type: string
+        default: "main"
+
+jobs:
+  check_branch:
+    runs-on: ubuntu-latest
+    outputs:
+      branch_exists: ${{ steps.check.outputs.exists }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Check if branch exists
+        id: check
+        run: |
+          git fetch origin ${{ inputs.branch }}
+          if git show-ref --verify --quiet "refs/remotes/origin/${{ inputs.branch }}"; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+            echo "Branch ${{ inputs.branch }} exists"
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+            echo "Branch ${{ inputs.branch }} does not exist"
+          fi
+
+  build:
+    needs: check_branch
+    if: needs.check_branch.outputs.branch_exists == 'true'
+    runs-on: windows-latest
+
+    strategy:
+      matrix:
+        python-version: [3.11]
+        node-version: [20]
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.branch }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: "**/package-lock.json"
+
+      - name: npm install
+        env:
+          HUSKY: "0"
+        run: npm install
+
+      - name: npm run make
+        run: npm run make
