@@ -97,6 +97,37 @@ export function DetailWorkbook(): JSX.Element {
           <BreadcrumbItem key={item.href} {...item} />
         ))}
       />
+      <div>
+        <Button
+          onClick={async () => {
+            const data = await window.ipcRenderer.invoke("_debugFetchChart", {
+              view: {
+                dataSetResultId: Number(id),
+                unit: "area",
+                style: "bar",
+                title: "建物別売上",
+                parameters: [
+                  { key: "xAxis", type: "column", value: "area_group" },
+                  {
+                    key: "yAxis",
+                    type: "column",
+                    value: "elderly_population_ratio",
+                  },
+                  {
+                    key: "year",
+                    type: "filter",
+                    value: { start: "2023", end: "2020" },
+                  },
+                ],
+              },
+            });
+            // eslint-disable-next-line no-console -- Debugging
+            console.log({ data });
+          }}
+        >
+          _debugFetchChart
+        </Button>
+      </div>
       <div className={styles.headingWithAction}>
         <h2 className={styles.heading}>{workbook?.title}</h2>
         <div className={styles.buttons}>

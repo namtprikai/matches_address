@@ -8,7 +8,9 @@ import { filterQueryBuilder } from "./filter-query-builder";
 /** @todo */
 type ReturnType = unknown;
 
-const fetchAreaBarChartData = (view: BarView): ReturnType => {
+export const fetchAreaBarChartData = async (
+  view: BarView,
+): Promise<ReturnType> => {
   if (view.style !== "bar") {
     throw new Error(
       'このAPIは棒グラフ(style: "bar")のデータのみ対応しています',
@@ -42,44 +44,76 @@ const fetchAreaBarChartData = (view: BarView): ReturnType => {
   }
 
   // データ取得
-  const filterSubQuery = db
-    .select()
-    .from(data_set_detail_areas)
-    .where(
-      and(
-        eq(data_set_detail_areas.data_set_result_id, dataSetResultId),
-        yearFilter?.value.start
-          ? gte(
-              data_set_detail_areas.reference_date,
-              `${yearFilter?.value.start}-01-01`,
-            )
-          : undefined,
-        yearFilter?.value.end
-          ? lte(
-              data_set_detail_areas.reference_date,
-              `${yearFilter?.value.end}-12-31`,
-            )
-          : undefined,
-        ...filterQueryBuilder({
-          conditions: filterConditions ?? [],
-        }),
-        or(
-          // 地域区分文字列のリストからeq条件を作成
-          ...(areaFilter?.value ?? []).map((area) =>
-            eq(data_set_detail_areas.area_group, area),
-          ),
+  let query = db.select().from(data_set_detail_areas).$dynamic();
+  query = query.where(eq(data_set_detail_areas.data_set_result_id, 3));
+
+  /** @todo 以下の条件式が悪さしてそう。 data_set_result_id=1で検索する結果は5075件のはずだが、なぜか全体数の5076件が返ってきているように見える*/
+
+  /** 年のフィルタ */
+  if (yearFilter?.value.start) {
+    query = query.where(
+      gte(
+        data_set_detail_areas.reference_date,
+        `${yearFilter.value.start}-01-01`,
+      ),
+    );
+  }
+  if (yearFilter?.value.end) {
+    query = query.where(
+      lte(
+        data_set_detail_areas.reference_date,
+        `${yearFilter.value.end}-12-31`,
+      ),
+    );
+  }
+
+  /** 地域のフィルタ */
+  if (areaFilter?.value) {
+    query = query.where(
+      or(
+        ...(areaFilter.value ?? []).map((area) =>
+          eq(data_set_detail_areas.area_group, area),
         ),
       ),
-    )
-    .as("filterSubQuery");
+    );
+  }
 
-  return;
+  /** フィルタ詳細条件のフィルタ */
+  if (filterConditions) {
+    query = query.where(
+      and(...filterQueryBuilder({ conditions: filterConditions })),
+    );
+  }
+
+  // .where(
+  //   and(
+  //     eq(data_set_detail_areas.data_set_result_id, dataSetResultId),
+  //     yearFilter?.value.start
+  //       ? gte(
+  //           data_set_detail_areas.reference_date,
+  //           `${yearFilter?.value.start}-01-01`,
+  //         )
+  //       : undefined,
+  //     yearFilter?.value.end
+  //       ? lte(
+  //           data_set_detail_areas.reference_date,
+  //           `${yearFilter?.value.end}-12-31`,
+  //         )
+  //       : undefined,
+  //     ...filterQueryBuilder({
+  //       conditions: filterConditions ?? [],
+  //     }),
+  //     or(
+  //       // 地域区分文字列のリストからeq条件を作成
+  //       ...(areaFilter?.value ?? []).map((area) =>
+  //         eq(data_set_detail_areas.area_group, area),
+  //       ),
+  //     ),
+  //   ),
+  // )
+  // .as("filterSubQuery");
+
+  const result = await query;
+
+  return result;
 };
-
-fetchAreaBarChartData({
-  dataSetResultId: 1,
-  unit: "area",
-  style: "bar",
-  title: "建物別売上",
-  parameters: [],
-});
