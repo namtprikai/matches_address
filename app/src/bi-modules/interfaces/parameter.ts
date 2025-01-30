@@ -1,6 +1,7 @@
 /** result-viewテーブルに入っている値の整理 */
 
-import { type FilterConditionValue } from "./operation";
+import { type FilterConditionValue } from "./filter-operation";
+import { type GroupConditionValue } from "./group-operation";
 
 export interface ParameterBase {
   key: string;
@@ -35,11 +36,7 @@ export interface YAxis extends ParameterBase {
 export interface GroupCondition extends ParameterBase {
   key: `group_${string}`;
   type: "group";
-  value: {
-    label: string;
-    referenceColumnType: "text";
-    operation: "eq";
-  } /** WIP: referenceColumnTypeによって変わりそう */;
+  value: GroupConditionValue;
 }
 
 /** 折れ線グラフ/円グラフ:Y軸/値の集計方法 */

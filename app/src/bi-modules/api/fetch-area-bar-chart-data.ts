@@ -1,4 +1,4 @@
-import { and, eq, gte, lte, or } from "drizzle-orm";
+import { and, eq, gte, lte, or, type SQL } from "drizzle-orm";
 import { db } from "../../utils/db";
 import { type BarView } from "../interfaces/view";
 import { data_set_detail_areas } from "../../schema";
@@ -44,14 +44,15 @@ export const fetchAreaBarChartData = async (
   }
 
   // データ取得
-  let query = db.select().from(data_set_detail_areas).$dynamic();
-  query = query.where(eq(data_set_detail_areas.data_set_result_id, 3));
+  const query = db.select().from(data_set_detail_areas).$dynamic();
 
-  /** @todo 以下の条件式が悪さしてそう。 data_set_result_id=1で検索する結果は5075件のはずだが、なぜか全体数の5076件が返ってきているように見える*/
+  const queryWheres: (SQL<unknown> | undefined)[] = [
+    eq(data_set_detail_areas.data_set_result_id, dataSetResultId),
+  ];
 
   /** 年のフィルタ */
   if (yearFilter?.value.start) {
-    query = query.where(
+    queryWheres.push(
       gte(
         data_set_detail_areas.reference_date,
         `${yearFilter.value.start}-01-01`,
@@ -59,7 +60,7 @@ export const fetchAreaBarChartData = async (
     );
   }
   if (yearFilter?.value.end) {
-    query = query.where(
+    queryWheres.push(
       lte(
         data_set_detail_areas.reference_date,
         `${yearFilter.value.end}-12-31`,
@@ -69,7 +70,7 @@ export const fetchAreaBarChartData = async (
 
   /** 地域のフィルタ */
   if (areaFilter?.value) {
-    query = query.where(
+    queryWheres.push(
       or(
         ...(areaFilter.value ?? []).map((area) =>
           eq(data_set_detail_areas.area_group, area),
@@ -80,10 +81,12 @@ export const fetchAreaBarChartData = async (
 
   /** フィルタ詳細条件のフィルタ */
   if (filterConditions) {
-    query = query.where(
+    queryWheres.push(
       and(...filterQueryBuilder({ conditions: filterConditions })),
     );
   }
+
+  query.where(and(...queryWheres));
 
   // .where(
   //   and(
