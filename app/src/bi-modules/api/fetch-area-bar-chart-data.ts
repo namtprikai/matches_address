@@ -1,4 +1,4 @@
-import { and, count, eq, gte, like, lte, or, sql, type SQL } from "drizzle-orm";
+import { and, eq, gte, lte, or, sql, type SQL } from "drizzle-orm";
 import { db } from "../../utils/db";
 import { type BarView } from "../interfaces/view";
 import { data_set_detail_areas } from "../../schema";
