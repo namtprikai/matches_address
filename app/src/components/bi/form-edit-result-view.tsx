@@ -85,6 +85,8 @@ function FormComponent({
     resultViewId: selectedResultViewId,
   });
 
+  console.log("form data", form.getValues());
+
   useEffect(
     function resetForm() {
       form.reset(defaultValues);

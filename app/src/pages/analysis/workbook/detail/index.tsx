@@ -68,17 +68,17 @@ const useStyles = makeStyles({
 export function DetailWorkbook(): JSX.Element {
   const styles = useStyles();
   const { id } = useParams();
-  const { data: workbook } = useFetchWorkbook({ id: Number(id) });
-  const { data: resultSheets } = useFetchResultSheets({
-    workbookId: Number(id),
-  });
-  const { onTabSelect, selectedValue, setSelectedValue } = useTabs();
-  const [, setSelectedResultViewId] = useAtom(selectedResultViewIdAtom);
+  // const { data: workbook } = useFetchWorkbook({ id: Number(id) });
+  // const { data: resultSheets } = useFetchResultSheets({
+  //   workbookId: Number(id),
+  // });
+  // const { onTabSelect, selectedValue, setSelectedValue } = useTabs();
+  // const [, setSelectedResultViewId] = useAtom(selectedResultViewIdAtom);
 
-  useEffect(() => {
-    setSelectedResultViewId(undefined); // 詳細ページではビューのフォーカスを外す
-    setSelectedValue(resultSheets?.[0]?.id);
-  }, [resultSheets, setSelectedResultViewId, setSelectedValue]);
+  // useEffect(() => {
+  //   setSelectedResultViewId(undefined); // 詳細ページではビューのフォーカスを外す
+  //   setSelectedValue(resultSheets?.[0]?.id);
+  // }, [resultSheets, setSelectedResultViewId, setSelectedValue]);
 
   return (
     <div className={styles.root}>
@@ -91,7 +91,7 @@ export function DetailWorkbook(): JSX.Element {
           {
             href: ROUTES.ANALYSIS.WORKBOOK_DETAIL(id || ""),
             current: true,
-            children: workbook?.title ?? "詳細",
+            // children: workbook?.title ?? "詳細",
           },
         ].map((item) => (
           <BreadcrumbItem key={item.href} {...item} />
@@ -107,16 +107,43 @@ export function DetailWorkbook(): JSX.Element {
                 style: "bar",
                 title: "建物別売上",
                 parameters: [
-                  { key: "xAxis", type: "column", value: "area_group" },
+                  {
+                    key: "xAxis",
+                    value: "area_group",
+                    type: "column",
+                  },
                   {
                     key: "yAxis",
+                    value: "predicted_probability",
                     type: "column",
-                    value: "elderly_population_ratio",
+                  },
+                  {
+                    key: "group_194ca912964",
+                    value: {
+                      label: "朝日",
+                      referenceColumnType: "text",
+                      operation: "contains",
+                      value: "朝日",
+                    },
+                    type: "group",
+                  },
+                  {
+                    key: "group_194ca91585d",
+                    value: {
+                      label: "朝日じゃない",
+                      referenceColumnType: "text",
+                      operation: "notContains",
+                      value: "朝日",
+                    },
+                    type: "group",
                   },
                   {
                     key: "year",
+                    value: {
+                      start: "",
+                      end: "",
+                    },
                     type: "filter",
-                    value: { start: "2023", end: "2020" },
                   },
                 ],
               },
@@ -127,8 +154,16 @@ export function DetailWorkbook(): JSX.Element {
         >
           _debugFetchChart
         </Button>
+        <a href={`#analysis/workbook/${id}/edit`}>
+          <Button
+            appearance="outline"
+            className={styles.button}
+            icon={<EditFilled />}
+            shape="square"
+          />
+        </a>
       </div>
-      <div className={styles.headingWithAction}>
+      {/* <div className={styles.headingWithAction}>
         <h2 className={styles.heading}>{workbook?.title}</h2>
         <div className={styles.buttons}>
           <a href={`#analysis/workbook/${id}/edit`}>
@@ -168,7 +203,7 @@ export function DetailWorkbook(): JSX.Element {
             </Suspense>
           </div>
         ))}
-      </div>
+      </div> */}
     </div>
   );
 }

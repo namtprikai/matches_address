@@ -1,12 +1,19 @@
-import { and, eq, gte, lte, or, type SQL } from "drizzle-orm";
+import { and, count, eq, gte, like, lte, or, sql, type SQL } from "drizzle-orm";
 import { db } from "../../utils/db";
 import { type BarView } from "../interfaces/view";
 import { data_set_detail_areas } from "../../schema";
 import { type FilterCondition } from "../interfaces/parameter";
 import { filterQueryBuilder } from "./filter-query-builder";
+import { conditionsToCaseQuery } from "./conditions-to-case-query";
 
 /** @todo */
 type ReturnType = unknown;
+
+/**
+ * クエリまたはAPIでやるべきこと
+ * 1. 年・地域・フィルター詳細条件を適用した全件結果を取得
+ * 2. グループ条件がある場合は、グループ名と集計値をマップしたデータを取得
+ */
 
 export const fetchAreaBarChartData = async (
   view: BarView,
@@ -43,8 +50,15 @@ export const fetchAreaBarChartData = async (
     throw new Error("X軸とY軸の設定は必須です");
   }
 
-  // データ取得
-  const query = db.select().from(data_set_detail_areas).$dynamic();
+  // クエリのベース作成
+  const query = db
+    .select({
+      /** data_set_detail_areasのColumn名とそれぞれのvalueに定義された値が一致していることが前提でrawを利用 */
+      [xAxis.value]: sql.raw(`${xAxis.value}`),
+      [yAxis.value]: sql.raw(`${yAxis.value}`),
+    })
+    .from(data_set_detail_areas)
+    .$dynamic();
 
   const queryWheres: (SQL<unknown> | undefined)[] = [
     eq(data_set_detail_areas.data_set_result_id, dataSetResultId),
@@ -86,37 +100,30 @@ export const fetchAreaBarChartData = async (
     );
   }
 
-  query.where(and(...queryWheres));
+  /** 重複を排除する */
+  query
+    .groupBy(sql.raw(`${xAxis.value}`))
+    .having(sql.raw(`${xAxis.value} <> ''`));
 
-  // .where(
-  //   and(
-  //     eq(data_set_detail_areas.data_set_result_id, dataSetResultId),
-  //     yearFilter?.value.start
-  //       ? gte(
-  //           data_set_detail_areas.reference_date,
-  //           `${yearFilter?.value.start}-01-01`,
-  //         )
-  //       : undefined,
-  //     yearFilter?.value.end
-  //       ? lte(
-  //           data_set_detail_areas.reference_date,
-  //           `${yearFilter?.value.end}-12-31`,
-  //         )
-  //       : undefined,
-  //     ...filterQueryBuilder({
-  //       conditions: filterConditions ?? [],
-  //     }),
-  //     or(
-  //       // 地域区分文字列のリストからeq条件を作成
-  //       ...(areaFilter?.value ?? []).map((area) =>
-  //         eq(data_set_detail_areas.area_group, area),
-  //       ),
-  //     ),
-  //   ),
-  // )
-  // .as("filterSubQuery");
+  const baseQuery = query.as("baseQuery");
 
-  const result = await query;
+  if (groupConditions.length > 0) {
+    const GroupLabel = `${xAxis.value}_group` as const;
+    const caseQuery = conditionsToCaseQuery(xAxis.value, groupConditions);
+    const groupQuery = db
+      .select({
+        [GroupLabel]: sql.join(
+          [caseQuery, sql.raw(`as ${GroupLabel}`)],
+          sql.raw(" "),
+        ),
+      })
+      .from(baseQuery);
+
+    const result = db.select().from(groupQuery.as("groupQuery")).all();
+    return result;
+  }
+
+  const result = db.select().from(baseQuery).all();
 
   return result;
 };
