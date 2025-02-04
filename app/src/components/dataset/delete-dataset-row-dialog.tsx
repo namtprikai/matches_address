@@ -13,7 +13,7 @@ interface Props {
   dialogState: ReturnUseDialogState;
 }
 
-export function DeleteRowDialog({
+export function DeleteDataSetRowDialog({
   fileName,
   onDelete,
   dialogState,
@@ -34,6 +34,7 @@ export function DeleteRowDialog({
           <DialogContent>
             削除したデータを復元することはできません
           </DialogContent>
+
           <DialogActions>
             <Button appearance="primary" onClick={onDelete} size="medium">
               削除
