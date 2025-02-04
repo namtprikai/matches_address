@@ -49,12 +49,22 @@ const useStyles = makeStyles({
 export function Job(): JSX.Element {
   const styles = useStyles();
   const pagination = usePagination(50);
-  const { data } = useFetchJobsWithPagination({
+  const { data, mutate } = useFetchJobsWithPagination({
     page: pagination.page,
     limitPerPage: pagination.limitPerPage,
   });
 
   const hasData = data && data.length > 0;
+
+  // 削除に成功した場合データを再取得する
+  const handleDeleteSuccess = async (id: number): Promise<void> => {
+    try {
+      await window.ipcRenderer.invoke("deleteJob", { id });
+      await mutate();
+    } catch (error) {
+      console.error("Failed to delete job:", error);
+    }
+  };
 
   return (
     <div className={styles.root}>
@@ -81,7 +91,11 @@ export function Job(): JSX.Element {
               <TableHeaderJobs />
               <TableBody>
                 {data.map((item) => (
-                  <TableRowJobs key={item.id} item={item} />
+                  <TableRowJobs
+                    key={item.id}
+                    item={item}
+                    onDeleteSuccess={handleDeleteSuccess}
+                  />
                 ))}
               </TableBody>
             </Table>

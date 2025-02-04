@@ -70,6 +70,7 @@ import { selectRawDatasetWithFilePath } from "./select-raw-dataset-with-file-pat
 import { filterDataSetForChartPie } from "./filter-data-set-for-chart-pie";
 import { selectJobsWithPagination } from "./select-jobs-with-pagination";
 import { _debugFetchChart } from "./_debug-fetch-chart";
+import { deleteJob } from "./delete-job";
 
 export const ipcMainListeners = {
   helloFromPython,
@@ -140,6 +141,7 @@ export const ipcMainListeners = {
   selectRawDatasetWithFilePath,
   selectJobsWithPagination,
   _debugFetchChart,
+  deleteJob,
 };
 
 export const execFileAsync = promisify(execFile);

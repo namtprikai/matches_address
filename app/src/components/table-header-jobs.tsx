@@ -34,6 +34,7 @@ export const TableHeaderJobs = (): JSX.Element => {
         <TableHeaderCell className={styles.headerCell}>
           保存ステータス
         </TableHeaderCell>
+        <TableHeaderCell></TableHeaderCell>
       </TableRow>
     </TableHeader>
   );

@@ -33,7 +33,7 @@ import { usePagination } from "../../hooks/use-pagination";
 import { Pagination } from "../ui/pagination";
 import { DataPreviewDialog } from "./data-preview-dialog";
 import { EditNameDialog } from "./edit-name-dialog";
-import { DeleteRowDialog } from "./delete-row-dialog";
+import { DeleteDataSetRowDialog } from "./delete-dataset-row-dialog";
 import { DataPreviewTable } from "./data-preview-table";
 
 const useStyles = makeStyles({
@@ -303,7 +303,7 @@ function RowMenu({
         initialName={item.file_name}
         onSubmit={handleEditName}
       />
-      <DeleteRowDialog
+      <DeleteDataSetRowDialog
         dialogState={deleteDialogState}
         fileName={item.file_name || ""}
         onDelete={onDelete}
