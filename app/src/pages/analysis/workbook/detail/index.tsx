@@ -100,7 +100,7 @@ export function DetailWorkbook(): JSX.Element {
       <div>
         <Button
           onClick={async () => {
-            const data = await window.ipcRenderer.invoke("_debugFetchChart", {
+            const data = await window.ipcRenderer.invoke("fetchChartData", {
               view: {
                 dataSetResultId: Number(id),
                 unit: "area",
@@ -146,6 +146,10 @@ export function DetailWorkbook(): JSX.Element {
                     type: "filter",
                   },
                 ],
+              },
+              pagination: {
+                limit: 100,
+                offset: 0,
               },
             });
             // eslint-disable-next-line no-console -- Debugging

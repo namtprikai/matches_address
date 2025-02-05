@@ -3,6 +3,7 @@ import { db } from "../../utils/db";
 import { type BarView } from "../interfaces/view";
 import { data_set_detail_areas } from "../../schema";
 import { type FilterCondition } from "../interfaces/parameter";
+import { type FetchReturnType } from "../interfaces/fetch";
 import { filterQueryBuilder } from "./filter-query-builder";
 import { conditionsToCaseQuery } from "./conditions-to-case-query";
 
@@ -14,16 +15,10 @@ type Params = {
   };
 };
 
-type ReturnType = {
-  x: string;
-  y: number;
-  group?: unknown;
-}[];
-
 export const fetchAreaBarChartData = async ({
   view,
   pagination: { limit, offset },
-}: Params): Promise<ReturnType> => {
+}: Params): Promise<FetchReturnType> => {
   if (view.style !== "bar") {
     throw new Error(
       'このAPIは棒グラフ(style: "bar")のデータのみ対応しています',
@@ -148,7 +143,7 @@ export const fetchAreaBarChartData = async ({
       .groupBy(groupQuery[GroupLabel])
       .having(ne(groupQuery[GroupLabel], sql.raw("''")))
       .all();
-    return result as ReturnType; /** @todo */
+    return result as FetchReturnType; /** @todo */
   }
 
   const result = db
@@ -161,5 +156,5 @@ export const fetchAreaBarChartData = async ({
     .offset(offset)
     .all();
 
-  return result as ReturnType; /** @todo */
+  return result as FetchReturnType; /** @todo */
 };

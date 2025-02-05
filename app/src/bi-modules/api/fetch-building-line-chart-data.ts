@@ -1,13 +1,24 @@
-import { and, eq } from "drizzle-orm";
+import { and, eq, gte, lte, ne, or, type SQL, sql } from "drizzle-orm";
 import { db } from "../../utils/db";
 import { type LineView } from "../interfaces/view";
 import { data_set_detail_buildings } from "../../schema";
 import { type FilterCondition } from "../interfaces/parameter";
+import { type FetchReturnType } from "../interfaces/fetch";
+import { filterQueryBuilder } from "./filter-query-builder";
+import { conditionsToCaseQuery } from "./conditions-to-case-query";
 
-/** @todo */
-type ReturnType = unknown;
+type Params = {
+  view: LineView;
+  pagination: {
+    limit: number;
+    offset: number;
+  };
+};
 
-const fetchBuildingBarChartData = (view: LineView): ReturnType => {
+export const fetchBuildingLineChartData = async ({
+  view,
+  pagination: { limit, offset },
+}: Params): Promise<FetchReturnType> => {
   if (view.style !== "line") {
     throw new Error(
       'このAPIは棒グラフ(style: "line")のデータのみ対応しています',
@@ -31,6 +42,9 @@ const fetchBuildingBarChartData = (view: LineView): ReturnType => {
     (p): p is FilterCondition /** startsWithが型推論しないため */ =>
       p.key.startsWith("filter_"),
   );
+  const groupAggregation = view.parameters.find(
+    (p) => p.type === "group_aggregation",
+  );
 
   // 必須パラメータの検証
   if (!dataSetResultId) {
@@ -40,12 +54,102 @@ const fetchBuildingBarChartData = (view: LineView): ReturnType => {
     throw new Error("X軸とY軸の設定は必須です");
   }
 
-  // データ取得
-  db.select()
+  // クエリのベース作成
+  const query = db
+    .select({
+      /** data_set_detail_buildingsのColumn名とそれぞれのvalueに定義された値が一致していることが前提でrawを利用 */
+      [xAxis.value]: sql.raw(`${xAxis.value}`).as(xAxis.value),
+      [yAxis.value]: sql.raw(`${yAxis.value}`).as(yAxis.value),
+    })
     .from(data_set_detail_buildings)
-    .where(
-      and(eq(data_set_detail_buildings.data_set_result_id, dataSetResultId)),
-    );
+    .$dynamic();
 
-  return;
+  const queryWheres: (SQL<unknown> | undefined)[] = [
+    eq(data_set_detail_buildings.data_set_result_id, dataSetResultId),
+  ];
+
+  /** 年のフィルタ */
+  if (yearFilter?.value.start) {
+    queryWheres.push(
+      gte(
+        data_set_detail_buildings.reference_date,
+        `${yearFilter.value.start}-01-01`,
+      ),
+    );
+  }
+  if (yearFilter?.value.end) {
+    queryWheres.push(
+      lte(
+        data_set_detail_buildings.reference_date,
+        `${yearFilter.value.end}-12-31`,
+      ),
+    );
+  }
+
+  /** 地域のフィルタ */
+  if (areaFilter?.value) {
+    queryWheres.push(
+      or(
+        ...(areaFilter.value ?? []).map((area) =>
+          eq(data_set_detail_buildings.area_group, area),
+        ),
+      ),
+    );
+  }
+
+  /** フィルタ詳細条件のフィルタ */
+  if (filterConditions) {
+    queryWheres.push(
+      and(...filterQueryBuilder({ conditions: filterConditions })),
+    );
+  }
+
+  /** 重複を排除する */
+  query
+    .groupBy(sql.raw(`${xAxis.value}`))
+    .having(sql.raw(`${xAxis.value} <> ''`));
+
+  const baseQuery = query.as("baseQuery");
+
+  if (groupConditions.length > 0) {
+    const GroupLabel = `group` as const;
+    const caseQuery = conditionsToCaseQuery(xAxis.value, groupConditions);
+
+    const groupQuery = db
+      .select({
+        [xAxis.value]: baseQuery[xAxis.value],
+        [yAxis.value]: baseQuery[yAxis.value],
+        [GroupLabel]: caseQuery.as("caseQuery"),
+      })
+      .from(baseQuery)
+      .as("GroupLabel");
+
+    const result = db
+      .select({
+        x: groupQuery[GroupLabel],
+        y: sql.raw(
+          `${groupAggregation?.value || "avg"}(${yAxis.value}) as ${yAxis.value}`,
+        ),
+        [GroupLabel]: groupQuery[GroupLabel],
+      })
+      .from(groupQuery)
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment -- @fixme 解決できないため
+      // @ts-ignore
+      .groupBy(groupQuery[GroupLabel])
+      .having(ne(groupQuery[GroupLabel], sql.raw("''")))
+      .all();
+    return result as FetchReturnType; /** @todo */
+  }
+
+  const result = db
+    .select({
+      x: baseQuery[xAxis.value],
+      y: baseQuery[yAxis.value],
+    })
+    .from(baseQuery)
+    .limit(limit)
+    .offset(offset)
+    .all();
+
+  return result as FetchReturnType; /** @todo */
 };

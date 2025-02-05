@@ -19,7 +19,7 @@ export const useFetchBarChartProps = ({ view }: Params): ReturnType => {
   const { chartProps, handleChartProps } = useChartProps();
 
   const fetch = useCallback(async (): Promise<void> => {
-    const result = await window.ipcRenderer.invoke("_debugFetchChart", {
+    const result = await window.ipcRenderer.invoke("fetchChartData", {
       view,
       pagination: {
         limit: pagination.limitPerPage,
