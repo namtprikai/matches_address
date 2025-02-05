@@ -2,11 +2,16 @@ import { type IpcMainInvokeEvent } from "electron";
 import { fetchAreaBarChartData } from "../bi-modules/api/fetch-area-bar-chart-data";
 import { type BarView } from "../bi-modules/interfaces/view";
 
-/** @todo */
 type Params = {
   view: BarView;
 };
-type ReturnType = unknown;
+
+/** 共通化の余地あり */
+type ReturnType = {
+  x: string;
+  y: number;
+  group?: unknown;
+}[];
 
 export const _debugFetchChart = async (
   _event: IpcMainInvokeEvent,

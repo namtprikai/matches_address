@@ -7,8 +7,8 @@ import { filterQueryBuilder } from "./filter-query-builder";
 import { conditionsToCaseQuery } from "./conditions-to-case-query";
 
 type ReturnType = {
-  x: unknown;
-  y: unknown;
+  x: string;
+  y: number;
   group?: unknown;
 }[];
 
@@ -55,6 +55,7 @@ export const fetchAreaBarChartData = async (
       [yAxis.value]: sql.raw(`${yAxis.value}`).as(yAxis.value),
     })
     .from(data_set_detail_areas)
+    .limit(100)
     .$dynamic();
 
   const queryWheres: (SQL<unknown> | undefined)[] = [
@@ -125,7 +126,7 @@ export const fetchAreaBarChartData = async (
       })
       .from(groupQuery)
       .all();
-    return result;
+    return result as ReturnType; /** @todo */
   }
 
   const result = db
@@ -136,5 +137,5 @@ export const fetchAreaBarChartData = async (
     .from(baseQuery)
     .all();
 
-  return result;
+  return result as ReturnType; /** @todo */
 };

@@ -68,17 +68,17 @@ const useStyles = makeStyles({
 export function DetailWorkbook(): JSX.Element {
   const styles = useStyles();
   const { id } = useParams();
-  // const { data: workbook } = useFetchWorkbook({ id: Number(id) });
-  // const { data: resultSheets } = useFetchResultSheets({
-  //   workbookId: Number(id),
-  // });
-  // const { onTabSelect, selectedValue, setSelectedValue } = useTabs();
-  // const [, setSelectedResultViewId] = useAtom(selectedResultViewIdAtom);
+  const { data: workbook } = useFetchWorkbook({ id: Number(id) });
+  const { data: resultSheets } = useFetchResultSheets({
+    workbookId: Number(id),
+  });
+  const { onTabSelect, selectedValue, setSelectedValue } = useTabs();
+  const [, setSelectedResultViewId] = useAtom(selectedResultViewIdAtom);
 
-  // useEffect(() => {
-  //   setSelectedResultViewId(undefined); // 詳細ページではビューのフォーカスを外す
-  //   setSelectedValue(resultSheets?.[0]?.id);
-  // }, [resultSheets, setSelectedResultViewId, setSelectedValue]);
+  useEffect(() => {
+    setSelectedResultViewId(undefined); // 詳細ページではビューのフォーカスを外す
+    setSelectedValue(resultSheets?.[0]?.id);
+  }, [resultSheets, setSelectedResultViewId, setSelectedValue]);
 
   return (
     <div className={styles.root}>
@@ -91,7 +91,7 @@ export function DetailWorkbook(): JSX.Element {
           {
             href: ROUTES.ANALYSIS.WORKBOOK_DETAIL(id || ""),
             current: true,
-            // children: workbook?.title ?? "詳細",
+            children: workbook?.title ?? "詳細",
           },
         ].map((item) => (
           <BreadcrumbItem key={item.href} {...item} />
@@ -163,7 +163,7 @@ export function DetailWorkbook(): JSX.Element {
           />
         </a>
       </div>
-      {/* <div className={styles.headingWithAction}>
+      <div className={styles.headingWithAction}>
         <h2 className={styles.heading}>{workbook?.title}</h2>
         <div className={styles.buttons}>
           <a href={`#analysis/workbook/${id}/edit`}>
@@ -203,7 +203,7 @@ export function DetailWorkbook(): JSX.Element {
             </Suspense>
           </div>
         ))}
-      </div> */}
+      </div>
     </div>
   );
 }

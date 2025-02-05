@@ -78,3 +78,5 @@ export interface TableView extends ViewBase {
   style: "table";
   parameters: (YearFilter | AreaFilter | FilterCondition | TableColumns)[];
 }
+
+export type View = BarView | LineView | PieView | TableView | MapView;

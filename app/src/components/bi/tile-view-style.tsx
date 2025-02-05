@@ -3,6 +3,7 @@ import {
   type AREA_DATASET_COLUMN,
   type BUILDING_DATASET_COLUMN,
 } from "../../config/column-metadata";
+import { type View } from "../../bi-modules/interfaces/view";
 import { TableView } from "./table-view";
 import { ChartBar } from "./chart-bar";
 import { ChartLine } from "./chart-line";
@@ -10,10 +11,7 @@ import { ChartPie } from "./chart-pie";
 import { Map } from "./map";
 
 type Props = {
-  style: SelectResultView["style"];
-  parameters: SelectResultView["parameters"];
-  resultId: number;
-  type: "building" | "area";
+  view: View;
 };
 
 /**
@@ -60,12 +58,9 @@ const pickArgsFromParameters = (
   };
 };
 
-export const TileViewStyle = ({
-  style,
-  parameters,
-  resultId,
-  type,
-}: Props): JSX.Element => {
+export const TileViewStyle = ({ view }: Props): JSX.Element => {
+  /** 仮 */
+  const { style, unit: type, parameters, dataSetResultId: resultId } = view;
   if (style === "pie") {
     const {
       xAxis,
@@ -137,22 +132,17 @@ export const TileViewStyle = ({
       return <div>パラメーターの値を正しく設定してください</div>;
     }
 
-    if (type === "building") {
+    if (view.style === "bar") {
       return (
         <div>
           <ChartBar
-            filterByAreas={areaParameter?.value}
-            filterByYear={{
-              startValue: yearParameter?.value?.start,
-              endValue: yearParameter?.value?.end,
+            view={{
+              dataSetResultId: resultId,
+              unit: type,
+              style: "bar",
+              title: "",
+              parameters,
             }}
-            filterConditions={filterParameters.flatMap((p) => p.value)}
-            groupingCalc={groupingCalc?.value as "avg" | "sum"}
-            groupingConditions={groupingParameters.flatMap((p) => p.value)}
-            resultId={resultId}
-            type={type}
-            x={xAxis.value as BUILDING_DATASET_COLUMN}
-            y={yAxis.value as BUILDING_DATASET_COLUMN}
           />
         </div>
       );

@@ -11,14 +11,24 @@ import {
 } from "recharts";
 import { useState } from "react";
 import { CHART_COLORS } from "../../config/chart-colors";
-import { useFetchFilterDataSetForChart } from "../../hooks/use-fetch-filtered-data-set-for-chart";
-import { type FilterDataSetForChartArgs } from "../../ipc-main-listeners/filter-data-set-for-chart";
 import { Pagination } from "../ui/pagination";
+import { useFetchBarChartProps } from "../../hooks/use-fetch-bar-chart-props";
+import { type BarView } from "../../bi-modules/interfaces/view";
 
-export type ChartBarProps = FilterDataSetForChartArgs;
+export type ChartBarProps = {
+  view: BarView;
+};
 
-export const ChartBar = (props: ChartBarProps): JSX.Element => {
-  const { chartProps, pagination } = useFetchFilterDataSetForChart(props);
+export const ChartBar = ({ view }: ChartBarProps): JSX.Element => {
+  const { chartProps, pagination } = useFetchBarChartProps({
+    view,
+  });
+
+  const xAxis = view.parameters.find((p) => p.key === "xAxis");
+  const yAxis = view.parameters.find((p) => p.key === "yAxis");
+
+  /** @todo どこからくる値なのか確認。本来はview.parameters.find((p) => p.key === "group_calc")?.value;みたいな感じ？ */
+  const groupingCalc = "count";
 
   const data = chartProps.data.map((d) => ({
     ...d,
@@ -34,7 +44,7 @@ export const ChartBar = (props: ChartBarProps): JSX.Element => {
   const [activeToolTip, setActiveToolTip] = useState<boolean>(false);
 
   // カラムが設定されていない場合はエラーを表示
-  if (props.x == null || props.y == null) {
+  if (!xAxis || !yAxis) {
     return <div>パラメーターの値を正しく設定してください</div>;
   }
 
@@ -77,11 +87,7 @@ export const ChartBar = (props: ChartBarProps): JSX.Element => {
           <ReXAxis dataKey={"x"} unit={chartProps.xAxisColumn.unit} />
           <ReYAxis
             dataKey={"y"}
-            unit={
-              props.groupingCalc === "count"
-                ? "件"
-                : chartProps.yAxisColumn.unit
-            }
+            unit={groupingCalc === "count" ? "件" : chartProps.yAxisColumn.unit}
           />
           <ReTooltip
             active={activeToolTip}
