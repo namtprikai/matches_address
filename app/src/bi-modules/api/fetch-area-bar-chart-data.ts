@@ -67,8 +67,6 @@ export const fetchAreaBarChartData = async ({
       [yAxis.value]: sql.raw(`${yAxis.value}`).as(yAxis.value),
     })
     .from(data_set_detail_areas)
-    // .limit(limit)
-    // .offset(offset)
     .$dynamic();
 
   const queryWheres: (SQL<unknown> | undefined)[] = [
@@ -118,6 +116,11 @@ export const fetchAreaBarChartData = async ({
 
   const baseQuery = query.as("baseQuery");
 
+  /**
+   * グループ条件がある場合の処理
+   * - paginationは適用されない
+   * - @todo UIでは適用できそうになってるので修正が必要そう
+   */
   if (groupConditions.length > 0) {
     const GroupLabel = `group` as const;
     const caseQuery = conditionsToCaseQuery(xAxis.value, groupConditions);
@@ -154,6 +157,8 @@ export const fetchAreaBarChartData = async ({
       y: baseQuery[yAxis.value],
     })
     .from(baseQuery)
+    .limit(limit)
+    .offset(offset)
     .all();
 
   return result as ReturnType; /** @todo */
