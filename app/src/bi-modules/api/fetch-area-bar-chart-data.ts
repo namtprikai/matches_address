@@ -6,15 +6,24 @@ import { type FilterCondition } from "../interfaces/parameter";
 import { filterQueryBuilder } from "./filter-query-builder";
 import { conditionsToCaseQuery } from "./conditions-to-case-query";
 
+type Params = {
+  view: BarView;
+  pagination: {
+    limit: number;
+    offset: number;
+  };
+};
+
 type ReturnType = {
   x: string;
   y: number;
   group?: unknown;
 }[];
 
-export const fetchAreaBarChartData = async (
-  view: BarView,
-): Promise<ReturnType> => {
+export const fetchAreaBarChartData = async ({
+  view,
+  pagination: { limit, offset },
+}: Params): Promise<ReturnType> => {
   if (view.style !== "bar") {
     throw new Error(
       'このAPIは棒グラフ(style: "bar")のデータのみ対応しています',
@@ -55,7 +64,8 @@ export const fetchAreaBarChartData = async (
       [yAxis.value]: sql.raw(`${yAxis.value}`).as(yAxis.value),
     })
     .from(data_set_detail_areas)
-    .limit(100)
+    .limit(limit)
+    .offset(offset)
     .$dynamic();
 
   const queryWheres: (SQL<unknown> | undefined)[] = [

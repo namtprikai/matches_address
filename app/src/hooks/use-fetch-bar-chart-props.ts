@@ -21,6 +21,10 @@ export const useFetchBarChartProps = ({ view }: Params): ReturnType => {
   const fetch = useCallback(async (): Promise<void> => {
     const result = await window.ipcRenderer.invoke("_debugFetchChart", {
       view,
+      pagination: {
+        limit: pagination.limitPerPage,
+        offset: pagination.limitPerPage * (pagination.page - 1),
+      },
     });
     handleChartProps({
       data: result.map((item) => ({
@@ -30,7 +34,7 @@ export const useFetchBarChartProps = ({ view }: Params): ReturnType => {
       xAxisColumn: { type: "string" },
       yAxisColumn: { type: "number" },
     });
-  }, [handleChartProps, view]);
+  }, [pagination.limitPerPage, pagination.page, view, handleChartProps]);
 
   useEffect(() => {
     fetch().catch(console.error);

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { type ChartProps as ChartPropsBase } from "../@types/charts";
 
 type ChartProps =
@@ -21,9 +21,9 @@ export const useChartProps = (): ReturnType => {
     yAxisColumn: { type: "number" },
   });
 
-  const handleChartProps = (chartProps: ChartProps): void => {
+  const handleChartProps = useCallback((chartProps: ChartProps): void => {
     setChartProps(chartProps);
-  };
+  }, []);
 
   return {
     chartProps,

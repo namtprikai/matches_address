@@ -1,9 +1,14 @@
 import { type IpcMainInvokeEvent } from "electron";
 import { fetchAreaBarChartData } from "../bi-modules/api/fetch-area-bar-chart-data";
 import { type BarView } from "../bi-modules/interfaces/view";
+import { type IpcMainListener } from ".";
 
 type Params = {
   view: BarView;
+  pagination: {
+    limit: number;
+    offset: number;
+  };
 };
 
 /** 共通化の余地あり */
@@ -13,11 +18,14 @@ type ReturnType = {
   group?: unknown;
 }[];
 
-export const _debugFetchChart = async (
+export const _debugFetchChart = (async (
   _event: IpcMainInvokeEvent,
-  params: Params,
+  { view, pagination }: Params,
 ): Promise<ReturnType> => {
-  const data = fetchAreaBarChartData(params.view);
+  const data = fetchAreaBarChartData({
+    view,
+    pagination,
+  });
 
   return data;
-};
+}) satisfies IpcMainListener;
