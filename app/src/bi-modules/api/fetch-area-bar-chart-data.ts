@@ -1,4 +1,4 @@
-import { and, eq, gte, lte, or, sql, type SQL } from "drizzle-orm";
+import { and, eq, gte, lte, ne, or, sql, type SQL } from "drizzle-orm";
 import { db } from "../../utils/db";
 import { type BarView } from "../interfaces/view";
 import { data_set_detail_areas } from "../../schema";
@@ -47,6 +47,9 @@ export const fetchAreaBarChartData = async ({
     (p): p is FilterCondition /** startsWithが型推論しないため */ =>
       p.key.startsWith("filter_"),
   );
+  const groupAggregation = view.parameters.find(
+    (p) => p.type === "group_aggregation",
+  );
 
   // 必須パラメータの検証
   if (!dataSetResultId) {
@@ -64,8 +67,8 @@ export const fetchAreaBarChartData = async ({
       [yAxis.value]: sql.raw(`${yAxis.value}`).as(yAxis.value),
     })
     .from(data_set_detail_areas)
-    .limit(limit)
-    .offset(offset)
+    // .limit(limit)
+    // .offset(offset)
     .$dynamic();
 
   const queryWheres: (SQL<unknown> | undefined)[] = [
@@ -130,11 +133,17 @@ export const fetchAreaBarChartData = async ({
 
     const result = db
       .select({
-        x: groupQuery[xAxis.value],
-        y: groupQuery[yAxis.value],
+        x: groupQuery[GroupLabel],
+        y: sql.raw(
+          `${groupAggregation?.value || "avg"}(${yAxis.value}) as ${yAxis.value}`,
+        ),
         [GroupLabel]: groupQuery[GroupLabel],
       })
       .from(groupQuery)
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment -- @fixme 解決できないため
+      // @ts-ignore
+      .groupBy(groupQuery[GroupLabel])
+      .having(ne(groupQuery[GroupLabel], sql.raw("''")))
       .all();
     return result as ReturnType; /** @todo */
   }

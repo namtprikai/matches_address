@@ -40,6 +40,7 @@ export interface BarView extends ViewBase {
     | AreaFilter
     | FilterCondition
     | GroupCondition
+    | GroupAggregation
     | XAxis
     | YAxis
   )[];
