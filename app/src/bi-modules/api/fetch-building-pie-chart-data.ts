@@ -1,13 +1,22 @@
-import { and, eq } from "drizzle-orm";
+import { and, eq, type SQL } from "drizzle-orm";
 import { db } from "../../utils/db";
 import { type PieView } from "../interfaces/view";
 import { data_set_detail_buildings } from "../../schema";
 import { type FilterCondition } from "../interfaces/parameter";
+import { type FetchReturnType } from "../interfaces/fetch";
 
-/** @todo */
-type ReturnType = unknown;
+type Params = {
+  view: PieView;
+  pagination: {
+    limit: number;
+    offset: number;
+  };
+};
 
-const fetchBuildingPieChartData = (view: PieView): ReturnType => {
+export const fetchBuildingPieChartData = async ({
+  view,
+  pagination: { limit, offset },
+}: Params): Promise<FetchReturnType> => {
   if (view.style !== "pie") {
     throw new Error(
       'このAPIは円グラフ(style: "pie")のデータのみ対応しています',
@@ -37,12 +46,23 @@ const fetchBuildingPieChartData = (view: PieView): ReturnType => {
     throw new Error("dataSetResultIdは必須です");
   }
 
-  // データ取得
-  db.select()
-    .from(data_set_detail_buildings)
-    .where(
-      and(eq(data_set_detail_buildings.data_set_result_id, dataSetResultId)),
-    );
+  // クエリのベース作成
+  let query = db.select().from(data_set_detail_buildings).$dynamic();
 
-  return;
+  const queryWheres: (SQL<unknown> | undefined)[] = [
+    eq(data_set_detail_buildings.data_set_result_id, dataSetResultId),
+  ];
+
+  query = query.where(and(...queryWheres));
+
+  const baseQuery = query.as("baseQuery");
+
+  const result = db.select().from(baseQuery).limit(limit).offset(offset).all();
+
+  return [
+    {
+      x: "",
+      y: 0,
+    },
+  ] as FetchReturnType;
 };

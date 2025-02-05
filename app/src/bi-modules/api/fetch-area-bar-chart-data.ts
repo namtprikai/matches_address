@@ -55,7 +55,7 @@ export const fetchAreaBarChartData = async ({
   }
 
   // クエリのベース作成
-  const query = db
+  let query = db
     .select({
       /** data_set_detail_areasのColumn名とそれぞれのvalueに定義された値が一致していることが前提でrawを利用 */
       [xAxis.value]: sql.raw(`${xAxis.value}`).as(xAxis.value),
@@ -103,6 +103,8 @@ export const fetchAreaBarChartData = async ({
       and(...filterQueryBuilder({ conditions: filterConditions })),
     );
   }
+
+  query = query.where(and(...queryWheres));
 
   /** 重複を排除する */
   query

@@ -80,18 +80,13 @@ export const TileViewStyle = ({ view }: Props): JSX.Element => {
       return (
         <div>
           <ChartPie
-            filterByAreas={areaParameter?.value}
-            filterByYear={{
-              startValue: yearParameter?.value?.start,
-              endValue: yearParameter?.value?.end,
+            view={{
+              dataSetResultId: resultId,
+              unit: type,
+              style: "pie",
+              title: "",
+              parameters,
             }}
-            filterConditions={filterParameters.flatMap((p) => p.value)}
-            groupingCalc={groupingCalc?.value as "avg" | "sum"}
-            groupingConditions={groupingParameters.map((p) => p.value)}
-            resultId={resultId}
-            type={type}
-            x={xAxis.value as BUILDING_DATASET_COLUMN}
-            y={yAxis.value as BUILDING_DATASET_COLUMN}
           />
         </div>
       );
