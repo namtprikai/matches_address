@@ -19,7 +19,7 @@ type Props = {
   view: BarView;
 };
 
-export const ChartBar = ({ view }: Props): JSX.Element => {
+export const ViewBar = ({ view }: Props): JSX.Element => {
   /** @fixme useFetchが不要回数呼び出されていそう */
   const { chartProps, pagination } = useFetchBarChartProps({
     view,

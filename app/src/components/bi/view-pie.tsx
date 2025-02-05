@@ -31,7 +31,7 @@ type Props = {
   view: PieView;
 };
 
-export const ChartPie = ({ view }: Props): JSX.Element => {
+export const ViewPie = ({ view }: Props): JSX.Element => {
   const { chartProps } = useFetchPieChartProps({ view });
 
   const label = view.parameters.find((p) => p.key === "label");

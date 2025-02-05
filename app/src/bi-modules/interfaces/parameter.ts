@@ -50,7 +50,7 @@ export interface GroupAggregation extends ParameterBase {
 export interface TableColumns extends ParameterBase {
   key: "columns";
   type: "column";
-  value: (BUILDING_DATASET_COLUMN & AREA_DATASET_COLUMN)[]; // WIP: 他の値もある
+  value: string;
 }
 
 /** フィルター:年 */

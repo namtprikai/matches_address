@@ -116,7 +116,7 @@ type Props = {
   view: LineView;
 };
 
-export const ChartLine = ({ view }: Props): JSX.Element => {
+export const ViewLine = ({ view }: Props): JSX.Element => {
   const { chartProps } = useFetchLineChartProps({ view });
 
   const xAxis = view.parameters.find((p) => p.key === "xAxis");
