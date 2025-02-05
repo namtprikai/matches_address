@@ -12,7 +12,7 @@ import {
 import { useState } from "react";
 import { CHART_COLORS } from "../../config/chart-colors";
 import { Pagination } from "../ui/pagination";
-import { useFetchBarChartProps } from "../../hooks/use-fetch-bar-chart-props";
+import { useFetchBarChartProps } from "../../bi-modules/hooks/use-fetch-bar-chart-props";
 import { type BarView } from "../../bi-modules/interfaces/view";
 
 type Props = {

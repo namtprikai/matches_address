@@ -17,7 +17,7 @@ import {
 import { CHART_COLORS } from "../../config/chart-colors";
 import { type FilterDataSetForChartArgs } from "../../ipc-main-listeners/filter-data-set-for-chart";
 import { type LineView } from "../../bi-modules/interfaces/view";
-import { useFetchLineChartProps } from "../../hooks/use-fetch-line-chart-props";
+import { useFetchLineChartProps } from "../../bi-modules/hooks/use-fetch-line-chart-props";
 
 export type ChartLineProps = FilterDataSetForChartArgs;
 

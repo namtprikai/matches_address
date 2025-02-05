@@ -1,5 +1,5 @@
 import { useCallback, useState } from "react";
-import { type ChartProps as ChartPropsBase } from "../@types/charts";
+import { type ChartProps as ChartPropsBase } from "../../@types/charts";
 
 type ChartProps =
   | ChartPropsBase

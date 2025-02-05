@@ -1,7 +1,10 @@
 import { useCallback, useEffect } from "react";
-import { type ChartProps } from "../@types/charts";
-import { type LineView } from "../bi-modules/interfaces/view";
-import { usePagination, type UsePaginationReturnType } from "./use-pagination";
+import { type ChartProps } from "../../@types/charts";
+import { type LineView } from "../interfaces/view";
+import {
+  usePagination,
+  type UsePaginationReturnType,
+} from "../../hooks/use-pagination";
 import { useChartProps } from "./use-chart-props";
 
 type Params = {
