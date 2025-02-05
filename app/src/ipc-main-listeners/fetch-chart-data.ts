@@ -2,8 +2,8 @@ import { type IpcMainInvokeEvent } from "electron";
 import { fetchAreaBarChartData } from "../bi-modules/api/fetch-area-bar-chart-data";
 import { type View } from "../bi-modules/interfaces/view";
 import { fetchBuildingLineChartData } from "../bi-modules/api/fetch-building-line-chart-data";
-import { type FetchReturnType } from "../bi-modules/interfaces/fetch";
 import { fetchBuildingPieChartData } from "../bi-modules/api/fetch-building-pie-chart-data";
+import { type ChartProps } from "../@types/charts";
 import { type IpcMainListener } from ".";
 
 type Params = {
@@ -17,7 +17,7 @@ type Params = {
 export const fetchChartData = (async (
   _event: IpcMainInvokeEvent,
   { view, pagination }: Params,
-): Promise<FetchReturnType> => {
+): Promise<ChartProps> => {
   switch (true) {
     case view.style === "bar" && view.unit === "area":
       return await fetchAreaBarChartData({ view, pagination });

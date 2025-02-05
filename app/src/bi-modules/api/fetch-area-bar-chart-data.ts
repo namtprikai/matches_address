@@ -3,7 +3,8 @@ import { db } from "../../utils/db";
 import { type BarView } from "../interfaces/view";
 import { data_set_detail_areas } from "../../schema";
 import { type FilterCondition } from "../interfaces/parameter";
-import { type FetchReturnType } from "../interfaces/fetch";
+import { type ChartProps } from "../../@types/charts";
+import { AREA_DATASET_COLUMN_METADATA } from "../../config/column-metadata";
 import { filterQueryBuilder } from "./filter-query-builder";
 import { conditionsToCaseQuery } from "./conditions-to-case-query";
 
@@ -18,7 +19,7 @@ type Params = {
 export const fetchAreaBarChartData = async ({
   view,
   pagination: { limit, offset },
-}: Params): Promise<FetchReturnType> => {
+}: Params): Promise<ChartProps> => {
   if (view.style !== "bar") {
     throw new Error(
       'このAPIは棒グラフ(style: "bar")のデータのみ対応しています',
@@ -53,6 +54,20 @@ export const fetchAreaBarChartData = async ({
   if (!xAxis || !yAxis) {
     throw new Error("X軸とY軸の設定は必須です");
   }
+
+  /** 項目のラベル情報 */
+  const COLUMNS = {
+    xAxisColumn: {
+      type: "string",
+      unit: AREA_DATASET_COLUMN_METADATA[xAxis.value].unit,
+      label: AREA_DATASET_COLUMN_METADATA[xAxis.value].label,
+    },
+    yAxisColumn: {
+      type: "number",
+      unit: AREA_DATASET_COLUMN_METADATA[yAxis.value].unit,
+      label: AREA_DATASET_COLUMN_METADATA[yAxis.value].label,
+    },
+  } as const;
 
   // クエリのベース作成
   let query = db
@@ -145,7 +160,14 @@ export const fetchAreaBarChartData = async ({
       .groupBy(groupQuery[GroupLabel])
       .having(ne(groupQuery[GroupLabel], sql.raw("''")))
       .all();
-    return result as FetchReturnType; /** @todo */
+
+    return {
+      data: result.map((item) => ({
+        x: item.x as string /** @todo */,
+        y: item.y as number /** @todo */,
+      })),
+      ...COLUMNS,
+    };
   }
 
   const result = db
@@ -158,5 +180,11 @@ export const fetchAreaBarChartData = async ({
     .offset(offset)
     .all();
 
-  return result as FetchReturnType; /** @todo */
+  return {
+    data: result.map((item) => ({
+      x: item.x as string /** @todo */,
+      y: item.y as number /** @todo */,
+    })),
+    ...COLUMNS,
+  };
 };

@@ -3,7 +3,7 @@ import { db } from "../../utils/db";
 import { type PieView } from "../interfaces/view";
 import { data_set_detail_buildings } from "../../schema";
 import { type FilterCondition } from "../interfaces/parameter";
-import { type FetchReturnType } from "../interfaces/fetch";
+import { type ChartProps } from "../../@types/charts";
 
 type Params = {
   view: PieView;
@@ -16,7 +16,7 @@ type Params = {
 export const fetchBuildingPieChartData = async ({
   view,
   pagination: { limit, offset },
-}: Params): Promise<FetchReturnType> => {
+}: Params): Promise<ChartProps> => {
   if (view.style !== "pie") {
     throw new Error(
       'このAPIは円グラフ(style: "pie")のデータのみ対応しています',
@@ -27,6 +27,20 @@ export const fetchBuildingPieChartData = async ({
       'このAPIは建物単位(unit: "building")のデータのみ対応しています',
     );
   }
+
+  /** 項目のラベル情報 */
+  const COLUMNS = {
+    xAxisColumn: {
+      type: "string",
+      unit: "",
+      label: "",
+    },
+    yAxisColumn: {
+      type: "number",
+      unit: "",
+      label: "",
+    },
+  } as const;
 
   const { dataSetResultId } = view;
 
@@ -59,10 +73,13 @@ export const fetchBuildingPieChartData = async ({
 
   const result = db.select().from(baseQuery).limit(limit).offset(offset).all();
 
-  return [
-    {
-      x: "",
-      y: 0,
-    },
-  ] as FetchReturnType;
+  return {
+    data: [
+      {
+        x: "",
+        y: 0,
+      },
+    ],
+    ...COLUMNS,
+  };
 };

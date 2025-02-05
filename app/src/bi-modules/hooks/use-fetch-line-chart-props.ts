@@ -29,14 +29,7 @@ export const useFetchLineChartProps = ({ view }: Params): ReturnType => {
         offset: pagination.limitPerPage * (pagination.page - 1),
       },
     });
-    handleChartProps({
-      data: result.map((item) => ({
-        x: item.x,
-        y: item.y,
-      })),
-      xAxisColumn: { type: "string" },
-      yAxisColumn: { type: "number" },
-    });
+    handleChartProps(result);
   }, [pagination.limitPerPage, pagination.page, view, handleChartProps]);
 
   useEffect(() => {
