@@ -15,11 +15,11 @@ import { Pagination } from "../ui/pagination";
 import { useFetchBarChartProps } from "../../hooks/use-fetch-bar-chart-props";
 import { type BarView } from "../../bi-modules/interfaces/view";
 
-export type ChartBarProps = {
+type Props = {
   view: BarView;
 };
 
-export const ChartBar = ({ view }: ChartBarProps): JSX.Element => {
+export const ChartBar = ({ view }: Props): JSX.Element => {
   /** @fixme useFetchが不要回数呼び出されていそう */
   const { chartProps, pagination } = useFetchBarChartProps({
     view,
