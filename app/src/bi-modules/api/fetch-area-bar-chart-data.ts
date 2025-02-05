@@ -6,14 +6,11 @@ import { type FilterCondition } from "../interfaces/parameter";
 import { filterQueryBuilder } from "./filter-query-builder";
 import { conditionsToCaseQuery } from "./conditions-to-case-query";
 
-/** @todo */
-type ReturnType = unknown;
-
-/**
- * クエリまたはAPIでやるべきこと
- * 1. 年・地域・フィルター詳細条件を適用した全件結果を取得
- * 2. グループ条件がある場合は、グループ名と集計値をマップしたデータを取得
- */
+type ReturnType = {
+  x: unknown;
+  y: unknown;
+  group?: unknown;
+}[];
 
 export const fetchAreaBarChartData = async (
   view: BarView,
@@ -54,8 +51,8 @@ export const fetchAreaBarChartData = async (
   const query = db
     .select({
       /** data_set_detail_areasのColumn名とそれぞれのvalueに定義された値が一致していることが前提でrawを利用 */
-      [xAxis.value]: sql.raw(`${xAxis.value}`),
-      [yAxis.value]: sql.raw(`${yAxis.value}`),
+      [xAxis.value]: sql.raw(`${xAxis.value}`).as(xAxis.value),
+      [yAxis.value]: sql.raw(`${yAxis.value}`).as(yAxis.value),
     })
     .from(data_set_detail_areas)
     .$dynamic();
@@ -108,22 +105,36 @@ export const fetchAreaBarChartData = async (
   const baseQuery = query.as("baseQuery");
 
   if (groupConditions.length > 0) {
-    const GroupLabel = `${xAxis.value}_group` as const;
+    const GroupLabel = `group` as const;
     const caseQuery = conditionsToCaseQuery(xAxis.value, groupConditions);
+
     const groupQuery = db
       .select({
-        [GroupLabel]: sql.join(
-          [caseQuery, sql.raw(`as ${GroupLabel}`)],
-          sql.raw(" "),
-        ),
+        [xAxis.value]: baseQuery[xAxis.value],
+        [yAxis.value]: baseQuery[yAxis.value],
+        [GroupLabel]: caseQuery.as("caseQuery"),
       })
-      .from(baseQuery);
+      .from(baseQuery)
+      .as("GroupLabel");
 
-    const result = db.select().from(groupQuery.as("groupQuery")).all();
+    const result = db
+      .select({
+        x: groupQuery[xAxis.value],
+        y: groupQuery[yAxis.value],
+        [GroupLabel]: groupQuery[GroupLabel],
+      })
+      .from(groupQuery)
+      .all();
     return result;
   }
 
-  const result = db.select().from(baseQuery).all();
+  const result = db
+    .select({
+      x: baseQuery[xAxis.value],
+      y: baseQuery[yAxis.value],
+    })
+    .from(baseQuery)
+    .all();
 
   return result;
 };

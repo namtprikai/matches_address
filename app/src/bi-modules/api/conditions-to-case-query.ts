@@ -26,6 +26,7 @@ const operationToQuery = (
   }
 };
 
+/** key: 項目とconditionsからグループ名(condition.velue)を付与するクエリを生成 */
 export const conditionsToCaseQuery = (
   key: string,
   conditions: GroupCondition[],
