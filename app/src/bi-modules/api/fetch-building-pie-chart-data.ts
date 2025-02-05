@@ -76,8 +76,8 @@ export const fetchBuildingPieChartData = async ({
   return {
     data: [
       {
-        x: "",
-        y: 0,
+        x: "a",
+        y: 1,
       },
     ],
     ...COLUMNS,

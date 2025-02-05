@@ -1,5 +1,9 @@
 /** result-viewテーブルに入っている値の整理 */
 
+import {
+  type AREA_DATASET_COLUMN,
+  type BUILDING_DATASET_COLUMN,
+} from "../../config/column-metadata";
 import { type FilterConditionValue } from "./filter-operation";
 import { type GroupConditionValue } from "./group-operation";
 
@@ -17,18 +21,14 @@ export interface ParameterBase {
 export interface XAxis extends ParameterBase {
   key: "xAxis";
   type: "column";
-  value: "area_group";
+  value: BUILDING_DATASET_COLUMN & AREA_DATASET_COLUMN;
 }
 
 /** Y軸:棒・折れ線で共通で利用される */
 export interface YAxis extends ParameterBase {
   key: "yAxis";
   type: "column";
-  value:
-    | "predicted_probability"
-    | "young_population_ratio"
-    | "elderly_population_ratio"
-    | "vacant_house_count";
+  value: BUILDING_DATASET_COLUMN & AREA_DATASET_COLUMN;
 }
 //
 
@@ -50,7 +50,7 @@ export interface GroupAggregation extends ParameterBase {
 export interface TableColumns extends ParameterBase {
   key: "columns";
   type: "column";
-  value: ("household_size" | "household_code")[]; // WIP: 他の値もある
+  value: (BUILDING_DATASET_COLUMN & AREA_DATASET_COLUMN)[]; // WIP: 他の値もある
 }
 
 /** フィルター:年 */
@@ -78,12 +78,12 @@ export interface FilterCondition extends ParameterBase {
 export interface PieLabel extends ParameterBase {
   key: "label";
   type: "column";
-  value: "predicted_probability" /** WIP */;
+  value: BUILDING_DATASET_COLUMN & AREA_DATASET_COLUMN;
 }
 
 /** 円グラフ:値 */
 export interface PieValue extends ParameterBase {
   key: "value";
   type: "column";
-  value: "predicted_probability" /** WIP */;
+  value: BUILDING_DATASET_COLUMN & AREA_DATASET_COLUMN;
 }
