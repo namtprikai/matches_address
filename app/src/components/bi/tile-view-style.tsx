@@ -1,4 +1,3 @@
-import { type SelectResultView } from "../../schema";
 import {
   type AREA_DATASET_COLUMN,
   type BUILDING_DATASET_COLUMN,

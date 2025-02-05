@@ -16,6 +16,10 @@ type Params = {
   };
 };
 
+/**
+ * 既知の仕様1: グルーピングによる集計で、1レコード1グループにしか所属できない
+ * 既知の仕様2: グルーピングによる集計で、ヒットしない場合はチャートに表示できない
+ */
 export const fetchAreaBarChartData = async ({
   view,
   pagination: { limit, offset },
