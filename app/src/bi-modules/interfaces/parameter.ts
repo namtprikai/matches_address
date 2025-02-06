@@ -41,8 +41,8 @@ export interface GroupCondition extends ParameterBase {
 
 /** 折れ線グラフ/円グラフ:Y軸/値の集計方法 */
 export interface GroupAggregation extends ParameterBase {
-  key: "group_aggregation" /** 元: group_calc */;
-  type: "group_aggregation" /** 元: group_option */;
+  key: "group_aggregation" /** 元: group_aggregation */;
+  type: "group_aggregation" /** 元: group_aggregation */;
   value: "avg" | "sum" | "count";
 }
 

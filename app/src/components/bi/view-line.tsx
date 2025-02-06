@@ -122,7 +122,7 @@ export const ViewLine = ({ view }: Props): JSX.Element => {
   const xAxis = view.parameters.find((p) => p.key === "xAxis");
   const yAxis = view.parameters.find((p) => p.key === "yAxis");
 
-  /** @todo どこからくる値なのか確認。本来はview.parameters.find((p) => p.key === "group_calc")?.value;みたいな感じ？ */
+  /** @todo どこからくる値なのか確認。本来はview.parameters.find((p) => p.key === "group_aggregation")?.value;みたいな感じ？ */
   const groupingCalc: "count" | "avg" = view ? "count" : "avg";
 
   const isPercentValue =

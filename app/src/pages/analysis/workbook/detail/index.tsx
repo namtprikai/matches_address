@@ -174,8 +174,8 @@ export function DetailWorkbook(): JSX.Element {
                     type: "group",
                   },
                   {
-                    key: "group_calc",
-                    type: "group_option",
+                    key: "group_aggregation",
+                    type: "group_aggregation",
                     value: "count",
                   },
                   {

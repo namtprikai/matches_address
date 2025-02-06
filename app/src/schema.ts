@@ -77,8 +77,8 @@ export const result_views = sqliteTable("result_views", {
             value: GroupingCondition;
           }
         | {
-            key: "group_calc";
-            type: "group_option";
+            key: "group_aggregation";
+            type: "group_aggregation";
             value: "avg" | "sum" | "count";
           }
         | {
