@@ -93,7 +93,7 @@ out/
 
 database/
 .temp
-chubu.pmtiles
+basemap.pmtiles
 
 # Playwright
 .playwright/

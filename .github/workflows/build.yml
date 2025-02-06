@@ -1,72 +1,53 @@
-name: Build Electron App
+name: Build Electron Apps
 
 on:
-  workflow_dispatch:
-    inputs:
-      branch:
-        description: "Branch to build"
-        required: true
-        type: string
-        default: "main"
-      region:
-        description: "Region to build"
-        required: true
-        type: choice
-        options:
-          - "hokkaido"
-          - "tohoku"
-          - "kanto"
-          - "chubu"
-          - "kansai"
-          - "chugoku"
-          - "shikoku"
-          - "kyushu"
-        default: "chubu"
+  workflow_dispatch: {}
 
 permissions:
   contents: read
   id-token: write
 
 jobs:
-  check_branch:
-    runs-on: ubuntu-latest
-    outputs:
-      branch_exists: ${{ steps.check.outputs.exists }}
-
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - name: Check if branch exists
-        id: check
-        run: |
-          git fetch origin ${{ inputs.branch }}
-          if git show-ref --verify --quiet "refs/remotes/origin/${{ inputs.branch }}"; then
-            echo "exists=true" >> $GITHUB_OUTPUT
-            echo "Branch ${{ inputs.branch }} exists"
-          else
-            echo "exists=false" >> $GITHUB_OUTPUT
-            echo "Branch ${{ inputs.branch }} does not exist"
-          fi
-
   build:
-    needs: check_branch
-    if: needs.check_branch.outputs.branch_exists == 'true'
     runs-on: windows-latest
 
     strategy:
       matrix:
-        python-version: ["3.11"]
-        node-version: ["20"]
+        region:
+          [hokkaido, tohoku, kanto, chubu, kansai, chugoku, shikoku, kyushu]
+      fail-fast: false
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
-          ref: ${{ inputs.branch }}
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: "**/package-lock.json"
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install Poetry
+        shell: pwsh
+        run: |
+          python -m pip install --upgrade pip
+          pip install poetry==1.8.3
+          pip install pyinstaller
+
+      - name: Install dependencies
+        env:
+          HUSKY: "0"
+        run: |
+          npm ci
+          cd ml && poetry install --no-root
 
       - name: Google Auth
-        id: auth
         uses: google-github-actions/auth@v2
         with:
           project_id: "my-project"
@@ -75,28 +56,11 @@ jobs:
       - name: Set up Cloud SDK
         uses: google-github-actions/setup-gcloud@v2
 
-      - name: Download file from GCS
+      - name: Download pmtiles
         shell: pwsh
         run: |
-          gcloud storage cp gs://mymapapp_bucket/${{ inputs.region }}.pmtiles app/public/
-          echo "Download completed. Checking file:"
-          Get-Item app/public/${{ inputs.region }}.pmtiles | Select-Object Length,LastWriteTime
-
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: ${{ matrix.python-version }}
-          cache: "pip"
-
-      - name: Install Poetry
-        run: |
-          python -m pip install --upgrade pip
-          pip install poetry==1.8.3
-          pip install pyinstaller
-
-      - name: Install dependencies with Poetry
-        working-directory: ./ml
-        run: poetry install --no-root
+          gcloud storage cp gs://mymapapp_bucket/basemaps/${{ matrix.region }}/basemap.pmtiles app/public/
+          echo "Download completed for ${{ matrix.region }}"
 
       - name: Setup home directory for PyInstaller
         shell: cmd
@@ -104,18 +68,6 @@ jobs:
           mkdir "C:\Users\temp"
           echo HOME=C:\Users\temp>> %GITHUB_ENV%
           echo USERPROFILE=C:\Users\temp>> %GITHUB_ENV%
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: "20"
-          cache: "npm"
-          cache-dependency-path: "**/package-lock.json"
-
-      - name: Install dependencies with npm
-        env:
-          HUSKY: "0"
-        run: npm ci
 
       - name: Build ML
         working-directory: ./ml
@@ -125,39 +77,20 @@ jobs:
         working-directory: ./app
         run: npm run make
 
-      - name: List build artifacts
+      - name: Create and Upload ZIP
         shell: pwsh
         run: |
-          Write-Host "Searching for build artifacts..."
-          Get-ChildItem -Path "app/out/make" -Recurse -File | Select-Object FullName
-
-      - name: Create and Upload combined ZIP
-        shell: pwsh
-        run: |
-          # Create temporary directory
           New-Item -ItemType Directory -Path "temp_zip" | Out-Null
-
-          # Download dummy.zip from source bucket
           gcloud storage cp gs://mymapapp_bucket/dummy.zip temp_zip/
 
-          # Copy build artifact
           $buildZip = Get-ChildItem -Path "app/out/make/zip" -Recurse -Filter "*.zip" | Select-Object -First 1
           Copy-Item -Path $buildZip.FullName -Destination "temp_zip/app.zip"
 
-          # Create timestamp with JST and final zip name
-          $jstTime = (Get-Date).AddHours(9)  # Convert to JST (UTC+9)
-          $timestamp = $jstTime.ToString("yyyyMMdd_HHmmss")
-          $finalZipName = "LINKS_SOMA_${timestamp}_${{ inputs.region }}.zip"
+          $version = (Get-Content "app/package.json" | ConvertFrom-Json).version
+          $finalZipName = "LINKS_SOMA_v${version}_${{ matrix.region }}.zip"
 
-          # Create combined zip
           Compress-Archive -Path "temp_zip/*" -DestinationPath $finalZipName
-
-          # Upload to GCS builds bucket
           gcloud storage cp $finalZipName gs://links-akiya-builds/
-          $downloadUrl = "https://storage.googleapis.com/links-akiya-builds/$finalZipName"
-          Write-Host "Upload completed. Download URL:"
-          Write-Host $downloadUrl
 
-          # Cleanup
           Remove-Item -Path "temp_zip" -Recurse -Force
           Remove-Item -Path $finalZipName -Force

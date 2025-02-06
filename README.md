@@ -4,8 +4,8 @@
 
 ### 地図データをプロジェクトに配置する
 
-1. [chubu.pmtiles.zip](https://drive.google.com/file/d/1OKhf6Xsbd2nhwOT_A_LNGowJ3Tv4zpOj/view?usp=drive_link)をダウンロードする
-2. 上記の zip ファイルを解凍して`chubu.pmtiles`を`app/public`配下に配置する
+1. [chubu.zip](https://drive.google.com/file/d/1qcWQ8iWwOs6EDWb-5woPYP70C8fizJ3A/view?usp=drive_link)をダウンロードする
+2. 上記の zip ファイルを解凍して`basemap.pmtiles`を`app/public`配下に配置する
 
 ### poetry をローカル環境にインストールする
 
