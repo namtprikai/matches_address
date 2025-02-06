@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { makeStyles, tokens } from "@fluentui/react-components";
 import { useFetchReferenceDates } from "../../../hooks/use-fetch-reference-dates";
 import { type SelectDataSetResult } from "../../../schema";
+import { type MapView } from "../../../bi-modules/interfaces/view";
 import {
   VacancyLevelCheckbox,
   type VacancyLevels,
@@ -26,11 +27,13 @@ const useStyles = makeStyles({
 
 export interface MapProps {
   dataSetResultId: SelectDataSetResult["id"];
-  type: "building" | "area";
-  areas: string[] | undefined;
+  view: MapView;
 }
 
-export function Map({ type, dataSetResultId, areas }: MapProps): JSX.Element {
+export function Map({ dataSetResultId, view }: MapProps): JSX.Element {
+  const { unit: type, parameters } = view;
+  const areaFilter = parameters.find((p) => p.key === "area");
+
   const styles = useStyles();
   const [vacancyLevels, setVacancyLevels] = useState<VacancyLevels>({
     low: true,
@@ -80,7 +83,7 @@ export function Map({ type, dataSetResultId, areas }: MapProps): JSX.Element {
       </div>
       <div className={styles.map}>
         <MapComponent
-          areas={areas}
+          areas={areaFilter?.value}
           dataSetResultId={dataSetResultId}
           selectedDate={selectedDate}
           type={type}

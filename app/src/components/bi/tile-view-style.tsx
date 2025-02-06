@@ -10,7 +10,7 @@ type Props = {
 };
 
 export const TileViewStyle = ({ view }: Props): JSX.Element => {
-  const { style, unit, parameters, dataSetResultId } = view;
+  const { style, unit, dataSetResultId } = view;
 
   switch (true) {
     case style === "pie" && unit === "building":
@@ -39,13 +39,9 @@ export const TileViewStyle = ({ view }: Props): JSX.Element => {
       );
     }
     case style === "map": {
-      const areas = parameters.find(
-        (p) => p.key === "area" && p.type === "filter",
-      )?.value;
-
       return (
         <div>
-          <Map areas={areas} dataSetResultId={dataSetResultId} type={unit} />
+          <Map dataSetResultId={dataSetResultId} view={view} />
         </div>
       );
     }

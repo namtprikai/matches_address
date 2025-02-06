@@ -27,7 +27,7 @@ interface ViewBase {
    */
 }
 
-interface MapView extends ViewBase {
+export interface MapView extends ViewBase {
   style: "map";
   parameters: (YearFilter | AreaFilter)[];
 }
