@@ -4,10 +4,18 @@
  */
 
 import { z } from "zod";
+import {
+  type AREA_DATASET_COLUMN,
+  type BUILDING_DATASET_COLUMN,
+} from "../../config/column-metadata";
 import { filterConditionValueSchema } from "./filter-operation";
 import { groupConditionValueSchema } from "./group-operation";
 
-// unknown 型は z.any() で表現
+/** 実態の定義が難しいのでカスタムを利用 */
+const columnSchema = z.custom<AREA_DATASET_COLUMN | BUILDING_DATASET_COLUMN>(
+  (val) => val,
+);
+
 const parameterBaseSchema = z.object({
   key: z.string(),
   type: z.enum(["filter", "column", "group", "group_aggregation"]),
@@ -17,13 +25,13 @@ const parameterBaseSchema = z.object({
 const xAxisSchema = parameterBaseSchema.extend({
   key: z.literal("xAxis"),
   type: z.literal("column"),
-  value: z.enum([""]), // 実際の型に合わせて修正
+  value: columnSchema,
 });
 
 const yAxisSchema = parameterBaseSchema.extend({
   key: z.literal("yAxis"),
   type: z.literal("column"),
-  value: z.enum([""]), // 実際の型に合わせて修正
+  value: columnSchema,
 });
 
 const groupConditionSchema = parameterBaseSchema.extend({
@@ -65,13 +73,13 @@ const filterConditionSchema = parameterBaseSchema.extend({
 const pieLabelSchema = parameterBaseSchema.extend({
   key: z.literal("label"),
   type: z.literal("column"),
-  value: z.enum([""]), // 実際の型に合わせて修正
+  value: columnSchema,
 });
 
 const pieValueSchema = parameterBaseSchema.extend({
   key: z.literal("value"),
   type: z.literal("column"),
-  value: z.enum([""]), // 実際の型に合わせて修正
+  value: columnSchema,
 });
 
 export const parameterSchema = z.discriminatedUnion("key", [
