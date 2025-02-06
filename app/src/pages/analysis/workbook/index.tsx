@@ -5,7 +5,7 @@ import {
   BreadcrumbBase,
   BreadcrumbItem,
 } from "../../../components/ui/breadcrumb";
-import { ROUTES, withHash } from "../../../routes";
+import { ROUTES } from "../../../routes";
 
 const useStyles = makeStyles({
   root: {
