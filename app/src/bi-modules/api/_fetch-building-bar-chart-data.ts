@@ -3,8 +3,8 @@ import { db } from "../../utils/db";
 import { type BarView } from "../interfaces/view";
 import { data_set_detail_buildings } from "../../schema";
 import { type FilterCondition } from "../interfaces/parameter";
-import { filterQueryBuilder } from "./filter-query-builder";
-import { conditionsToCaseQueryBuilder } from "./conditions-to-case-query-builder";
+import { filterQueryBuilder } from "./builder/filter-query-builder";
+import { conditionsToCaseQueryBuilder } from "./builder/conditions-to-case-query-builder";
 
 type Params = {
   view: BarView;

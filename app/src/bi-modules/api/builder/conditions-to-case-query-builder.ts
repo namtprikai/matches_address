@@ -1,5 +1,5 @@
 import { type SQL, sql } from "drizzle-orm";
-import { type GroupCondition } from "../interfaces/parameter";
+import { type GroupCondition } from "../../interfaces/parameter";
 
 const operationToQuery = (
   operation: GroupCondition["value"]["operation"],

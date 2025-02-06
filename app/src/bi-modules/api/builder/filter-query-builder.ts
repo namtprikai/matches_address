@@ -1,5 +1,5 @@
 import { type SQL, sql } from "drizzle-orm";
-import { type FilterCondition } from "../interfaces/parameter";
+import { type FilterCondition } from "../../interfaces/parameter";
 
 export const filterQueryBuilder = (params: {
   conditions: FilterCondition[];

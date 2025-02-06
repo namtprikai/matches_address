@@ -14,7 +14,7 @@ import { formatTableValue } from "../utils/format-table-value";
 import { getColumnMetadata } from "../utils/get-column-metadata";
 import { type TableView } from "../bi-modules/interfaces/view";
 import { type FilterCondition } from "../bi-modules/interfaces/parameter";
-import { filterQueryBuilder } from "../bi-modules/api/filter-query-builder";
+import { filterQueryBuilder } from "../bi-modules/api/builder/filter-query-builder";
 import { type IpcMainListener } from ".";
 
 type FilterDataSetForTableResponse = TableProps;
