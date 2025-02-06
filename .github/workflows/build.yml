@@ -8,12 +8,31 @@ on:
         required: true
         type: string
         default: "main"
+      region:
+        description: "Region to build"
+        required: true
+        type: choice
+        options:
+          - "hokkaido"
+          - "tohoku"
+          - "kanto"
+          - "chubu"
+          - "kansai"
+          - "chugoku"
+          - "shikoku"
+          - "kyushu"
+        default: "chubu"
+
+permissions:
+  contents: read
+  id-token: write
 
 jobs:
   check_branch:
     runs-on: ubuntu-latest
     outputs:
       branch_exists: ${{ steps.check.outputs.exists }}
+
     steps:
       - uses: actions/checkout@v4
         with:
@@ -38,24 +57,33 @@ jobs:
     strategy:
       matrix:
         python-version: ["3.11"]
-        node-version: ["20.x"]
+        node-version: ["20"]
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
         with:
           ref: ${{ inputs.branch }}
 
-      - name: Cache turbo build setup
-        uses: actions/cache@v4
+      - name: Google Auth
+        id: auth
+        uses: google-github-actions/auth@v2
         with:
-          path: .turbo
-          key: ${{ runner.os }}-turbo-${{ github.sha }}
-          restore-keys: |
-            ${{ runner.os }}-turbo-
+          project_id: "my-project"
+          workload_identity_provider: "projects/319874134116/locations/global/workloadIdentityPools/github/providers/links-akiya"
 
-      # Python環境のセットアップ
-      - name: Setup Python
-        uses: actions/setup-python@v5
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Download file from GCS
+        shell: pwsh
+        run: |
+          gcloud storage cp gs://mymapapp_bucket/${{ inputs.region }}.pmtiles app/public/
+          echo "Download completed. Checking file:"
+          Get-Item app/public/${{ inputs.region }}.pmtiles | Select-Object Length,LastWriteTime
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
           cache: "pip"
@@ -66,7 +94,17 @@ jobs:
           pip install poetry==1.8.3
           pip install pyinstaller
 
-      # Node.js環境のセットアップ
+      - name: Install dependencies with Poetry
+        working-directory: ./ml
+        run: poetry install --no-root
+
+      - name: Setup home directory for PyInstaller
+        shell: cmd
+        run: |
+          mkdir "C:\Users\temp"
+          echo HOME=C:\Users\temp>> %GITHUB_ENV%
+          echo USERPROFILE=C:\Users\temp>> %GITHUB_ENV%
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
@@ -74,85 +112,52 @@ jobs:
           cache: "npm"
           cache-dependency-path: "**/package-lock.json"
 
-      - name: Setup npm cache directory
-        run: |
-          mkdir -Force "C:\npm\cache" | Out-Null
-          npm config set cache "C:\npm\cache" --global
-
-      # 依存関係のインストール
-      - name: Install dependencies
+      - name: Install dependencies with npm
         env:
           HUSKY: "0"
-        run: |
-          npm ci
-          cd ml
-          poetry env use python3.11
-          poetry lock --no-update
-          poetry install --no-root
+        run: npm ci
 
-      - name: Set Turbo config
-        run: |
-          echo "TURBO_TELEMETRY_DISABLED=1" >> $env:GITHUB_ENV
-          mkdir -Force "$env:LOCALAPPDATA\Turbo" | Out-Null
-          echo "{}" | Out-File -FilePath "$env:LOCALAPPDATA\Turbo\config.json"
+      - name: Build ML
+        working-directory: ./ml
+        run: npm run build
 
-      - name: Set home directory
-        run: |
-          echo "HOME=D:\a\runner" >> $env:GITHUB_ENV
-          echo "USERPROFILE=D:\a\runner" >> $env:GITHUB_ENV
-
-      # Turborepo を使用したビルド
-      - name: Build with Turborepo
+      - name: Build App
+        working-directory: ./app
         run: npm run make
 
-      # MLビルド成果物の確認
-      - name: Check ML build artifacts
-        run: |
-          echo "=== Checking ML build artifacts ==="
-          if exist "ml\dist\IF001.exe" (
-            echo "✅ IF001.exe exists"
-          ) else (
-            echo "❌ IF001.exe not found"
-            exit 1
-          )
-          if exist "ml\dist\IF002.exe" (
-            echo "✅ IF002.exe exists"
-          ) else (
-            echo "❌ IF002.exe not found"
-            exit 1
-          )
-          if exist "ml\dist\IF003.exe" (
-            echo "✅ IF003.exe exists"
-          ) else (
-            echo "❌ IF003.exe not found"
-            exit 1
-          )
-          if exist "ml\dist\IF004.exe" (
-            echo "✅ IF004.exe exists"
-          ) else (
-            echo "❌ IF004.exe not found"
-            exit 1
-          )
-
-      # アプリがビルドされたか確認
-      - name: Check Electron build artifacts
+      - name: List build artifacts
         shell: pwsh
         run: |
-          echo "=== Checking Electron build artifacts ==="
-          $zip = Get-ChildItem -Path "app\out\make" -Recurse -Filter "*.zip" | Select-Object -First 1
-          if ($zip) {
-            echo "✅ Electron installer exists: $($zip.FullName)"
-          } else {
-            echo "❌ Electron installer ZIP not found"
-            exit 1
-          }
+          Write-Host "Searching for build artifacts..."
+          Get-ChildItem -Path "app/out/make" -Recurse -File | Select-Object FullName
 
-      # ビルド成果物のアップロード
-      # いったんコメントアウトしておく
-      # - name: Upload artifacts
-      #   uses: actions/upload-artifact@v4
-      #   with:
-      #     name: dist
-      #     path: |
-      #       app/out/**/*
-      #       ml/dist/**/*
+      - name: Create and Upload combined ZIP
+        shell: pwsh
+        run: |
+          # Create temporary directory
+          New-Item -ItemType Directory -Path "temp_zip" | Out-Null
+
+          # Download dummy.zip from source bucket
+          gcloud storage cp gs://mymapapp_bucket/dummy.zip temp_zip/
+
+          # Copy build artifact
+          $buildZip = Get-ChildItem -Path "app/out/make/zip" -Recurse -Filter "*.zip" | Select-Object -First 1
+          Copy-Item -Path $buildZip.FullName -Destination "temp_zip/app.zip"
+
+          # Create timestamp with JST and final zip name
+          $jstTime = (Get-Date).AddHours(9)  # Convert to JST (UTC+9)
+          $timestamp = $jstTime.ToString("yyyyMMdd_HHmmss")
+          $finalZipName = "LINKS_SOMA_${timestamp}_${{ inputs.region }}.zip"
+
+          # Create combined zip
+          Compress-Archive -Path "temp_zip/*" -DestinationPath $finalZipName
+
+          # Upload to GCS builds bucket
+          gcloud storage cp $finalZipName gs://links-akiya-builds/
+          $downloadUrl = "https://storage.googleapis.com/links-akiya-builds/$finalZipName"
+          Write-Host "Upload completed. Download URL:"
+          Write-Host $downloadUrl
+
+          # Cleanup
+          Remove-Item -Path "temp_zip" -Recurse -Force
+          Remove-Item -Path $finalZipName -Force

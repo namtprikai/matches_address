@@ -26,7 +26,7 @@ const config: ForgeConfig = {
       description: "行政データと機械学習技術を用いた地域空き家推定システム",
       noMsi: true,
     }),
-    new MakerZIP({}, ["darwin"]),
+    new MakerZIP({}, ["darwin", "win32"]),
     new MakerRpm({}),
     new MakerDeb({}),
   ],

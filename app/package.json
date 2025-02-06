@@ -8,7 +8,9 @@
   "main": ".vite/build/main.js",
   "scripts": {
     "dev": "electron-forge start",
-    "make": "electron-forge make",
+    "package": "npm run rebuild && npm exec electron-forge package",
+    "make": "npm run rebuild && npm exec electron-forge make",
+    "rebuild": "electron-rebuild -f -w better-sqlite3",
     "lint": "npm run lint:eslint && npm run lint:type",
     "lint:eslint": "eslint --ext .ts,.tsx .",
     "lint:type": "tsc --noEmit --project tsconfig.base.json",
@@ -26,6 +28,7 @@
     "@electron-forge/plugin-fuses": "^7.4.0",
     "@electron-forge/plugin-vite": "^7.4.0",
     "@electron/fuses": "^1.8.0",
+    "@electron/rebuild": "^3.7.1",
     "@fluentui/react-components": "^9.54.6",
     "@fluentui/react-nav-preview": "^0.5.3",
     "@hono/node-server": "^1.13.1",
