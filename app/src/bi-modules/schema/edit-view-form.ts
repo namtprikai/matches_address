@@ -7,5 +7,5 @@ export const editViewFormSchema = z.object({
   title: z.string(),
   style: z.enum(result_views.style.enumValues),
   unit: z.enum(result_views.unit.enumValues),
-  parameters: parameterSchema,
+  parameters: z.array(parameterSchema),
 });

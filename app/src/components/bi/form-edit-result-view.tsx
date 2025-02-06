@@ -8,6 +8,8 @@ import { type SelectResultSheet, type SelectResultView } from "../../schema";
 import { useFetchResultView } from "../../hooks/use-fetch-result-view";
 import { useFetchResultViews } from "../../hooks/use-fetch-result-views";
 import { Button } from "../ui/button";
+import { useEditViewForm } from "../../bi-modules/hooks/use-edit-view-form";
+import { type EditViewFormType } from "../../bi-modules/interfaces/edit-view-form";
 import { EditResultViewFields } from "./edit-result-view-fields";
 import { EditResultViewFilterFields } from "./edit-result-view-filter-fields";
 
@@ -72,62 +74,15 @@ function FormComponent({
   selectedResultSheetId,
   selectedResultViewId,
 }: {
-  defaultValues: EditResultViewFormType;
+  defaultValues: EditViewFormType;
   selectedResultSheetId: SelectResultSheet["id"] | undefined;
   selectedResultViewId: SelectResultView["id"] | undefined;
 }): JSX.Element {
   const styles = useStyles();
-  const form = useForm<EditResultViewFormType>({ defaultValues });
-  const { mutate: mutateResultViews } = useFetchResultViews({
-    sheetId: selectedResultSheetId,
-  });
-  const { data: selectedResultView, mutate: mutateResultView } =
-    useFetchResultView({
-      resultViewId: selectedResultViewId,
-    });
-
-  useEffect(
-    function resetForm() {
-      form.reset(defaultValues);
-    },
-    [defaultValues, form],
-  );
-
-  const onSubmit = form.handleSubmit(async (data) => {
-    if (!selectedResultViewId) return;
-
-    const parameters = data.parameters;
-
-    /** もっと良い書き方ありそう */
-    const yearExcludedParameters = parameters.filter(
-      (parameter) => parameter.key !== "year",
-    );
-
-    const yearParameter = {
-      key: "year",
-      value: {
-        start: data.year?.start,
-        end: data.year?.end,
-      },
-      type: "filter",
-    };
-
-    await window.ipcRenderer.invoke("updateResultViews", {
-      resultViewId: selectedResultViewId,
-      value: {
-        data_set_result_id: data.dataSetResultId,
-        title: data.title?.length === 0 ? undefined : data.title,
-        style: data.style,
-        unit: data.unit,
-        parameters: [
-          ...yearExcludedParameters,
-          yearParameter,
-        ] as SelectResultView["parameters"], // union の型推論が効きづらいため、明示的に型を指定
-      },
-    });
-
-    void mutateResultView();
-    void mutateResultViews();
+  const form = useEditViewForm({
+    defaultValues,
+    selectedResultSheetId,
+    selectedResultViewId,
   });
 
   return selectedResultView ? (
