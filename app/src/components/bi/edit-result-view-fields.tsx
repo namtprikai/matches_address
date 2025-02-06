@@ -68,7 +68,10 @@ export const EditResultViewFields = ({
     // 種類の値を更新
     setValue("style", value);
     // 集計単位の初期値を設定する
-    const unit = TILE_VIEW_CONFIG[value].fields[0].option[0].unit;
+    const unit =
+      value === "map"
+        ? "building"
+        : TILE_VIEW_CONFIG[value].fields[0].option[0].unit;
     setValue("unit", unit);
     // parametersに初期値を設定する
     const defaultParameters = TILE_VIEW_CONFIG[value].fields.map((field) => ({
