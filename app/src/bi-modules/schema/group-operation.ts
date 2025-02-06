@@ -16,7 +16,7 @@ const numberGroupingConditionSchema = z.object({
 
 const numberRangeGroupingConditionSchema = z.object({
   label: z.string(),
-  referenceColumnType: z.enum(["integer", "float"]),
+  referenceColumnType: z.enum(["integerRange", "floatRange"]),
   operation: z.literal("range"),
   startValue: z.number(),
   lastValue: z.number(),
@@ -33,7 +33,7 @@ const dateGroupingConditionSchema = z.object({
 
 const dateRangeGroupingConditionSchema = z.object({
   label: z.string(),
-  referenceColumnType: z.literal("date"),
+  referenceColumnType: z.literal("dateRange"),
   operation: z.literal("range"),
   startValue: z.string(),
   lastValue: z.string(),

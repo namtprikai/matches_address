@@ -1,8 +1,7 @@
 import { useAtom } from "jotai";
-import { FormProvider, useForm } from "react-hook-form";
+import { FormProvider } from "react-hook-form";
 import { makeStyles } from "@fluentui/react-components";
 import { useEffect } from "react";
-import { type EditResultViewFormType } from "../../@types/form-schema";
 import { selectedResultViewIdAtom } from "../../state/selected-result-view-id-atom";
 import { type SelectResultSheet, type SelectResultView } from "../../schema";
 import { useFetchResultView } from "../../hooks/use-fetch-result-view";
@@ -35,9 +34,6 @@ export const FormEditResultView = ({
     useFetchResultView({
       resultViewId: selectedResultViewId,
     });
-  const selectedYear = selectedResultView?.parameters?.find(
-    (parameter) => parameter.key === "year" && parameter.type === "filter",
-  )?.value;
 
   useEffect(() => {
     if (!resultViews || resultViews.length === 0) return;
@@ -57,11 +53,6 @@ export const FormEditResultView = ({
         style: selectedResultView?.style ?? "map",
         unit: selectedResultView?.unit ?? "building",
         parameters: selectedResultView?.parameters ?? [],
-        year: {
-          start: selectedYear?.start,
-          end: selectedYear?.end,
-        },
-        areas: [],
       }}
       selectedResultSheetId={selectedResultSheetId}
       selectedResultViewId={selectedResultViewId}
@@ -79,7 +70,7 @@ function FormComponent({
   selectedResultViewId: SelectResultView["id"] | undefined;
 }): JSX.Element {
   const styles = useStyles();
-  const form = useEditViewForm({
+  const { form, selectedResultView, onSubmit } = useEditViewForm({
     defaultValues,
     selectedResultSheetId,
     selectedResultViewId,

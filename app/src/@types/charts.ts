@@ -7,6 +7,8 @@ import {
   type BUILDING_DATASET_COLUMN,
 } from "../config/column-metadata";
 
+import { type Parameter } from "../bi-modules/interfaces/parameter";
+
 /**
  * BIツールでのチャート表示でのグルーピングに利用する条件の型
  *
@@ -173,7 +175,7 @@ export type ChartDynamicColumnInput = "select" | "input" | "dropdown";
 export type TileViewStyle = "pie" | "bar" | "line" | "table" | "map";
 
 export type TileViewFieldOption = {
-  key: string;
+  key: Parameter["key"];
   label: string;
   multiple?: boolean;
   grouping: boolean;

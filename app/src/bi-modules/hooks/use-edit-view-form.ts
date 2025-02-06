@@ -1,6 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, type UseFormReturn } from "react-hook-form";
-import { type z } from "zod";
 import { useEffect } from "react";
 import { editViewFormSchema } from "../schema/edit-view-form";
 import { useFetchResultViews } from "../../hooks/use-fetch-result-views";
@@ -14,11 +13,18 @@ type Params = {
   selectedResultViewId: SelectResultView["id"] | undefined;
 };
 
+type ReturnType = {
+  form: UseFormReturn<EditViewFormType>;
+  onSubmit: (e?: React.BaseSyntheticEvent) => Promise<void>;
+  selectedResultView: SelectResultView | undefined;
+};
+
+/** WIP */
 export const useEditViewForm = ({
   defaultValues,
   selectedResultSheetId,
   selectedResultViewId,
-}: Params): UseFormReturn<EditViewFormType> => {
+}: Params): ReturnType => {
   const form = useForm<EditViewFormType>({
     resolver: zodResolver(editViewFormSchema),
     defaultValues: {},
@@ -66,5 +72,5 @@ export const useEditViewForm = ({
     void mutateResultViews();
   });
 
-  return { ...form };
+  return { form, onSubmit, selectedResultView };
 };

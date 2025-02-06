@@ -1,9 +1,11 @@
 /** result-viewテーブルに入っている値の整理 */
 
+import { type z } from "zod";
 import {
   type AREA_DATASET_COLUMN,
   type BUILDING_DATASET_COLUMN,
 } from "../../config/column-metadata";
+import { type parameterSchema } from "../schema/parameter";
 import { type FilterConditionValue } from "./filter-operation";
 import { type GroupConditionValue } from "./group-operation";
 
@@ -87,3 +89,6 @@ export interface PieValue extends ParameterBase {
   type: "column";
   value: BUILDING_DATASET_COLUMN & AREA_DATASET_COLUMN;
 }
+
+/** WIP: 上段の型定義はすべてSchema経由に置き換えられる */
+export type Parameter = z.infer<typeof parameterSchema>;
