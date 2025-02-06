@@ -22,7 +22,7 @@ import { type BuildingProperties } from "./building-popup";
 import { addAreaLayer } from "./add-area-layer";
 
 export const PREDICTED_PROBABILITY: Record<
-  MapProps["type"],
+  MapProps["view"]["unit"],
   Record<VacancyLevel, number>
 > = {
   building: {
@@ -48,7 +48,7 @@ const useMapComponentStyles = makeStyles({
 
 interface Props {
   dataSetResultId: number;
-  type: "building" | "area";
+  unit: MapProps["view"]["unit"];
   selectedDate: string | undefined;
   vacancyLevels: VacancyLevels;
   areas: string[] | undefined;
@@ -56,7 +56,7 @@ interface Props {
 
 export function MapComponent({
   dataSetResultId,
-  type,
+  unit,
   selectedDate,
   vacancyLevels,
   areas,
@@ -106,7 +106,7 @@ export function MapComponent({
       if (!mapInstance) return;
       void (async () => {
         const geometry = await getGeometry({
-          type,
+          unit,
           dataSetResultId,
           selectedDate,
           areas,
@@ -125,7 +125,7 @@ export function MapComponent({
       let ignore = false;
       const batchSize = 1000;
 
-      switch (type) {
+      switch (unit) {
         case "building":
           {
             const addBuildingLayers = async (): Promise<void> => {
@@ -238,7 +238,7 @@ export function MapComponent({
           break;
 
         default: {
-          const exhaustiveCheck: never = type;
+          const exhaustiveCheck: never = unit;
           throw new Error(`Unhandled type: ${exhaustiveCheck}`);
         }
       }
@@ -259,7 +259,7 @@ export function MapComponent({
         });
       };
     },
-    [areas, dataSetResultId, mapInstance, selectedDate, type],
+    [areas, dataSetResultId, mapInstance, selectedDate, unit],
   );
 
   useEffect(
@@ -283,7 +283,7 @@ export function MapComponent({
           filters.push([
             "<",
             ["get", "predicted_probability"],
-            PREDICTED_PROBABILITY[type].medium,
+            PREDICTED_PROBABILITY[unit].medium,
           ]);
         }
         if (vacancyLevels.medium) {
@@ -292,12 +292,12 @@ export function MapComponent({
             [
               ">=",
               ["get", "predicted_probability"],
-              PREDICTED_PROBABILITY[type].medium,
+              PREDICTED_PROBABILITY[unit].medium,
             ],
             [
               "<",
               ["get", "predicted_probability"],
-              PREDICTED_PROBABILITY[type].high,
+              PREDICTED_PROBABILITY[unit].high,
             ],
           ]);
         }
@@ -305,7 +305,7 @@ export function MapComponent({
           filters.push([
             ">=",
             ["get", "predicted_probability"],
-            PREDICTED_PROBABILITY[type].high,
+            PREDICTED_PROBABILITY[unit].high,
           ]);
         }
 
@@ -318,7 +318,7 @@ export function MapComponent({
     [
       layerIds,
       mapInstance,
-      type,
+      unit,
       vacancyLevels.high,
       vacancyLevels.low,
       vacancyLevels.medium,
@@ -329,17 +329,17 @@ export function MapComponent({
 }
 
 const getGeometry = async ({
-  type,
+  unit,
   dataSetResultId,
   selectedDate,
   areas,
 }: {
-  type: MapProps["type"];
+  unit: MapProps["view"]["unit"];
   dataSetResultId: MapProps["dataSetResultId"];
   selectedDate: string | undefined;
-  areas: MapProps["areas"];
+  areas: string[] | undefined;
 }): Promise<string | undefined> => {
-  switch (type) {
+  switch (unit) {
     case "building": {
       const result = await window.ipcRenderer.invoke(
         "selectBuildingsInBatches",
@@ -362,7 +362,7 @@ const getGeometry = async ({
       return result?.[0].geometry;
     }
     default: {
-      const exhaustiveCheck: never = type;
+      const exhaustiveCheck: never = unit;
       throw new Error(`Unhandled type: ${exhaustiveCheck}`);
     }
   }

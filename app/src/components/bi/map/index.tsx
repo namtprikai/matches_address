@@ -31,7 +31,7 @@ export interface MapProps {
 }
 
 export function Map({ dataSetResultId, view }: MapProps): JSX.Element {
-  const { unit: type, parameters } = view;
+  const { unit, parameters } = view;
   const areaFilter = parameters.find((p) => p.key === "area");
 
   const styles = useStyles();
@@ -65,7 +65,7 @@ export function Map({ dataSetResultId, view }: MapProps): JSX.Element {
           <div>
             <VacancyLevelCheckbox
               setVacancyLevels={setVacancyLevels}
-              type={type}
+              unit={unit}
               vacancyLevels={vacancyLevels}
             />
           </div>
@@ -86,7 +86,7 @@ export function Map({ dataSetResultId, view }: MapProps): JSX.Element {
           areas={areaFilter?.value}
           dataSetResultId={dataSetResultId}
           selectedDate={selectedDate}
-          type={type}
+          unit={unit}
           vacancyLevels={vacancyLevels}
         />
       </div>
