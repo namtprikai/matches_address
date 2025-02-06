@@ -1,14 +1,13 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, type UseFormReturn } from "react-hook-form";
-import { z } from "zod";
+import { type z } from "zod";
+import { editViewFormSchema } from "../schema/edit-view-form";
 
-const schema = z.object({});
-
-type FormType = z.infer<typeof schema>;
+type FormType = z.infer<typeof editViewFormSchema>;
 
 export const useEditViewForm = (): UseFormReturn<FormType> => {
   return useForm<FormType>({
-    resolver: zodResolver(schema),
+    resolver: zodResolver(editViewFormSchema),
     defaultValues: {},
   });
 };

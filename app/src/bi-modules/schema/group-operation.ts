@@ -1,20 +1,20 @@
 import { z } from "zod";
 
-const TextGroupingConditionSchema = z.object({
+const textGroupingConditionSchema = z.object({
   label: z.string(),
   referenceColumnType: z.literal("text"),
   value: z.string(),
   operation: z.enum(["eq", "noteq", "contains", "notContains"]),
 });
 
-const NumberGroupingConditionSchema = z.object({
+const numberGroupingConditionSchema = z.object({
   label: z.string(),
   referenceColumnType: z.enum(["integer", "float"]),
   operation: z.enum(["eq", "noteq", "gt", "lt", "gte", "lte"]),
   value: z.number(),
 });
 
-const NumberRangeGroupingConditionSchema = z.object({
+const numberRangeGroupingConditionSchema = z.object({
   label: z.string(),
   referenceColumnType: z.enum(["integer", "float"]),
   operation: z.literal("range"),
@@ -24,14 +24,14 @@ const NumberRangeGroupingConditionSchema = z.object({
   includesLast: z.boolean(),
 });
 
-const DateGroupingConditionSchema = z.object({
+const dateGroupingConditionSchema = z.object({
   label: z.string(),
   referenceColumnType: z.literal("date"),
   operation: z.enum(["eq", "noteq", "gt", "lt", "gte", "lte"]),
   value: z.string(),
 });
 
-const DateRangeGroupingConditionSchema = z.object({
+const dateRangeGroupingConditionSchema = z.object({
   label: z.string(),
   referenceColumnType: z.literal("date"),
   operation: z.literal("range"),
@@ -41,21 +41,21 @@ const DateRangeGroupingConditionSchema = z.object({
   includesLast: z.boolean(),
 });
 
-const BooleanGroupingConditionSchema = z.object({
+const booleanGroupingConditionSchema = z.object({
   label: z.string(),
   referenceColumnType: z.literal("boolean"),
   operation: z.enum(["isTrue", "isFalse"]),
   value: z.undefined(),
 });
 
-export const GroupConditionValueSchema = z.discriminatedUnion(
+export const groupConditionValueSchema = z.discriminatedUnion(
   "referenceColumnType",
   [
-    TextGroupingConditionSchema,
-    NumberGroupingConditionSchema,
-    NumberRangeGroupingConditionSchema,
-    DateGroupingConditionSchema,
-    DateRangeGroupingConditionSchema,
-    BooleanGroupingConditionSchema,
+    textGroupingConditionSchema,
+    numberGroupingConditionSchema,
+    numberRangeGroupingConditionSchema,
+    dateGroupingConditionSchema,
+    dateRangeGroupingConditionSchema,
+    booleanGroupingConditionSchema,
   ],
 );

@@ -1,20 +1,20 @@
 import { z } from "zod";
 
-const TextFilterConditionSchema = z.object({
+const textFilterConditionSchema = z.object({
   referenceColumnType: z.literal("text"),
   referenceColumn: z.string(),
   value: z.string(),
   operation: z.enum(["eq", "noteq", "contains", "notContains"]),
 });
 
-const NumberFilterConditionSchema = z.object({
+const numberFilterConditionSchema = z.object({
   referenceColumnType: z.enum(["integer", "float"]),
   referenceColumn: z.string(),
   operation: z.enum(["eq", "noteq", "gt", "lt", "gte", "lte"]),
   value: z.number(),
 });
 
-const NumberFilterConditionRangeSchema = z.object({
+const numberFilterConditionRangeSchema = z.object({
   referenceColumnType: z.enum(["integer", "float"]),
   referenceColumn: z.string(),
   operation: z.literal("range"),
@@ -24,14 +24,14 @@ const NumberFilterConditionRangeSchema = z.object({
   includesLast: z.boolean(),
 });
 
-const DateFilterConditionSchema = z.object({
+const dateFilterConditionSchema = z.object({
   referenceColumnType: z.literal("date"),
   referenceColumn: z.string(),
   operation: z.enum(["eq", "noteq", "gt", "lt", "gte", "lte"]),
   value: z.string(),
 });
 
-const DateFilterConditionRangeSchema = z.object({
+const dateFilterConditionRangeSchema = z.object({
   referenceColumnType: z.literal("date"),
   referenceColumn: z.string(),
   operation: z.literal("range"),
@@ -41,21 +41,21 @@ const DateFilterConditionRangeSchema = z.object({
   includesLast: z.boolean(),
 });
 
-const BooleanFilterConditionSchema = z.object({
+const booleanFilterConditionSchema = z.object({
   referenceColumnType: z.literal("boolean"),
   referenceColumn: z.string(),
   operation: z.enum(["isTrue", "isFalse"]),
   value: z.undefined(),
 });
 
-export const FilterConditionValueSchema = z.discriminatedUnion(
+export const filterConditionValueSchema = z.discriminatedUnion(
   "referenceColumnType",
   [
-    TextFilterConditionSchema,
-    NumberFilterConditionSchema,
-    NumberFilterConditionRangeSchema,
-    DateFilterConditionSchema,
-    DateFilterConditionRangeSchema,
-    BooleanFilterConditionSchema,
+    textFilterConditionSchema,
+    numberFilterConditionSchema,
+    numberFilterConditionRangeSchema,
+    dateFilterConditionSchema,
+    dateFilterConditionRangeSchema,
+    booleanFilterConditionSchema,
   ],
 );
