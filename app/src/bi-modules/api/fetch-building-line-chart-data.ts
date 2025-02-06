@@ -6,7 +6,7 @@ import { type FilterCondition } from "../interfaces/parameter";
 import { type ChartProps } from "../../@types/charts";
 import { BUILDING_DATASET_COLUMN_METADATA } from "../../config/column-metadata";
 import { filterQueryBuilder } from "./filter-query-builder";
-import { conditionsToCaseQuery } from "./conditions-to-case-query";
+import { conditionsToCaseQueryBuilder } from "./conditions-to-case-query-builder";
 
 type Params = {
   view: LineView;
@@ -130,7 +130,10 @@ export const fetchBuildingLineChartData = async ({
 
   if (groupConditions.length > 0) {
     const GroupLabel = `group` as const;
-    const caseQuery = conditionsToCaseQuery(xAxis.value, groupConditions);
+    const caseQuery = conditionsToCaseQueryBuilder(
+      xAxis.value,
+      groupConditions,
+    );
 
     const groupQuery = db
       .select({
