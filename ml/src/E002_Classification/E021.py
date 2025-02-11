@@ -520,6 +520,10 @@ def train_lgb_with_optuna(train_df, params, citycode_value, targetyear_value, ou
     if sqlite_enabled and job_id:
         create_or_update_job_task(job_id, progress_percent="60", preprocess_type=None, error_code=None, error_msg=None, result=json.dumps({}), id= task_id)
         create_or_update_job(job_id , "60")
+
+    columns_file = os.path.join(output_file_path, f'{str(uuid.uuid4())}_columns.pkl')
+    with open(columns_file, 'wb') as f:
+        pickle.dump(X_train.columns.tolist(), f)
         
     # 各学習済みモデルをファイルに保存
     for i, model in enumerate(lgbm_models):

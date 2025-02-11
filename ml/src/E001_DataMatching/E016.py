@@ -34,6 +34,7 @@ from shapely.geometry import Point
 from pyproj import CRS, Transformer
 from shapely.ops import transform
 from pandas.errors import ParserError
+import fiona
 
 pd.set_option("display.max_columns", None)
 
@@ -235,9 +236,9 @@ def detect_encoding(file_path):
     result = chardet.detect(raw_data)
     return result['encoding']
 
-def read_csv(path: str, **kwargs) -> pd.DataFrame:
+def read_file(path: str, **kwargs) -> pd.DataFrame:
     """
-    CSVファイルを読み込む
+    ファイルを読み込む
     
     Parameters
     ----------
@@ -255,9 +256,11 @@ def read_csv(path: str, **kwargs) -> pd.DataFrame:
         # ファイルの拡張子を取得し、小文字に変換
         file_extension = os.path.splitext(path)[1].lower()
         
-        # CSVファイル以外の場合はエラーを発生させる
-        if file_extension != '.csv':
-            raise ValueError(f"CSVファイル以外は対応していません: {file_extension}")
+        allowed_file_extension = ['.shp','.gpkg','.geojson','.csv']
+        # allowed_file_extensionファイル以外の場合はエラーを発生させる
+        if file_extension not in allowed_file_extension:
+            set_error(ERROR_00021, file_extension)
+            raise ValueError(f"shapefile, GeoPackage, GeoJSON, CSV形式以外のファイル形式には対応していません。: {file_extension}")
         
         # 複数のエンコーディングを試行                
         encodings = [
@@ -268,7 +271,11 @@ def read_csv(path: str, **kwargs) -> pd.DataFrame:
         for encoding in encodings:
             try:
                 # 各エンコーディングでファイルの読み込みを試みる
-                return pd.read_csv(path, encoding=encoding, **kwargs)
+                if file_extension == '.csv':
+                    return pd.read_csv(path, encoding=encoding, **kwargs)
+                else:
+                    with fiona.Env(encoding=encoding):
+                        return gpd.read_file(path)
             except UnicodeDecodeError:
                 # デコードエラーが発生した場合、次のエンコーディングを試す
                 continue
@@ -285,7 +292,8 @@ def read_csv(path: str, **kwargs) -> pd.DataFrame:
         raise ValueError(f"適切なエンコーディングが見つかりませんでした: {path}")
     except Exception as e:
         # 何らかの例外が発生した場合、エラーメッセージを表示してNoneを返す
-        set_error(ERROR_00014, path)
+        if ERROR_CODE is None:
+            set_error(ERROR_00014, path)
         # print(f"ファイル {path} の読み込み中にエラーが発生しました: {e}")
         return None
 
@@ -310,7 +318,7 @@ def load_and_process_data(file_path, crs, geometry, file_type, data_type):
 
     if file_extension == 'csv':
         # CSVファイルを読み込む
-        df = read_csv(file_path)
+        df = read_file(file_path)
 
         if df is None:
             raise ValueError(f"ファイルの読み込みに失敗しました: {file_path}")
@@ -366,7 +374,7 @@ def load_and_process_data(file_path, crs, geometry, file_type, data_type):
             output_dir = os.getcwd()
             process_plateaugml(temp_dir, output_dir, crs)  # buildings_gdfを引数として渡す
             bldg_gpkg_file = os.path.join(output_dir, "plateau_bldg.gpkg")
-            gdf = gpd.read_file(bldg_gpkg_file)
+            gdf = read_file(bldg_gpkg_file)
 
             if temp_dir and os.path.isdir(temp_dir):
                 shutil.rmtree(temp_dir)
@@ -391,7 +399,7 @@ def load_and_process_data(file_path, crs, geometry, file_type, data_type):
 
     else:
         # その他の非CSVファイルを読み込む
-        gdf = gpd.read_file(file_path)
+        gdf = read_file(file_path)
 
         if gdf.crs is None:
             # データのCRSを指定（EPSG:4326）

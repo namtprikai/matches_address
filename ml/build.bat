@@ -2,7 +2,7 @@
 rem Script to build executables using PyInstaller with Poetry
 
 rem Building IF001
-poetry run pyinstaller --onefile --noconsole --distpath ./dist --collect-all numpy --collect-all chardet --collect-all pandas --collect-all geopandas --collect-all pyogrio --collect-all shapely --add-data "async_tasks:async_tasks" --add-data "src:src" --paths="./src" --name IF001 ./async_tasks/IF001.py
+poetry run pyinstaller --onefile --noconsole --distpath ./dist --collect-all numpy --collect-all fiona --collect-all chardet --collect-all pandas --collect-all geopandas --collect-all pyogrio --collect-all shapely --add-data "async_tasks:async_tasks" --add-data "src:src" --paths="./src" --name IF001 ./async_tasks/IF001.py
 
 rem Building IF002
 poetry run pyinstaller --onefile --noconsole --distpath ./dist --collect-all imblearn --collect-all japanize_matplotlib --collect-all memory_profiler --collect-all chardet --collect-all pandas --collect-all sklearn --collect-all lightgbm --collect-all numpy --collect-all optuna --collect-all seaborn --collect-all japanize_matplotlib --add-data "src:src" --paths="./src" --name IF002 ./async_tasks/IF002.py

@@ -75,6 +75,14 @@ ERROR_00019 = {
     "code": "IF001_e016_err_spatial_join",
     "message": "空間結合処理中にエラーが発生しました。ジオメトリに不正がないか、ご確認ください。"
 }
+ERROR_00020 = {
+    "code": "IF001_e013_err_date_incorrect",
+    "message": "基準日が不正です。正しいフォーマットになっているか、もしくは正しい日付となっているかかご確認ください 。"
+}
+ERROR_00021 = {
+    "code": "IF001_e013_err_allow_ext",
+    "message": "shapefile, GeoPackage, GeoJSON, CSV形式以外のファイル形式には対応していません。: {param_st1}"
+}
 
 # IF002
 ERROR_10001 = {
