@@ -21,7 +21,9 @@ from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 from scipy.sparse import csr_matrix
 import numpy as np
+import warnings
 
+warnings.filterwarnings("ignore")
 current_dir = os.path.dirname(os.path.abspath(__file__))
 async_tasks_path = os.path.join(current_dir, '..', 'async_tasks')
 if async_tasks_path not in sys.path:
@@ -93,6 +95,7 @@ def read_data(path: str, **kwargs) -> pd.DataFrame:
         
         # CSVファイル以外の場合はエラーを発生させる
         if file_extension != '.csv':
+            set_error(ERROR_00026, file_extension)
             raise ValueError(f"CSVファイル以外は対応していません: {file_extension}")
         
         # 複数のエンコーディングを試行                
@@ -109,14 +112,14 @@ def read_data(path: str, **kwargs) -> pd.DataFrame:
         detected_encoding = detect_encoding(path)
         if detected_encoding:
             return pd.read_csv(path, encoding=detected_encoding, **kwargs)
-        
+        set_error(ERROR_00027, path)
         # 適切なエンコーディングが見つからない場合、エラーを発生させる
         raise ValueError(f"適切なエンコーディングが見つかりませんでした: {path}")
     except Exception as e:
         # 何らかの例外が発生した場合、エラーメッセージを表示してNoneを返す
-        set_error(ERROR_00011, path)
-        # print(f"ファイル {path} の読み込み中にエラーが発生しました: {e}")
-        return None
+        if ERROR_CODE is None:
+            set_error(ERROR_00011, path)
+        raise
 
 def get_column_names(csv_file: str) -> List[str]:
     """
@@ -160,7 +163,7 @@ def normalize_dates(df, column, formats=['%Y/%m/%d', '%d/%m/%Y', '%Y-%m-%d', '%m
     
     return df.drop(f'{column}_normalized',axis=1)
 
-def embedding_address(main_csv: io.BytesIO | str, sub_csv: io.BytesIO | str, main_column: str, sub_column: str, merge_base: str, output_path:str, ngram: int = 0, threshold: float = 0.5, batch_size: int = 1000, job_id: str = None, db_path: str = None, input_source: list = [], job_task = 1) -> Tuple[str, str]:   
+def embedding_address(main_csv: io.BytesIO | str, sub_csv: io.BytesIO | str, main_column: str, sub_column: str, merge_base: str, output_path:str, ngram: int = 0, threshold: float = 0.5, batch_size: int = 1000, job_id: str = None, db_path: str = None, input_source: list = [], progress_percent_job = 50, progress_percent = 0) -> Tuple[str, str]:   
     """
     住所名寄せ処理を行う
     
@@ -189,8 +192,11 @@ def embedding_address(main_csv: io.BytesIO | str, sub_csv: io.BytesIO | str, mai
     try:
         if db_path:
             connect_sqllite(db_path)
+            progress_percent = progress_percent / 4
+            progress_percent_job = progress_percent_job + progress_percent
         task_id = None
         if job_id:
+            create_or_update_job(job_id, progress_percent_job)
             task_id = create_or_update_job_task(job_id, progress_percent="0", preprocess_type="e014", error_code=None, error_msg=None, result=None)
       
         if output_path is None:
@@ -271,6 +277,7 @@ def embedding_address(main_csv: io.BytesIO | str, sub_csv: io.BytesIO | str, mai
         sub_df[f'名寄せ元情報_{sub_csv_name}'] = sub_df[sub_column]
         sub_df.rename(columns={sub_column: main_column}, inplace=True)
         if job_id:
+            create_or_update_job(job_id, progress_percent_job)
             create_or_update_job_task(job_id, progress_percent="30", preprocess_type="e014", error_code=None, error_msg=None, result=None, id= task_id)
         
         if '住基' in input_source and '水道' in input_source:
@@ -352,6 +359,9 @@ def embedding_address(main_csv: io.BytesIO | str, sub_csv: io.BytesIO | str, mai
                 df_merge = main_df.merge(sub_df, on=main_column, how='inner')
             
         merged_rows = len(df_merge)    # 完全一致できた行数
+        # N-gramで名寄せできた行数をカウント
+        ngram_rows = 0
+        similarity_scores = []  # 類似度スコアを保存するリスト
     
         if ngram != 0:
             # 未結合のデータを抽出
@@ -359,65 +369,65 @@ def embedding_address(main_csv: io.BytesIO | str, sub_csv: io.BytesIO | str, mai
             sub_df = sub_df[~sub_df[main_column].isin(df_merge[main_column])]
             main_df = main_df.reset_index(drop=True)
             sub_df = sub_df.reset_index(drop=True)
-            if job_id:
-                create_or_update_job_task(job_id, progress_percent="40", preprocess_type="e014", error_code=None, error_msg=None, result=None, id= task_id)
-            # N-gramで類似度を計算する準備
-            vectorizer = CountVectorizer(analyzer='char', ngram_range=(ngram, ngram))
-            main_df_ngram_matrix = vectorizer.fit_transform(main_df[main_column].astype(str))
-            sub_df_ngram_matrix = vectorizer.transform(sub_df[main_column].astype(str))
-    
-            # 疎行列に変換してメモリ効率を改善
-            main_df_ngram_matrix = csr_matrix(main_df_ngram_matrix)
-            sub_df_ngram_matrix = csr_matrix(sub_df_ngram_matrix)
-    
-            # N-gramで名寄せできた行数をカウント
-            ngram_rows = 0
-            similarity_scores = []  # 類似度スコアを保存するリスト
-    
-            # バッチ処理による類似度計算
-            for start in range(0, main_df_ngram_matrix.shape[0], batch_size):
-                end = min(start + batch_size, main_df_ngram_matrix.shape[0])
-    
-                # バッチ単位で類似度を計算
-                batch_similarities = cosine_similarity(main_df_ngram_matrix[start:end], sub_df_ngram_matrix)
-                
-                # バッチ内の各行ごとに処理
-                for i, similarities in enumerate(batch_similarities):
-                    top_indices = similarities.argsort()[-3:][::-1]  # 上位3件を取得
-    
-                    if similarities[top_indices[0]] >= threshold:
-                        row_index = start + i  # バッチの中での行番号をグローバルに変換
-                        for col in sub_df.columns:
-                            main_df.at[row_index, col] = sub_df.iloc[top_indices[0]][col]
-                        similarity_scores.append(similarities[top_indices[0]])  # 類似度スコアを追加
-                        ngram_rows += 1  # この行が正しく名寄せされた場合にカウント
-                    else:
-                        row_index = start + i
-                        main_df.at[row_index, f'名寄せ元情報_{sub_csv_name}'] = ""
-                        main_df.at[row_index, f'{sub_flag_name}'] = 0
-                        similarity_scores.append(similarities[top_indices[0]])  # 閾値未満の場合スコアは0
-                    
-            # 類似度スコアを結果データフレームに追加
-            main_df[f'similarity_score_{sub_csv_name}'] = similarity_scores
+            if len(main_df) > 0 and len(sub_df) > 0:
+                if job_id:
+                    create_or_update_job(job_id, progress_percent_job)
+                    create_or_update_job_task(job_id, progress_percent="40", preprocess_type="e014", error_code=None, error_msg=None, result=None, id= task_id)
+                # N-gramで類似度を計算する準備
+                vectorizer = CountVectorizer(analyzer='char', ngram_range=(ngram, ngram))
+                main_df_ngram_matrix = vectorizer.fit_transform(main_df[main_column].astype(str))
+                sub_df_ngram_matrix = vectorizer.transform(sub_df[main_column].astype(str))
         
-            # 結果のデータフレームを作成
-            result_df = pd.concat([df_merge, main_df], axis=0, ignore_index=True)
-    
-            # flag情報を最後に持ってくる
-            result_df = result_df[[col for col in result_df.columns if col != main_flag_name] + [main_flag_name]]
+                # 疎行列に変換してメモリ効率を改善
+                main_df_ngram_matrix = csr_matrix(main_df_ngram_matrix)
+                sub_df_ngram_matrix = csr_matrix(sub_df_ngram_matrix)
+        
+                # バッチ処理による類似度計算
+                for start in range(0, main_df_ngram_matrix.shape[0], batch_size):
+                    end = min(start + batch_size, main_df_ngram_matrix.shape[0])
+        
+                    # バッチ単位で類似度を計算
+                    batch_similarities = cosine_similarity(main_df_ngram_matrix[start:end], sub_df_ngram_matrix)
+                    
+                    # バッチ内の各行ごとに処理
+                    for i, similarities in enumerate(batch_similarities):
+                        top_indices = similarities.argsort()[-3:][::-1]  # 上位3件を取得
+        
+                        if similarities[top_indices[0]] >= threshold:
+                            row_index = start + i  # バッチの中での行番号をグローバルに変換
+                            for col in sub_df.columns:
+                                main_df.at[row_index, col] = sub_df.iloc[top_indices[0]][col]
+                            similarity_scores.append(similarities[top_indices[0]])  # 類似度スコアを追加
+                            ngram_rows += 1  # この行が正しく名寄せされた場合にカウント
+                        else:
+                            row_index = start + i
+                            main_df.at[row_index, f'名寄せ元情報_{sub_csv_name}'] = ""
+                            main_df.at[row_index, f'{sub_flag_name}'] = 0
+                            similarity_scores.append(similarities[top_indices[0]])  # 閾値未満の場合スコアは0
+                        
+                # 類似度スコアを結果データフレームに追加
+                main_df[f'similarity_score_{sub_csv_name}'] = similarity_scores
             
-            # カラム名にflagを含むカラムを最後に移動
-            result_df[main_flag_name] = result_df[main_flag_name].astype(int)
-            result_df[sub_flag_name] = result_df[sub_flag_name].astype(int)
-            
-            flag_columns = [col for col in result_df.columns if 'flag' in col]
-            other_columns = [col for col in result_df.columns if 'flag' not in col]
-            result_df = result_df[other_columns + flag_columns]
-    
+                # 結果のデータフレームを作成
+                result_df = pd.concat([df_merge, main_df], axis=0, ignore_index=True)
+        
+                # flag情報を最後に持ってくる
+                result_df = result_df[[col for col in result_df.columns if col != main_flag_name] + [main_flag_name]]
+                
+                # カラム名にflagを含むカラムを最後に移動
+                result_df[main_flag_name] = result_df[main_flag_name].astype(int)
+                result_df[sub_flag_name] = result_df[sub_flag_name].astype(int)
+                
+                flag_columns = [col for col in result_df.columns if 'flag' in col]
+                other_columns = [col for col in result_df.columns if 'flag' not in col]
+                result_df = result_df[other_columns + flag_columns]
+            else:
+                result_df = df_merge
         else:
             result_df = df_merge
             
         if job_id:
+            create_or_update_job(job_id, progress_percent_job)
             create_or_update_job_task(job_id, progress_percent="90", preprocess_type="e014", error_code=None, error_msg=None, result=None, id= task_id)
         # 結果をCSVファイルとして保存
         saved_file_path = save_csv(result_df, output_path)
@@ -473,9 +483,7 @@ def save_csv(df, path):
             return abs_path
         except Exception as e:
             set_error(ERROR_00012, abs_path, encoding)
-            # print(f"ファイル {abs_path} を {encoding} エンコーディングで保存中にエラーが発生しました: {e}")
     
-    # print(f"ファイル {abs_path} をいずれのエンコーディングでも保存できませんでした。")
     return None
 
 def set_error(value, param_st1=None, param_st2=None):

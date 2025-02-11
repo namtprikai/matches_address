@@ -129,10 +129,9 @@ def read_csv(path: str) -> pd.DataFrame:
         raise ValueError(f"適切なエンコーディングが見つかりませんでした: {path}")
     except Exception as e:
         # 何らかの例外が発生した場合、エラーメッセージを表示してNoneを返す
-        # print(f"ファイル {path} の読み込み中にエラーが発生しました: {e}")
         if ERROR_CODE is None:
             set_error(ERROR_20003, path)
-        return None
+        raise
 
 def extract_zip(zip_file, extract_to):
     """
@@ -414,7 +413,6 @@ def insert_sqlite(input_data, data_set_result_id):
     except Exception as e:
         # エラー時の処理
         set_error(ERROR_20007)
-        # print("Insert sql failed...", e)
         raise
 
 def drop_duplicates(df, subset, keep="first"):
@@ -458,7 +456,6 @@ def process_and_predict(input_folder, input_file, model_directory, threshold, ou
             process += process_init
         # ディレクトリの設定
         print("ディレクトリを設定中...")
-        # setup_directory(os.path.expanduser('~'))
 
         # 入力データの読み込み
         print("入力データを読み込み中...")
@@ -579,7 +576,6 @@ def process_and_predict(input_folder, input_file, model_directory, threshold, ou
             except Exception as e:
                 # 保存中にエラーが発生した場合、エラーメッセージを表示して次のエンコーディングを試す
                 set_error(ERROR_20005, output_file, encoding)
-                # print(f"ファイル {output_file} を {encoding} エンコーディングで保存中にエラーが発生しました: {e}")
 
         # すべてのエンコーディングで保存に失敗した場合のメッセージ
         if sqlite_enabled and job_id:

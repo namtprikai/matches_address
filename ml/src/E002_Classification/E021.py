@@ -160,10 +160,9 @@ def read_data(path: str, **kwargs) -> pd.DataFrame:
         raise ValueError(f"適切なエンコーディングが見つかりませんでした: {path}")
     except Exception as e:
         # 何らかの例外が発生した場合、エラーメッセージを表示してNoneを返す
-        # print(f"ファイル {path} の読み込み中にエラーが発生しました: {e}")
         if ERROR_CODE is None:
             set_error(ERROR_10003, path)
-        return None
+        raise
 
 def prepare_learning_data(df, explanatory_variables, explanatory_variables_dict):
     """
@@ -833,11 +832,8 @@ def train_and_evaluate(db_path, input_file, output_path, explanatory_variables, 
     output_file : str
         出力CSVファイルのパス
     """
-    
 
     try:
-
-
         # SQLiteの接続処理をエラーハンドリング付きで実行
         sqlite_enabled = False
         if db_path:
@@ -904,16 +900,6 @@ def train_and_evaluate(db_path, input_file, output_path, explanatory_variables, 
                         df[explanatory_variables_dict[adding_col_name]] = np.nan
                 else:
                     explanatory_variables_dict[adding_col_name] = check_tar_col[0]
-
-        # 異常値除去
-        #condition = ((df['akiya_result_cleaned_flag'] == 1) & (df[explanatory_variables_dict["最小使用水量"]] > 20))
-        #df = df[~condition].reset_index(drop=True)
-
-        #condition = ((df['akiya_result_cleaned_flag'] == 0) & (df[explanatory_variables_dict["最小使用水量"]] < 2))
-        #df = df[~condition].reset_index(drop=True)
-        
-        #condition = ((df['akiya_result_cleaned_flag'] == 0) & (df[explanatory_variables_dict["平均使用水量"]] == 0))
-        #df = df[~condition].reset_index(drop=True)
 
 
         # '世帯コード'の重複を確認し、重複するレコードを削除

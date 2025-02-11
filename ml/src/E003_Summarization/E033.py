@@ -83,11 +83,8 @@ def read_input_data(data_set_results_id, reference_date, table_name):
 
         return gdf
     except Exception as e:
-        # logging.error(f"An error occurred while reading input data: {str(e)}")
         set_error(ERROR_30001)
         raise
-
-
 
 
 def export_data(gdf, output_path, output_format):
@@ -113,13 +110,12 @@ def export_data(gdf, output_path, output_format):
             gdf.to_file(output_path, driver='GPKG')
             logging.info("GPKG exported successfully.")
         else:
+            set_error(ERROR_30004)
             raise ValueError("Unsupported output format. Use 'csv' or 'geopackage' or 'geojson'.")
         return output_path
-    except ValueError as e:
-        raise
     except Exception as e:
-        # logging.error(f"An error occurred during export: {str(e)}")
-        set_error(ERROR_30002)
+        if ERROR_CODE is None:
+            set_error(ERROR_30002)
         raise
 
 def processing(params, job_id=None, db_path=None):
@@ -181,7 +177,6 @@ def processing(params, job_id=None, db_path=None):
         if task_id is not None:
             create_or_update_job_task(job_id, progress_percent="", preprocess_type=None, error_code=ERROR_CODE, error_msg=ERROR_MSG, result=json.dumps({}), id= task_id, is_finish=True)
 
-        # logging.error(f"An error occurred: {str(e)}")
         raise Exception("変換処理中にエラーが発生しました。正しいCRS（参照座標系）になっているかご確認ください。")
 
 def set_error(value, param_st1=None, param_st2=None):

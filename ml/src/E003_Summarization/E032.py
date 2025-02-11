@@ -180,66 +180,11 @@ class Summarization:
                                     city_block_gdf, how="inner", predicate="intersects", 
                                     lsuffix='left', rsuffix='right')
 
-        # 各行のジオメトリ同士の交差部分を計算
-        #spatial_join_gdf["intersection"] = spatial_join_gdf.geometry.intersection(city_block_gdf.unary_union)
-
-        # 交差した部分の面積を計算
-        #spatial_join_gdf["intersection_area"] = spatial_join_gdf["intersection"].area
-
-        # 面積が大きい順にソートし、重複を削除
-        #spatial_join_gdf = spatial_join_gdf.sort_values(by="intersection_area", ascending=False)
-        #spatial_join_gdf = spatial_join_gdf.drop_duplicates(subset=self.INPUT_COLUMNS["akiya_pred"]["setai_code"], keep="first")
-        #spatial_join_gdf.reset_index(inplace=True)
-
         # centroidではなく元のgeometry列を使用するため、元に戻す
         spatial_join_gdf = spatial_join_gdf.set_geometry('geometry')
 
         return spatial_join_gdf
 
-    
-    
-    def insert_sqlite(self, summerized_df):
-        """
-        集計結果をSQLiteデータベースに挿入する関数。
-    
-        Parameters:
-        -----------
-        summerized_df : DataFrame
-            SQLiteデータベースに挿入するための集計済みデータ。
-    
-        Returns:
-        --------
-        None
-        """
-        global conn
-        try:
-            # カラム名の日本語を英語に変換
-            mapping_header = {
-                '住戸数': 'total_building_count',
-                '空き家数': 'vacant_house_count',
-                '空き家率': 'vacant_house_ratio',
-                "若年層率": 'under15_population_ratio',
-                "高齢者率": 'upper65_population_ratio'
-            }
-            summerized_df['geometry'] = summerized_df['geometry'].apply(lambda x: x.wkt if x else None)
-            summerized_df = summerized_df.rename(columns=mapping_header)
-            current_year = datetime.now().year
-            table_name = f"D903_akiyaresult_{current_year}"
-            
-            # SQLiteに接続し、データを挿入
-            conn = sqlite3.connect('akiya_database.db')
-            summerized_df.to_sql(table_name, conn, if_exists='replace', index=False)
-            print(f"Inserted data into table {table_name}")
-        except Exception as e:
-            print(f"Error when insert SQLite: {e}")
-        finally:
-            if conn:
-                conn.close()
-
-
-            if conn:
-                conn.close()
-           
     def insert_data_set_detail_areas(self, summerized_df, data_set_result_id, key_column):
         """
         集計結果をSQLiteデータベースに挿入する関数。
@@ -273,7 +218,6 @@ class Summarization:
             summerized_df['geometry'] = summerized_df['geometry'].apply(lambda x: x.wkt if x else None)
             summerized_df = summerized_df.rename(columns=mapping_header)
             
-            # summerized_df.to_csv("E032.csv", index=False, encoding='utf-8-sig')
             existing_columns = summerized_df.columns.tolist()
             mapped_columns = [col for col in mapping_header.values() if col in existing_columns]
             summerized_df = summerized_df[mapped_columns]
@@ -306,7 +250,6 @@ class Summarization:
         except Exception as e:
             set_error(ERROR_20013)
             raise
-            # print(f"Error when insert SQLite: {e}")
 
     def read_file(self, path: str, **kwargs):
         """
@@ -331,6 +274,7 @@ class Summarization:
             allowed_file_extension = ['.shp','.gpkg','.geojson','.csv']
             # allowed_file_extensionファイル以外の場合はエラーを発生させる
             if file_extension not in allowed_file_extension:
+                set_error(ERROR_20014, file_extension)
                 raise ValueError(f"shapefile, GeoPackage, GeoJSON, CSV形式以外のファイル形式には対応していません。: {file_extension}")
             
             # 複数のエンコーディングを試行                
@@ -356,18 +300,18 @@ class Summarization:
                     continue
             
             # 適切なエンコーディングが見つからない場合、エラーを発生させる
+            set_error(ERROR_00025, path)
             raise ValueError(f"適切なエンコーディングが見つかりませんでした: {path}")
         except Exception as e:
             # 何らかの例外が発生した場合、エラーメッセージを表示してNoneを返す
-            set_error(ERROR_00014, path)
-            # print(f"ファイル {path} の読み込み中にエラーが発生しました: {e}")
-            return None
+            if ERROR_CODE is None:
+                set_error(ERROR_00014, path)
+            raise
     
     def process(self):
         # データを読み込む
         print('空き家データの読み込み')
         
-        # detected_encoding = detect_encoding(self.INPUT_PATHS["akiya_pred"])
         print(f'{self.INPUT_PATHS["akiya_pred"]}を{detect_encoding}で読み込みます')
         residence_gdf = pd.read_csv(self.INPUT_PATHS["akiya_pred"], encoding='utf-8-sig')
         print('csvを読み込みました')
@@ -420,10 +364,6 @@ class Summarization:
 
         # 小地域ポリゴンに集計結果を結合
         summerized_gdf = pd.merge(city_block_gdf, summerized_gdf, how="left", right_on=self.key_column, left_on=self.key_column)
-        # summerized_gdf = summerized_gdf[self.OUTPUT_COLUMNS]
-        # 出力
-        #summerized_gdf.to_file(self.OUTPUT_PATH)
-        # summerized_gdf.to_csv(self.OUTPUT_PATH, encoding="utf-8-sig", index=False)
 
         # insert sqlite
         if self.data_set_result_id != 0:
@@ -473,18 +413,19 @@ def move_uploaded_file(file, save_dir):
     return destination_path
 
 
-
-
 def extract_zip(zip_file, extract_to):
     """
     .zip ファイルを解凍し、Shapefile (.shp, .shx, .dbf, .prj) を抽出する。
     """
-    with zipfile.ZipFile(zip_file, 'r') as zip_ref:
-        zip_ref.extractall(extract_to)
-    files = os.listdir(extract_to)
-    shp_file = [os.path.join(extract_to, f) for f in files if f.endswith(".shp")][0]
+    try:
+        with zipfile.ZipFile(zip_file, 'r') as zip_ref:
+            zip_ref.extractall(extract_to)
+        files = os.listdir(extract_to)
+        shp_file = [os.path.join(extract_to, f) for f in files if f.endswith(".shp")][0]
+    except:
+        set_error(ERROR_20015, "地域集計用データ")
+        raise Exception("地域集計用データのデータが異常です。もう一度データを確認ください。")
     return shp_file
-
 
 
 def process_summarization(akiya_pred_file, spatial_file, output_dir, key_column, job_id=None, db_path=None, process=0, data_set_result_id=0):
@@ -554,7 +495,7 @@ def process_summarization(akiya_pred_file, spatial_file, output_dir, key_column,
             }
 
         else:
-            set_error(ERROR_20009, file_ext)
+            set_error(ERROR_20014, file_ext)
             raise ValueError(f"Unsupported file format: {file_ext}")
         
         if job_id:

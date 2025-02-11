@@ -172,8 +172,9 @@ def main():
             job_id,
             params.get('db_path')
         )
-        create_or_update_job(job_id, "50")
-
+        progress_percent_job = 50
+        create_or_update_job(job_id, progress_percent_job)
+        progress_percent = 25 / len(input_source)
         for item in input_source:
             output_e014 = f"{output_directory}/matched_data.csv"
             sub_csv = f"{output_directory}/{item}_cleaned.csv"
@@ -193,10 +194,13 @@ def main():
                 1000,
                 str(job_id),
                 params.get('db_path'),
-                [input_source_jp[main_data_type], input_source_jp[item]]
+                [input_source_jp[main_data_type], input_source_jp[item]],
+                progress_percent_job,
+                progress_percent
             )
             main_csv = output_e014
-        create_or_update_job(job_id, "75")
+            progress_percent_job = progress_percent_job + progress_percent
+            create_or_update_job(job_id, progress_percent_job)
 
         option = 0 if join_option == "交差結合" else 1
         output_path_e016 = output_directory.replace(f"/{random_str}", "")
