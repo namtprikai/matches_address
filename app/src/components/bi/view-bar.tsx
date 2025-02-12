@@ -28,11 +28,9 @@ export const ViewBar = ({ view }: Props): JSX.Element => {
   const xAxis = view.parameters.find((p) => p.key === "xAxis");
   const yAxis = view.parameters.find((p) => p.key === "yAxis");
 
-  /** @todo どこからくる値なのか確認。本来はview.parameters.find((p) => p.key === "group_aggregation")?.value;みたいな感じ？ */
-  const groupingCalc = "count";
-
   const data = chartProps.data.map((d) => ({
     ...d,
+    /** 表示のために桁数を調整 */
     y: chartProps.yAxisColumn.unit === "%" ? Math.floor(d.y * 1000) / 10 : d.y,
   }));
 
@@ -86,10 +84,7 @@ export const ViewBar = ({ view }: Props): JSX.Element => {
           }}
         >
           <ReXAxis dataKey={"x"} unit={chartProps.xAxisColumn.unit} />
-          <ReYAxis
-            dataKey={"y"}
-            unit={groupingCalc === "count" ? "件" : chartProps.yAxisColumn.unit}
-          />
+          <ReYAxis dataKey={"y"} unit={chartProps.yAxisColumn.unit} />
           <ReTooltip
             active={activeToolTip}
             cursor={false}
