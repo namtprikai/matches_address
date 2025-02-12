@@ -63,13 +63,6 @@ export const EditResultViewFilterFields = ({
     replace,
   });
 
-  if (
-    currentParameters === undefined ||
-    unit === undefined ||
-    style === undefined
-  )
-    return <></>;
-
   const areaFilter = currentParameters.find(
     (f) => f.key === "area" && f.type === "filter",
   );
@@ -187,9 +180,7 @@ export const EditResultViewFilterFields = ({
       </Suspense>
 
       <FormFilteringParameters
-        onSave={formFilteringState.onSave}
-        options={formFilteringState.options}
-        parameters={formFilteringState.filteredCurrentParameters}
+        {...formFilteringState}
         unit={unit ?? "building"}
       />
     </Fieldset>

@@ -7,13 +7,8 @@ import {
   mergeClasses,
   tokens,
 } from "@fluentui/react-components";
-import { useFieldArray, useForm } from "react-hook-form";
 import { Delete20Regular } from "@fluentui/react-icons";
 import { useState } from "react";
-import {
-  type AREA_DATASET_COLUMN,
-  type BUILDING_DATASET_COLUMN,
-} from "../../config/column-metadata";
 import { getColumnMetadata } from "../../utils/get-column-metadata";
 import { DialogBody } from "../ui/dialog-body";
 import { DialogSurface } from "../ui/dialog-surface";
@@ -24,10 +19,8 @@ import { Field } from "../ui/field";
 import { Select } from "../ui/select";
 import { Input } from "../ui/input";
 import { DialogContent } from "../ui/dialog-content";
-import {
-  isFilterCondition,
-  type Parameter,
-} from "../../bi-modules/interfaces/parameter";
+import { isFilterCondition } from "../../bi-modules/interfaces/parameter";
+import { type UseFormFilteringParametersReturnType } from "../../bi-modules/hooks/use-form-filtering-parameters";
 import { FormFilteringResultView } from "./form-filtering-result-view";
 
 const useStyles = makeStyles({
@@ -86,103 +79,30 @@ const useStyles = makeStyles({
   },
 });
 
-type Props = {
-  parameters: Parameter[];
-  options: (BUILDING_DATASET_COLUMN | AREA_DATASET_COLUMN)[];
-  unit: "building" | "area";
-  onSave: (parameters: Parameter[]) => void;
-};
+type Props = UseFormFilteringParametersReturnType;
 
 /**
  * フィルタリング結果表示用のフィールド表示コンポーネント
  * FormFilteringParameters で選択されたフィルタリング条件や細かい条件を編集・表示する
  */
 export const FormFilteringParameters = ({
+  handleRemove,
+  handleSelector,
   onSave,
-  ...props
+  optionsWithActive,
+  filteredCurrentParameters: parameters,
+  unit,
+  formState: { register, setValue },
+  fieldState: { fields, update },
 }: Props): JSX.Element => {
   const [open, setOpen] = useState(false);
 
-  const { control, register, handleSubmit, setValue } = useForm({
-    defaultValues: {
-      parameters: props.parameters,
-    },
-  });
-
-  const { fields, replace, remove, update } = useFieldArray({
-    control,
-    name: "parameters",
-  });
-
-  const optionsWithActive = props.options.map((option) => {
-    return {
-      key: option,
-      active:
-        fields.find((f) => {
-          if (!isFilterCondition(f)) return false;
-          return f.value.referenceColumn === option;
-        }) != null
-          ? true
-          : false,
-    };
-  });
-
   const styles = useStyles();
 
-  const handleRemove = (index: number): void => {
-    remove(index);
-  };
-
-  const handleSelector = (
-    options: {
-      key: string;
-      active: boolean;
-    }[],
-  ): void => {
-    const newFields: (Parameter | null)[] = options.map((option) => {
-      if (option.active) {
-        const targetField = fields.find((field) => {
-          if (!isFilterCondition(field)) return false;
-          return field.value.referenceColumn === option.key;
-        });
-        if (targetField) {
-          return targetField;
-        }
-
-        const metadata = getColumnMetadata({
-          unit: props.unit,
-          key: option.key,
-        });
-
-        if (metadata === null) {
-          return null;
-        }
-        /** 値の検証 */
-        if (!(metadata.type === "text" || metadata.type === "date")) {
-          return null;
-        }
-
-        return {
-          key: `filter_${(new Date().getTime() + Math.floor(10000 * Math.random())).toString(16)}`,
-          value: {
-            operation: "eq",
-            referenceColumn: option.key,
-            referenceColumnType: metadata.type,
-            value: "",
-          },
-          type: "filter",
-        };
-      }
-      return null;
-    });
-    const cleanedFields = newFields.filter((field) => field !== null);
-    replace(cleanedFields);
-  };
-
-  const handleSave = handleSubmit((data) => {
-    onSave(data.parameters);
+  const saveAndClose = async (): Promise<void> => {
+    await onSave();
     setOpen(false);
-  });
+  };
 
   return (
     <Dialog
@@ -193,10 +113,10 @@ export const FormFilteringParameters = ({
     >
       <DialogTrigger>
         <Button
-          appearance={props.parameters.length === 0 ? "outline" : "primary"}
+          appearance={parameters.length === 0 ? "outline" : "primary"}
           size="medium"
         >
-          {props.parameters.length === 0 ? "詳細条件を追加" : "詳細条件を編集"}
+          {parameters.length === 0 ? "詳細条件を追加" : "詳細条件を編集"}
         </Button>
       </DialogTrigger>
       <DialogSurface>
@@ -207,7 +127,7 @@ export const FormFilteringParameters = ({
                 appearance="normal"
                 onSave={handleSelector}
                 options={optionsWithActive}
-                unit={props.unit}
+                unit={unit}
               />
             }
           >
@@ -227,14 +147,14 @@ export const FormFilteringParameters = ({
                     appearance="primary"
                     onSave={handleSelector}
                     options={optionsWithActive}
-                    unit={props.unit}
+                    unit={unit}
                   />
                 </div>
               ) : (
                 fields.map((field, index) => {
                   if (!isFilterCondition(field)) return null;
                   const metadata = getColumnMetadata({
-                    unit: props.unit,
+                    unit,
                     key: field.value.referenceColumn,
                   });
 
@@ -576,7 +496,7 @@ export const FormFilteringParameters = ({
             </div>
           </DialogContent>
           <DialogActions position="end">
-            <Button onClick={handleSave} type="button">
+            <Button onClick={saveAndClose} type="button">
               保存
             </Button>
           </DialogActions>
