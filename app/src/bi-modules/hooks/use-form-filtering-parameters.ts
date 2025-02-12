@@ -151,8 +151,10 @@ export const useFormFilteringParameters = ({
       return null;
     });
     const cleanedFields = newFields.filter((field) => field !== null);
-    replace(cleanedFields);
+
     filteringFieldState.replace(cleanedFields);
+    /** グローバルステートを更新 */
+    replace([...cleanedFields, ...currentParameters]);
   };
 
   const onSave = filteringFormState.handleSubmit((data) => {

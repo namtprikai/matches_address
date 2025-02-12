@@ -56,12 +56,12 @@ export const EditResultViewFilterFields = ({
     dataSetResultId: resultView?.data_set_result_id,
   });
 
-  // const formFilteringState = useFormFilteringParameters({
-  //   style,
-  //   unit,
-  //   currentParameters,
-  //   replace,
-  // });
+  const formFilteringState = useFormFilteringParameters({
+    style,
+    unit,
+    currentParameters,
+    replace,
+  });
 
   const areaFilter = currentParameters.find(
     (f) => f.key === "area" && f.type === "filter",
@@ -179,10 +179,10 @@ export const EditResultViewFilterFields = ({
         />
       </Suspense>
 
-      {/* <FormFilteringParameters
+      <FormFilteringParameters
         {...formFilteringState}
         unit={unit ?? "building"}
-      /> */}
+      />
     </Fieldset>
   );
 };
