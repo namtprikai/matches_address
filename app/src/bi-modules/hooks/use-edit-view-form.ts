@@ -26,7 +26,7 @@ export const useEditViewForm = ({
 }: Params): ReturnType => {
   const form = useForm<EditViewFormType>({
     resolver: zodResolver(editViewFormSchema),
-    defaultValues: {},
+    defaultValues,
   });
 
   const { mutate: mutateResultViews } = useFetchResultViews({
