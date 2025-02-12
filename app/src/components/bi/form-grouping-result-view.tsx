@@ -7,7 +7,6 @@ import {
   tokens,
 } from "@fluentui/react-components";
 import { useFieldArray, useForm, useWatch } from "react-hook-form";
-import { z } from "zod";
 import { Delete20Regular } from "@fluentui/react-icons";
 import { type ChartColumnType } from "../../@types/charts";
 import { Field } from "../ui/field";
@@ -19,6 +18,7 @@ import { DialogTitle } from "../ui/dialog-title";
 import { DialogActions } from "../ui/dialog-actions";
 import { Select } from "../ui/select";
 import { DialogContent } from "../ui/dialog-content";
+import { type Parameter } from "../../bi-modules/interfaces/parameter";
 
 const useStyles = makeStyles({
   groupField: {
@@ -79,72 +79,9 @@ const useStyles = makeStyles({
   },
 });
 
-const BooleanSchema = z.object({
-  referenceColumnType: z.literal("boolean"),
-  operation: z.enum(["isTrue", "isFalse"]),
-  value: z.undefined(),
-});
-
-const NumberSchema = z.object({
-  referenceColumnType: z.union([z.literal("float"), z.literal("integer")]),
-  operation: z.enum(["eq", "noteq", "gt", "gte", "lt", "lte"]),
-  value: z.number(),
-});
-
-const NumberRangeSchema = z.object({
-  referenceColumnType: z.union([z.literal("float"), z.literal("integer")]),
-  operation: z.enum(["range"]),
-  startValue: z.number(),
-  lastValue: z.number(),
-  includesStart: z.boolean(),
-  includesLast: z.boolean(),
-});
-
-const TextSchema = z.object({
-  referenceColumnType: z.literal("text"),
-  operation: z.enum(["eq", "noteq", "contains", "notContains"]),
-  value: z.string(),
-});
-
-const DateSchema = z.object({
-  referenceColumnType: z.literal("date"),
-  operation: z.enum(["eq", "noteq", "gt", "gte", "lt", "lte"]),
-  value: z.string(),
-});
-
-const DateRangeSchema = z.object({
-  referenceColumnType: z.literal("date"),
-  operation: z.enum(["range"]),
-  startValue: z.string(),
-  lastValue: z.string(),
-  includesStart: z.boolean(),
-  includesLast: z.boolean(),
-});
-
-const schema = z.object({
-  parameters: z
-    .object({
-      key: z.custom<`group_${string}`>((val) => {
-        return /^group_+$/.test(val as string);
-      }),
-      value: z
-        .union([
-          BooleanSchema,
-          z.discriminatedUnion("operation", [NumberSchema, NumberRangeSchema]),
-          z.discriminatedUnion("operation", [DateSchema, DateRangeSchema]),
-          TextSchema,
-        ])
-        .and(z.object({ label: z.string() })),
-      type: z.literal("group"),
-    })
-    .array(),
-});
-
-type parameters = z.infer<typeof schema.shape.parameters>;
-
 type Props = {
-  parameters: parameters;
-  onSave: (parameters: parameters) => void;
+  parameters: Parameter[];
+  onSave: (parameters: Parameter[]) => void;
   columnType: ChartColumnType;
   columnLabel: string;
   unit?: string;
@@ -268,6 +205,7 @@ export const FormGroupingResultView = ({
                 </div>
               ) : (
                 fields.map((field, index) => {
+                  if (field.type !== "group") return null;
                   /**
                    * カラムの型がbooleanの場合
                    */

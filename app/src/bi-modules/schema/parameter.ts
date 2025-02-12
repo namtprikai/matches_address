@@ -64,7 +64,7 @@ const areaFilterSchema = parameterBaseSchema.extend({
   value: z.string().array(),
 });
 
-const filterConditionSchema = parameterBaseSchema.extend({
+export const filterConditionSchema = parameterBaseSchema.extend({
   key: z.custom<`filter_${string}`>((val) => /^filter_/.test(val)),
   type: z.literal("filter"),
   value: filterConditionValueSchema,
@@ -82,7 +82,7 @@ const pieValueSchema = parameterBaseSchema.extend({
   value: columnSchema,
 });
 
-export const parameterSchema = z.discriminatedUnion("key", [
+export const parameterSchema = z.union([
   xAxisSchema,
   yAxisSchema,
   groupConditionSchema,

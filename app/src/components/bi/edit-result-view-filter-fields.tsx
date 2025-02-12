@@ -9,7 +9,8 @@ import { Field } from "../ui/field";
 import { Select } from "../ui/select";
 import { Fieldset } from "../ui/fieldset";
 import { FieldLegend } from "../ui/field-legend";
-import { type GroupingCondition } from "../../@types/charts";
+import { isObject } from "../../utils/is-object";
+import { type FilterCondition } from "../../bi-modules/interfaces/parameter";
 import { FormFilteringParameters } from "./form-filtering-parameters";
 import { FormAreaFilter } from "./form-area-filter";
 
@@ -167,33 +168,46 @@ export const EditResultViewFilterFields = ({
 
       <FormFilteringParameters
         onSave={(parameters) => {
-          const customizedParameters = parameters.map((p) => ({
-            ...p,
-            value: {
-              ...p.value,
-              value:
-                "value" in p.value && p.value.value !== undefined
-                  ? parsePercentageValue({
-                      value: p.value.value,
-                      referenceColumnType: p.value.referenceColumnType,
-                    })
-                  : undefined,
-              startValue:
-                "startValue" in p.value && p.value.startValue !== undefined
-                  ? parsePercentageValue({
-                      value: p.value.startValue,
-                      referenceColumnType: p.value.referenceColumnType,
-                    })
-                  : undefined,
-              lastValue:
-                "lastValue" in p.value && p.value.lastValue !== undefined
-                  ? parsePercentageValue({
-                      value: p.value.lastValue,
-                      referenceColumnType: p.value.referenceColumnType,
-                    })
-                  : undefined,
-            },
-          }));
+          const customizedParameters = parameters.map((p) => {
+            if (!isObject(p.value))
+              return {
+                ...p,
+                value: p.value,
+              };
+            if (p.type !== "filter")
+              return {
+                ...p,
+                value: p.value,
+              };
+
+            return {
+              ...p,
+              value: {
+                ...p.value,
+                value:
+                  "value" in p.value && p.value.value !== undefined
+                    ? parsePercentageValue({
+                        value: p.value.value,
+                        referenceColumnType: p.value.referenceColumnType,
+                      })
+                    : undefined,
+                startValue:
+                  "startValue" in p.value && p.value.startValue !== undefined
+                    ? parsePercentageValue({
+                        value: p.value.startValue,
+                        referenceColumnType: p.value.referenceColumnType,
+                      })
+                    : undefined,
+                lastValue:
+                  "lastValue" in p.value && p.value.lastValue !== undefined
+                    ? parsePercentageValue({
+                        value: p.value.lastValue,
+                        referenceColumnType: p.value.referenceColumnType,
+                      })
+                    : undefined,
+              },
+            };
+          });
 
           const prevOtherParameters = currentParameters.filter((f) => {
             return f.type !== "filter" || f.key === "year" || f.key === "area";
@@ -218,7 +232,7 @@ function parsePercentageValue({
   referenceColumnType,
 }: {
   value: string | number;
-  referenceColumnType: GroupingCondition["referenceColumnType"];
+  referenceColumnType: FilterCondition["value"]["referenceColumnType"];
 }): string | number {
   if (typeof value === "string") return value;
   if (referenceColumnType === "float") return value / 100;

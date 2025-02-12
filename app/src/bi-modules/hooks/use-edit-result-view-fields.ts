@@ -51,25 +51,29 @@ export const useEditResultViewFields = ({
         : TILE_VIEW_CONFIG[value].fields[0].option[0].unit;
     setValue("unit", unit);
     // parametersに初期値を設定する
-    const defaultParameters = TILE_VIEW_CONFIG[value].fields.map((field) => ({
-      key: field.key,
-      value: field.option[0].value,
-      type: "column" as const,
-    }));
+    // const defaultParameters = TILE_VIEW_CONFIG[value].fields.map((field) => ({
+    //   key: field.key,
+    //   value: field.option[0].value,
+    //   type: "column" as const,
+    // }));
 
     switch (value) {
       case "line": {
         const parameters = createDefaultLineGroupParameters(referenceDates);
-        setValue("parameters", [...defaultParameters, ...parameters]);
+        setValue("parameters", [
+          /** @todo ...defaultParameters ,*/ ...parameters,
+        ]);
         return;
       }
       case "pie": {
         const parameters = createDefaultPieGroupParameters();
-        setValue("parameters", [...defaultParameters, ...parameters]);
+        setValue("parameters", [
+          /** @todo ...defaultParameters ,*/ ...parameters,
+        ]);
         return;
       }
       default:
-        setValue("parameters", defaultParameters);
+      /** @todo setValue("parameters"  ...defaultParameters);*/
     }
   };
 

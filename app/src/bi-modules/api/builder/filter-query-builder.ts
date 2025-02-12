@@ -39,6 +39,11 @@ export const filterQueryBuilder = (params: {
           return sql.raw(`${condition.referenceColumn} < ${condition.value}`);
         case "lte":
           return sql.raw(`${condition.referenceColumn} <= ${condition.value}`);
+        default:
+          return sql.raw(``);
+      }
+    } else if (condition.referenceColumnType === "integerRange") {
+      switch (condition.operation) {
         case "range":
           return sql.raw(
             `${condition.referenceColumn} ${condition.includesStart ? ">=" : ">"} ${condition.startValue} AND ${condition.referenceColumn} ${condition.includesLast ? "<=" : "<"} ${condition.lastValue}`,
@@ -60,6 +65,11 @@ export const filterQueryBuilder = (params: {
           return sql.raw(`${condition.referenceColumn} < ${condition.value}`);
         case "lte":
           return sql.raw(`${condition.referenceColumn} <= ${condition.value}`);
+        default:
+          return sql.raw(``);
+      }
+    } else if (condition.referenceColumnType === "floatRange") {
+      switch (condition.operation) {
         case "range":
           return sql.raw(
             `${condition.referenceColumn} ${condition.includesStart ? ">=" : ">"} ${condition.startValue} AND ${condition.referenceColumn} ${condition.includesLast ? "<=" : "<"} ${condition.lastValue}`,
@@ -87,6 +97,11 @@ export const filterQueryBuilder = (params: {
           return sql.raw(
             `${condition.referenceColumn} <= '${condition.value}'`,
           );
+        default:
+          return sql.raw(``);
+      }
+    } else if (condition.referenceColumnType === "dateRange") {
+      switch (condition.operation) {
         case "range":
           return sql.raw(
             `${condition.referenceColumn} ${condition.includesStart ? ">=" : ">"} '${condition.startValue}' AND ${condition.referenceColumn} ${condition.includesLast ? "<=" : "<"} '${condition.lastValue}'`,

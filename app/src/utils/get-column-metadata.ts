@@ -3,6 +3,7 @@ import {
   AREA_DATASET_COLUMN_METADATA,
   type BUILDING_DATASET_COLUMN,
   BUILDING_DATASET_COLUMN_METADATA,
+  type ColumnMetadataValue,
 } from "../config/column-metadata";
 
 export const getColumnMetadata = ({
@@ -11,8 +12,7 @@ export const getColumnMetadata = ({
 }: {
   unit: "building" | "area";
   key: string;
-  // eslint-disable-next-line @typescript-eslint/explicit-function-return-type -- 型推論を利用したいため
-}) => {
+}): ColumnMetadataValue | null => {
   if (unit === "building") {
     return key in BUILDING_DATASET_COLUMN_METADATA
       ? BUILDING_DATASET_COLUMN_METADATA[key as BUILDING_DATASET_COLUMN]

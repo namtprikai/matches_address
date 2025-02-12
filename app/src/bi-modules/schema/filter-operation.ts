@@ -15,7 +15,7 @@ const numberFilterConditionSchema = z.object({
 });
 
 const numberFilterConditionRangeSchema = z.object({
-  referenceColumnType: z.enum(["integer", "float"]),
+  referenceColumnType: z.enum(["integerRange", "floatRange"]),
   referenceColumn: z.string(),
   operation: z.literal("range"),
   startValue: z.number(),
@@ -32,7 +32,7 @@ const dateFilterConditionSchema = z.object({
 });
 
 const dateFilterConditionRangeSchema = z.object({
-  referenceColumnType: z.literal("date"),
+  referenceColumnType: z.literal("dateRange"),
   referenceColumn: z.string(),
   operation: z.literal("range"),
   startValue: z.string(),
@@ -48,14 +48,11 @@ const booleanFilterConditionSchema = z.object({
   value: z.undefined(),
 });
 
-export const filterConditionValueSchema = z.discriminatedUnion(
-  "referenceColumnType",
-  [
-    textFilterConditionSchema,
-    numberFilterConditionSchema,
-    numberFilterConditionRangeSchema,
-    dateFilterConditionSchema,
-    dateFilterConditionRangeSchema,
-    booleanFilterConditionSchema,
-  ],
-);
+export const filterConditionValueSchema = z.union([
+  textFilterConditionSchema,
+  numberFilterConditionSchema,
+  numberFilterConditionRangeSchema,
+  dateFilterConditionSchema,
+  dateFilterConditionRangeSchema,
+  booleanFilterConditionSchema,
+]);

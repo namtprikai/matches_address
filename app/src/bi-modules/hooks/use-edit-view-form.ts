@@ -19,7 +19,6 @@ type ReturnType = {
   selectedResultView: SelectResultView | undefined;
 };
 
-/** WIP */
 export const useEditViewForm = ({
   defaultValues,
   selectedResultSheetId,
@@ -62,9 +61,7 @@ export const useEditViewForm = ({
         title: data.title?.length === 0 ? undefined : data.title,
         style: data.style,
         unit: data.unit,
-        parameters: [
-          ...yearExcludedParameters,
-        ] as SelectResultView["parameters"], // union の型推論が効きづらいため、明示的に型を指定
+        parameters: [...yearExcludedParameters],
       },
     });
 

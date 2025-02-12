@@ -16,7 +16,7 @@ const numberGroupingConditionSchema = z.object({
 
 const numberRangeGroupingConditionSchema = z.object({
   label: z.string(),
-  referenceColumnType: z.enum(["integerRange", "floatRange"]),
+  referenceColumnType: z.enum(["integer", "float"]),
   operation: z.literal("range"),
   startValue: z.number(),
   lastValue: z.number(),
@@ -33,7 +33,7 @@ const dateGroupingConditionSchema = z.object({
 
 const dateRangeGroupingConditionSchema = z.object({
   label: z.string(),
-  referenceColumnType: z.literal("dateRange"),
+  referenceColumnType: z.literal("date"),
   operation: z.literal("range"),
   startValue: z.string(),
   lastValue: z.string(),
@@ -48,14 +48,11 @@ const booleanGroupingConditionSchema = z.object({
   value: z.undefined(),
 });
 
-export const groupConditionValueSchema = z.discriminatedUnion(
-  "referenceColumnType",
-  [
-    textGroupingConditionSchema,
-    numberGroupingConditionSchema,
-    numberRangeGroupingConditionSchema,
-    dateGroupingConditionSchema,
-    dateRangeGroupingConditionSchema,
-    booleanGroupingConditionSchema,
-  ],
-);
+export const groupConditionValueSchema = z.union([
+  textGroupingConditionSchema,
+  numberGroupingConditionSchema,
+  numberRangeGroupingConditionSchema,
+  dateGroupingConditionSchema,
+  dateRangeGroupingConditionSchema,
+  booleanGroupingConditionSchema,
+]);

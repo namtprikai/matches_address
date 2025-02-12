@@ -5,8 +5,10 @@ import {
   type AREA_DATASET_COLUMN,
   type BUILDING_DATASET_COLUMN,
 } from "../../config/column-metadata";
-import { type parameterSchema } from "../schema/parameter";
-import { type FilterConditionValue } from "./filter-operation";
+import {
+  type parameterSchema,
+  type filterConditionSchema,
+} from "../schema/parameter";
 import { type GroupConditionValue } from "./group-operation";
 
 export interface ParameterBase {
@@ -70,11 +72,7 @@ export interface AreaFilter extends ParameterBase {
 }
 
 /** フィルター詳細条件 */
-export interface FilterCondition extends ParameterBase {
-  key: `filter_${string}`;
-  type: "filter";
-  value: FilterConditionValue;
-}
+export type FilterCondition = z.infer<typeof filterConditionSchema>;
 
 /** 円グラフ:ラベル */
 export interface PieLabel extends ParameterBase {
@@ -92,3 +90,11 @@ export interface PieValue extends ParameterBase {
 
 /** WIP: 上段の型定義はすべてSchema経由に置き換えられる */
 export type Parameter = z.infer<typeof parameterSchema>;
+
+/** Utility */
+/**  */
+export const isFilterCondition = (
+  parameter: Parameter,
+): parameter is FilterCondition => {
+  return parameter.type === "filter" && parameter.key.startsWith("filter_");
+};

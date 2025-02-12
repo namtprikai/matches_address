@@ -10,7 +10,6 @@ import { Button } from "../ui/button";
 import { useEditViewForm } from "../../bi-modules/hooks/use-edit-view-form";
 import { type EditViewFormType } from "../../bi-modules/interfaces/edit-view-form";
 import { EditResultViewFields } from "./edit-result-view-fields";
-import { EditResultViewFilterFields } from "./edit-result-view-filter-fields";
 
 const useStyles = makeStyles({
   form: {
@@ -82,7 +81,7 @@ function FormComponent({
         <EditResultViewFields
           dataSetResultId={selectedResultView.data_set_result_id}
         />
-        <EditResultViewFilterFields resultView={selectedResultView} />
+        {/* <EditResultViewFilterFields resultView={selectedResultView} /> */}
         <Button appearance="primary" type="submit">
           入力内容を保存する
         </Button>

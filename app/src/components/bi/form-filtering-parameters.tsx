@@ -8,7 +8,6 @@ import {
   tokens,
 } from "@fluentui/react-components";
 import { useFieldArray, useForm } from "react-hook-form";
-import { z } from "zod";
 import { Delete20Regular } from "@fluentui/react-icons";
 import { useState } from "react";
 import {
@@ -25,6 +24,10 @@ import { Field } from "../ui/field";
 import { Select } from "../ui/select";
 import { Input } from "../ui/input";
 import { DialogContent } from "../ui/dialog-content";
+import {
+  isFilterCondition,
+  type Parameter,
+} from "../../bi-modules/interfaces/parameter";
 import { FormFilteringResultView } from "./form-filtering-result-view";
 
 const useStyles = makeStyles({
@@ -83,71 +86,11 @@ const useStyles = makeStyles({
   },
 });
 
-const BooleanSchema = z.object({
-  referenceColumnType: z.literal("boolean"),
-  operation: z.enum(["isTrue", "isFalse"]),
-});
-
-const NumberSchema = z.object({
-  referenceColumnType: z.union([z.literal("float"), z.literal("integer")]),
-  operation: z.enum(["eq", "noteq", "gt", "gte", "lt", "lte"]),
-  value: z.number(),
-});
-
-const NumberRangeSchema = z.object({
-  referenceColumnType: z.union([z.literal("float"), z.literal("integer")]),
-  operation: z.enum(["range"]),
-  startValue: z.number(),
-  lastValue: z.number(),
-  includesStart: z.boolean(),
-  includesLast: z.boolean(),
-});
-
-const TextSchema = z.object({
-  referenceColumnType: z.literal("text"),
-  operation: z.enum(["eq", "noteq", "contains", "notContains"]),
-  value: z.string(),
-});
-
-const DateSchema = z.object({
-  referenceColumnType: z.literal("date"),
-  operation: z.enum(["eq", "noteq", "gt", "gte", "lt", "lte"]),
-  value: z.string(),
-});
-
-const DateRangeSchema = z.object({
-  referenceColumnType: z.literal("date"),
-  operation: z.enum(["range"]),
-  startValue: z.string(),
-  lastValue: z.string(),
-  includesStart: z.boolean(),
-  includesLast: z.boolean(),
-});
-
-const schema = z.object({
-  parameters: z
-    .object({
-      key: z.string(),
-      value: z
-        .union([
-          BooleanSchema,
-          z.discriminatedUnion("operation", [NumberSchema, NumberRangeSchema]),
-          z.discriminatedUnion("operation", [DateSchema, DateRangeSchema]),
-          TextSchema,
-        ])
-        .and(z.object({ referenceColumn: z.string() })),
-      type: z.literal("filter"),
-    })
-    .array(),
-});
-
-type parameters = z.infer<typeof schema.shape.parameters>;
-
 type Props = {
-  parameters: parameters;
+  parameters: Parameter[];
   options: (BUILDING_DATASET_COLUMN | AREA_DATASET_COLUMN)[];
   unit: "building" | "area";
-  onSave: (parameters: parameters) => void;
+  onSave: (parameters: Parameter[]) => void;
 };
 
 /**
@@ -175,7 +118,10 @@ export const FormFilteringParameters = ({
     return {
       key: option,
       active:
-        fields.find((f) => f.value.referenceColumn === option) != null
+        fields.find((f) => {
+          if (!isFilterCondition(f)) return false;
+          return f.value.referenceColumn === option;
+        }) != null
           ? true
           : false,
     };
@@ -193,11 +139,12 @@ export const FormFilteringParameters = ({
       active: boolean;
     }[],
   ): void => {
-    const newFields = options.map((option) => {
+    const newFields: (Parameter | null)[] = options.map((option) => {
       if (option.active) {
-        const targetField = fields.find(
-          (field) => field.value.referenceColumn === option.key,
-        );
+        const targetField = fields.find((field) => {
+          if (!isFilterCondition(field)) return false;
+          return field.value.referenceColumn === option.key;
+        });
         if (targetField) {
           return targetField;
         }
@@ -208,7 +155,11 @@ export const FormFilteringParameters = ({
         });
 
         if (metadata === null) {
-          return;
+          return null;
+        }
+        /** 値の検証 */
+        if (!(metadata.type === "text" || metadata.type === "date")) {
+          return null;
         }
 
         return {
@@ -222,10 +173,10 @@ export const FormFilteringParameters = ({
           type: "filter",
         };
       }
-      return;
+      return null;
     });
-    const cleanedFields = newFields.filter((field) => field !== undefined);
-    replace(cleanedFields as parameters); // union の型推論が効きづらいため、明示的に型を指定
+    const cleanedFields = newFields.filter((field) => field !== null);
+    replace(cleanedFields);
   };
 
   const handleSave = handleSubmit((data) => {
@@ -281,6 +232,7 @@ export const FormFilteringParameters = ({
                 </div>
               ) : (
                 fields.map((field, index) => {
+                  if (!isFilterCondition(field)) return null;
                   const metadata = getColumnMetadata({
                     unit: props.unit,
                     key: field.value.referenceColumn,
@@ -343,6 +295,104 @@ export const FormFilteringParameters = ({
                     );
                   }
 
+                  if (field.value.referenceColumnType === "dateRange") {
+                    return (
+                      <Field key={field.id} className={styles.groupField}>
+                        <Label>{metadata?.label ?? "カラム"}</Label>
+                        <Select
+                          defaultValue={field.value.operation}
+                          {...register(`parameters.${index}.value.operation`)}
+                        >
+                          <option value="eq">次に等しい</option>
+                          <option value="noteq">次に等しくない</option>
+                          <option value="gt">次より後</option>
+                          <option value="lt">次より前</option>
+                          <option value="gte">次以降</option>
+                          <option value="lte">次以前</option>
+                          <option value="range">次の範囲</option>
+                        </Select>
+
+                        <Input
+                          className={styles.inputRangeValue}
+                          defaultValue={
+                            field.value.startValue
+                              ? field.value.startValue.toString()
+                              : ""
+                          }
+                          max={100}
+                          min={0}
+                          onBlur={(e) => {
+                            const parsed = parseFloat(e.target.value);
+                            const value =
+                              metadata?.unit === "%"
+                                ? Math.max(0, Math.min(100, parsed))
+                                : parsed;
+                            e.target.value = `${value}`;
+                            setValue(
+                              `parameters.${index}.value.startValue`,
+                              value,
+                            );
+                          }}
+                          placeholder="開始値"
+                          type="date"
+                        />
+                        <div className={styles.includesField}>
+                          <span>含</span>
+                          <Checkbox
+                            className={styles.checkbox}
+                            defaultChecked={field.value.includesStart ?? true}
+                            {...register(
+                              `parameters.${index}.value.includesStart`,
+                            )}
+                          />
+                        </div>
+                        <span>〜</span>
+                        <Input
+                          className={styles.inputRangeValue}
+                          defaultValue={
+                            field.value.lastValue
+                              ? field.value.lastValue.toString()
+                              : ""
+                          }
+                          max={100}
+                          min={0}
+                          onBlur={(e) => {
+                            const parsed = parseFloat(e.target.value);
+                            const value =
+                              metadata?.unit === "%"
+                                ? Math.max(0, Math.min(100, parsed))
+                                : parsed;
+                            e.target.value = `${value}`;
+                            setValue(
+                              `parameters.${index}.value.lastValue`,
+                              value,
+                            );
+                          }}
+                          placeholder="終了値"
+                          type="date"
+                        />
+                        <div className={styles.includesField}>
+                          <span>含</span>
+                          <Checkbox
+                            className={styles.checkbox}
+                            defaultChecked={field.value.includesLast ?? true}
+                            {...register(
+                              `parameters.${index}.value.includesLast`,
+                            )}
+                          />
+                        </div>
+                        <Button
+                          appearance="subtle"
+                          icon={<Delete20Regular />}
+                          onClick={() => {
+                            handleRemove(index);
+                          }}
+                          type="button"
+                        ></Button>
+                      </Field>
+                    );
+                  }
+
                   if (field.value.referenceColumnType === "date") {
                     return (
                       <Field key={field.id} className={styles.groupField}>
@@ -359,96 +409,17 @@ export const FormFilteringParameters = ({
                           <option value="lte">次以前</option>
                           <option value="range">次の範囲</option>
                         </Select>
-                        {field.value.operation === "range" && (
-                          <>
-                            <Input
-                              className={styles.inputRangeValue}
-                              defaultValue={
-                                field.value.startValue
-                                  ? field.value.startValue.toString()
-                                  : ""
-                              }
-                              max={100}
-                              min={0}
-                              onBlur={(e) => {
-                                const parsed = parseFloat(e.target.value);
-                                const value =
-                                  metadata?.unit === "%"
-                                    ? Math.max(0, Math.min(100, parsed))
-                                    : parsed;
-                                e.target.value = `${value}`;
-                                setValue(
-                                  `parameters.${index}.value.startValue`,
-                                  value,
-                                );
-                              }}
-                              placeholder="開始値"
-                              type="date"
-                            />
-                            <div className={styles.includesField}>
-                              <span>含</span>
-                              <Checkbox
-                                className={styles.checkbox}
-                                defaultChecked={
-                                  field.value.includesStart ?? true
-                                }
-                                {...register(
-                                  `parameters.${index}.value.includesStart`,
-                                )}
-                              />
-                            </div>
-                            <span>〜</span>
-                            <Input
-                              className={styles.inputRangeValue}
-                              defaultValue={
-                                field.value.lastValue
-                                  ? field.value.lastValue.toString()
-                                  : ""
-                              }
-                              max={100}
-                              min={0}
-                              onBlur={(e) => {
-                                const parsed = parseFloat(e.target.value);
-                                const value =
-                                  metadata?.unit === "%"
-                                    ? Math.max(0, Math.min(100, parsed))
-                                    : parsed;
-                                e.target.value = `${value}`;
-                                setValue(
-                                  `parameters.${index}.value.lastValue`,
-                                  value,
-                                );
-                              }}
-                              placeholder="終了値"
-                              type="date"
-                            />
-                            <div className={styles.includesField}>
-                              <span>含</span>
-                              <Checkbox
-                                className={styles.checkbox}
-                                defaultChecked={
-                                  field.value.includesLast ?? true
-                                }
-                                {...register(
-                                  `parameters.${index}.value.includesLast`,
-                                )}
-                              />
-                            </div>
-                          </>
-                        )}
-                        {field.value.operation !== "range" && (
-                          <Input
-                            defaultValue={
-                              field.value.value
-                                ? field.value.value.toString()
-                                : ""
-                            }
-                            {...register(`parameters.${index}.value.value`)}
-                            className={styles.inputValue}
-                            placeholder="値"
-                            type="date"
-                          />
-                        )}
+                        <Input
+                          defaultValue={
+                            field.value.value
+                              ? field.value.value.toString()
+                              : ""
+                          }
+                          {...register(`parameters.${index}.value.value`)}
+                          className={styles.inputValue}
+                          placeholder="値"
+                          type="date"
+                        />
                         <Button
                           appearance="subtle"
                           icon={<Delete20Regular />}

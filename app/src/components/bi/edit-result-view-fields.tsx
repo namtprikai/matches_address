@@ -36,6 +36,15 @@ export const EditResultViewFields = ({
   const unit = watch("unit");
   const style = watch("style");
 
+  const { data: dataSetResults } = useFetchDataSetResults();
+
+  if (
+    currentParameters === undefined ||
+    unit === undefined ||
+    style === undefined
+  )
+    return <></>;
+
   const groupingFields = currentParameters.filter((field) => {
     return field.type === "group";
   });
@@ -47,8 +56,6 @@ export const EditResultViewFields = ({
   const groupCalc = currentParameters.find(
     (f) => f.key === "group_aggregation" && f.type === "group_aggregation",
   );
-
-  const { data: dataSetResults } = useFetchDataSetResults();
 
   return (
     <>
