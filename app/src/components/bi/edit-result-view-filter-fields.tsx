@@ -1,7 +1,6 @@
 import { makeStyles, tokens } from "@fluentui/react-components";
-import { useFieldArray, useFormContext, useWatch } from "react-hook-form";
+import { useFieldArray, useFormContext } from "react-hook-form";
 import { Suspense } from "react";
-import { type EditResultViewFormType } from "../../@types/form-schema";
 import { TILE_VIEW_CONFIG } from "../../config/tile-view-config";
 import { type SelectResultView } from "../../schema";
 import { useFetchReferenceDates } from "../../hooks/use-fetch-reference-dates";
@@ -11,6 +10,7 @@ import { Fieldset } from "../ui/fieldset";
 import { FieldLegend } from "../ui/field-legend";
 import { isObject } from "../../utils/is-object";
 import { type FilterCondition } from "../../bi-modules/interfaces/parameter";
+import { type EditViewFormType } from "../../bi-modules/interfaces/edit-view-form";
 import { FormFilteringParameters } from "./form-filtering-parameters";
 import { FormAreaFilter } from "./form-area-filter";
 
@@ -43,18 +43,16 @@ export const EditResultViewFilterFields = ({
 }): JSX.Element => {
   const styles = useStyles();
 
-  const { register, control, setValue } =
-    useFormContext<EditResultViewFormType>();
+  const { control, watch } = useFormContext<EditViewFormType>();
 
   const { replace } = useFieldArray({
     control,
     name: "parameters",
   });
 
-  const [currentParameters, year, unit, style] = useWatch({
-    control,
-    name: ["parameters", "year", "unit", "style"],
-  });
+  const currentParameters = watch("parameters");
+  const unit = watch("unit");
+  const style = watch("style");
 
   const { data: referenceDates } = useFetchReferenceDates({
     dataSetResultId: resultView?.data_set_result_id,
@@ -96,6 +94,8 @@ export const EditResultViewFilterFields = ({
     );
   });
 
+  const currentYear = currentParameters.find((f) => f.key === "year");
+
   // データセットは年度単位で入力する前提だが、ユーザーの入力によっては年の値の重複する可能性が必ずしも排除しきれないため重複を除外する処理を入れる
   const yearItems = Array.from(
     new Set(referenceDates?.map((r) => new Date(r).getFullYear().toString())),
@@ -108,13 +108,29 @@ export const EditResultViewFilterFields = ({
       <Field label="期間">
         <div className={styles.year}>
           <Select
-            value={style === "map" ? "" : year?.start}
-            {...register("year.start")}
             disabled={style === "map"}
             onChange={(e) => {
               const yearStart = e.target.value;
-              setValue("year", { start: yearStart, end: year?.end });
+              const excludedYearParameters = currentParameters.filter((f) => {
+                if (f.type === "filter" && f.key === "year") {
+                  return false;
+                }
+                return true;
+              });
+
+              replace([
+                ...excludedYearParameters,
+                {
+                  type: "filter",
+                  key: "year",
+                  value: {
+                    start: yearStart,
+                    end: currentYear?.value.end || "",
+                  },
+                },
+              ]);
             }}
+            value={style === "map" ? "" : currentYear?.value.start}
           >
             <option value="">下限なし</option>
             {yearItems
@@ -127,13 +143,28 @@ export const EditResultViewFilterFields = ({
           </Select>
           <span>〜</span>
           <Select
-            value={style === "map" ? "" : year?.end}
-            {...register("year.end")}
             disabled={style === "map"}
             onChange={(e) => {
               const yearEnd = e.target.value;
-              setValue("year", { start: year?.start, end: yearEnd });
+              const excludedYearParameters = currentParameters.filter((f) => {
+                if (f.type === "filter" && f.key === "year") {
+                  return false;
+                }
+                return true;
+              });
+              replace([
+                ...excludedYearParameters,
+                {
+                  type: "filter",
+                  key: "year",
+                  value: {
+                    start: currentYear?.value.start || "",
+                    end: yearEnd,
+                  },
+                },
+              ]);
             }}
+            value={style === "map" ? "" : currentYear?.value.end}
           >
             <option value="">上限なし</option>
             {yearItems
@@ -167,7 +198,7 @@ export const EditResultViewFilterFields = ({
                 key: "area",
                 value: values,
               },
-            ] as SelectResultView["parameters"]);
+            ]);
           }}
           unit={unit ?? "building"}
         />

@@ -47,21 +47,11 @@ export const useEditViewForm = ({
   const onSubmit = form.handleSubmit(async (data) => {
     if (!selectedResultViewId) return;
 
-    const parameters = data.parameters;
-
-    /** もっと良い書き方ありそう */
-    const yearExcludedParameters = parameters.filter(
-      (parameter) => parameter.key !== "year",
-    );
-
     await window.ipcRenderer.invoke("updateResultViews", {
       resultViewId: selectedResultViewId,
       value: {
         data_set_result_id: data.dataSetResultId,
-        title: data.title?.length === 0 ? undefined : data.title,
-        style: data.style,
-        unit: data.unit,
-        parameters: [...yearExcludedParameters],
+        ...data,
       },
     });
 
