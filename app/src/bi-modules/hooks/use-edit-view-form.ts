@@ -29,6 +29,8 @@ export const useEditViewForm = ({
     defaultValues,
   });
 
+  console.log("form data", form.getValues());
+
   const { mutate: mutateResultViews } = useFetchResultViews({
     sheetId: selectedResultSheetId,
   });
@@ -45,6 +47,7 @@ export const useEditViewForm = ({
   );
 
   const onSubmit = form.handleSubmit(async (data) => {
+    console.log("submit", { data, selectedResultViewId });
     if (!selectedResultViewId) return;
 
     await window.ipcRenderer.invoke("updateResultViews", {
