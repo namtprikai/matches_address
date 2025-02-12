@@ -56,6 +56,17 @@ export const EditResultViewFilterFields = ({
     name: ["parameters", "year", "unit", "style"],
   });
 
+  const { data: referenceDates } = useFetchReferenceDates({
+    dataSetResultId: resultView?.data_set_result_id,
+  });
+
+  if (
+    currentParameters === undefined ||
+    unit === undefined ||
+    style === undefined
+  )
+    return <></>;
+
   const areaFilter = currentParameters.find(
     (f) => f.key === "area" && f.type === "filter",
   );
@@ -83,10 +94,6 @@ export const EditResultViewFilterFields = ({
     return (
       field.type === "filter" && field.key !== "year" && field.key !== "area"
     );
-  });
-
-  const { data: referenceDates } = useFetchReferenceDates({
-    dataSetResultId: resultView?.data_set_result_id,
   });
 
   // データセットは年度単位で入力する前提だが、ユーザーの入力によっては年の値の重複する可能性が必ずしも排除しきれないため重複を除外する処理を入れる
