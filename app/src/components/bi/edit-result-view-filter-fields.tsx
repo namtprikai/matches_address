@@ -1,16 +1,14 @@
 import { makeStyles, tokens } from "@fluentui/react-components";
 import { useFieldArray, useFormContext } from "react-hook-form";
 import { Suspense } from "react";
-import { TILE_VIEW_CONFIG } from "../../config/tile-view-config";
 import { type SelectResultView } from "../../schema";
 import { useFetchReferenceDates } from "../../hooks/use-fetch-reference-dates";
 import { Field } from "../ui/field";
 import { Select } from "../ui/select";
 import { Fieldset } from "../ui/fieldset";
 import { FieldLegend } from "../ui/field-legend";
-import { isObject } from "../../utils/is-object";
-import { type FilterCondition } from "../../bi-modules/interfaces/parameter";
 import { type EditViewFormType } from "../../bi-modules/interfaces/edit-view-form";
+import { useFormFilteringParameters } from "../../bi-modules/hooks/use-form-filtering-parameters";
 import { FormFilteringParameters } from "./form-filtering-parameters";
 import { FormAreaFilter } from "./form-area-filter";
 
@@ -58,6 +56,13 @@ export const EditResultViewFilterFields = ({
     dataSetResultId: resultView?.data_set_result_id,
   });
 
+  const formFilteringState = useFormFilteringParameters({
+    style,
+    unit,
+    currentParameters,
+    replace,
+  });
+
   if (
     currentParameters === undefined ||
     unit === undefined ||
@@ -70,29 +75,6 @@ export const EditResultViewFilterFields = ({
   );
 
   const areas: string[] = areaFilter?.value ?? [];
-
-  // 表示形式ごとに入力するフィールドを変更するための設定を取得
-  const fieldOptions = TILE_VIEW_CONFIG[style ?? "map"];
-  // 重複削除のためArray.from(new Set())を利用
-  const options = Array.from(
-    new Set(
-      fieldOptions.fields.flatMap((field) => {
-        return field.option.flatMap((option) => {
-          if (option.unit === unit) {
-            return option.value;
-          }
-          return [];
-        });
-      }),
-    ),
-  );
-
-  // parameterのうちフィルタ条件のフィールドのみを取得
-  const filteredCurrentParameters = currentParameters.filter((field) => {
-    return (
-      field.type === "filter" && field.key !== "year" && field.key !== "area"
-    );
-  });
 
   const currentYear = currentParameters.find((f) => f.key === "year");
 
@@ -205,74 +187,11 @@ export const EditResultViewFilterFields = ({
       </Suspense>
 
       <FormFilteringParameters
-        onSave={(parameters) => {
-          const customizedParameters = parameters.map((p) => {
-            if (!isObject(p.value))
-              return {
-                ...p,
-                value: p.value,
-              };
-            if (p.type !== "filter")
-              return {
-                ...p,
-                value: p.value,
-              };
-
-            return {
-              ...p,
-              value: {
-                ...p.value,
-                value:
-                  "value" in p.value && p.value.value !== undefined
-                    ? parsePercentageValue({
-                        value: p.value.value,
-                        referenceColumnType: p.value.referenceColumnType,
-                      })
-                    : undefined,
-                startValue:
-                  "startValue" in p.value && p.value.startValue !== undefined
-                    ? parsePercentageValue({
-                        value: p.value.startValue,
-                        referenceColumnType: p.value.referenceColumnType,
-                      })
-                    : undefined,
-                lastValue:
-                  "lastValue" in p.value && p.value.lastValue !== undefined
-                    ? parsePercentageValue({
-                        value: p.value.lastValue,
-                        referenceColumnType: p.value.referenceColumnType,
-                      })
-                    : undefined,
-              },
-            };
-          });
-
-          const prevOtherParameters = currentParameters.filter((f) => {
-            return f.type !== "filter" || f.key === "year" || f.key === "area";
-          });
-          const newParameters = [
-            ...prevOtherParameters,
-            ...customizedParameters,
-          ] as SelectResultView["parameters"]; // union の型推論が効きづらいため、明示的に型を指定;
-
-          replace(newParameters);
-        }}
-        options={options}
-        parameters={filteredCurrentParameters}
+        onSave={formFilteringState.onSave}
+        options={formFilteringState.options}
+        parameters={formFilteringState.filteredCurrentParameters}
         unit={unit ?? "building"}
       />
     </Fieldset>
   );
 };
-
-function parsePercentageValue({
-  value,
-  referenceColumnType,
-}: {
-  value: string | number;
-  referenceColumnType: FilterCondition["value"]["referenceColumnType"];
-}): string | number {
-  if (typeof value === "string") return value;
-  if (referenceColumnType === "float") return value / 100;
-  return value;
-}
