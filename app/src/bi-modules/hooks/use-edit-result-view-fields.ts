@@ -10,6 +10,7 @@ import { useFetchReferenceDates } from "../../hooks/use-fetch-reference-dates";
 import { TILE_VIEW_CONFIG } from "../../config/tile-view-config";
 import { createDefaultLineGroupParameters } from "../util/create-default-line-group-parameters";
 import { createDefaultPieGroupParameters } from "../util/create-default-pie-group-parameters";
+import { type Parameter } from "../interfaces/parameter";
 
 type Params = {
   dataSetResultId: SelectResultView["data_set_result_id"];
@@ -32,6 +33,7 @@ export const useEditResultViewFields = ({
     control,
     name: "parameters",
   });
+  const { replace } = fieldArray;
 
   const { data: referenceDates } = useFetchReferenceDates({
     dataSetResultId,
@@ -41,7 +43,7 @@ export const useEditResultViewFields = ({
     const value = e.target.value as SelectResultView["style"];
     if (!value) return;
     // styleに合わせてparameterをリセット
-    // resetParametersByStyle(value);
+    resetParametersByStyle(value);
     // 種類の値を更新
     setValue("style", value);
     // 集計単位の初期値を設定する
@@ -81,13 +83,44 @@ export const useEditResultViewFields = ({
     if (!style) return;
     const option = TILE_VIEW_CONFIG[style];
     if (!option) return;
-    // replace(
-    //   option.fields.map((field) => ({
-    //     key: field.key,
-    //     value: "",
-    //     type: "column",
-    //   })),
-    // );
+    const parameters: (Parameter | null)[] = option.fields.map((field) => {
+      switch (field.key) {
+        case "xAxis":
+          return {
+            key: field.key,
+            value: field.option[0].value,
+            type: "column",
+          };
+        case "yAxis":
+          return {
+            key: field.key,
+            value: field.option[0].value,
+            type: "column",
+          };
+        case "columns":
+          return {
+            key: field.key,
+            value: field.option[0].value,
+            type: "column",
+          };
+        case "label":
+          return {
+            key: field.key,
+            value: field.option[0].value,
+            type: "column",
+          };
+        case "value":
+          return {
+            key: field.key,
+            value: field.option[0].value,
+            type: "column",
+          };
+        default:
+          return null;
+      }
+    });
+
+    replace(parameters.filter((p) => p !== null));
   };
 
   return {

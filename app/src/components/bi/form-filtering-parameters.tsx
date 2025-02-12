@@ -92,8 +92,8 @@ export const FormFilteringParameters = ({
   optionsWithActive,
   filteredCurrentParameters: parameters,
   unit,
-  formState: { register, setValue },
-  fieldState: { fields, update },
+  filteringFormState: { register, setValue },
+  filteringFieldState: { fields, update },
 }: Props): JSX.Element => {
   const [open, setOpen] = useState(false);
 

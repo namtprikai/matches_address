@@ -9,6 +9,7 @@ import { useFetchResultViews } from "../../hooks/use-fetch-result-views";
 import { Button } from "../ui/button";
 import { useEditViewForm } from "../../bi-modules/hooks/use-edit-view-form";
 import { type EditViewFormType } from "../../bi-modules/interfaces/edit-view-form";
+import { ErrorMessage } from "../error-message";
 import { EditResultViewFields } from "./edit-result-view-fields";
 import { EditResultViewFilterFields } from "./edit-result-view-filter-fields";
 
@@ -79,10 +80,17 @@ function FormComponent({
     selectedResultSheetId,
     selectedResultViewId,
   });
+  const {
+    formState: { errors },
+  } = form;
 
   return selectedResultView ? (
     <FormProvider {...form}>
       <form className={styles.form} onSubmit={onSubmit}>
+        {Object.entries(errors).map(
+          ([key, error]) =>
+            error.message && <ErrorMessage key={key} msg={error.message} />,
+        )}
         <EditResultViewFields
           dataSetResultId={selectedResultView.data_set_result_id}
         />

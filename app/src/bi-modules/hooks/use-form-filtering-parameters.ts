@@ -43,16 +43,8 @@ export type UseFormFilteringParametersReturnType = {
   }[];
   filteredCurrentParameters: FilterCondition[];
   unit: EditViewFormType["unit"];
-  formState: UseFormReturn<{
-    parameters: FilterCondition[];
-  }>;
-  fieldState: UseFieldArrayReturn<
-    {
-      parameters: FilterCondition[];
-    },
-    "parameters",
-    "id"
-  >;
+  filteringFormState: UseFormReturn<EditViewFormType>;
+  filteringFieldState: UseFieldArrayReturn<EditViewFormType>;
 };
 
 /**
@@ -88,19 +80,18 @@ export const useFormFilteringParameters = ({
     );
   });
 
-  const formState = useForm<{
-    parameters: FilterCondition[];
-  }>({
+  /** 詳細フィルター専用のフォームステートを作成 */
+  const filteringFormState = useForm<EditViewFormType>({
     defaultValues: {
       parameters: filteredCurrentParameters,
     },
   });
 
-  const fieldState = useFieldArray({
-    control: formState.control,
+  const filteringFieldState = useFieldArray({
+    control: filteringFormState.control,
     name: "parameters",
   });
-  const { fields, remove } = fieldState;
+  const { fields, remove } = filteringFieldState;
 
   const optionsWithActive = options.map((option) => {
     return {
@@ -138,29 +129,33 @@ export const useFormFilteringParameters = ({
         if (metadata === null) {
           return null;
         }
-        /** 値の検証 */
-        if (!(metadata.type === "text" || metadata.type === "date")) {
+        if (metadata.type === "boolean") {
           return null;
         }
 
-        return {
+        /** 詳細フィルター行を初期値で追加 */
+        const init = {
           key: `filter_${(new Date().getTime() + Math.floor(10000 * Math.random())).toString(16)}`,
           value: {
             operation: "eq",
             referenceColumn: option.key,
             referenceColumnType: metadata.type,
-            value: "",
+            value:
+              metadata.type === "float" || metadata.type === "integer" ? 0 : "",
           },
           type: "filter",
-        };
+        } as Parameter; /** @fixme valueが型定義合わせられない. */
+
+        return init;
       }
       return null;
     });
     const cleanedFields = newFields.filter((field) => field !== null);
     replace(cleanedFields);
+    filteringFieldState.replace(cleanedFields);
   };
 
-  const onSave = formState.handleSubmit((data) => {
+  const onSave = filteringFormState.handleSubmit((data) => {
     const parameters = data.parameters;
     const customizedParameters = parameters.map((p) => {
       if (!isObject(p.value))
@@ -221,8 +216,8 @@ export const useFormFilteringParameters = ({
     optionsWithActive,
     filteredCurrentParameters,
     unit,
-    formState,
-    fieldState,
+    filteringFormState,
+    filteringFieldState,
   };
 };
 
