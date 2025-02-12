@@ -27,14 +27,16 @@ export const FormEditResultView = ({
   const [selectedResultViewId, setSelectedResultViewId] = useAtom(
     selectedResultViewIdAtom,
   );
-  const { data: resultViews } = useFetchResultViews({
-    sheetId: selectedResultSheetId,
-  });
+
   const { data: selectedResultView, isLoading: isSelectedResultViewLoading } =
     useFetchResultView({
       resultViewId: selectedResultViewId,
     });
 
+  /** ひとつめのViewを選択させておくための処理 */
+  const { data: resultViews } = useFetchResultViews({
+    sheetId: selectedResultSheetId,
+  });
   useEffect(() => {
     if (!resultViews || resultViews.length === 0) return;
     const firstView = resultViews.find((view) => view.layoutIndex === 1);
