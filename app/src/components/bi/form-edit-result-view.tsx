@@ -28,6 +28,7 @@ export const FormEditResultView = ({
     selectedResultViewIdAtom,
   );
 
+  /** ビューの初期値を取得 */
   const { data: selectedResultView, isLoading: isSelectedResultViewLoading } =
     useFetchResultView({
       resultViewId: selectedResultViewId,
@@ -72,6 +73,7 @@ function FormComponent({
   selectedResultViewId: SelectResultView["id"] | undefined;
 }): JSX.Element {
   const styles = useStyles();
+
   const { form, selectedResultView, onSubmit } = useEditViewForm({
     defaultValues,
     selectedResultSheetId,
