@@ -20,8 +20,7 @@ import {
 } from "../../config/column-metadata";
 import { getColumnMetadata } from "../../utils/get-column-metadata";
 
-// 仮
-export type HandleSelectorOption = {
+type HandleSelectorOption = {
   key: string;
   active: boolean;
 };
