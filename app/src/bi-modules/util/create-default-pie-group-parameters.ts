@@ -33,7 +33,7 @@ export const createDefaultPieGroupParameters =
       key: `group_${(new Date().getTime() + Math.floor(10000 * Math.random())).toString(16)}` as "group_aggregation",
       value: {
         label: value.label,
-        referenceColumnType: "float",
+        referenceColumnType: "floatRange",
         operation: "range",
         value: 0,
         startValue: value.startValue,

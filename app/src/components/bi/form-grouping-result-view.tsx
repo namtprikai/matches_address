@@ -240,74 +240,17 @@ export const FormGroupingResultView = ({
                           <option value="lte">次以前</option>
                           <option value="range">次の範囲</option>
                         </Select>
-                        {field.value.operation === "range" && (
-                          <>
-                            <Input
-                              defaultValue={
-                                field.value.startValue
-                                  ? field.value.startValue.toString()
-                                  : ""
-                              }
-                              placeholder="開始値"
-                              type="date"
-                              {...register(
-                                `parameters.${index}.value.startValue`,
-                              )}
-                              className={styles.inputRangeValue}
-                            />
-                            <div className={styles.includesField}>
-                              <span>含</span>
-                              <Checkbox
-                                className={styles.checkbox}
-                                defaultChecked={
-                                  field.value.includesStart ?? true
-                                }
-                                {...register(
-                                  `parameters.${index}.value.includesStart`,
-                                )}
-                              />
-                            </div>
-                            <span>〜</span>
-                            <Input
-                              defaultValue={
-                                field.value.startValue
-                                  ? field.value.startValue.toString()
-                                  : ""
-                              }
-                              placeholder="終了値"
-                              type="date"
-                              {...register(
-                                `parameters.${index}.value.lastValue`,
-                              )}
-                              className={styles.inputRangeValue}
-                            />
-                            <div className={styles.includesField}>
-                              <span>含</span>
-                              <Checkbox
-                                className={styles.checkbox}
-                                defaultChecked={
-                                  field.value.includesLast ?? true
-                                }
-                                {...register(
-                                  `parameters.${index}.value.includesLast`,
-                                )}
-                              />
-                            </div>
-                          </>
-                        )}
-                        {field.value.operation !== "range" && (
-                          <Input
-                            defaultValue={
-                              field.value.value
-                                ? field.value.value.toString()
-                                : ""
-                            }
-                            {...register(`parameters.${index}.value.value`)}
-                            className={styles.inputValue}
-                            placeholder="グループごとの値"
-                            type="date"
-                          />
-                        )}
+                        <Input
+                          defaultValue={
+                            field.value.value
+                              ? field.value.value.toString()
+                              : ""
+                          }
+                          {...register(`parameters.${index}.value.value`)}
+                          className={styles.inputValue}
+                          placeholder="グループごとの値"
+                          type="date"
+                        />
                         <Button
                           appearance="subtle"
                           icon={<Delete20Regular />}
@@ -318,6 +261,81 @@ export const FormGroupingResultView = ({
                         ></Button>
                       </Field>
                     );
+                  }
+                  if (field.value.referenceColumnType === "dateRange") {
+                    <Field key={field.id} className={styles.groupField}>
+                      <Input
+                        className={styles.inputLabelValue}
+                        defaultValue={field.value.label}
+                        placeholder="グループ名"
+                        {...register(`parameters.${index}.value.label`)}
+                      />
+                      <Select
+                        defaultValue={field.value.operation}
+                        {...register(`parameters.${index}.value.operation`)}
+                      >
+                        <option value="eq">次に等しい</option>
+                        <option value="noteq">次に等しくない</option>
+                        <option value="gt">次より後</option>
+                        <option value="lt">次より前</option>
+                        <option value="gte">次以降</option>
+                        <option value="lte">次以前</option>
+                        <option value="range">次の範囲</option>
+                      </Select>
+                      <>
+                        <Input
+                          defaultValue={
+                            field.value.startValue
+                              ? field.value.startValue.toString()
+                              : ""
+                          }
+                          placeholder="開始値"
+                          type="date"
+                          {...register(`parameters.${index}.value.startValue`)}
+                          className={styles.inputRangeValue}
+                        />
+                        <div className={styles.includesField}>
+                          <span>含</span>
+                          <Checkbox
+                            className={styles.checkbox}
+                            defaultChecked={field.value.includesStart ?? true}
+                            {...register(
+                              `parameters.${index}.value.includesStart`,
+                            )}
+                          />
+                        </div>
+                        <span>〜</span>
+                        <Input
+                          defaultValue={
+                            field.value.startValue
+                              ? field.value.startValue.toString()
+                              : ""
+                          }
+                          placeholder="終了値"
+                          type="date"
+                          {...register(`parameters.${index}.value.lastValue`)}
+                          className={styles.inputRangeValue}
+                        />
+                        <div className={styles.includesField}>
+                          <span>含</span>
+                          <Checkbox
+                            className={styles.checkbox}
+                            defaultChecked={field.value.includesLast ?? true}
+                            {...register(
+                              `parameters.${index}.value.includesLast`,
+                            )}
+                          />
+                        </div>
+                      </>
+                      <Button
+                        appearance="subtle"
+                        icon={<Delete20Regular />}
+                        onClick={() => {
+                          handleRemove(index);
+                        }}
+                        type="button"
+                      ></Button>
+                    </Field>;
                   }
 
                   return (

@@ -4,7 +4,10 @@ import { type PieView } from "../interfaces/view";
 import { data_set_detail_buildings } from "../../schema";
 import { type FilterCondition } from "../interfaces/parameter";
 import { type ChartProps } from "../../@types/charts";
-import { BUILDING_DATASET_COLUMN_METADATA } from "../../config/column-metadata";
+import {
+  type BUILDING_DATASET_COLUMN,
+  BUILDING_DATASET_COLUMN_METADATA,
+} from "../../config/column-metadata";
 import { filterQueryBuilder } from "./builder/filter-query-builder";
 import { conditionsToCaseQueryBuilder } from "./builder/conditions-to-case-query-builder";
 
@@ -62,13 +65,21 @@ export const fetchBuildingPieChartData = async ({
   const COLUMNS = {
     xAxisColumn: {
       type: "string",
-      unit: BUILDING_DATASET_COLUMN_METADATA[xAxis.value].unit,
-      label: BUILDING_DATASET_COLUMN_METADATA[xAxis.value].label,
+      unit: BUILDING_DATASET_COLUMN_METADATA[
+        xAxis.value as BUILDING_DATASET_COLUMN
+      ].unit,
+      label:
+        BUILDING_DATASET_COLUMN_METADATA[xAxis.value as BUILDING_DATASET_COLUMN]
+          .label,
     },
     yAxisColumn: {
       type: "number",
-      unit: BUILDING_DATASET_COLUMN_METADATA[yAxis.value].unit,
-      label: BUILDING_DATASET_COLUMN_METADATA[yAxis.value].label,
+      unit: BUILDING_DATASET_COLUMN_METADATA[
+        yAxis.value as BUILDING_DATASET_COLUMN
+      ].unit,
+      label:
+        BUILDING_DATASET_COLUMN_METADATA[yAxis.value as BUILDING_DATASET_COLUMN]
+          .label,
     },
   } as const;
 
@@ -124,19 +135,39 @@ export const fetchBuildingPieChartData = async ({
 
   query = query.where(and(...queryWheres));
 
-  /** 重複を排除する */
-  query
-    .groupBy(sql.raw(`${xAxis.value}`))
-    .having(sql.raw(`${xAxis.value} <> ''`));
-
   const baseQuery = query.as("baseQuery");
 
   if (groupConditions.length > 0) {
+    /** 数値を変換 */
+    const float = groupConditions.map((groupCondition) => {
+      switch (groupCondition.value.referenceColumnType) {
+        case "float":
+        case "integer":
+          return {
+            ...groupCondition,
+            value: {
+              ...groupCondition.value,
+              value: Number(groupCondition.value.value / 100),
+            },
+          };
+        case "floatRange":
+        case "integerRange":
+          return {
+            ...groupCondition,
+            value: {
+              ...groupCondition.value,
+              startValue: Number(groupCondition.value.startValue / 100),
+              lastValue: Number(groupCondition.value.lastValue / 100),
+            },
+          };
+        default: {
+          return groupCondition;
+        }
+      }
+    });
+
     const GroupLabel = `group` as const;
-    const caseQuery = conditionsToCaseQueryBuilder(
-      xAxis.value,
-      groupConditions,
-    );
+    const caseQuery = conditionsToCaseQueryBuilder(xAxis.value, float);
 
     const groupQuery = db
       .select({

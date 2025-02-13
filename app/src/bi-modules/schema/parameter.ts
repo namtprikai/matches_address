@@ -16,49 +16,49 @@ const columnSchema = z.custom<AREA_DATASET_COLUMN | BUILDING_DATASET_COLUMN>(
   (val) => val,
 );
 
-const parameterBaseSchema = z.object({
+export const parameterBaseSchema = z.object({
   key: z.string(),
   type: z.enum(["filter", "column", "group", "group_aggregation"]),
   value: z.any(), // unknown 型
 });
 
-const xAxisSchema = parameterBaseSchema.extend({
+export const xAxisSchema = parameterBaseSchema.extend({
   key: z.literal("xAxis"),
   type: z.literal("column"),
   value: columnSchema,
 });
 
-const yAxisSchema = parameterBaseSchema.extend({
+export const yAxisSchema = parameterBaseSchema.extend({
   key: z.literal("yAxis"),
   type: z.literal("column"),
   value: columnSchema,
 });
 
-const groupConditionSchema = parameterBaseSchema.extend({
+export const groupConditionSchema = parameterBaseSchema.extend({
   key: z.custom<`group_${string}`>((val) => /^group_/.test(val)),
   type: z.literal("group"),
   value: groupConditionValueSchema,
 });
 
-const groupAggregationSchema = parameterBaseSchema.extend({
+export const groupAggregationSchema = parameterBaseSchema.extend({
   key: z.literal("group_aggregation"),
   type: z.literal("group_aggregation"),
   value: z.enum(["avg", "sum", "count"]),
 });
 
-const tableColumnsSchema = parameterBaseSchema.extend({
+export const tableColumnsSchema = parameterBaseSchema.extend({
   key: z.literal("columns"),
   type: z.literal("column"),
   value: z.string(),
 });
 
-const yearFilterSchema = parameterBaseSchema.extend({
+export const yearFilterSchema = parameterBaseSchema.extend({
   key: z.literal("year"),
   type: z.literal("filter"),
   value: z.object({ start: z.string(), end: z.string() }),
 });
 
-const areaFilterSchema = parameterBaseSchema.extend({
+export const areaFilterSchema = parameterBaseSchema.extend({
   key: z.literal("area"),
   type: z.literal("filter"),
   value: z.string().array(),
@@ -70,13 +70,13 @@ export const filterConditionSchema = parameterBaseSchema.extend({
   value: filterConditionValueSchema,
 });
 
-const pieLabelSchema = parameterBaseSchema.extend({
+export const pieLabelSchema = parameterBaseSchema.extend({
   key: z.literal("label"),
   type: z.literal("column"),
   value: columnSchema,
 });
 
-const pieValueSchema = parameterBaseSchema.extend({
+export const pieValueSchema = parameterBaseSchema.extend({
   key: z.literal("value"),
   type: z.literal("column"),
   value: columnSchema,
