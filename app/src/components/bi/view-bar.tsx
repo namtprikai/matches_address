@@ -49,13 +49,17 @@ export const ViewBar = ({ view }: Props): JSX.Element => {
 
   // フィルタ結果の値が空の場合はエラーを表示
   if (data.length === 0) {
-    return <div>データがありません</div>;
+    return (
+      <div>
+        <Pagination {...pagination} />
+        <div>データがありません</div>
+      </div>
+    );
   }
 
   return (
     <div>
       <Pagination {...pagination} />
-
       <ResponsiveContainer height={400} width="100%">
         <ReBarChart
           data={data}
