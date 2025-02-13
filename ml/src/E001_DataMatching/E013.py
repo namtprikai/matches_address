@@ -193,7 +193,7 @@ class DataProcessor:
         df : pandas.DataFrame
             重複を削除するデータフレーム
         subset : list
-            重複を判定するカラムのリスト
+            重複を推定するカラムのリスト
         keep : str, optional
             残す行を指定（'first', 'last', False）
         Returns

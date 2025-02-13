@@ -549,7 +549,7 @@ def train_lgb_with_optuna(train_df, params, citycode_value, targetyear_value, ou
 
 ### 3. 精度検証
 # - 入力：テスト用データ
-# - 出力：「D902　空き家判定結果データ【CSV】」
+# - 出力：「D902　空き家推定結果データ【CSV】」
 
 def evaluate_models_on_test(test_df, models, params):
     """
@@ -1014,7 +1014,7 @@ def train_and_evaluate(db_path, input_file, output_path, explanatory_variables, 
             set_error(ERROR_10006)
         if task_id is not None:
             create_or_update_job_task(job_id, progress_percent="", preprocess_type=None, error_code=ERROR_CODE, error_msg=ERROR_MSG, result=json.dumps({}), id= task_id, is_finish=True)
-        raise Exception("空き家判定の学習モデル構築中にエラーが発生しました。")
+        raise Exception("空き家推定の学習モデル構築中にエラーが発生しました。")
 
     
 def set_error(value, param_st1=None, param_st2=None):

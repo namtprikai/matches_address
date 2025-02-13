@@ -17,7 +17,7 @@ sys.stdout = open(sys.stdout.fileno(), mode='w', encoding='utf-8')
 
 def main():
 
-    parser = argparse.ArgumentParser(description="E022,E032 空き家分析(判定)")
+    parser = argparse.ArgumentParser(description="E022,E032 空き家分析(推定)")
     parser.add_argument("--parameters", type=str)
     args = parser.parse_args()
  

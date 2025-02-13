@@ -134,7 +134,7 @@ def create_data_set_detail_buildings_or_area(input_data, table_name="data_set_de
 def create_data_set_results(title: str = ""):
     try:
         current_date = datetime.now().strftime('%m%d')
-        base_title = f"空き家判定結果_{current_date}"
+        base_title = f"空き家推定結果_{current_date}"
         title = base_title
 
         sql_check = f'SELECT COUNT(*) FROM data_set_results WHERE title LIKE "{base_title}%"'

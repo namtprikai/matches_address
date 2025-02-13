@@ -451,7 +451,7 @@ def process_summarization(akiya_pred_file, spatial_file, output_dir, key_column,
             temp_dir = os.path.join(os.getcwd(), "temp_files/E032")
             output_path = os.path.join(temp_dir, "D903.csv")
             os.makedirs(temp_dir, exist_ok=True)
-            # 空き家判定ファイルを移動
+            # 空き家推定ファイルを移動
             akiya_pred_path = move_uploaded_file(akiya_pred_file, temp_dir)
 
         if job_id:
@@ -533,8 +533,8 @@ def set_error(value, param_st1=None, param_st2=None):
 def main():
     parser = argparse.ArgumentParser(description="E032 - 地域集計機能")
     
-    # 空き家判定ファイルのパスを指定
-    parser.add_argument("akiya_pred_file", help="【D902】空き家判定結果データのファイルパス")
+    # 空き家推定ファイルのパスを指定
+    parser.add_argument("akiya_pred_file", help="【D902】空き家推定結果データのファイルパス")
 
     parser.add_argument("--job_id", default=None)
     parser.add_argument("--db_path", default=None)
