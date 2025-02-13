@@ -19,7 +19,6 @@ import { selectResultViews } from "./select-result-views";
 import { insertResultViews } from "./insert-result-views";
 import { updateResultViews } from "./update-result-views";
 import { readResultViews } from "./read-result-views";
-import { filterDataSetForChart } from "./filter-data-set-for-chart";
 import { selectResultView } from "./select-result-view";
 import { filterDataSetForTable } from "./filter-data-set-for-table";
 import { deleteResultView } from "./delete-result-view";
@@ -67,7 +66,6 @@ import { selectJob } from "./select-job";
 import { selectNormalizedDatasetWithFilePath } from "./select-normalized-dataset-with-file-path";
 import { selectBuildingPreview } from "./select-building-preview";
 import { selectRawDatasetWithFilePath } from "./select-raw-dataset-with-file-path";
-import { filterDataSetForChartPie } from "./filter-data-set-for-chart-pie";
 import { selectJobsWithPagination } from "./select-jobs-with-pagination";
 import { fetchChartData } from "./fetch-chart-data";
 import { deleteJob } from "./delete-job";
@@ -91,8 +89,6 @@ export const ipcMainListeners = {
   readDatasetColumns,
   selectResultView,
   deleteResultView,
-  filterDataSetForChart,
-  filterDataSetForChartPie,
   filterDataSetForTable,
   selectBuildingsInBatches,
   selectReferenceDates,

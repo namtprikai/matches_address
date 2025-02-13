@@ -8,135 +8,13 @@ import {
 } from "../config/column-metadata";
 
 import { type Parameter } from "../bi-modules/interfaces/parameter";
-
-/**
- * BIツールでのチャート表示でのグルーピングに利用する条件の型
- *
- * 比較対象となるreferenceColumnTypeによって、valueの型が変わる
- */
-export type GroupingCondition = (
-  | {
-      referenceColumnType: "text";
-      value: string;
-      operation: "eq" | "noteq" | "contains" | "notContains";
-    }
-  | ({
-      referenceColumnType: "integer";
-    } & (
-      | {
-          operation: "eq" | "noteq" | "gt" | "lt" | "gte" | "lte";
-          value: number;
-        }
-      | {
-          operation: "range";
-          startValue: number;
-          lastValue: number;
-          includesStart: boolean;
-          includesLast: boolean;
-        }
-    ))
-  | ({
-      referenceColumnType: "float";
-    } & (
-      | {
-          operation: "eq" | "noteq" | "gt" | "lt" | "gte" | "lte";
-          value: number;
-        }
-      | {
-          operation: "range";
-          startValue: number;
-          lastValue: number;
-          includesStart: boolean;
-          includesLast: boolean;
-        }
-    ))
-  | ({
-      referenceColumnType: "date";
-      value: string;
-    } & (
-      | {
-          operation: "eq" | "noteq" | "gt" | "lt" | "gte" | "lte";
-          value: string;
-        }
-      | {
-          operation: "range";
-          startValue: string;
-          lastValue: string;
-          includesStart: boolean;
-          includesLast: boolean;
-        }
-    ))
-  | {
-      referenceColumnType: "boolean";
-      operation: "isTrue" | "isFalse";
-      value: undefined;
-    }
-) & { label: string };
-
-export type FilterCondition = (
-  | {
-      referenceColumnType: "text";
-      value: string;
-      operation: "eq" | "noteq" | "contains" | "notContains";
-    }
-  | ({
-      referenceColumnType: "integer";
-    } & (
-      | {
-          operation: "eq" | "noteq" | "gt" | "lt" | "gte" | "lte";
-          value: number;
-        }
-      | {
-          operation: "range";
-          startValue: number;
-          lastValue: number;
-          includesStart: boolean;
-          includesLast: boolean;
-        }
-    ))
-  | ({
-      referenceColumnType: "float";
-    } & (
-      | {
-          operation: "eq" | "noteq" | "gt" | "lt" | "gte" | "lte";
-          value: number;
-        }
-      | {
-          operation: "range";
-          startValue: number;
-          lastValue: number;
-          includesStart: boolean;
-          includesLast: boolean;
-        }
-    ))
-  | ({
-      referenceColumnType: "date";
-      value: string;
-    } & (
-      | {
-          operation: "eq" | "noteq" | "gt" | "lt" | "gte" | "lte";
-          value: string;
-        }
-      | {
-          operation: "range";
-          startValue: string;
-          lastValue: string;
-          includesStart: boolean;
-          includesLast: boolean;
-        }
-    ))
-  | {
-      referenceColumnType: "boolean";
-      operation: "isTrue" | "isFalse";
-      value: undefined;
-    }
-) & { referenceColumn: string };
+import { type GroupConditionValue } from "../bi-modules/interfaces/group-operation";
 
 /**
  * チャートのカラムが受け付けられる型
  * JavaScriptではdateとstring, floatとintegerを区別できないため、明示する必要がある
  */
-export type ChartColumnType = GroupingCondition["referenceColumnType"];
+export type ChartColumnType = GroupConditionValue["referenceColumnType"];
 
 export interface ChartColumn {
   type: "string" | "number";
