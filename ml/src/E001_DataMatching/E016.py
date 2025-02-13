@@ -34,8 +34,11 @@ from shapely.geometry import Point
 from pyproj import CRS, Transformer
 from shapely.ops import transform
 from pandas.errors import ParserError
+import fiona
+import warnings
 
 pd.set_option("display.max_columns", None)
+warnings.filterwarnings("ignore")
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
 async_tasks_path = os.path.join(current_dir, '..', 'async_tasks')
@@ -235,9 +238,9 @@ def detect_encoding(file_path):
     result = chardet.detect(raw_data)
     return result['encoding']
 
-def read_csv(path: str, **kwargs) -> pd.DataFrame:
+def read_file(path: str, **kwargs) -> pd.DataFrame:
     """
-    CSVファイルを読み込む
+    ファイルを読み込む
     
     Parameters
     ----------
@@ -255,9 +258,11 @@ def read_csv(path: str, **kwargs) -> pd.DataFrame:
         # ファイルの拡張子を取得し、小文字に変換
         file_extension = os.path.splitext(path)[1].lower()
         
-        # CSVファイル以外の場合はエラーを発生させる
-        if file_extension != '.csv':
-            raise ValueError(f"CSVファイル以外は対応していません: {file_extension}")
+        allowed_file_extension = ['.shp','.gpkg','.geojson','.csv']
+        # allowed_file_extensionファイル以外の場合はエラーを発生させる
+        if file_extension not in allowed_file_extension:
+            set_error(ERROR_00021, file_extension)
+            raise ValueError(f"shapefile, GeoPackage, GeoJSON, CSV形式以外のファイル形式には対応していません。: {file_extension}")
         
         # 複数のエンコーディングを試行                
         encodings = [
@@ -268,7 +273,11 @@ def read_csv(path: str, **kwargs) -> pd.DataFrame:
         for encoding in encodings:
             try:
                 # 各エンコーディングでファイルの読み込みを試みる
-                return pd.read_csv(path, encoding=encoding, **kwargs)
+                if file_extension == '.csv':
+                    return pd.read_csv(path, encoding=encoding, **kwargs)
+                else:
+                    with fiona.Env(encoding=encoding):
+                        return gpd.read_file(path)
             except UnicodeDecodeError:
                 # デコードエラーが発生した場合、次のエンコーディングを試す
                 continue
@@ -282,12 +291,13 @@ def read_csv(path: str, **kwargs) -> pd.DataFrame:
             return pd.read_csv(path, encoding=detected_encoding, **kwargs)
         
         # 適切なエンコーディングが見つからない場合、エラーを発生させる
+        set_error(ERROR_00025, path)
         raise ValueError(f"適切なエンコーディングが見つかりませんでした: {path}")
     except Exception as e:
         # 何らかの例外が発生した場合、エラーメッセージを表示してNoneを返す
-        set_error(ERROR_00014, path)
-        # print(f"ファイル {path} の読み込み中にエラーが発生しました: {e}")
-        return None
+        if ERROR_CODE is None:
+            set_error(ERROR_00014, path)
+        raise
 
 def load_and_process_data(file_path, crs, geometry, file_type, data_type):
     """
@@ -305,13 +315,16 @@ def load_and_process_data(file_path, crs, geometry, file_type, data_type):
     """
 
     file_extension = file_type
+    detect_ext = file_path.split('.')[-1].lower()
     if not file_extension:
-        file_extension = file_path.split('.')[-1].lower()
+        file_extension = detect_ext
+    if detect_ext is not None and file_extension == "csv" and detect_ext != file_extension:
+        set_error(ERROR_00023, "ファイル形式")
+        raise KeyError("ファイル形式のデータが異常です。誤ったファイルを読み込んでいないかもう一度データを確認ください。")
 
     if file_extension == 'csv':
         # CSVファイルを読み込む
-        df = read_csv(file_path)
-
+        df = read_file(file_path)
         if df is None:
             raise ValueError(f"ファイルの読み込みに失敗しました: {file_path}")
 
@@ -335,14 +348,21 @@ def load_and_process_data(file_path, crs, geometry, file_type, data_type):
                     else None, axis=1
                 )
             else:
-                # KeyError -> set_error(ERROR_0000X, path, encoding)
+                set_error(ERROR_00024)
                 raise KeyError("'geometry' 列または 'lat_geocoding_cleaned' と 'lon_geocoding_cleaned' 列が必要です")
 
         # 無効なジオメトリを除外
         df = df[df['geometry'].notnull()]
+        if df is None:
+            set_error(ERROR_00023, "ジオメトリーカラム")
+            raise KeyError("ジオメトリーカラムのデータが異常です。誤ったファイルを読み込んでいないかもう一度データを確認ください。")
         if data_type == 'plateau':
-            df['building_id'] = df['buildingID'].astype(str)
-            del df['buildingID']
+            try:
+                df['building_id'] = df['buildingID'].astype(str)
+                del df['buildingID']
+            except:
+                set_error(ERROR_00030)
+                raise
         else:
             if 'building_id' not in df.columns:
                 df['building_id'] = df.index + 1
@@ -363,13 +383,8 @@ def load_and_process_data(file_path, crs, geometry, file_type, data_type):
 
         # shapefileが存在しない場合は、process_plateaugmlを実行
         if not shp_files:
-            output_dir = os.getcwd()
-            process_plateaugml(temp_dir, output_dir, crs)  # buildings_gdfを引数として渡す
-            bldg_gpkg_file = os.path.join(output_dir, "plateau_bldg.gpkg")
-            gdf = gpd.read_file(bldg_gpkg_file)
-
-            if temp_dir and os.path.isdir(temp_dir):
-                shutil.rmtree(temp_dir)
+            set_error(ERROR_00033)
+            raise KeyError("建物ポリゴンがサポートしていないファイル形式です。本処理でサポートしているファイルフォーマットは、shp形式(zip形式)、gpkg形式、csv形式（geometryカラム付）のみとなります。")
         else:
             # shapefileを読み込む
             gdf = gpd.read_file(shp_files[0])
@@ -380,8 +395,12 @@ def load_and_process_data(file_path, crs, geometry, file_type, data_type):
 
         # buildingID列を追加
         if data_type == 'plateau':
-            gdf['building_id'] = gdf['buildingID'].astype(str)
-            del gdf['buildingID']
+            try:
+                gdf['building_id'] = gdf['buildingID'].astype(str)
+                del gdf['buildingID']
+            except:
+                set_error(ERROR_00030)
+                raise
         else:
             if 'building_id' not in gdf.columns:
                 gdf['building_id'] = gdf.index + 1
@@ -391,7 +410,7 @@ def load_and_process_data(file_path, crs, geometry, file_type, data_type):
 
     else:
         # その他の非CSVファイルを読み込む
-        gdf = gpd.read_file(file_path)
+        gdf = read_file(file_path)
 
         if gdf.crs is None:
             # データのCRSを指定（EPSG:4326）
@@ -399,8 +418,12 @@ def load_and_process_data(file_path, crs, geometry, file_type, data_type):
 
         # buildingID列を追加
         if data_type == 'plateau':
-            gdf['building_id'] = gdf['buildingID'].astype(str)
-            del gdf['buildingID']
+            try:
+                gdf['building_id'] = gdf['buildingID'].astype(str)
+                del gdf['buildingID']
+            except:
+                set_error(ERROR_00030)
+                raise
         else:
             if 'building_id' not in gdf.columns:
                 gdf['building_id'] = gdf.index + 1
@@ -506,8 +529,7 @@ def parse_wkt(wkt_str):
         return wkt.loads(wkt_str)
     except Exception as e:
         set_error(ERROR_00015)
-        # print(f"WKTの解析中にエラーが発生しましたT: {e}")
-        return None
+        raise
 
 def extract_zip(zip_file, extract_to):
     """
@@ -750,7 +772,11 @@ def add_keycode(gdf, gpkg_path):
     """
     shp = gpd.read_file(gpkg_path)
     shp = shp.to_crs(epsg=4326)
-    shp = shp[['KEY_CODE','S_NAME','geometry']]
+    try:
+        shp = shp[['KEY_CODE','S_NAME','geometry']]
+    except:
+        set_error(ERROR_00032)
+        raise
     gdf = gdf.to_crs(epsg=4326)
     gdf_add_keycode = gpd.sjoin(gdf, shp, how='left', predicate='within')
     if 'geometry_right' in gdf_add_keycode.columns:
@@ -1012,10 +1038,17 @@ def process_data(tatemono_path, e14_merged_path, gpkg_path, ken, sikuchoson, opt
         crs = get_transformer(ken, sikuchoson)
         
         # 建物データと水道データを読み込み、処理
-        tatemono = load_and_process_data(tatemono_path, crs, geometry, file_type, data_type)
+        try:
+            tatemono = load_and_process_data(tatemono_path, crs, geometry, file_type, data_type)
+        except Exception as e:
+            if ERROR_CODE is None:
+                set_error(ERROR_00023, "建物ポリゴン")
+                raise Exception(f"建物ポリゴンのデータが異常です。もう一度データを確認ください。")
+            raise Exception(e)
         e14_merged = load_and_process_data(e14_merged_path, crs, None, 'csv', None)
 
         if job_id:
+            create_or_update_job(job_id, "80")
             create_or_update_job_task(job_id, progress_percent="20", preprocess_type="e016", error_code=None, error_msg=None, result=None, id= task_id)
         tatemono.to_crs(crs, inplace=True)
         e14_merged.to_crs(crs, inplace=True)
@@ -1024,8 +1057,13 @@ def process_data(tatemono_path, e14_merged_path, gpkg_path, ken, sikuchoson, opt
         point_selected_column = e14_merged.columns
 
         # 建物データと水道データを結合
-        tatemono_use_point, join_ratio = assign_points_to_buildings(tatemono, e14_merged, 2, crs, point_selected_column, option)
+        try:
+            tatemono_use_point, join_ratio = assign_points_to_buildings(tatemono, e14_merged, 2, crs, point_selected_column, option)
+        except:
+            set_error(ERROR_00031)
+            raise
         if job_id:
+            create_or_update_job(job_id, "85")
             create_or_update_job_task(job_id, progress_percent="50", preprocess_type="e016", error_code=None, error_msg=None, result=None, id= task_id)
         # 住居IDを追加
         add_residenceID(tatemono_use_point)
@@ -1033,7 +1071,12 @@ def process_data(tatemono_path, e14_merged_path, gpkg_path, ken, sikuchoson, opt
         if job_id:
             create_or_update_job_task(job_id, progress_percent="70", preprocess_type="e016", error_code=None, error_msg=None, result=None, id= task_id)
         # 地域コードと町丁字名の付与
-        tatemono_use_point_add_keycode = add_keycode(tatemono_use_point, gpkg_path)
+        try:
+            tatemono_use_point_add_keycode = add_keycode(tatemono_use_point, gpkg_path)
+        except Exception as e:
+            if ERROR_CODE is None:
+                set_error(ERROR_00023, "国勢調査")
+                raise Exception(f"国勢調査のデータが異常です。もう一度データを確認ください。")
 
         # 集合住宅のBuildingIDを削除（水道番号が3つ以上紐づいているbuildingIDを削除）
         try:
@@ -1052,6 +1095,9 @@ def process_data(tatemono_path, e14_merged_path, gpkg_path, ken, sikuchoson, opt
 
         if not os.path.exists(output_dir):
             os.makedirs(output_dir)
+
+        if job_id:
+            create_or_update_job(job_id, "90")
 
         save_geodataframe(tatemono_use_point_add_keycode, output_path, output_type)
 

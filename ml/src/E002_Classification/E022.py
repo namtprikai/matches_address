@@ -9,11 +9,14 @@ import pickle
 import shutil
 import argparse
 import sys
+import uuid
 import chardet
 import zipfile 
 import numpy as np
 import pandas as pd
 import re
+import time
+import gc
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
 async_tasks_path = os.path.join(current_dir, '..', 'async_tasks')
@@ -126,10 +129,9 @@ def read_csv(path: str) -> pd.DataFrame:
         raise ValueError(f"適切なエンコーディングが見つかりませんでした: {path}")
     except Exception as e:
         # 何らかの例外が発生した場合、エラーメッセージを表示してNoneを返す
-        # print(f"ファイル {path} の読み込み中にエラーが発生しました: {e}")
         if ERROR_CODE is None:
             set_error(ERROR_20003, path)
-        return None
+        raise
 
 def extract_zip(zip_file, extract_to):
     """
@@ -153,7 +155,7 @@ def extract_zip(zip_file, extract_to):
     model_files = [os.path.join(extract_to, f) for f in files if f.endswith(".pkl")]
     return model_files
 
-def load_models(model_zip):
+def load_models(model_zip, job_id):
     """
     ディレクトリ内のpickleファイルから訓練済みモデルを読み込む
 
@@ -168,16 +170,32 @@ def load_models(model_zip):
         読み込まれた訓練済みモデルのリスト
     """
     # 一時ディレクトリを作成
-    temp_dir = os.path.join(os.getcwd(), "temp_files")
+    if job_id is not None:
+        temp_dir = os.path.join(os.getcwd(), str(uuid.uuid4()))
+    else:
+        temp_dir = os.path.join(os.getcwd(), "temp_files")
+
     os.makedirs(temp_dir, exist_ok=True)
     model_files = extract_zip(model_zip, temp_dir)
     models = []
+    columns = []
     for model_file in model_files:
         # 各モデルファイルを読み込み、リストに追加
         with open(model_file, 'rb') as f:
-            models.append(pickle.load(f))
-    shutil.rmtree(temp_dir)
-    return models
+            if model_file.endswith("_columns.pkl"):
+                columns = pickle.load(f)
+            else:
+                models.append(pickle.load(f))
+
+    gc.collect()
+    for _ in range(10):  # Try up to 10 times
+        try:
+            shutil.rmtree(temp_dir)  # Attempt to delete the directory
+            break  # Exit loop if deletion is successful
+        except PermissionError:
+            time.sleep(0.5)  # Wait 0.5 seconds before retrying
+
+    return models, columns
 
 def check_features(new_data, required_features, outcome_variable):
     """
@@ -243,6 +261,10 @@ def predict(models, new_data, required_features, threshold):
     """
     # 予測に使用する特徴量を選択
     X_pred = new_data[required_features]
+
+    categorical_features = X_pred.select_dtypes(include=["object"]).columns.tolist()
+    for col in categorical_features:
+        X_pred[col] = X_pred[col].astype("category")
 
     # 各モデルの予測確率の平均を計算
     test_preds_proba = np.mean([model.predict_proba(X_pred)[:, 1] for model in models], axis=0)
@@ -394,7 +416,6 @@ def insert_sqlite(input_data, data_set_result_id):
     except Exception as e:
         # エラー時の処理
         set_error(ERROR_20007)
-        # print("Insert sql failed...", e)
         raise
 
 def drop_duplicates(df, subset, keep="first"):
@@ -438,7 +459,6 @@ def process_and_predict(input_folder, input_file, model_directory, threshold, ou
             process += process_init
         # ディレクトリの設定
         print("ディレクトリを設定中...")
-        # setup_directory(os.path.expanduser('~'))
 
         # 入力データの読み込み
         print("入力データを読み込み中...")
@@ -467,67 +487,53 @@ def process_and_predict(input_folder, input_file, model_directory, threshold, ou
         geometry_data = prediction_data['geometry']
         prediction_data = prediction_data.drop(columns=['geometry'], errors='ignore')
 
-        # 入力されたカラム名を取得し、以下該当カラムに適用させる
-        explanatory_vars = required_features
-        
-        exp_cols = [ col.split('_')[0] for col in explanatory_vars ]
-
-        
-        explanatory_variables_dict = {}
-        for col in exp_cols:
-            if "akiya" not in col:
-                # 'gml_id' の場合は直接対応させる
-                if col == "gml_id":
-                    explanatory_variables_dict[col] = "gml_id"
-                else:
-                    # プレフィックスが部分一致するデータフレーム内のカラムを抽出
-                    tar_colname = [col901 for col901 in prediction_data.columns if col in col901]
-                    if len(tar_colname) > 0:
-                        explanatory_variables_dict[col] = tar_colname[0]
-    
-        # update required_features
-        required_features = [ explanatory_variables_dict[val] for val in explanatory_variables_dict.keys()] 
-
-        for col in ['最小使用水量','平均使用水量','住定異動年月日','登記日付']:
-            if col not in explanatory_variables_dict.keys():
-                tar_colname = [ col901 for col901 in prediction_data.columns if col in col901 ]
-                if len(tar_colname) > 0:
-                    explanatory_variables_dict[col] = tar_colname[0]
-
-        # 閉栓フラグをブール値に変換
-        if explanatory_variables_dict.get("閉栓フラグ") in prediction_data.columns:
-            try:
-                prediction_data[explanatory_variables_dict["閉栓フラグ"]] = prediction_data[explanatory_variables_dict["閉栓フラグ"]].astype("bool")
-            except:
-                prediction_data[explanatory_variables_dict["閉栓フラグ"]] = prediction_data[explanatory_variables_dict["閉栓フラグ"]].map({"True": True, "False": False}).astype("bool")
-        # 登記日付_touki_residenceを日付型に変換
-        if explanatory_variables_dict.get("登記日付") in prediction_data.columns:
-            prediction_data[explanatory_variables_dict["登記日付"]] = pd.to_datetime(prediction_data[explanatory_variables_dict["登記日付"]], errors='coerce')
-            prediction_data[explanatory_variables_dict["登記日付"]] = prediction_data[explanatory_variables_dict["登記日付"]].dt.year
-
-        # 構造名称_touki_residenceをカテゴリ型に変換
-        if explanatory_variables_dict.get("構造名称") in prediction_data.columns: 
-            fill_value = [ i for i in np.arange(100) if i not in prediction_data[explanatory_variables_dict["構造名称"]].unique()]
-            if len(fill_value) == 0:
-                fill_value = [ i for i in [999,9999,99999,9999999,9999999] if i not in prediction_data[explanatory_variables_dict["構造名称"]].unique()]
-            prediction_data[explanatory_variables_dict["構造名称"]] = prediction_data[explanatory_variables_dict["構造名称"]].fillna(fill_value[0])
-            prediction_data[explanatory_variables_dict["構造名称"]] = prediction_data[explanatory_variables_dict["構造名称"]].astype("category")
-
+        # Get models and columns train
+        print("訓練済みモデルを読み込み中...")
+        models, columns = load_models(model_directory, job_id)
+        if not columns:
+            columns = required_features
 
         if sqlite_enabled and job_id:
-            create_or_update_job_task(job_id, progress_percent="30", preprocess_type=None, error_code=None, error_msg=None, result=json.dumps({}), id= task_id)
+            create_or_update_job_task(job_id, progress_percent="40", preprocess_type=None, error_code=None, error_msg=None, result=json.dumps({}), id= task_id)
             create_or_update_job(job_id, process)
             process += process_init
-        # 訓練済みモデルの読み込み
-        print("訓練済みモデルを読み込み中...")
-        models = load_models(model_directory)
+
+        features_columns = columns
+
+        # Rename columns
+        rename_columns = {}
+        for column in prediction_data.columns:
+            col = column.split('_')[0]
+            if col in features_columns:
+                rename_columns[column] = col
+        prediction_data.rename(columns=rename_columns, errors='ignore', inplace=True)
+
+        # 閉栓フラグをブール値に変換
+        if "閉栓フラグ" in prediction_data.columns:
+            try:
+                prediction_data["閉栓フラグ"] = prediction_data["閉栓フラグ"].astype("bool")
+            except:
+                prediction_data["閉栓フラグ"] = prediction_data["閉栓フラグ"].map({"True": True, "False": False}).astype("bool")
+        # 登記日付_touki_residenceを日付型に変換
+        if "登記日付" in prediction_data.columns:
+            prediction_data["登記日付"] = pd.to_datetime(prediction_data["登記日付"], errors='coerce')
+            prediction_data["登記日付"] = prediction_data["登記日付"].dt.year
+
+        # 構造名称_touki_residenceをカテゴリ型に変換
+        if "構造名称" in prediction_data.columns: 
+            fill_value = [ i for i in np.arange(100) if i not in prediction_data["構造名称"].unique()]
+            if len(fill_value) == 0:
+                fill_value = [ i for i in [999,9999,99999,9999999,9999999] if i not in prediction_data["構造名称"].unique()]
+            prediction_data["構造名称"] = prediction_data["構造名称"].fillna(fill_value[0])
+            prediction_data["構造名称"] = prediction_data["構造名称"].astype("category")
+
         if sqlite_enabled and job_id:
             create_or_update_job_task(job_id, progress_percent="50", preprocess_type=None, error_code=None, error_msg=None, result=json.dumps({}), id= task_id)
             create_or_update_job(job_id, process)
             process += process_init
         # 特徴量のチェック
         print("特徴量をチェック中...")
-        prediction_data, features_match, message = check_features(prediction_data, required_features, outcome_variable)
+        prediction_data, features_match, message = check_features(prediction_data, features_columns, outcome_variable)
         if not features_match:
             if sqlite_enabled and job_id:
                 raise
@@ -535,7 +541,7 @@ def process_and_predict(input_folder, input_file, model_directory, threshold, ou
 
         # 予測の実行
         print("予測中...")
-        test_preds, test_preds_proba = predict(models, prediction_data, required_features, threshold)
+        test_preds, test_preds_proba = predict(models, prediction_data, features_columns, threshold)
         if sqlite_enabled and job_id:
             create_or_update_job_task(job_id, progress_percent="70", preprocess_type=None, error_code=None, error_msg=None, result=json.dumps({}), id= task_id)
             create_or_update_job(job_id, process)
@@ -573,7 +579,6 @@ def process_and_predict(input_folder, input_file, model_directory, threshold, ou
             except Exception as e:
                 # 保存中にエラーが発生した場合、エラーメッセージを表示して次のエンコーディングを試す
                 set_error(ERROR_20005, output_file, encoding)
-                # print(f"ファイル {output_file} を {encoding} エンコーディングで保存中にエラーが発生しました: {e}")
 
         # すべてのエンコーディングで保存に失敗した場合のメッセージ
         if sqlite_enabled and job_id:

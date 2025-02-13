@@ -37,7 +37,7 @@ ERROR_00009 = {
 }
 ERROR_00010 = {
     "code": "IF001_e013_err_residential_creation",
-    "message": "住居単位データ作成プロセスにおいて、エラーが発生しました。"
+    "message": "住居単位データ作成プロセスにおいて、水道データの処理においてエラーが発生しました。基準日より新しい日付のデータが指定されているなど、ないかご確認ください。"
 }
 ERROR_00011 = {
     "code": "IF001_e014_err_file_loading",
@@ -74,6 +74,62 @@ ERROR_00018 = {
 ERROR_00019 = {
     "code": "IF001_e016_err_spatial_join",
     "message": "空間結合処理中にエラーが発生しました。ジオメトリに不正がないか、ご確認ください。"
+}
+ERROR_00020 = {
+    "code": "IF001_e013_err_date_incorrect",
+    "message": "基準日が不正です。正しいフォーマットになっているか、もしくは正しい日付となっているかかご確認ください 。"
+}
+ERROR_00021 = {
+    "code": "IF001_e013_err_allow_ext",
+    "message": "shapefile, GeoPackage, GeoJSON, CSV形式以外のファイル形式には対応していません。: {param_st1}"
+}
+ERROR_00022 = {
+    "code": "IF001_e013_err_meter_reading_date",
+    "message": "'検針年月'がデータフレームに含まれていません"
+}
+ERROR_00023 = {
+    "code": "IF001_err_data",
+    "message": "{param_st1}のデータが異常です。誤ったファイルを読み込んでいないかもう一度データを確認ください。"
+}
+ERROR_00024 = {
+    "code": "IF001_e016_err_geometry",
+    "message": "'geometry' 列または 'lat_geocoding_cleaned' と 'lon_geocoding_cleaned' 列が必要です"
+}
+ERROR_00025 = {
+    "code": "IF001_e016_err_encoding",
+    "message": "適切なエンコーディングが見つかりませんでした: {param_st1}"
+}
+ERROR_00026 = {
+    "code": "IF001_e014_err_import_format",
+    "message": "CSVファイル以外は対応していません: {param_st1}"
+}
+ERROR_00027 = {
+    "code": "IF001_e014_err_encoding",
+    "message": "適切なエンコーディングが見つかりませんでした: {param_st1}"
+}
+ERROR_00028 = {
+    "code": "IF001_e013_err_residential_juki_creation",
+    "message": "住居単位データ作成プロセスにおいて、住民基本台帳データの処理においてエラーが発生しました。"
+}
+ERROR_00029 = {
+    "code": "IF001_e013_err_residential_toki_creation",
+    "message": "住居単位データ作成プロセスにおいて、登記データの処理においてエラーが発生しました。"
+}
+ERROR_00030 = {
+    "code": "IF001_e016_err_building_id",
+    "message": "建物ポリゴンにbuildingIDカラムがありません。"
+}
+ERROR_00031 = {
+    "code": "IF001_e016_err_merge_building_and_textmatchedresult",
+    "message": "建物データとテキスト結合済データの結合（e14）においてエラーが発生しました。"
+}
+ERROR_00032 = {
+    "code": "IF001_e016_err_add_keycode",
+    "message": "国勢調査データにはKEY_CODEカラムとS_NAMEカラム、geometryカラムが必要です。これらのカラムが入っているかご確認ください。"
+}
+ERROR_00033 = {
+    "code": "IF001_e016_err_data_format",
+    "message": "建物ポリゴンがサポートしていないファイル形式です。本処理でサポートしているファイルフォーマットは、shp形式(zip形式)、gpkg形式、csv形式（geometryカラム付）のみとなります。"
 }
 
 # IF002
@@ -159,6 +215,14 @@ ERROR_20013 = {
     "code": "IF003_e032_err_insert_sql",
     "message": "データベースへのインポートに失敗しました。"
 }
+ERROR_20014 = {
+    "code": "IF003_e032_err_allow_ext",
+    "message": "shapefile, GeoPackage, GeoJSON, CSV形式以外のファイル形式には対応していません。: {param_st1}"
+}
+ERROR_20015 = {
+    "code": "IF003_err_data",
+    "message": "{param_st1}のデータが異常です。もう一度データを確認ください。"
+}
 
 # IF004
 ERROR_30001 = {
@@ -173,6 +237,11 @@ ERROR_30003 = {
     "code": "IF004_e033_err_conversion",
     "message": "ファイル の変換処理中にエラーが発生しました。正しいCRS（参照座標系）になっているかご確認ください。"
 }
+ERROR_30004 = {
+    "code": "IF004_e033_err_allow_ext",
+    "message": "サポートされていない出力フォーマットです。CSV形式、GeoPackage形式、GeoJSON形式のファイルを指定してください。."
+}
+
 
 
 TRANSLATE_COLUMNS_BUILDING = {

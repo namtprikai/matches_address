@@ -13,7 +13,9 @@ import numpy as np
 import pandas as pd
 from dateutil.relativedelta import relativedelta
 from sklearn.preprocessing import LabelEncoder
+import warnings
 
+warnings.filterwarnings("ignore")
 current_dir = os.path.dirname(os.path.abspath(__file__))
 async_tasks_path = os.path.join(current_dir, '..', 'async_tasks')
 if async_tasks_path not in sys.path:
@@ -150,9 +152,9 @@ class DataProcessor:
             raise ValueError(f"適切なエンコーディングが見つかりませんでした: {path}")
         except Exception as e:
             # 何らかの例外が発生した場合、エラーメッセージを表示してNoneを返す
-            set_error(ERROR_00007)
-            # print(f"ファイル {path} の読み込み中にエラーが発生しました: {e}")
-            return None
+            if ERROR_CODE is None:
+                set_error(ERROR_00007)
+            raise
 
     @staticmethod
     def save_csv(df, path):
@@ -219,17 +221,21 @@ class SuidoProcessor(DataProcessor):
             前処理済みの水道使用量データ
         """
         cols = COLUMNS["suido_use"]
-        df = normalize_dates(df, cols["meter_reading_date"])
-        df.drop(columns=[f'{cols["meter_reading_date"]}_normalized'], inplace=True)
+        try:
+            df = normalize_dates(df, cols["meter_reading_date"], ['%Y%m%d', '%Y/%m/%d', '%d/%m/%Y', '%Y-%m-%d', '%m/%d/%Y'])
+        except:
+            set_error(ERROR_00023, "検針年月日")
+            raise Exception("検針年月日のデータが異常です。もう一度データを確認ください。")
 
-        # 日付をdatetime型に変換
-        df[cols["meter_reading_date"]] = pd.to_datetime(df[cols["meter_reading_date"]], format="%Y%m%d")
-        
         # 検針年月を作成
         df["検針年月"] = df[cols["meter_reading_date"]].dt.strftime("%Y-%m")
         
         # 同一水道番号・同一月のデータを合計
-        df_cleaned = df.groupby([cols["suido_number"], "検針年月"])[cols["suido_usage"]].sum().reset_index()
+        try:
+            df_cleaned = df.groupby([cols["suido_number"], "検針年月"])[cols["suido_usage"]].sum().reset_index()
+        except:
+            set_error(ERROR_00023, "水道番号")
+            raise Exception("水道番号のデータが異常です。もう一度データを確認ください。")
         
         return df_cleaned
 
@@ -281,9 +287,6 @@ class SuidoProcessor(DataProcessor):
         return df
 
 
-
-
-
     def pivot_table(self, df):
         """
         水道使用量データのピボットテーブルを作成する
@@ -300,14 +303,13 @@ class SuidoProcessor(DataProcessor):
 
         # 検針年月が含まれているか確認
         if "検針年月" not in df.columns:
+            set_error(ERROR_00022)
             raise KeyError("'検針年月'がデータフレームに含まれていません")
 
         # ピボットテーブルの作成
         df_suido_use_pt = df.pivot_table(index=cols["suido_number"], columns="検針年月", values=cols["suido_usage"], aggfunc='sum').reset_index()
 
         return df_suido_use_pt
-
-
 
 
     def calculate_suido_stats(self, suido_use, suido_status):
@@ -325,7 +327,6 @@ class SuidoProcessor(DataProcessor):
             統計量と変化率が追加された水道データ
         """
         try:
-            suido_use = suido_use.copy()
             suido_status = suido_status.copy()
             cols_use = COLUMNS["suido_use"]
             cols_status = COLUMNS["suido_status"]
@@ -334,10 +335,12 @@ class SuidoProcessor(DataProcessor):
 
             # suido_useでデータがない年月の特定
             date_columns = [ col for col in suido_use.columns if col[:2] in ['19', '20'] ]
-            min_year = pd.to_datetime(min(date_columns)).year
-            min_month = pd.to_datetime(min(date_columns)).month
-            max_year = pd.to_datetime(max(date_columns)).year
-            max_month = pd.to_datetime(max(date_columns)).month
+            min_date_columns = pd.to_datetime(min(date_columns))
+            max_date_columns = pd.to_datetime(max(date_columns))
+            min_year = min_date_columns.year
+            min_month = min_date_columns.month
+            max_year = max_date_columns.year
+            max_month = max_date_columns.month
             basic_list = []
             for year in range(min_year,max_year+1 ):
                 for month in range(1,13):
@@ -348,9 +351,7 @@ class SuidoProcessor(DataProcessor):
 
             suido_status_pre = suido_status.loc[:,[cols_status['suido_number'],cols_status['usage_start_date'],cols_status['usage_end_date']]]
             suido_status_pre = normalize_dates(suido_status, cols_status["usage_start_date"])
-            suido_status_pre.drop(columns=[f'{cols_status["usage_start_date"]}_normalized'], inplace=True)
             suido_status_pre = normalize_dates(suido_status, cols_status["usage_end_date"])
-            suido_status_pre.drop(columns=[f'{cols_status["usage_end_date"]}_normalized'], inplace=True)
 
             suido_status_pre[cols_status['usage_start_date']] = suido_status_pre[cols_status['usage_start_date']].dt.strftime('%Y-%m')
             suido_status_pre[cols_status['usage_end_date']] = suido_status_pre[cols_status['usage_end_date']].dt.strftime('%Y-%m')
@@ -383,7 +384,7 @@ class SuidoProcessor(DataProcessor):
                     suido_pre_merged.loc[row, 'reference_date_水道使用量'] = 0
 
             if len(new_date_columns) < 1:
-                # valueerror -> set_error(ERROR_0000X, path, encoding)
+                set_error(ERROR_00020)
                 raise ValueError("基準日が不正です。正しいフォーマットになっているか、もしくは正しい日付となっているかかご確認ください 。")
             # suido_useに欠損年月がある場合に開始日、終了日の日付を修正(そのほかもデータ期間中の期間に修正)
             df_use = suido_pre_merged.apply(lambda x:self.get_start_base_value(x,missing_month,new_date_columns), axis=1)
@@ -402,8 +403,6 @@ class SuidoProcessor(DataProcessor):
             
             # 出力するカラムを選択
             return df_use[[cols_use["suido_number"], "最大使用水量", "平均使用水量", "最小使用水量", "合計使用水量", "水道使用量変化率"]]
-        except ValueError as e:
-            raise ValueError(e)
         except Exception as e:
             raise Exception(e)
     
@@ -427,7 +426,6 @@ class SuidoProcessor(DataProcessor):
         # reference_dateとusage_end_dateを比較して、usage_end_dateがreference_dateより新しい場合はFalseに設定
         df_temp = normalize_dates(df.copy(), cols["usage_end_date"])
         df["usage_end_date"] = df_temp[cols["usage_end_date"]]  # usage_end_dateを日付に変換
-        # df["usage_end_date"] = pd.to_datetime(df[cols["usage_end_date"]])  # usage_end_dateを日付に変換
         df["閉栓フラグ"] = np.where(
             (df["閉栓フラグ"]) & (df["usage_end_date"] > self.reference_date),  # 閉栓フラグがTrueかつ usage_end_date > reference_date
             False,  # 閉栓フラグをFalseに変更
@@ -437,7 +435,6 @@ class SuidoProcessor(DataProcessor):
         return df
     
     def get_start_base_value(self, row, missing_month, date_columns):
-        cols_use = COLUMNS["suido_use"]
         cols_status = COLUMNS["suido_status"]
 
         if isinstance(self.reference_date, datetime):
@@ -467,7 +464,9 @@ class SuidoProcessor(DataProcessor):
             else:
                 start_day = row[cols_status["usage_start_date"]]
 
-        if pd.isnull(row[start_day]):
+        if not row.get(start_day):
+            row['start_date_水道使用量'] = 0
+        elif pd.isnull(row.get(start_day)):
             searching = True
             col = row.index.get_loc(start_day)
             while searching:
@@ -489,7 +488,6 @@ class SuidoProcessor(DataProcessor):
     def process(self):
 
         cols_status = COLUMNS["suido_status"]
-        cols_use = COLUMNS["suido_use"]
         
         try:
             # データの読み込み
@@ -555,6 +553,10 @@ class SuidoProcessor(DataProcessor):
             # 出力
             self.save_csv(df_suido, self.OUTPUT_PATHS["suido"])
         except Exception as e:
+            if ERROR_CODE is None:
+                set_error(ERROR_00023, "建物情報")
+                raise Exception("建物情報のデータが異常です。もう一度データを確認ください。")
+
             raise Exception(e)
 
     
@@ -589,19 +591,16 @@ class JukiProcessor(DataProcessor):
         """
         cols = COLUMNS["juki"]
         
-        # 複数のフォーマットを試して生年月日を変換
-        df = normalize_dates(df, cols["birth"])
-        df.drop(columns=[f'{cols["birth"]}_normalized'], inplace=True)
-        df = normalize_dates(df, cols["move_date"])
-        df.drop(columns=[f'{cols["move_date"]}_normalized'], inplace=True)
-
-                
         # 無効な生年月日データがある場合、警告を出力
         if df[cols["birth"]].isna().any():
             print("無効な生年月日データが含まれています。")
         
         # 年齢を計算
-        df["年齢"] = (self.reference_date - df[cols["birth"]]).dt.days // 365
+        try:
+            df["年齢"] = (self.reference_date - df[cols["birth"]]).dt.days // 365
+        except:
+            set_error(ERROR_00023, "生年月日")
+            raise Exception("生年月日のデータが異常です。もう一度データを確認ください。")
 
         # 年齢別グループを作成
         age_groups = {
@@ -718,7 +717,11 @@ class JukiProcessor(DataProcessor):
             print("無効な日付が含まれています。")
         
         # 住定期間を計算（基準日から住定異動年月日を引く）
-        df["住定期間"] = (self.reference_date - df[cols["move_date"]]).dt.days
+        try:
+            df["住定期間"] = (self.reference_date - df[cols["move_date"]]).dt.days
+        except:
+            set_error(ERROR_00023, "住定異動年月日")
+            raise Exception("住定異動年月日のデータが異常です。もう一度データを確認ください。")
         
         # 各世帯で最大の住定期間を取得
         return df.groupby([cols["setai_code"], cols["juki_address"]])["住定期間"].max().reset_index()
@@ -730,47 +733,48 @@ class JukiProcessor(DataProcessor):
         if df_juki is None:
             return
         
-        # 基準日以降の誕生と移動者を除外
-        cols = COLUMNS["juki"]
-        df_juki = normalize_dates(df_juki, cols["birth"])
-        df_juki.drop(columns=[f'{cols["birth"]}_normalized'], inplace=True)
-        df_juki = normalize_dates(df_juki, cols["move_date"])
-        df_juki.drop(columns=[f'{cols["move_date"]}_normalized'], inplace=True)
+        try:
+            # 基準日以降の誕生と移動者を除外
+            cols = COLUMNS["juki"]
+            df_juki = normalize_dates(df_juki, cols["birth"])
+            df_juki = normalize_dates(df_juki, cols["move_date"])
 
-        reference_date = pd.to_datetime(self.reference_date, format='%Y/%m/%d')
+            reference_date = pd.to_datetime(self.reference_date, format='%Y/%m/%d')
 
-        df_juki = df_juki.loc[(pd.to_datetime(df_juki[cols["birth"]])<=reference_date)&(pd.to_datetime(df_juki[cols["move_date"]])<=reference_date)].reset_index(drop=True)
-        
-        # 年齢グループの計算と最大年齢・最小年齢の追加
-        df_juki = self.calculate_age_groups(df_juki)
-        
-        # 各世帯の世帯人数を計算して追加
-        df_juki = self.calculate_setai_count(df_juki)
-        
-        # 各世帯の年齢別人数,構成比，男女比を計算
-        df_age_stats = self.calculate_age_stats(df_juki)
-        df_gender_ratio = self.calculate_gender_ratio(df_juki)
-        df_residence_duration = self.calculate_residence_duration(df_juki)
+            df_juki = df_juki.loc[(df_juki[cols["birth"]]<=reference_date)&(df_juki[cols["move_date"]]<=reference_date)].reset_index(drop=True)
+            
+            # 年齢グループの計算と最大年齢・最小年齢の追加
+            df_juki = self.calculate_age_groups(df_juki)
+            
+            # 各世帯の世帯人数を計算して追加
+            df_juki = self.calculate_setai_count(df_juki)
+            
+            # 各世帯の年齢別人数,構成比，男女比を計算
+            df_age_stats = self.calculate_age_stats(df_juki)
+            df_gender_ratio = self.calculate_gender_ratio(df_juki)
+            df_residence_duration = self.calculate_residence_duration(df_juki)
 
+            # 年齢情報（最大年齢・最小年齢）と世帯人数を元のデータに再結合
+            df_juki_processed = pd.merge(df_age_stats, df_juki[['世帯コード', '正規化住所', '最小年齢', '最大年齢', '世帯人数', '住定異動年月日']], 
+                                        on=["世帯コード", "正規化住所"], how="left")
+            
+            # 男女比と住定期間を結合
+            df_juki_processed = pd.merge(df_juki_processed, df_gender_ratio, on=["世帯コード", "正規化住所"], how="inner")
+            df_juki_processed = pd.merge(df_juki_processed, df_residence_duration, on=["世帯コード", "正規化住所"], how="inner")
+            
+            # 重複を削除
+            df_juki_processed = df_juki_processed.drop_duplicates(subset=["世帯コード", "正規化住所"])
 
-        # 年齢情報（最大年齢・最小年齢）と世帯人数を元のデータに再結合
-        df_juki_processed = pd.merge(df_age_stats, df_juki[['世帯コード', '正規化住所', '最小年齢', '最大年齢', '世帯人数', '住定異動年月日']], 
-                                    on=["世帯コード", "正規化住所"], how="left")
-        
-        # 男女比と住定期間を結合
-        df_juki_processed = pd.merge(df_juki_processed, df_gender_ratio, on=["世帯コード", "正規化住所"], how="inner")
-        df_juki_processed = pd.merge(df_juki_processed, df_residence_duration, on=["世帯コード", "正規化住所"], how="inner")
-        
-        # 重複を削除
-        df_juki_processed = df_juki_processed.drop_duplicates(subset=["世帯コード", "正規化住所"])
-
-        # 出力カラムの選択
-        df_juki_processed = df_juki_processed[self.OUTPUT_COLUMNS["juki"]]
-        df_juki_processed["reference_date"] = self.reference_date
+            # 出力カラムの選択
+            df_juki_processed = df_juki_processed[self.OUTPUT_COLUMNS["juki"]]
+            df_juki_processed["reference_date"] = self.reference_date
+        except:
+            if ERROR_CODE is None:
+                set_error(ERROR_00028)
+            raise Exception("住居単位データ作成プロセスにおいて、住民基本台帳データの処理においてエラーが発生しました。")
 
         # 出力
         self.save_csv(df_juki_processed, self.OUTPUT_PATHS["juki"])
-
 
 
 # 固定資産課税台帳、登記簿データの住所単位の集計
@@ -827,23 +831,23 @@ class TatemonoProcessor(DataProcessor):
         if df_tatemono is None:
             return
         
-        cols = COLUMNS["tatemono"]
-
-        # 登記日付の処理
-        df_tatemono[cols["registration_date"]] = pd.to_datetime(df_tatemono[cols["registration_date"]], format='%Y/%m/%d', errors='coerce')
-        
-        # NaT（無効な日付）を含む行を除外
-        df_tatemono = df_tatemono.dropna(subset=[cols["registration_date"]])
-
-        # 構造を分類し、ラベルエンコーディング
-        df_tatemono = self.classify_structure(df_tatemono)
-        
-        # 重複データを削除
-        df_tatemono = self.drop_duplicates(df_tatemono, subset=cols["tatemono_address"], keep="first")
- 
-        # 出力カラムの選択      
-        df_tatemono = df_tatemono[self.OUTPUT_COLUMNS["tatemono"]]
-        df_tatemono["reference_date"] = self.reference_date
+        try:
+            cols = COLUMNS["tatemono"]
+            # 登記日付の処理
+            df_tatemono[cols["registration_date"]] = pd.to_datetime(df_tatemono[cols["registration_date"]], format='%Y/%m/%d', errors='coerce')
+            # NaT（無効な日付）を含む行を除外
+            df_tatemono = df_tatemono.dropna(subset=[cols["registration_date"]])
+            # 構造を分類し、ラベルエンコーディング
+            df_tatemono = self.classify_structure(df_tatemono)
+            # 重複データを削除
+            df_tatemono = self.drop_duplicates(df_tatemono, subset=cols["tatemono_address"], keep="first")
+            # 出力カラムの選択      
+            df_tatemono = df_tatemono[self.OUTPUT_COLUMNS["tatemono"]]
+            df_tatemono["reference_date"] = self.reference_date
+        except:
+            if ERROR_CODE is None:
+                set_error(ERROR_00029)
+            raise Exception("住居単位データ作成プロセスにおいて、登記データの処理においてエラーが発生しました。")
 
         # 出力
         self.save_csv(df_tatemono, self.OUTPUT_PATHS["tatemono"])
@@ -913,17 +917,16 @@ def process_all_data(suido_use_file, suido_status_file, juki_file, tatemono_file
         # 出力ファイルのパスを設定
         # 処理後のファイルの保存先パスを辞書形式で定義
         output_paths = {}
-        
-        if suido_use_file:
-            input_paths['suido_use'] = suido_use_file
-            output_paths['suido'] = f"{output_directory}/suido_residence.csv"
-            processors['suido'] = SuidoProcessor
-        if suido_status_file:
-            input_paths['suido_status'] = suido_status_file
         if juki_file:
             input_paths['juki'] = juki_file
             output_paths['juki'] = f"{output_directory}/juki_residence.csv"
             processors['juki'] = JukiProcessor
+        if suido_status_file:
+            input_paths['suido_status'] = suido_status_file
+        if suido_use_file:
+            input_paths['suido_use'] = suido_use_file
+            output_paths['suido'] = f"{output_directory}/suido_residence.csv"
+            processors['suido'] = SuidoProcessor
         if tatemono_file:
             input_paths['tatemono'] = tatemono_file
             output_paths['tatemono'] = f"{output_directory}/touki_residence.csv"
@@ -956,17 +959,13 @@ def process_all_data(suido_use_file, suido_status_file, juki_file, tatemono_file
             create_or_update_job_task(job_id, progress_percent="100", preprocess_type="e013", error_code=None, error_msg=None, result=json.dumps({}), id= task_id, is_finish=True)
         
         return [path for path in output_paths.values() if os.path.exists(path)]
-    except ValueError as e:
-        if task_id is not None:
-            create_or_update_job_task(job_id, progress_percent="", preprocess_type="e013", error_code=ERROR_CODE, error_msg=ERROR_MSG, result=json.dumps({}), id= task_id, is_finish=True)
-        raise Exception(e)
     except Exception as e:
         print(e)
         if ERROR_CODE is None:
             set_error(ERROR_00010)
         if task_id is not None:
             create_or_update_job_task(job_id, progress_percent="", preprocess_type="e013", error_code=ERROR_CODE, error_msg=ERROR_MSG, result=json.dumps({}), id= task_id, is_finish=True)
-        raise Exception("住居単位データ作成プロセスにおいて、エラーが発生しました。")
+        raise Exception("住居単位データ作成プロセスにおいて、水道データの処理においてエラーが発生しました。基準日より新しい日付のデータが指定されているなど、ないかご確認ください。")
 
 def normalize_dates(df, column, formats=['%Y/%m/%d', '%d/%m/%Y', '%Y-%m-%d', '%m/%d/%Y', '%Y%m%d']):
     # Initialize the temporary column with NaN values
@@ -975,16 +974,18 @@ def normalize_dates(df, column, formats=['%Y/%m/%d', '%d/%m/%Y', '%Y-%m-%d', '%m
 
     # Try the provided formats on the invalid values
     for fmt in formats:
-        mask = df[temp_column].isna()
+        mask = df[temp_column].isna() & df[column].notna()
         df.loc[mask, temp_column] = pd.to_datetime(
             df.loc[mask, column], format=fmt, errors='coerce'
         )
 
+        if df[temp_column].notna().sum() > 0:
+            break
+
     # Remove the time portion and keep only the date
-    df[temp_column] = pd.to_datetime(df[temp_column], errors='coerce')
-    df[column] = df[temp_column]
+    df[column] = pd.to_datetime(df[temp_column], errors='coerce')
     
-    return df
+    return df.drop(f'{column}_normalized',axis=1)
 
 def set_error(value, param_st1=None, param_st2=None):
     global ERROR_CODE

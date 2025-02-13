@@ -12,7 +12,9 @@ import unicodedata
 import argparse
 import chardet
 import pandas as pd
+import warnings
 
+warnings.filterwarnings("ignore")
 current_dir = os.path.dirname(os.path.abspath(__file__))
 async_tasks_path = os.path.join(current_dir, '..', 'async_tasks')
 if async_tasks_path not in sys.path:
@@ -104,6 +106,14 @@ OUTPUT_COLUMNS = {
     }
 }
 OUTPUT_COLUMNS_INITIAL = OUTPUT_COLUMNS
+
+FILE_NAME_JP = {
+     "suido_status": "水道閉開栓状況",
+     "juki": "住民基本台帳",
+     "touki": "建物情報",
+     "geocoding": "ジオコーディング済みデータ",
+     "akiya_result": "空き家調査結果",
+}
 
 # 変換用の漢数字と半角数字の対応辞書
 kanji_to_number = {
@@ -357,11 +367,16 @@ class EachFileProcessor(DataProcessor):
         # Rename columns
         rename_columns = {}
         for key, input_col in cols.items():
-                new_col = OUTPUT_COLUMNS_INITIAL[file_key].get(key, input_col)
-                rename_columns[input_col] = new_col
+            new_col = OUTPUT_COLUMNS_INITIAL[file_key].get(key, input_col)
+            rename_columns[input_col] = new_col
 
         if file_key == "suido_use":
             df = df.rename(columns=rename_columns)
+            missing_cols = set(OUTPUT_COLUMNS_INITIAL[file_key].values()) - set(df.columns)
+            if missing_cols:
+                set_error(ERROR_00023, "水道使用量")
+                raise Exception("水道使用量のデータが異常です。もう一度データを確認ください。")
+            
             self.save_csv(df, self.OUTPUT_PATHS[file_key])
         else:
             # 住所列が欠損している行を削除
@@ -376,6 +391,12 @@ class EachFileProcessor(DataProcessor):
                         .apply(CleanData.convert_address))
             
             df = df.rename(columns=rename_columns)
+
+            missing_cols = set(OUTPUT_COLUMNS_INITIAL[file_key].values()) - (set(df.columns))
+            file_name = FILE_NAME_JP[file_key]
+            if missing_cols:
+                set_error(ERROR_00023, file_name)
+                raise Exception(f"{file_name}のデータが異常です。もう一度データを確認ください。")
             
             # 処理結果をCSVファイルとして保存
             self.save_csv(df, self.OUTPUT_PATHS[file_key])
@@ -541,8 +562,7 @@ def read_file(path, key, **kwargs):
     except Exception as e:
         if ERROR_CODE is None:
             set_error(ERROR_00004)
-        # print(f"ファイルの読み込み中にエラーが発生しました: {e}")
-        return None
+        raise
 
 
 def handle_optional_file(file, key, main_df, main_address_col, INPUT_COLUMNS):
