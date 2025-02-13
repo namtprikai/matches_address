@@ -6,7 +6,7 @@ import {
   makeStyles,
   tokens,
 } from "@fluentui/react-components";
-import { useFieldArray, useForm, useWatch } from "react-hook-form";
+import { type UseFormReturn } from "react-hook-form";
 import { Delete20Regular } from "@fluentui/react-icons";
 import { type ChartColumnType } from "../../@types/charts";
 import { Field } from "../ui/field";
@@ -19,6 +19,7 @@ import { DialogActions } from "../ui/dialog-actions";
 import { Select } from "../ui/select";
 import { DialogContent } from "../ui/dialog-content";
 import { type Parameter } from "../../bi-modules/interfaces/parameter";
+import { useFormGroupingResultView } from "../../bi-modules/hooks/use-form-grouping-result-view";
 
 const useStyles = makeStyles({
   groupField: {
@@ -81,10 +82,11 @@ const useStyles = makeStyles({
 
 type Props = {
   parameters: Parameter[];
-  onSave: (parameters: Parameter[]) => void;
-  columnType: ChartColumnType;
   columnLabel: string;
+  columnType: ChartColumnType;
   unit?: string;
+  formGroupingResultView: UseFormReturn<{ parameters: Parameter[] }>;
+  onSave: (parameters: Parameter[]) => void;
 };
 
 /**
@@ -92,86 +94,30 @@ type Props = {
  */
 export const FormGroupingResultView = ({
   parameters,
-  onSave,
-  columnType = "text",
   unit = "",
   columnLabel,
+  onSave,
+  columnType,
+  formGroupingResultView,
 }: Props): JSX.Element => {
   const [open, setOpen] = useState(false);
 
   const styles = useStyles();
 
-  // eslint-disable-next-line @typescript-eslint/explicit-function-return-type -- 複雑な型情報をあえて削除
-  const defaultCondition = (columnType: ChartColumnType) => {
-    switch (columnType) {
-      case "boolean":
-        return {
-          label: "",
-          referenceColumnType: "boolean",
-          operation: "isTrue",
-        } as const;
-      case "text":
-        return {
-          label: "",
-          referenceColumnType: "text",
-          operation: "eq",
-          value: "",
-        } as const;
-      case "date":
-        return {
-          label: "",
-          referenceColumnType: "date",
-          operation: "eq",
-          value: "",
-        } as const;
-      case "float":
-        return {
-          label: "",
-          referenceColumnType: "float",
-          operation: "eq",
-          value: 0,
-        } as const;
-      default:
-        return {
-          label: "",
-          referenceColumnType: "integer",
-          operation: "eq",
-          value: 0,
-        } as const;
-    }
-  };
+  const { register } = formGroupingResultView;
 
-  const { control, register, handleSubmit } = useForm({
-    defaultValues: {
-      parameters,
-    },
+  const {
+    parameterFilters,
+    fieldArray: { fields, update },
+    handleAppend,
+    handleSave,
+    handleRemove,
+  } = useFormGroupingResultView({
+    formGroupingResultView,
+    parameters,
+    onSave,
+    columnType,
   });
-  const { fields, append, remove, update } = useFieldArray({
-    control,
-    name: "parameters",
-  });
-
-  const parameterFilters = useWatch({
-    control,
-    name: "parameters",
-  });
-
-  const handleSave = handleSubmit((data) => {
-    onSave(data.parameters);
-    setOpen(false);
-  });
-
-  const handleAppend = (): void => {
-    append({
-      key: `group_${(new Date().getTime() + Math.floor(10000 * Math.random())).toString(16)}`,
-      value: defaultCondition(columnType),
-      type: "group",
-    });
-  };
-
-  const handleRemove = (index: number): void => {
-    remove(index);
-  };
 
   return (
     <Dialog

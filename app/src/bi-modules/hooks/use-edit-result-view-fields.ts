@@ -1,6 +1,7 @@
 import {
   useFieldArray,
   type UseFieldArrayReturn,
+  useForm,
   useFormContext,
   type UseFormReturn,
 } from "react-hook-form";
@@ -21,6 +22,7 @@ type ReturnType = {
   fieldArray: UseFieldArrayReturn<EditViewFormType>;
   handleStyleChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
   resetParametersByStyle: (style: SelectResultView["style"]) => void;
+  formGroupingResultView: UseFormReturn<{ parameters: Parameter[] }>;
 };
 
 /** @note useFormContextを内部で利用 */
@@ -28,7 +30,7 @@ export const useEditResultViewFields = ({
   dataSetResultId,
 }: Params): ReturnType => {
   const form = useFormContext<EditViewFormType>();
-  const { control, setValue } = form;
+  const { control, setValue, watch } = form;
   const fieldArray = useFieldArray({
     control,
     name: "parameters",
@@ -71,15 +73,27 @@ export const useEditResultViewFields = ({
     }
   };
 
+  const groupingFields = watch("parameters").filter((field) => {
+    return field.type === "group";
+  });
+
+  const formGroupingResultView = useForm<{ parameters: Parameter[] }>({
+    defaultValues: {
+      parameters: groupingFields,
+    },
+  });
+
   return {
     form,
     fieldArray,
     handleStyleChange,
     resetParametersByStyle: (style) =>
       replace(createResetParametersByStyle(style)),
+    formGroupingResultView,
   };
 };
 
+/** Utility */
 const createResetParametersByStyle = (
   style: SelectResultView["style"],
 ): Parameter[] => {

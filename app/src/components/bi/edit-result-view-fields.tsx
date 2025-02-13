@@ -30,6 +30,7 @@ export const EditResultViewFields = ({
     fieldArray: { update, replace },
     handleStyleChange,
     resetParametersByStyle,
+    formGroupingResultView,
   } = useEditResultViewFields({ dataSetResultId });
 
   const currentParameters = watch("parameters");
@@ -142,6 +143,7 @@ export const EditResultViewFields = ({
                       <FormGroupingResultView
                         columnLabel={columnMetadata?.label}
                         columnType={columnMetadata?.type}
+                        formGroupingResultView={formGroupingResultView}
                         onSave={(parameters) => {
                           const prevOtherParameters = currentParameters.filter(
                             (f) => {
