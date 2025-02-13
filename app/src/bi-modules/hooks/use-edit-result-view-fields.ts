@@ -42,6 +42,16 @@ export const useEditResultViewFields = ({
     dataSetResultId,
   });
 
+  const groupingFields = watch("parameters").filter((field) => {
+    return field.type === "group";
+  });
+
+  const formGroupingResultView = useForm<{ parameters: Parameter[] }>({
+    defaultValues: {
+      parameters: groupingFields,
+    },
+  });
+
   const handleStyleChange = (e: React.ChangeEvent<HTMLSelectElement>): void => {
     const value = e.target.value as SelectResultView["style"];
     if (!value) return;
@@ -56,15 +66,19 @@ export const useEditResultViewFields = ({
         : TILE_VIEW_CONFIG[value].fields[0].option[0].unit;
     setValue("unit", unit);
 
+    formGroupingResultView.reset({ parameters: [] });
+
     switch (value) {
       case "line": {
         const parameters = createDefaultLineGroupParameters(referenceDates);
         setValue("parameters", [...defaultParameters, ...parameters]);
+        formGroupingResultView.reset({ parameters });
         return;
       }
       case "pie": {
         const parameters = createDefaultPieGroupParameters();
         setValue("parameters", [...defaultParameters, ...parameters]);
+        formGroupingResultView.reset({ parameters });
         return;
       }
       default:
@@ -73,22 +87,13 @@ export const useEditResultViewFields = ({
     }
   };
 
-  const groupingFields = watch("parameters").filter((field) => {
-    return field.type === "group";
-  });
-
-  const formGroupingResultView = useForm<{ parameters: Parameter[] }>({
-    defaultValues: {
-      parameters: groupingFields,
-    },
-  });
-
   return {
     form,
     fieldArray,
     handleStyleChange,
-    resetParametersByStyle: (style) =>
-      replace(createResetParametersByStyle(style)),
+    resetParametersByStyle: (style) => {
+      replace(createResetParametersByStyle(style));
+    },
     formGroupingResultView,
   };
 };
