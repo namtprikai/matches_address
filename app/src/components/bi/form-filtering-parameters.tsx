@@ -515,7 +515,7 @@ export const FormFilteringParameters = ({
       {parameters.length ? (
         <Caption1
           className={styles.textRight}
-        >{`${parameters.length}件の詳細フィルターを適用済み`}</Caption1>
+        >{`${parameters.length}件の詳細フィルターを追加済み`}</Caption1>
       ) : null}
     </>
   );

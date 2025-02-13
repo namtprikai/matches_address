@@ -482,7 +482,7 @@ export const FormGroupingResultView = ({
       {parameterFilters.length ? (
         <Caption1
           className={styles.textRight}
-        >{`${parameterFilters.length}件のグループを適用済み`}</Caption1>
+        >{`${parameterFilters.length}件のグループを追加済み`}</Caption1>
       ) : null}
     </>
   );
