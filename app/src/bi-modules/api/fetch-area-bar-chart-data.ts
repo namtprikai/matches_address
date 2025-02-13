@@ -132,11 +132,6 @@ export const fetchAreaBarChartData = async ({
 
   query = query.where(and(...queryWheres));
 
-  /** 重複を排除する */
-  query
-    .groupBy(sql.raw(`${xAxis.value}`))
-    .having(sql.raw(`${xAxis.value} <> ''`));
-
   const baseQuery = query.as("baseQuery");
 
   /**
