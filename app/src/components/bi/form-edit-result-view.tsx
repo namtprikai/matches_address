@@ -84,7 +84,7 @@ function FormComponent({
     formState: { errors },
   } = form;
 
-  return selectedResultView ? (
+  return selectedResultViewId && selectedResultView ? (
     <FormProvider {...form}>
       <form className={styles.form} onSubmit={onSubmit}>
         {Object.entries(errors).map(
