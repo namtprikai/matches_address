@@ -4,7 +4,10 @@ import { type LineView } from "../interfaces/view";
 import { data_set_detail_buildings } from "../../schema";
 import { type FilterCondition } from "../interfaces/parameter";
 import { type ChartProps } from "../../@types/charts";
-import { BUILDING_DATASET_COLUMN_METADATA } from "../../config/column-metadata";
+import {
+  type BUILDING_DATASET_COLUMN,
+  BUILDING_DATASET_COLUMN_METADATA,
+} from "../../config/column-metadata";
 import { filterQueryBuilder } from "./builder/filter-query-builder";
 import { conditionsToCaseQueryBuilder } from "./builder/conditions-to-case-query-builder";
 
@@ -59,13 +62,21 @@ export const fetchBuildingLineChartData = async ({
   const COLUMNS = {
     xAxisColumn: {
       type: "string",
-      unit: BUILDING_DATASET_COLUMN_METADATA[xAxis.value].unit,
-      label: BUILDING_DATASET_COLUMN_METADATA[xAxis.value].label,
+      unit: BUILDING_DATASET_COLUMN_METADATA[
+        xAxis.value as BUILDING_DATASET_COLUMN
+      ].unit,
+      label:
+        BUILDING_DATASET_COLUMN_METADATA[xAxis.value as BUILDING_DATASET_COLUMN]
+          .label,
     },
     yAxisColumn: {
       type: "number",
-      unit: BUILDING_DATASET_COLUMN_METADATA[yAxis.value].unit,
-      label: BUILDING_DATASET_COLUMN_METADATA[yAxis.value].label,
+      unit: BUILDING_DATASET_COLUMN_METADATA[
+        yAxis.value as BUILDING_DATASET_COLUMN
+      ].unit,
+      label:
+        BUILDING_DATASET_COLUMN_METADATA[yAxis.value as BUILDING_DATASET_COLUMN]
+          .label,
     },
   } as const;
 

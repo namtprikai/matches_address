@@ -4,7 +4,10 @@ import { type BarView } from "../interfaces/view";
 import { data_set_detail_areas } from "../../schema";
 import { type FilterCondition } from "../interfaces/parameter";
 import { type ChartProps } from "../../@types/charts";
-import { AREA_DATASET_COLUMN_METADATA } from "../../config/column-metadata";
+import {
+  type AREA_DATASET_COLUMN,
+  AREA_DATASET_COLUMN_METADATA,
+} from "../../config/column-metadata";
 import { filterQueryBuilder } from "./builder/filter-query-builder";
 import { conditionsToCaseQueryBuilder } from "./builder/conditions-to-case-query-builder";
 
@@ -63,13 +66,17 @@ export const fetchAreaBarChartData = async ({
   const COLUMNS = {
     xAxisColumn: {
       type: "string",
-      unit: AREA_DATASET_COLUMN_METADATA[xAxis.value].unit,
-      label: AREA_DATASET_COLUMN_METADATA[xAxis.value].label,
+      unit: AREA_DATASET_COLUMN_METADATA[xAxis.value as AREA_DATASET_COLUMN]
+        .unit,
+      label:
+        AREA_DATASET_COLUMN_METADATA[xAxis.value as AREA_DATASET_COLUMN].label,
     },
     yAxisColumn: {
       type: "number",
-      unit: AREA_DATASET_COLUMN_METADATA[yAxis.value].unit,
-      label: AREA_DATASET_COLUMN_METADATA[yAxis.value].label,
+      unit: AREA_DATASET_COLUMN_METADATA[yAxis.value as AREA_DATASET_COLUMN]
+        .unit,
+      label:
+        AREA_DATASET_COLUMN_METADATA[yAxis.value as AREA_DATASET_COLUMN].label,
     },
   } as const;
 
