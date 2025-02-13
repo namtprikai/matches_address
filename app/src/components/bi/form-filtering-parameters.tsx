@@ -1,4 +1,5 @@
 import {
+  Caption1,
   Checkbox,
   Dialog,
   DialogTrigger,
@@ -77,6 +78,9 @@ const useStyles = makeStyles({
     placeItems: "center",
     padding: `${tokens.spacingVerticalL} 0`,
   },
+  textRight: {
+    textAlign: "right",
+  },
 });
 
 type Props = UseFormFilteringParametersReturnType;
@@ -105,280 +109,134 @@ export const FormFilteringParameters = ({
   };
 
   return (
-    <Dialog
-      onOpenChange={() => {
-        setOpen((prev) => !prev);
-      }}
-      open={open}
-    >
-      <DialogTrigger>
-        <Button
-          appearance={parameters.length === 0 ? "outline" : "primary"}
-          size="medium"
-        >
-          {parameters.length === 0 ? "詳細条件を追加" : "詳細条件を編集"}
-        </Button>
-      </DialogTrigger>
-      <DialogSurface>
-        <DialogBody>
-          <DialogTitle
-            action={
-              <FormFilteringResultView
-                appearance="normal"
-                onSave={handleSelector}
-                options={optionsWithActive}
-                unit={unit}
-              />
-            }
+    <>
+      <Dialog
+        onOpenChange={() => {
+          setOpen((prev) => !prev);
+        }}
+        open={open}
+      >
+        <DialogTrigger>
+          <Button
+            appearance={parameters.length === 0 ? "outline" : "primary"}
+            size="medium"
           >
-            次の条件でフィルター
-          </DialogTitle>
-          <DialogContent
-            border
-            className={mergeClasses(
-              styles.dialogContent,
-              fields.length !== 0 && styles.dialogContentNoBottomBorder,
-            )}
-          >
-            <div className={styles.dialogInner}>
-              {fields.length === 0 ? (
-                <div className={styles.selectorContainer}>
-                  <FormFilteringResultView
-                    appearance="primary"
-                    onSave={handleSelector}
-                    options={optionsWithActive}
-                    unit={unit}
-                  />
-                </div>
-              ) : (
-                fields.map((field, index) => {
-                  if (!isFilterCondition(field)) return null;
-                  const metadata = getColumnMetadata({
-                    unit,
-                    key: field.value.referenceColumn,
-                  });
+            {parameters.length === 0 ? "詳細条件を追加" : "詳細条件を編集"}
+          </Button>
+        </DialogTrigger>
+        <DialogSurface>
+          <DialogBody>
+            <DialogTitle
+              action={
+                <FormFilteringResultView
+                  appearance="normal"
+                  onSave={handleSelector}
+                  options={optionsWithActive}
+                  unit={unit}
+                />
+              }
+            >
+              次の条件でフィルター
+            </DialogTitle>
+            <DialogContent
+              border
+              className={mergeClasses(
+                styles.dialogContent,
+                fields.length !== 0 && styles.dialogContentNoBottomBorder,
+              )}
+            >
+              <div className={styles.dialogInner}>
+                {fields.length === 0 ? (
+                  <div className={styles.selectorContainer}>
+                    <FormFilteringResultView
+                      appearance="primary"
+                      onSave={handleSelector}
+                      options={optionsWithActive}
+                      unit={unit}
+                    />
+                  </div>
+                ) : (
+                  fields.map((field, index) => {
+                    if (!isFilterCondition(field)) return null;
+                    const metadata = getColumnMetadata({
+                      unit,
+                      key: field.value.referenceColumn,
+                    });
 
-                  /**
-                   * カラムの型がbooleanの場合
-                   */
-                  if (field.value.referenceColumnType === "boolean") {
-                    return (
-                      <Field key={field.id} className={styles.groupField}>
-                        <Label>{metadata?.label ?? "カラム"}</Label>
-                        <Select
-                          defaultValue={field.value.operation}
-                          {...register(`parameters.${index}.value.operation`)}
-                        >
-                          <option value="isTrue">真である</option>
-                          <option value="isFalse">偽である</option>
-                        </Select>
-                        <Button
-                          appearance="subtle"
-                          icon={<Delete20Regular />}
-                          onClick={() => {
-                            handleRemove(index);
-                          }}
-                          type="button"
-                        ></Button>
-                      </Field>
-                    );
-                  }
+                    /**
+                     * カラムの型がbooleanの場合
+                     */
+                    if (field.value.referenceColumnType === "boolean") {
+                      return (
+                        <Field key={field.id} className={styles.groupField}>
+                          <Label>{metadata?.label ?? "カラム"}</Label>
+                          <Select
+                            defaultValue={field.value.operation}
+                            {...register(`parameters.${index}.value.operation`)}
+                          >
+                            <option value="isTrue">真である</option>
+                            <option value="isFalse">偽である</option>
+                          </Select>
+                          <Button
+                            appearance="subtle"
+                            icon={<Delete20Regular />}
+                            onClick={() => {
+                              handleRemove(index);
+                            }}
+                            type="button"
+                          ></Button>
+                        </Field>
+                      );
+                    }
 
-                  if (field.value.referenceColumnType === "text") {
-                    return (
-                      <Field key={field.id} className={styles.groupField}>
-                        <Label>{metadata?.label ?? "カラム"}</Label>
-                        <Select
-                          defaultValue={field.value.operation}
-                          {...register(`parameters.${index}.value.operation`)}
-                        >
-                          <option value="eq">次に等しい</option>
-                          <option value="noteq">次に等しくない</option>
-                          <option value="contains">次を含む</option>
-                          <option value="notContains">次を含まない</option>
-                        </Select>
-                        <Input
-                          defaultValue={field.value.value}
-                          {...register(`parameters.${index}.value.value`)}
-                          placeholder="値"
-                          type="text"
-                        />
-                        <Button
-                          appearance="subtle"
-                          icon={<Delete20Regular />}
-                          onClick={() => {
-                            handleRemove(index);
-                          }}
-                          type="button"
-                        ></Button>
-                      </Field>
-                    );
-                  }
-
-                  if (field.value.referenceColumnType === "dateRange") {
-                    return (
-                      <Field key={field.id} className={styles.groupField}>
-                        <Label>{metadata?.label ?? "カラム"}</Label>
-                        <Select
-                          defaultValue={field.value.operation}
-                          {...register(`parameters.${index}.value.operation`)}
-                        >
-                          <option value="eq">次に等しい</option>
-                          <option value="noteq">次に等しくない</option>
-                          <option value="gt">次より後</option>
-                          <option value="lt">次より前</option>
-                          <option value="gte">次以降</option>
-                          <option value="lte">次以前</option>
-                          <option value="range">次の範囲</option>
-                        </Select>
-
-                        <Input
-                          className={styles.inputRangeValue}
-                          defaultValue={
-                            field.value.startValue
-                              ? field.value.startValue.toString()
-                              : ""
-                          }
-                          max={100}
-                          min={0}
-                          onBlur={(e) => {
-                            const parsed = parseFloat(e.target.value);
-                            const value =
-                              metadata?.unit === "%"
-                                ? Math.max(0, Math.min(100, parsed))
-                                : parsed;
-                            e.target.value = `${value}`;
-                            setValue(
-                              `parameters.${index}.value.startValue`,
-                              value,
-                            );
-                          }}
-                          placeholder="開始値"
-                          type="date"
-                        />
-                        <div className={styles.includesField}>
-                          <span>含</span>
-                          <Checkbox
-                            className={styles.checkbox}
-                            defaultChecked={field.value.includesStart ?? true}
-                            {...register(
-                              `parameters.${index}.value.includesStart`,
-                            )}
+                    if (field.value.referenceColumnType === "text") {
+                      return (
+                        <Field key={field.id} className={styles.groupField}>
+                          <Label>{metadata?.label ?? "カラム"}</Label>
+                          <Select
+                            defaultValue={field.value.operation}
+                            {...register(`parameters.${index}.value.operation`)}
+                          >
+                            <option value="eq">次に等しい</option>
+                            <option value="noteq">次に等しくない</option>
+                            <option value="contains">次を含む</option>
+                            <option value="notContains">次を含まない</option>
+                          </Select>
+                          <Input
+                            defaultValue={field.value.value}
+                            {...register(`parameters.${index}.value.value`)}
+                            placeholder="値"
+                            type="text"
                           />
-                        </div>
-                        <span>〜</span>
-                        <Input
-                          className={styles.inputRangeValue}
-                          defaultValue={
-                            field.value.lastValue
-                              ? field.value.lastValue.toString()
-                              : ""
-                          }
-                          max={100}
-                          min={0}
-                          onBlur={(e) => {
-                            const parsed = parseFloat(e.target.value);
-                            const value =
-                              metadata?.unit === "%"
-                                ? Math.max(0, Math.min(100, parsed))
-                                : parsed;
-                            e.target.value = `${value}`;
-                            setValue(
-                              `parameters.${index}.value.lastValue`,
-                              value,
-                            );
-                          }}
-                          placeholder="終了値"
-                          type="date"
-                        />
-                        <div className={styles.includesField}>
-                          <span>含</span>
-                          <Checkbox
-                            className={styles.checkbox}
-                            defaultChecked={field.value.includesLast ?? true}
-                            {...register(
-                              `parameters.${index}.value.includesLast`,
-                            )}
-                          />
-                        </div>
-                        <Button
-                          appearance="subtle"
-                          icon={<Delete20Regular />}
-                          onClick={() => {
-                            handleRemove(index);
-                          }}
-                          type="button"
-                        ></Button>
-                      </Field>
-                    );
-                  }
+                          <Button
+                            appearance="subtle"
+                            icon={<Delete20Regular />}
+                            onClick={() => {
+                              handleRemove(index);
+                            }}
+                            type="button"
+                          ></Button>
+                        </Field>
+                      );
+                    }
 
-                  if (field.value.referenceColumnType === "date") {
-                    return (
-                      <Field key={field.id} className={styles.groupField}>
-                        <Label>{metadata?.label ?? "カラム"}</Label>
-                        <Select
-                          defaultValue={field.value.operation}
-                          {...register(`parameters.${index}.value.operation`)}
-                        >
-                          <option value="eq">次に等しい</option>
-                          <option value="noteq">次に等しくない</option>
-                          <option value="gt">次より後</option>
-                          <option value="lt">次より前</option>
-                          <option value="gte">次以降</option>
-                          <option value="lte">次以前</option>
-                          <option value="range">次の範囲</option>
-                        </Select>
-                        <Input
-                          defaultValue={
-                            field.value.value
-                              ? field.value.value.toString()
-                              : ""
-                          }
-                          {...register(`parameters.${index}.value.value`)}
-                          className={styles.inputValue}
-                          placeholder="値"
-                          type="date"
-                        />
-                        <Button
-                          appearance="subtle"
-                          icon={<Delete20Regular />}
-                          onClick={() => {
-                            handleRemove(index);
-                          }}
-                          type="button"
-                        ></Button>
-                      </Field>
-                    );
-                  }
+                    if (field.value.referenceColumnType === "dateRange") {
+                      return (
+                        <Field key={field.id} className={styles.groupField}>
+                          <Label>{metadata?.label ?? "カラム"}</Label>
+                          <Select
+                            defaultValue={field.value.operation}
+                            {...register(`parameters.${index}.value.operation`)}
+                          >
+                            <option value="eq">次に等しい</option>
+                            <option value="noteq">次に等しくない</option>
+                            <option value="gt">次より後</option>
+                            <option value="lt">次より前</option>
+                            <option value="gte">次以降</option>
+                            <option value="lte">次以前</option>
+                            <option value="range">次の範囲</option>
+                          </Select>
 
-                  return (
-                    <Field key={field.id} className={styles.groupField}>
-                      <Label>{metadata?.label ?? "カラム"}</Label>
-                      <Select
-                        onChange={(e) => {
-                          update(index, {
-                            key: field.key,
-                            value: {
-                              ...field.value,
-                              // @ts-expect-error - ここで型が変わるためエラーになる
-                              operation: e.target.value,
-                            },
-                            type: "filter",
-                          });
-                        }}
-                        value={field.value.operation ?? "eq"}
-                      >
-                        <option value="eq">等しい</option>
-                        <option value="noteq">等しくない</option>
-                        <option value="gt">より大きい</option>
-                        <option value="lt">より小さい</option>
-                        <option value="gte">以上</option>
-                        <option value="lte">以下</option>
-                        <option value="range">次の範囲</option>
-                      </Select>
-                      {field.value.operation === "range" && (
-                        <>
                           <Input
                             className={styles.inputRangeValue}
                             defaultValue={
@@ -401,9 +259,8 @@ export const FormFilteringParameters = ({
                               );
                             }}
                             placeholder="開始値"
-                            type="number"
+                            type="date"
                           />
-                          {metadata?.unit ?? ""}
                           <div className={styles.includesField}>
                             <span>含</span>
                             <Checkbox
@@ -437,9 +294,8 @@ export const FormFilteringParameters = ({
                               );
                             }}
                             placeholder="終了値"
-                            type="number"
+                            type="date"
                           />
-                          {metadata?.unit ?? ""}
                           <div className={styles.includesField}>
                             <span>含</span>
                             <Checkbox
@@ -450,58 +306,217 @@ export const FormFilteringParameters = ({
                               )}
                             />
                           </div>
-                        </>
-                      )}
-                      {field.value.operation !== "range" && (
-                        <>
+                          <Button
+                            appearance="subtle"
+                            icon={<Delete20Regular />}
+                            onClick={() => {
+                              handleRemove(index);
+                            }}
+                            type="button"
+                          ></Button>
+                        </Field>
+                      );
+                    }
+
+                    if (field.value.referenceColumnType === "date") {
+                      return (
+                        <Field key={field.id} className={styles.groupField}>
+                          <Label>{metadata?.label ?? "カラム"}</Label>
+                          <Select
+                            defaultValue={field.value.operation}
+                            {...register(`parameters.${index}.value.operation`)}
+                          >
+                            <option value="eq">次に等しい</option>
+                            <option value="noteq">次に等しくない</option>
+                            <option value="gt">次より後</option>
+                            <option value="lt">次より前</option>
+                            <option value="gte">次以降</option>
+                            <option value="lte">次以前</option>
+                            <option value="range">次の範囲</option>
+                          </Select>
                           <Input
-                            className={styles.inputValue}
                             defaultValue={
                               field.value.value
                                 ? field.value.value.toString()
                                 : ""
                             }
-                            max={100}
-                            min={0}
-                            onBlur={(e) => {
-                              const parsed = parseFloat(e.target.value);
-                              const value =
-                                metadata?.unit === "%"
-                                  ? Math.max(0, Math.min(100, parsed))
-                                  : parsed;
-                              e.target.value = `${value}`;
-                              setValue(
-                                `parameters.${index}.value.value`,
-                                value,
-                              );
-                            }}
+                            {...register(`parameters.${index}.value.value`)}
+                            className={styles.inputValue}
                             placeholder="値"
-                            type="number"
+                            type="date"
                           />
-                          {metadata?.unit ?? ""}
-                        </>
-                      )}
-                      <Button
-                        appearance="subtle"
-                        icon={<Delete20Regular />}
-                        onClick={() => {
-                          handleRemove(index);
-                        }}
-                        type="button"
-                      ></Button>
-                    </Field>
-                  );
-                })
-              )}
-            </div>
-          </DialogContent>
-          <DialogActions position="end">
-            <Button onClick={saveAndClose} type="button">
-              保存
-            </Button>
-          </DialogActions>
-        </DialogBody>
-      </DialogSurface>
-    </Dialog>
+                          <Button
+                            appearance="subtle"
+                            icon={<Delete20Regular />}
+                            onClick={() => {
+                              handleRemove(index);
+                            }}
+                            type="button"
+                          ></Button>
+                        </Field>
+                      );
+                    }
+
+                    return (
+                      <Field key={field.id} className={styles.groupField}>
+                        <Label>{metadata?.label ?? "カラム"}</Label>
+                        <Select
+                          onChange={(e) => {
+                            update(index, {
+                              key: field.key,
+                              value: {
+                                ...field.value,
+                                // @ts-expect-error - ここで型が変わるためエラーになる
+                                operation: e.target.value,
+                              },
+                              type: "filter",
+                            });
+                          }}
+                          value={field.value.operation ?? "eq"}
+                        >
+                          <option value="eq">等しい</option>
+                          <option value="noteq">等しくない</option>
+                          <option value="gt">より大きい</option>
+                          <option value="lt">より小さい</option>
+                          <option value="gte">以上</option>
+                          <option value="lte">以下</option>
+                          <option value="range">次の範囲</option>
+                        </Select>
+                        {field.value.operation === "range" && (
+                          <>
+                            <Input
+                              className={styles.inputRangeValue}
+                              defaultValue={
+                                field.value.startValue
+                                  ? field.value.startValue.toString()
+                                  : ""
+                              }
+                              max={100}
+                              min={0}
+                              onBlur={(e) => {
+                                const parsed = parseFloat(e.target.value);
+                                const value =
+                                  metadata?.unit === "%"
+                                    ? Math.max(0, Math.min(100, parsed))
+                                    : parsed;
+                                e.target.value = `${value}`;
+                                setValue(
+                                  `parameters.${index}.value.startValue`,
+                                  value,
+                                );
+                              }}
+                              placeholder="開始値"
+                              type="number"
+                            />
+                            {metadata?.unit ?? ""}
+                            <div className={styles.includesField}>
+                              <span>含</span>
+                              <Checkbox
+                                className={styles.checkbox}
+                                defaultChecked={
+                                  field.value.includesStart ?? true
+                                }
+                                {...register(
+                                  `parameters.${index}.value.includesStart`,
+                                )}
+                              />
+                            </div>
+                            <span>〜</span>
+                            <Input
+                              className={styles.inputRangeValue}
+                              defaultValue={
+                                field.value.lastValue
+                                  ? field.value.lastValue.toString()
+                                  : ""
+                              }
+                              max={100}
+                              min={0}
+                              onBlur={(e) => {
+                                const parsed = parseFloat(e.target.value);
+                                const value =
+                                  metadata?.unit === "%"
+                                    ? Math.max(0, Math.min(100, parsed))
+                                    : parsed;
+                                e.target.value = `${value}`;
+                                setValue(
+                                  `parameters.${index}.value.lastValue`,
+                                  value,
+                                );
+                              }}
+                              placeholder="終了値"
+                              type="number"
+                            />
+                            {metadata?.unit ?? ""}
+                            <div className={styles.includesField}>
+                              <span>含</span>
+                              <Checkbox
+                                className={styles.checkbox}
+                                defaultChecked={
+                                  field.value.includesLast ?? true
+                                }
+                                {...register(
+                                  `parameters.${index}.value.includesLast`,
+                                )}
+                              />
+                            </div>
+                          </>
+                        )}
+                        {field.value.operation !== "range" && (
+                          <>
+                            <Input
+                              className={styles.inputValue}
+                              defaultValue={
+                                field.value.value
+                                  ? field.value.value.toString()
+                                  : ""
+                              }
+                              max={100}
+                              min={0}
+                              onBlur={(e) => {
+                                const parsed = parseFloat(e.target.value);
+                                const value =
+                                  metadata?.unit === "%"
+                                    ? Math.max(0, Math.min(100, parsed))
+                                    : parsed;
+                                e.target.value = `${value}`;
+                                setValue(
+                                  `parameters.${index}.value.value`,
+                                  value,
+                                );
+                              }}
+                              placeholder="値"
+                              type="number"
+                            />
+                            {metadata?.unit ?? ""}
+                          </>
+                        )}
+                        <Button
+                          appearance="subtle"
+                          icon={<Delete20Regular />}
+                          onClick={() => {
+                            handleRemove(index);
+                          }}
+                          type="button"
+                        ></Button>
+                      </Field>
+                    );
+                  })
+                )}
+              </div>
+            </DialogContent>
+            <DialogActions position="end">
+              <Button onClick={saveAndClose} type="button">
+                保存
+              </Button>
+            </DialogActions>
+          </DialogBody>
+        </DialogSurface>
+      </Dialog>
+      {parameters.length ? (
+        <Caption1
+          className={styles.textRight}
+        >{`${parameters.length}件の詳細フィルターを適用済み`}</Caption1>
+      ) : null}
+    </>
   );
 };
