@@ -60,14 +60,15 @@ export type BUILDING_DATASET_COLUMN = keyof Pick<
   | "predicted_label"
 >;
 
+export type ColumnMetadataValue = {
+  label: string;
+  type: ChartColumnType;
+  unit?: string;
+  groupable?: boolean; // グルーピング可能かどうか
+  description?: string;
+};
 export type ColumnMetadata<COLUMN extends string | number | symbol> = {
-  [k in COLUMN]: {
-    label: string;
-    type: ChartColumnType;
-    unit?: string;
-    groupable?: boolean; // グルーピング可能かどうか
-    description?: string;
-  };
+  [k in COLUMN]: ColumnMetadataValue;
 };
 
 /**

@@ -1,10 +1,7 @@
-import { useFieldArray, useFormContext, useWatch } from "react-hook-form";
 import { Fragment } from "react/jsx-runtime";
 import { result_views, type SelectResultView } from "../../schema";
 import { LanguageMap } from "../../metadata";
-import { TILE_VIEW_CONFIG } from "../../config/tile-view-config";
 import { getResultViewFieldOption } from "../../utils/get-view-field-option";
-import { type EditResultViewFormType } from "../../@types/form-schema";
 import {
   type AREA_DATASET_COLUMN,
   AREA_DATASET_COLUMN_METADATA,
@@ -17,9 +14,7 @@ import { Field } from "../ui/field";
 import { Input } from "../ui/input";
 import { Select } from "../ui/select";
 import { useFetchDataSetResults } from "../../hooks/use-fetch-data-set-results";
-import { type ReferenceDate } from "../../ipc-main-listeners/select-reference-dates";
-import { formatDate } from "../../utils/format-date";
-import { useFetchReferenceDates } from "../../hooks/use-fetch-reference-dates";
+import { useEditResultViewFields } from "../../bi-modules/hooks/use-edit-result-view-fields";
 import { DynamicParameterInput } from "./dynamic-parameter-input";
 import { FormGroupingResultView } from "./form-grouping-result-view";
 
@@ -30,71 +25,26 @@ type Props = {
 export const EditResultViewFields = ({
   dataSetResultId,
 }: Props): JSX.Element => {
-  const { register, control, setValue } =
-    useFormContext<EditResultViewFormType>();
+  const {
+    form: { watch, register, setValue },
+    fieldArray: { update, replace },
+    handleStyleChange,
+    resetParametersByStyle,
+    formGroupingResultView,
+  } = useEditResultViewFields({ dataSetResultId });
 
-  const [currentParameters, style, unit] = useWatch({
-    control,
-    name: ["parameters", "style", "unit"],
-  });
+  const currentParameters = watch("parameters");
+  const unit = watch("unit");
+  const style = watch("style");
 
-  const { replace, update } = useFieldArray({
-    control,
-    name: "parameters",
-  });
+  const { data: dataSetResults } = useFetchDataSetResults();
 
-  const resetParametersByStyle = (style: SelectResultView["style"]): void => {
-    if (!style) return;
-    const option = TILE_VIEW_CONFIG[style];
-    if (!option) return;
-    replace(
-      option.fields.map((field) => ({
-        key: field.key,
-        value: "",
-        type: "column",
-      })),
-    );
-  };
-
-  const { data: referenceDates } = useFetchReferenceDates({
-    dataSetResultId,
-  });
-
-  const handleStyleChange = (e: React.ChangeEvent<HTMLSelectElement>): void => {
-    const value = e.target.value as SelectResultView["style"];
-    if (!value) return;
-    // styleに合わせてparameterをリセット
-    resetParametersByStyle(value);
-    // 種類の値を更新
-    setValue("style", value);
-    // 集計単位の初期値を設定する
-    const unit =
-      value === "map"
-        ? "building"
-        : TILE_VIEW_CONFIG[value].fields[0].option[0].unit;
-    setValue("unit", unit);
-    // parametersに初期値を設定する
-    const defaultParameters = TILE_VIEW_CONFIG[value].fields.map((field) => ({
-      key: field.key,
-      value: field.option[0].value,
-      type: "column" as const,
-    }));
-
-    switch (value) {
-      case "line": {
-        const parameters = getLineParameters(referenceDates);
-        setValue("parameters", [...defaultParameters, ...parameters]);
-        return;
-      }
-      case "pie": {
-        const parameters = getPieParameters();
-        setValue("parameters", [...defaultParameters, ...parameters]);
-        return;
-      }
-      default:
-        setValue("parameters", defaultParameters);
-    }
-  };
+  if (
+    currentParameters === undefined ||
+    unit === undefined ||
+    style === undefined
+  )
+    return <></>;
 
   const groupingFields = currentParameters.filter((field) => {
     return field.type === "group";
@@ -107,8 +57,6 @@ export const EditResultViewFields = ({
   const groupCalc = currentParameters.find(
     (f) => f.key === "group_aggregation" && f.type === "group_aggregation",
   );
-
-  const { data: dataSetResults } = useFetchDataSetResults();
 
   return (
     <>
@@ -184,7 +132,7 @@ export const EditResultViewFields = ({
                         key: field.key,
                         value: e.target.value,
                         type: "column",
-                      });
+                      } as SelectResultView["parameters"][0]); /** e.target.valueの型式別が難しいためas */
                     }}
                     unit={unit}
                     value={field.value}
@@ -195,6 +143,7 @@ export const EditResultViewFields = ({
                       <FormGroupingResultView
                         columnLabel={columnMetadata?.label}
                         columnType={columnMetadata?.type}
+                        formGroupingResultView={formGroupingResultView}
                         onSave={(parameters) => {
                           const prevOtherParameters = currentParameters.filter(
                             (f) => {
@@ -280,7 +229,7 @@ export const EditResultViewFields = ({
                       key: field.key,
                       value: newValue.join(","),
                       type: "column",
-                    });
+                    } as SelectResultView["parameters"][0]); /** e.target.valueの型式別が難しいためas */
                   }}
                   unit={unit}
                   value={field.value}
@@ -302,7 +251,7 @@ export const EditResultViewFields = ({
                       key: field.key,
                       value: newValue.join(","),
                       type: "column",
-                    });
+                    } as SelectResultView["parameters"][0]); /** e.target.valueの型式別が難しいためas */
                   }}
                   unit={unit}
                   value={field.value}
@@ -354,79 +303,3 @@ export const EditResultViewFields = ({
     </>
   );
 };
-
-function getLineParameters(
-  referenceDates: ReferenceDate[] | undefined,
-): SelectResultView["parameters"] {
-  if (!referenceDates) return [];
-  const result: SelectResultView["parameters"] = referenceDates.map((date) => ({
-    key: `group_${(new Date().getTime() + Math.floor(10000 * Math.random())).toString(16)}` as "group_aggregation",
-    value: {
-      label: formatDate(date, "YYYY年"),
-      referenceColumnType: "date",
-      operation: "eq",
-      value: date,
-    },
-    type: "group",
-  }));
-
-  const groupingOption = {
-    key: "group_aggregation",
-    type: "group_aggregation",
-    value: "avg",
-  };
-
-  return [...result, groupingOption] as SelectResultView["parameters"];
-}
-
-function getPieParameters(): SelectResultView["parameters"] {
-  const values: {
-    label: string;
-    startValue: number;
-    lastValue: number;
-  }[] = [
-    {
-      label: "空き家確率0~25%",
-      startValue: 0,
-      lastValue: 25,
-    },
-    {
-      label: "空き家確率26~50%",
-      startValue: 26,
-      lastValue: 50,
-    },
-    {
-      label: "空き家確率51~75%",
-      startValue: 51,
-      lastValue: 75,
-    },
-    {
-      label: "空き家確率76~100%",
-      startValue: 76,
-      lastValue: 100,
-    },
-  ];
-
-  const result: SelectResultView["parameters"] = values.map((value) => ({
-    key: `group_${(new Date().getTime() + Math.floor(10000 * Math.random())).toString(16)}` as "group_aggregation",
-    value: {
-      label: value.label,
-      referenceColumnType: "float",
-      operation: "range",
-      value: 0,
-      startValue: value.startValue,
-      includesStart: true,
-      lastValue: value.lastValue,
-      includesLast: true,
-    },
-    type: "group",
-  }));
-
-  const groupingOption = {
-    key: "group_aggregation",
-    type: "group_aggregation",
-    value: "count",
-  };
-
-  return [...result, groupingOption] as SelectResultView["parameters"];
-}

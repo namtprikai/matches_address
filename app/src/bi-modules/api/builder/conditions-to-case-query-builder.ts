@@ -47,12 +47,12 @@ export const conditionsToCaseQueryBuilder = (
 
       // 開始値の条件クエリを作成
       const startQuery =
-        condition.referenceColumnType === "date" // 日付の場合は文字列としての比較が必要なため
+        condition.referenceColumnType === "dateRange" // 日付の場合は文字列としての比較が必要なため
           ? `${key} ${includesStart === true ? ">=" : ">"} '${startValue}'`
           : `${key} ${includesStart === true ? ">=" : ">"} ${startValue}`;
       // 終了値の条件クエリを作成
       const lastQuery =
-        condition.referenceColumnType === "date" // 日付の場合は文字列としての比較が必要なため
+        condition.referenceColumnType === "dateRange" // 日付の場合は文字列としての比較が必要なため
           ? `${key} ${includesLast === true ? "<=" : "<"} '${lastValue}'`
           : `${key} ${includesLast === true ? "<=" : "<"} ${lastValue}`;
 

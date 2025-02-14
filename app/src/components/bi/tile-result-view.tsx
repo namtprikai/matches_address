@@ -93,7 +93,7 @@ export const TileResultView = ({
   );
   const exportMessageDialogState = useDialogState();
 
-  const { data: resultViews, mutate } = useFetchResultViews({
+  const { mutate } = useFetchResultViews({
     sheetId: resultView.sheet_id,
   });
 
@@ -130,11 +130,8 @@ export const TileResultView = ({
       resultViewId: resultView.id,
       sheetId: resultView.sheet_id,
     });
-    void mutate();
-    const firstView = resultViews?.find((view) => view.layoutIndex === 1);
-    if (firstView) {
-      setSelectedResultViewId(firstView.id);
-    }
+    await mutate();
+    setSelectedResultViewId(undefined);
   };
 
   const selected = resultView.id === selectedResultViewId;

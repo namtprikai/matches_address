@@ -10,6 +10,7 @@ import {
   CartesianGrid as ReCartesianGrid,
 } from "recharts";
 import { useState } from "react";
+import { Caption1Strong, tokens } from "@fluentui/react-components";
 import { CHART_COLORS } from "../../config/chart-colors";
 import { Pagination } from "../ui/pagination";
 import { useFetchBarChartProps } from "../../bi-modules/hooks/use-fetch-bar-chart-props";
@@ -28,11 +29,9 @@ export const ViewBar = ({ view }: Props): JSX.Element => {
   const xAxis = view.parameters.find((p) => p.key === "xAxis");
   const yAxis = view.parameters.find((p) => p.key === "yAxis");
 
-  /** @todo どこからくる値なのか確認。本来はview.parameters.find((p) => p.key === "group_aggregation")?.value;みたいな感じ？ */
-  const groupingCalc = "count";
-
   const data = chartProps.data.map((d) => ({
     ...d,
+    /** 表示のために桁数を調整 */
     y: chartProps.yAxisColumn.unit === "%" ? Math.floor(d.y * 1000) / 10 : d.y,
   }));
 
@@ -51,13 +50,17 @@ export const ViewBar = ({ view }: Props): JSX.Element => {
 
   // フィルタ結果の値が空の場合はエラーを表示
   if (data.length === 0) {
-    return <div>データがありません</div>;
+    return (
+      <div>
+        <Pagination {...pagination} />
+        <div>データがありません</div>
+      </div>
+    );
   }
 
   return (
     <div>
       <Pagination {...pagination} />
-
       <ResponsiveContainer height={400} width="100%">
         <ReBarChart
           data={data}
@@ -86,12 +89,31 @@ export const ViewBar = ({ view }: Props): JSX.Element => {
           }}
         >
           <ReXAxis dataKey={"x"} unit={chartProps.xAxisColumn.unit} />
-          <ReYAxis
-            dataKey={"y"}
-            unit={groupingCalc === "count" ? "件" : chartProps.yAxisColumn.unit}
-          />
+          <ReYAxis dataKey={"y"} unit={chartProps.yAxisColumn.unit} />
           <ReTooltip
             active={activeToolTip}
+            content={(props) => (
+              <div
+                style={{
+                  background: "#fff",
+                  padding: "4px 8px",
+                  margin: "2px",
+                  border: "1px solid #ccc",
+                }}
+              >
+                {props.payload?.map((item) => (
+                  <div key={item.name}>
+                    <div>{`${item.payload.x}`}</div>
+                    <div
+                      style={{ color: tokens.colorBrandStroke1 }}
+                    >{`${item.name}: ${item.payload.y}${item.unit}`}</div>
+                    <Caption1Strong>
+                      {item.payload.reference_date}
+                    </Caption1Strong>
+                  </div>
+                ))}
+              </div>
+            )}
             cursor={false}
             isAnimationActive={false}
             position={tooltipPosition}

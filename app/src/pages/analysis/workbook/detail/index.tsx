@@ -97,37 +97,6 @@ export function DetailWorkbook(): JSX.Element {
           <BreadcrumbItem key={item.href} {...item} />
         ))}
       />
-      <div>
-        <Button
-          onClick={async () => {
-            const data = await window.ipcRenderer.invoke("fetchChartData", {
-              view: {
-                dataSetResultId: Number(id),
-                unit: "building",
-                style: "pie",
-                title: "建物別売上",
-                parameters: [],
-              },
-              pagination: {
-                limit: 100,
-                offset: 0,
-              },
-            });
-            // eslint-disable-next-line no-console -- Debugging
-            console.log({ data });
-          }}
-        >
-          _debugFetchChart
-        </Button>
-        <a href={`#analysis/workbook/${id}/edit`}>
-          <Button
-            appearance="outline"
-            className={styles.button}
-            icon={<EditFilled />}
-            shape="square"
-          />
-        </a>
-      </div>
       <div className={styles.headingWithAction}>
         <h2 className={styles.heading}>{workbook?.title}</h2>
         <div className={styles.buttons}>

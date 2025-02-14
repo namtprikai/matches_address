@@ -1,8 +1,8 @@
 import { integer, real, sqliteTable, text } from "drizzle-orm/sqlite-core";
 import { sql } from "drizzle-orm";
-import { type FilterCondition, type GroupingCondition } from "./@types/charts";
 import { type JobParameters } from "./@types/job-parameters";
 import { type JobTaskResult } from "./@types/job-task-result";
+import { type Parameter } from "./bi-modules/interfaces/parameter";
 
 export const users = sqliteTable("users", {
   id: integer("id").primaryKey(),
@@ -69,48 +69,7 @@ export const result_views = sqliteTable("result_views", {
   parameters: text("parameters", {
     mode: "json",
   })
-    .$type<
-      (
-        | {
-            key: `group_${string}`;
-            type: "group";
-            value: GroupingCondition;
-          }
-        | {
-            key: "group_aggregation";
-            type: "group_aggregation";
-            value: "avg" | "sum" | "count";
-          }
-        | {
-            key: string;
-            value: string;
-            type: "column";
-          }
-        | {
-            key: `filter_${string}`;
-            value: FilterCondition;
-            type: "filter";
-          }
-        | {
-            key: "area";
-            value: string[];
-            type: "filter";
-          }
-        | {
-            key: "label";
-            value: string;
-            type: "column";
-          }
-        | {
-            key: "year";
-            value: {
-              start: string | undefined;
-              end: string | undefined;
-            };
-            type: "filter";
-          }
-      )[]
-    >()
+    .$type<Parameter[]>()
     .notNull(),
 
   created_at: text("created_at")

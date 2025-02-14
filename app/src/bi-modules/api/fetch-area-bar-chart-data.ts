@@ -4,7 +4,10 @@ import { type BarView } from "../interfaces/view";
 import { data_set_detail_areas } from "../../schema";
 import { type FilterCondition } from "../interfaces/parameter";
 import { type ChartProps } from "../../@types/charts";
-import { AREA_DATASET_COLUMN_METADATA } from "../../config/column-metadata";
+import {
+  type AREA_DATASET_COLUMN,
+  AREA_DATASET_COLUMN_METADATA,
+} from "../../config/column-metadata";
 import { filterQueryBuilder } from "./builder/filter-query-builder";
 import { conditionsToCaseQueryBuilder } from "./builder/conditions-to-case-query-builder";
 
@@ -63,13 +66,17 @@ export const fetchAreaBarChartData = async ({
   const COLUMNS = {
     xAxisColumn: {
       type: "string",
-      unit: AREA_DATASET_COLUMN_METADATA[xAxis.value].unit,
-      label: AREA_DATASET_COLUMN_METADATA[xAxis.value].label,
+      unit: AREA_DATASET_COLUMN_METADATA[xAxis.value as AREA_DATASET_COLUMN]
+        .unit,
+      label:
+        AREA_DATASET_COLUMN_METADATA[xAxis.value as AREA_DATASET_COLUMN].label,
     },
     yAxisColumn: {
       type: "number",
-      unit: AREA_DATASET_COLUMN_METADATA[yAxis.value].unit,
-      label: AREA_DATASET_COLUMN_METADATA[yAxis.value].label,
+      unit: AREA_DATASET_COLUMN_METADATA[yAxis.value as AREA_DATASET_COLUMN]
+        .unit,
+      label:
+        AREA_DATASET_COLUMN_METADATA[yAxis.value as AREA_DATASET_COLUMN].label,
     },
   } as const;
 
@@ -79,6 +86,7 @@ export const fetchAreaBarChartData = async ({
       /** data_set_detail_areasのColumn名とそれぞれのvalueに定義された値が一致していることが前提でrawを利用 */
       [xAxis.value]: sql.raw(`${xAxis.value}`).as(xAxis.value),
       [yAxis.value]: sql.raw(`${yAxis.value}`).as(yAxis.value),
+      reference_date: data_set_detail_areas.reference_date,
     })
     .from(data_set_detail_areas)
     .$dynamic();
@@ -125,11 +133,6 @@ export const fetchAreaBarChartData = async ({
 
   query = query.where(and(...queryWheres));
 
-  /** 重複を排除する */
-  query
-    .groupBy(sql.raw(`${xAxis.value}`))
-    .having(sql.raw(`${xAxis.value} <> ''`));
-
   const baseQuery = query.as("baseQuery");
 
   /**
@@ -159,6 +162,7 @@ export const fetchAreaBarChartData = async ({
         y: sql.raw(
           `${groupAggregation?.value || "avg"}(${yAxis.value}) as ${yAxis.value}`,
         ),
+
         [GroupLabel]: groupQuery[GroupLabel],
       })
       .from(groupQuery)
@@ -177,20 +181,14 @@ export const fetchAreaBarChartData = async ({
     };
   }
 
-  const result = db
-    .select({
-      x: baseQuery[xAxis.value],
-      y: baseQuery[yAxis.value],
-    })
-    .from(baseQuery)
-    .limit(limit)
-    .offset(offset)
-    .all();
+  const result = db.select().from(baseQuery).limit(limit).offset(offset).all();
 
   return {
     data: result.map((item) => ({
-      x: item.x as string /** @todo */,
-      y: item.y as number /** @todo */,
+      ...item,
+      x: item[xAxis.value] as string /** @todo */,
+      y: item[yAxis.value] as number /** @todo */,
+      reference_date: item.reference_date,
     })),
     ...COLUMNS,
   };

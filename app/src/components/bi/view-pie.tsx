@@ -37,11 +37,12 @@ export const ViewPie = ({ view }: Props): JSX.Element => {
   const label = view.parameters.find((p) => p.key === "label");
   const value = view.parameters.find((p) => p.key === "value");
 
-  /** @todo どこからくる値なのか確認。本来はview.parameters.find((p) => p.key === "group_aggregation")?.value;みたいな感じ？ */
-  const groupingCalc: "count" | "avg" = view ? "count" : "avg";
+  const groupAggregation = view.parameters.find(
+    (p) => p.type === "group_aggregation",
+  );
 
   const isPercentValue =
-    groupingCalc === "avg" && chartProps.yAxisColumn.unit === "%";
+    groupAggregation?.value === "avg" && chartProps.yAxisColumn.unit === "%";
   const data = chartProps.data.map((d) => ({
     ...d,
     y: isPercentValue
@@ -94,7 +95,9 @@ export const ViewPie = ({ view }: Props): JSX.Element => {
           content={
             <CustomTooltip
               unit={
-                groupingCalc === "count" ? "件" : chartProps.yAxisColumn.unit
+                groupAggregation?.value === "count"
+                  ? "件"
+                  : chartProps.yAxisColumn.unit
               }
             />
           }
