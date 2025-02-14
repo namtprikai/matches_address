@@ -105,7 +105,7 @@ export const EditResultViewFields = ({
   });
 
   const groupCalc = currentParameters.find(
-    (f) => f.key === "group_calc" && f.type === "group_option",
+    (f) => f.key === "group_aggregation" && f.type === "group_aggregation",
   );
 
   const { data: dataSetResults } = useFetchDataSetResults();
@@ -224,17 +224,17 @@ export const EditResultViewFields = ({
                           onChange={(e) => {
                             const prevOtherParameters =
                               currentParameters.filter((f) => {
-                                return f.type !== "group_option";
+                                return f.type !== "group_aggregation";
                               });
                             const newParameters = [
                               ...prevOtherParameters,
                               {
-                                key: "group_calc",
+                                key: "group_aggregation",
                                 value: e.target.value as
                                   | "avg"
                                   | "sum"
                                   | "count",
-                                type: "group_option",
+                                type: "group_aggregation",
                               },
                             ] as SelectResultView["parameters"]; // union の型推論が効きづらいため、明示的に型を指定;
                             replace(newParameters);
@@ -360,7 +360,7 @@ function getLineParameters(
 ): SelectResultView["parameters"] {
   if (!referenceDates) return [];
   const result: SelectResultView["parameters"] = referenceDates.map((date) => ({
-    key: `group_${(new Date().getTime() + Math.floor(10000 * Math.random())).toString(16)}` as "group_calc",
+    key: `group_${(new Date().getTime() + Math.floor(10000 * Math.random())).toString(16)}` as "group_aggregation",
     value: {
       label: formatDate(date, "YYYY年"),
       referenceColumnType: "date",
@@ -371,8 +371,8 @@ function getLineParameters(
   }));
 
   const groupingOption = {
-    key: "group_calc",
-    type: "group_option",
+    key: "group_aggregation",
+    type: "group_aggregation",
     value: "avg",
   };
 
@@ -408,7 +408,7 @@ function getPieParameters(): SelectResultView["parameters"] {
   ];
 
   const result: SelectResultView["parameters"] = values.map((value) => ({
-    key: `group_${(new Date().getTime() + Math.floor(10000 * Math.random())).toString(16)}` as "group_calc",
+    key: `group_${(new Date().getTime() + Math.floor(10000 * Math.random())).toString(16)}` as "group_aggregation",
     value: {
       label: value.label,
       referenceColumnType: "float",
@@ -423,8 +423,8 @@ function getPieParameters(): SelectResultView["parameters"] {
   }));
 
   const groupingOption = {
-    key: "group_calc",
-    type: "group_option",
+    key: "group_aggregation",
+    type: "group_aggregation",
     value: "count",
   };
 

@@ -32,6 +32,7 @@ import { useFetchReferenceDates } from "../../hooks/use-fetch-reference-dates";
 import { useDialogState } from "../../hooks/use-dialog-state";
 import { DialogExportMessage } from "../dialog-export-message";
 import { OUTPUT_FILE_TYPES } from "../../config/file-types";
+import { type View } from "../../bi-modules/interfaces/view";
 import { TileViewStyle } from "./tile-view-style";
 
 type Props = {
@@ -173,10 +174,15 @@ export const TileResultView = ({
         <div>パラメーターの値を正しく設定してください</div>
       ) : resultView.unit && resultView.data_set_result_id ? (
         <TileViewStyle
-          parameters={resultView.parameters}
-          resultId={resultView.data_set_result_id}
-          style={resultView.style}
-          type={resultView.unit}
+          view={
+            {
+              dataSetResultId: resultView.data_set_result_id,
+              style: resultView.style,
+              unit: resultView.unit,
+              title: resultView.title,
+              parameters: resultView.parameters,
+            } as View /** @todo parametersの定義が一致していないため仮 */
+          }
         />
       ) : (
         <div>データセットが選択されていません</div>

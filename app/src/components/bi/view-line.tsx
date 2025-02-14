@@ -15,8 +15,9 @@ import {
   makeStyles,
 } from "@fluentui/react-components";
 import { CHART_COLORS } from "../../config/chart-colors";
-import { useFetchFilterDataSetForChart } from "../../hooks/use-fetch-filtered-data-set-for-chart";
 import { type FilterDataSetForChartArgs } from "../../ipc-main-listeners/filter-data-set-for-chart";
+import { type LineView } from "../../bi-modules/interfaces/view";
+import { useFetchLineChartProps } from "../../bi-modules/hooks/use-fetch-line-chart-props";
 
 export type ChartLineProps = FilterDataSetForChartArgs;
 
@@ -111,11 +112,21 @@ const CustomizedActiveDot = ({
   );
 };
 
-export const ChartLine = (props: ChartLineProps): JSX.Element => {
-  const { chartProps } = useFetchFilterDataSetForChart(props);
+type Props = {
+  view: LineView;
+};
+
+export const ViewLine = ({ view }: Props): JSX.Element => {
+  const { chartProps } = useFetchLineChartProps({ view });
+
+  const xAxis = view.parameters.find((p) => p.key === "xAxis");
+  const yAxis = view.parameters.find((p) => p.key === "yAxis");
+
+  /** @todo どこからくる値なのか確認。本来はview.parameters.find((p) => p.key === "group_aggregation")?.value;みたいな感じ？ */
+  const groupingCalc: "count" | "avg" = view ? "count" : "avg";
 
   const isPercentValue =
-    props.groupingCalc === "avg" && chartProps.yAxisColumn.unit === "%";
+    groupingCalc === "avg" && chartProps.yAxisColumn.unit === "%";
   const data = chartProps.data.map((d) => ({
     ...d,
     y: isPercentValue
@@ -123,7 +134,7 @@ export const ChartLine = (props: ChartLineProps): JSX.Element => {
       : Number.parseFloat(d.y.toFixed(1)), // floatな値を扱うことがあるため、桁が溢れないように小数点第一位まで表示する
   }));
 
-  if (props.x == null || props.y == null) {
+  if (!xAxis || !yAxis) {
     return <div>パラメーターの値を正しく設定してください</div>;
   }
 
@@ -137,9 +148,7 @@ export const ChartLine = (props: ChartLineProps): JSX.Element => {
         <ReXAxis dataKey={"x"} unit={chartProps.xAxisColumn.unit} />
         <ReYAxis
           dataKey={"y"}
-          unit={
-            props.groupingCalc === "count" ? "件" : chartProps.yAxisColumn.unit
-          }
+          unit={groupingCalc === "count" ? "件" : chartProps.yAxisColumn.unit}
         />
         <ReTooltip
           wrapperStyle={{
@@ -151,9 +160,7 @@ export const ChartLine = (props: ChartLineProps): JSX.Element => {
           activeDot={
             <CustomizedActiveDot
               unit={
-                props.groupingCalc === "count"
-                  ? "件"
-                  : chartProps.yAxisColumn.unit
+                groupingCalc === "count" ? "件" : chartProps.yAxisColumn.unit
               }
             />
           }
@@ -163,9 +170,7 @@ export const ChartLine = (props: ChartLineProps): JSX.Element => {
           name={chartProps.yAxisColumn.label}
           stroke={CHART_COLORS.primary}
           strokeWidth={2}
-          unit={
-            props.groupingCalc === "count" ? "件" : chartProps.yAxisColumn.unit
-          }
+          unit={groupingCalc === "count" ? "件" : chartProps.yAxisColumn.unit}
         />
         <ReLegend />
       </ReLineChart>

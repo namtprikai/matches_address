@@ -23,8 +23,8 @@ export const _debugCreateWorkshopData = (async (
   // Process buildings
   await convertCsvToObject(
     getFilePathInDummyData("D902_workshop.csv"),
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars -- idや作成日時はinsertしないようにする
-    async ({ id, created_at, updated_at, ...rest }) => {
+    // idや作成日時はinsertしないようにする
+    async ({ _id, _created_at, _updated_at, ...rest }) => {
       await db
         .insert(data_set_detail_buildings)
         .values({
@@ -38,9 +38,8 @@ export const _debugCreateWorkshopData = (async (
   // Process areas
   await convertCsvToObject(
     getFilePathInDummyData("D903_workshop.csv"),
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars -- idや作成日時はinsertしないようにする
-
-    async ({ id, created_at, updated_at, ...rest }) => {
+    // idや作成日時はinsertしないようにする
+    async ({ _id, _created_at, _updated_at, ...rest }) => {
       await db
         .insert(data_set_detail_areas)
         .values({

@@ -47,13 +47,13 @@ export type VacancyLevels = Record<VacancyLevel, boolean>;
 interface Props {
   vacancyLevels: VacancyLevels;
   setVacancyLevels: (vacancyLevels: VacancyLevels) => void;
-  type: MapProps["type"];
+  unit: MapProps["view"]["unit"];
 }
 
 export function VacancyLevelCheckbox({
   vacancyLevels,
   setVacancyLevels: onChange,
-  type,
+  unit,
 }: Props): JSX.Element {
   const styles = useStyles();
 
@@ -65,7 +65,7 @@ export function VacancyLevelCheckbox({
   };
 
   const labels: Record<VacancyLevel, string> =
-    type === "building"
+    unit === "building"
       ? {
           low: "0~29%",
           medium: "30~79%",

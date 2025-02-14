@@ -4,7 +4,6 @@ import {
   Button,
   typographyStyles,
 } from "@fluentui/react-components";
-import { ArrowLeftRegular } from "@fluentui/react-icons";
 import { useState } from "react";
 import { useParams } from "react-router-dom";
 import { Table, type ColumnDefinition } from "../../../../components/ui/table";
@@ -69,9 +68,6 @@ const useStyles = makeStyles({
 
 export function JobPreview(): JSX.Element {
   const styles = useStyles();
-  const handleBackToResultsClick = (): void => {
-    window.history.back();
-  };
   const [page, setPage] = useState(1);
   const [limitPerPage, setLimitPerPage] = useState(10);
 

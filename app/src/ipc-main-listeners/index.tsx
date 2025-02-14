@@ -69,6 +69,7 @@ import { selectBuildingPreview } from "./select-building-preview";
 import { selectRawDatasetWithFilePath } from "./select-raw-dataset-with-file-path";
 import { filterDataSetForChartPie } from "./filter-data-set-for-chart-pie";
 import { selectJobsWithPagination } from "./select-jobs-with-pagination";
+import { fetchChartData } from "./fetch-chart-data";
 import { deleteJob } from "./delete-job";
 
 export const ipcMainListeners = {
@@ -139,6 +140,7 @@ export const ipcMainListeners = {
   selectNormalizedDatasetWithFilePath,
   selectRawDatasetWithFilePath,
   selectJobsWithPagination,
+  fetchChartData,
   deleteJob,
 };
 

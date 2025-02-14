@@ -35,7 +35,7 @@ const operationToQuery = (
   }
 };
 
-const conditionsToCaseQuery = (
+const conditionsToCaseQueryBuilder = (
   key: string,
   conditions: GroupingCondition[],
 ): SQL => {
@@ -88,7 +88,7 @@ if (import.meta.vitest) {
   it("eq, noteqベースの条件からcaseクエリを作成する", () => {
     expect(
       sqliteDialect.sqlToQuery(
-        conditionsToCaseQuery("age", [
+        conditionsToCaseQueryBuilder("age", [
           {
             operation: "eq",
             value: 1,
@@ -113,7 +113,7 @@ if (import.meta.vitest) {
   it("範囲条件のcaseクエリを作成する", () => {
     expect(
       sqliteDialect.sqlToQuery(
-        conditionsToCaseQuery("age", [
+        conditionsToCaseQueryBuilder("age", [
           {
             referenceColumnType: "integer",
             operation: "range",
@@ -135,7 +135,7 @@ if (import.meta.vitest) {
   it("以上のcaseクエリを作成する", () => {
     expect(
       sqliteDialect.sqlToQuery(
-        conditionsToCaseQuery("age", [
+        conditionsToCaseQueryBuilder("age", [
           {
             operation: "gte",
             value: 1,
@@ -152,7 +152,7 @@ if (import.meta.vitest) {
   it("以下のcaseクエリを作成する", () => {
     expect(
       sqliteDialect.sqlToQuery(
-        conditionsToCaseQuery("age", [
+        conditionsToCaseQueryBuilder("age", [
           {
             operation: "lte",
             value: 1,
@@ -175,7 +175,7 @@ export const subQueryFromConditions = (
   conditions: GroupingCondition[],
   // eslint-disable-next-line @typescript-eslint/explicit-function-return-type -- ignore
 ) => {
-  const caseQuery = conditionsToCaseQuery(key, conditions);
+  const caseQuery = conditionsToCaseQueryBuilder(key, conditions);
 
   const subQuery = drizzle
     .select({

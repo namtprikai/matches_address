@@ -8,9 +8,9 @@ import {
   TableRow,
   tokens,
 } from "@fluentui/react-components";
-import { useFetchFilterDataSetForTable } from "../../hooks/use-fetch-filtered-data-set-for-table";
-import { type FilterDataSetForTableArgs } from "../../ipc-main-listeners/filter-data-set-for-table";
 import { Pagination } from "../ui/pagination";
+import { type TableView } from "../../bi-modules/interfaces/view";
+import { useFetchTableProps } from "../../bi-modules/hooks/use-fetch-table-props";
 
 const useStyles = makeStyles({
   root: {
@@ -36,12 +36,14 @@ const useStyles = makeStyles({
   },
 });
 
-type TableViewProps = FilterDataSetForTableArgs;
+type Props = {
+  view: TableView;
+};
 
-export const TableView = (
-  props: Omit<TableViewProps, "limit" | "offset">,
-): JSX.Element => {
-  const { tableProps, pagination } = useFetchFilterDataSetForTable(props);
+export const ViewTable = ({ view }: Props): JSX.Element => {
+  const { tableProps, pagination } = useFetchTableProps({
+    view,
+  });
 
   const styles = useStyles();
 

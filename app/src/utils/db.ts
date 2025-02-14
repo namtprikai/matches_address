@@ -36,7 +36,9 @@ export const dbPath = (() => {
   return result;
 })();
 
-const betterSqlite3 = new Database(dbPath);
+const betterSqlite3 = new Database(dbPath, {
+  verbose: console.info,
+});
 
 // パフォーマンス向上のためWALモードを有効にする
 // ref: https://github.com/WiseLibs/better-sqlite3/blob/master/docs/performance.md
