@@ -51,7 +51,6 @@ export type PieValue = z.infer<typeof pieValueSchema>;
 export type Parameter = z.infer<typeof parameterSchema>;
 
 /** Utility */
-/**  */
 export const isFilterCondition = (
   parameter: Parameter,
 ): parameter is FilterCondition => {
