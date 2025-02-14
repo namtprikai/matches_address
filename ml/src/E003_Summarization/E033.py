@@ -86,13 +86,31 @@ def read_input_data(data_set_results_id, reference_date, table_name):
         set_error(ERROR_30001)
         raise
 
+def rename_columns(gdf, ext, job_id=None, target_unit="building"):
+    if target_unit == "building":
+        columns = TRANSLATE_COLUMNS_BUILDING
+    else:
+        columns = TRANSLATE_COLUMNS_AREA
 
-def export_data(gdf, output_path, output_format):
+    if ext != "csv":
+        rename_dict = {col: columns[col] for col in gdf.columns if col in columns and col != "geometry"}
+    else:
+        rename_dict = columns
+    gdf = gdf.rename(columns=rename_dict)
+    if job_id:
+        create_or_update_job(job_id, 60)
+    return gdf
+
+
+def export_data(gdf, output_path, output_format, target_unit, job_id=None):
     """
     データをエクスポートする関数
     """
     try:
+        if job_id:
+            create_or_update_job(job_id, 50)
         if output_format.lower() == 'csv':
+            gdf = rename_columns(gdf, output_format.lower(), job_id, target_unit)
             encodings = ['utf-8-sig']
             for encoding in encodings:
                 try:
@@ -103,9 +121,11 @@ def export_data(gdf, output_path, output_format):
                     logging.warning(f"Failed to export CSV with {encoding} encoding: {e}")
             raise ValueError("Failed to export CSV with all attempted encodings.")
         elif output_format.lower() == 'geojson':
+            gdf = rename_columns(gdf, output_format.lower(), target_unit)
             gdf.to_file(output_path, driver='GeoJSON')
             logging.info("GeoJSON exported successfully.")
         elif output_format.lower() == 'geopackage':
+            gdf = rename_columns(gdf, output_format.lower(), target_unit)
             gdf['fid'] = range(1, len(gdf) + 1)
             gdf.to_file(output_path, driver='GPKG')
             logging.info("GPKG exported successfully.")
@@ -163,7 +183,7 @@ def processing(params, job_id=None, db_path=None):
             create_or_update_job(job_id, 40)
         
         logging.info(f"Exporting data to {output_path}")
-        output_file_path = export_data(gdf, output_path, params['output_format'])
+        output_file_path = export_data(gdf, output_path, params['output_format'], target_unit, job_id)
 
         if job_id:
             create_or_update_job_task(job_id, progress_percent="100", preprocess_type=None, error_code=None, error_msg=None, result=json.dumps({}), id= task_id, is_finish=True)
