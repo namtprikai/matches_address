@@ -71,12 +71,12 @@ const buildingMetadata: Record<keyof SelectDataSetDetailBuilding, Item> = {
   residence_duration: {
     label: "住定期間",
   },
-  // members_min_age: {
-  //   label: "世帯最少年齢",
-  // },
-  // member_max_age: {
-  //   label: "世帯最高年齢",
-  // },
+  min_age: {
+    label: "最小年齢",
+  },
+  max_age: {
+    label: "最大年齢",
+  },
   water_supply_number: {
     label: "水道番号",
   },
@@ -99,9 +99,9 @@ const buildingMetadata: Record<keyof SelectDataSetDetailBuilding, Item> = {
     label: "水道合計使用量",
     unit: "L",
   },
-  // change_ratio_water_usage: {
-  //   label: "水道使用量変化率",
-  // },
+  change_ratio_water_usage: {
+    label: "水道使用量変化率",
+  },
   water_supply_source_info: {
     label: "水道名寄せ元情報",
   },
