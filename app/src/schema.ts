@@ -434,6 +434,12 @@ export const data_set_detail_buildings = sqliteTable(
      */
     predicted_probability: real("predicted_probability"),
 
+    max_age: integer("max_age") /** 最大年齢 */,
+    min_age: integer("min_age") /** 最小年齢 */,
+    change_ratio_water_usage: real(
+      "change_ratio_water_usage",
+    ) /** 水道使用量変化率 */,
+
     created_at: text("created_at")
       .default(sql`(CURRENT_TIMESTAMP)`)
       .notNull(),
