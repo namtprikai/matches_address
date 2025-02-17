@@ -22,4 +22,8 @@ export const BUILDING_FILE_TYPES = [
     name: "GeoPackage",
     type: "geopackage",
   },
+  {
+    name: "Shapefile",
+    type: "shapefile",
+  },
 ];
