@@ -29,7 +29,9 @@ export const DialogExportMessage = ({ dialogState }: Props): JSX.Element => {
           <DialogTitle>ダウンロード準備を開始しました</DialogTitle>
           <DialogContent>
             <Body1>
-              準備が完了すると「処理一覧画面」からファイルがダウンロードできます
+              準備が完了すると「処理一覧画面」からファイルがダウンロードできます。
+              <br />
+              ご利用のパソコンの性能によっては、処理の開始に数分かかる場合があります。しばらく経っても処理の開始がされない場合は、時間をおいて処理一覧画面を再度表示してください。
             </Body1>
           </DialogContent>
           <DialogActions>

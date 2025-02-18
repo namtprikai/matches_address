@@ -25,7 +25,9 @@ export const DialogModelMessage = ({ dialogState }: Props): JSX.Element => {
         <DialogBody>
           <DialogTitle>モデル構築処理を開始しました</DialogTitle>
           <DialogContent>
-            <Body1>モデル構築処理が完了するまで一定の時間がかかります</Body1>
+            <Body1>
+              ご利用のパソコンの性能によっては、処理の開始に数分かかる場合があります。しばらく経っても処理の開始がされない場合は、時間をおいて処理一覧画面を再度表示してください。
+            </Body1>
           </DialogContent>
           <DialogActions>
             <Button appearance="primary" onClick={() => navigator("/model")}>

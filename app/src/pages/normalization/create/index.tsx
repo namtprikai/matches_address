@@ -128,7 +128,7 @@ export function NormalizationCreate(): JSX.Element {
                   データ名寄せ処理を開始しました
                 </DialogTitle>
                 <DialogContent>
-                  名寄せ処理が完了するまで一定の時間がかかります。
+                  ご利用のパソコンの性能によっては、処理の開始に数分かかる場合があります。しばらく経っても処理の開始がされない場合は、時間をおいて処理一覧画面を再度表示してください。
                 </DialogContent>
                 <DialogActions>
                   <DialogTrigger disableButtonEnhancement>

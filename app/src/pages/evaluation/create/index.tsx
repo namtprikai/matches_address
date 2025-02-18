@@ -506,7 +506,9 @@ export const JobEvaluationCreate = (): JSX.Element => {
                 分析を開始しました
               </DialogTitle>
               <DialogContent>
-                <div>処理が完了するまで一定の時間がかかります</div>
+                <div>
+                  ご利用のパソコンの性能によっては、処理の開始に数分かかる場合があります。しばらく経っても処理の開始がされない場合は、時間をおいて処理一覧画面を再度表示してください。
+                </div>
               </DialogContent>
               <DialogActions>
                 <Button
