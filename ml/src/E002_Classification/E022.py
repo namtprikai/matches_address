@@ -106,7 +106,7 @@ def read_csv(path: str) -> pd.DataFrame:
 
         # CSVファイル以外の場合はエラーを発生させる
         if file_extension != '.csv':
-            set_error(ERROR_20001, file_extension)
+            set_error(ERROR_20001)
             raise ValueError(f"CSVファイル以外は対応していません: {file_extension}")
 
         # 複数のエンコーディングを試行
@@ -125,7 +125,7 @@ def read_csv(path: str) -> pd.DataFrame:
             return pd.read_csv(path, encoding=detected_encoding)
 
         # 適切なエンコーディングが見つからない場合、エラーを発生させる
-        set_error(ERROR_20002, path)
+        set_error(ERROR_20002)
         raise ValueError(f"適切なエンコーディングが見つかりませんでした: {path}")
     except Exception as e:
         # 何らかの例外が発生した場合、エラーメッセージを表示してNoneを返す

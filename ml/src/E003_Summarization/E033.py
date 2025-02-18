@@ -131,7 +131,7 @@ def export_data(gdf, output_path, output_format, target_unit, job_id=None):
             logging.info("GPKG exported successfully.")
         else:
             set_error(ERROR_30004)
-            raise ValueError("Unsupported output format. Use 'csv' or 'geopackage' or 'geojson'.")
+            raise ValueError("CSV形式、GeoPackage形式、GeoJSON形式のファイルを指定してください。")
         return output_path
     except Exception as e:
         if ERROR_CODE is None:

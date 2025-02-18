@@ -374,7 +374,7 @@ class EachFileProcessor(DataProcessor):
             df = df.rename(columns=rename_columns)
             missing_cols = set(OUTPUT_COLUMNS_INITIAL[file_key].values()) - set(df.columns)
             if missing_cols:
-                set_error(ERROR_00023, "水道使用量")
+                set_error(ERROR_00035)
                 raise Exception("水道使用量のデータが異常です。もう一度データを確認ください。")
             
             self.save_csv(df, self.OUTPUT_PATHS[file_key])
@@ -395,7 +395,7 @@ class EachFileProcessor(DataProcessor):
             missing_cols = set(OUTPUT_COLUMNS_INITIAL[file_key].values()) - (set(df.columns))
             file_name = FILE_NAME_JP[file_key]
             if missing_cols:
-                set_error(ERROR_00023, file_name)
+                set_error(ERROR_00036, file_name)
                 raise Exception(f"{file_name}のデータが異常です。もう一度データを確認ください。")
             
             # 処理結果をCSVファイルとして保存
@@ -545,7 +545,7 @@ def read_file(path, key, **kwargs):
             df = pd.read_excel(path, **kwargs)
         
         else:
-            set_error(ERROR_00003, file_extension)
+            set_error(ERROR_00003)
             # サポートされていないファイル形式
             raise ValueError(f"サポートされていないファイル形式です: {file_extension}")
 
@@ -759,7 +759,7 @@ def process_data(input_files, output_directory, main_data_type, job_id, columns,
             set_error(ERROR_00005)
         if task_id is not None:
             create_or_update_job_task(job_id, progress_percent="", preprocess_type="e012", error_code=ERROR_CODE, error_msg=ERROR_MSG, result=json.dumps({}), id= task_id, is_finish=True)
-        raise Exception("データクレンジング処理中にエラーが発生しました。入力データに異常や規定外のフォーマットがないかご確認ください。")
+        raise Exception("データクレンジング処理中にエラーが発生しました。")
 
 def set_error(value, param_st1=None, param_st2=None):
     global ERROR_CODE

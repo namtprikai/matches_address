@@ -129,7 +129,7 @@ class DataProcessor:
             file_extension = os.path.splitext(path)[1].lower()
             
             if file_extension not in ['.csv', '.txt']:
-                set_error(ERROR_00006, file_extension)
+                set_error(ERROR_00006)
                 raise ValueError(f"CSVファイルまたはテキストファイル以外は対応していません: {file_extension}")
             
             # 複数のエンコーディングを試行                
@@ -148,7 +148,7 @@ class DataProcessor:
                 return pd.read_csv(path, encoding=detected_encoding, **kwargs)
             
             # 適切なエンコーディングが見つからない場合、エラーを発生させる
-            set_error(ERROR_00008, path)
+            set_error(ERROR_00008)
             raise ValueError(f"適切なエンコーディングが見つかりませんでした: {path}")
         except Exception as e:
             # 何らかの例外が発生した場合、エラーメッセージを表示してNoneを返す
@@ -224,8 +224,8 @@ class SuidoProcessor(DataProcessor):
         try:
             df = normalize_dates(df, cols["meter_reading_date"], ['%Y%m%d', '%Y/%m/%d', '%d/%m/%Y', '%Y-%m-%d', '%m/%d/%Y'])
         except:
-            set_error(ERROR_00023, "検針年月日")
-            raise Exception("検針年月日のデータが異常です。もう一度データを確認ください。")
+            set_error(ERROR_00022)
+            raise Exception("'検針年月'が含まれているか、正しいカラムが指定されているかご確認ください。")
 
         # 検針年月を作成
         df["検針年月"] = df[cols["meter_reading_date"]].dt.strftime("%Y-%m")
@@ -234,7 +234,7 @@ class SuidoProcessor(DataProcessor):
         try:
             df_cleaned = df.groupby([cols["suido_number"], "検針年月"])[cols["suido_usage"]].sum().reset_index()
         except:
-            set_error(ERROR_00023, "水道番号")
+            set_error(ERROR_00037)
             raise Exception("水道番号のデータが異常です。もう一度データを確認ください。")
         
         return df_cleaned
@@ -554,7 +554,7 @@ class SuidoProcessor(DataProcessor):
             self.save_csv(df_suido, self.OUTPUT_PATHS["suido"])
         except Exception as e:
             if ERROR_CODE is None:
-                set_error(ERROR_00023, "建物情報")
+                set_error(ERROR_00038)
                 raise Exception("建物情報のデータが異常です。もう一度データを確認ください。")
 
             raise Exception(e)
@@ -599,7 +599,7 @@ class JukiProcessor(DataProcessor):
         try:
             df["年齢"] = (self.reference_date - df[cols["birth"]]).dt.days // 365
         except:
-            set_error(ERROR_00023, "生年月日")
+            set_error(ERROR_00039)
             raise Exception("生年月日のデータが異常です。もう一度データを確認ください。")
 
         # 年齢別グループを作成
@@ -720,7 +720,7 @@ class JukiProcessor(DataProcessor):
         try:
             df["住定期間"] = (self.reference_date - df[cols["move_date"]]).dt.days
         except:
-            set_error(ERROR_00023, "住定異動年月日")
+            set_error(ERROR_00040)
             raise Exception("住定異動年月日のデータが異常です。もう一度データを確認ください。")
         
         # 各世帯で最大の住定期間を取得
@@ -965,7 +965,7 @@ def process_all_data(suido_use_file, suido_status_file, juki_file, tatemono_file
             set_error(ERROR_00010)
         if task_id is not None:
             create_or_update_job_task(job_id, progress_percent="", preprocess_type="e013", error_code=ERROR_CODE, error_msg=ERROR_MSG, result=json.dumps({}), id= task_id, is_finish=True)
-        raise Exception("住居単位データ作成プロセスにおいて、水道データの処理においてエラーが発生しました。基準日より新しい日付のデータが指定されているなど、ないかご確認ください。")
+        raise Exception("住居単位データ作成プロセスにおいて、水道データの処理においてエラーが発生しました。")
 
 def normalize_dates(df, column, formats=['%Y/%m/%d', '%d/%m/%Y', '%Y-%m-%d', '%m/%d/%Y', '%Y%m%d']):
     # Initialize the temporary column with NaN values

@@ -261,8 +261,8 @@ def read_file(path: str, **kwargs) -> pd.DataFrame:
         allowed_file_extension = ['.shp','.gpkg','.geojson','.csv']
         # allowed_file_extensionファイル以外の場合はエラーを発生させる
         if file_extension not in allowed_file_extension:
-            set_error(ERROR_00021, file_extension)
-            raise ValueError(f"shapefile, GeoPackage, GeoJSON, CSV形式以外のファイル形式には対応していません。: {file_extension}")
+            set_error(ERROR_00021)
+            raise ValueError(f"shapefile, GeoPackage, CSV形式以外のファイル形式には対応していません。: {file_extension}")
         
         # 複数のエンコーディングを試行                
         encodings = [
@@ -319,7 +319,7 @@ def load_and_process_data(file_path, crs, geometry, file_type, data_type):
     if not file_extension:
         file_extension = detect_ext
     if detect_ext is not None and file_extension == "csv" and detect_ext != file_extension:
-        set_error(ERROR_00023, "ファイル形式")
+        set_error(ERROR_00041)
         raise KeyError("ファイル形式のデータが異常です。誤ったファイルを読み込んでいないかもう一度データを確認ください。")
 
     if file_extension == 'csv':
@@ -354,7 +354,7 @@ def load_and_process_data(file_path, crs, geometry, file_type, data_type):
         # 無効なジオメトリを除外
         df = df[df['geometry'].notnull()]
         if df is None:
-            set_error(ERROR_00023, "ジオメトリーカラム")
+            set_error(ERROR_00042)
             raise KeyError("ジオメトリーカラムのデータが異常です。誤ったファイルを読み込んでいないかもう一度データを確認ください。")
         if data_type == 'plateau':
             try:
@@ -372,27 +372,27 @@ def load_and_process_data(file_path, crs, geometry, file_type, data_type):
         gdf = gpd.GeoDataFrame(df, geometry='geometry', crs=4326)
         return gdf
 
-    elif file_extension == 'zip':
+    elif file_extension in ['zip', 'shp', 'shapefile'] or detect_ext == 'zip':
         # ZIPファイルかどうかを確認し、処理
         temp_folder = str(uuid.uuid4())
         temp_dir = os.path.join(os.getcwd(), temp_folder)
         os.makedirs(temp_dir, exist_ok=True)
 
         extracted_files = extract_zip(file_path, temp_dir)
-        shp_files = [f for f in extracted_files if f.endswith(".shp")]
+        shp_file = extracted_files.get('shp', None)
 
-        # shapefileが存在しない場合は、process_plateaugmlを実行
-        if not shp_files:
+        if not shp_file:
             set_error(ERROR_00033)
-            raise KeyError("建物ポリゴンがサポートしていないファイル形式です。本処理でサポートしているファイルフォーマットは、shp形式(zip形式)、gpkg形式、csv形式（geometryカラム付）のみとなります。")
+            raise KeyError("本処理でサポートしているファイルフォーマットは、shp形式(zip形式)、gpkg形式、csv形式（geometryカラム付）のみとなります。")
         else:
             # shapefileを読み込む
-            gdf = gpd.read_file(shp_files[0])
+            gdf = read_file(shp_file)
 
         if gdf.crs is None:
             # データのCRSを指定（EPSG:4326）
             gdf.set_crs(crs, inplace=True)
 
+        shutil.rmtree(temp_dir)
         # buildingID列を追加
         if data_type == 'plateau':
             try:
@@ -550,12 +550,29 @@ def extract_zip(zip_file, extract_to):
     with zipfile.ZipFile(zip_file, 'r') as zip_ref:
         zip_ref.extractall(extract_to)
 
-    # 解凍された.shp, .shx, .dbf, .prjファイルのパスを取得
-    files = os.listdir(extract_to)
-    shp_files = [os.path.join(extract_to, f) for f in files if f.endswith(".shp")]
-    shx_files = [os.path.join(extract_to, f) for f in files if f.endswith(".shx")]
-    dbf_files = [os.path.join(extract_to, f) for f in files if f.endswith(".dbf")]
-    prj_files = [os.path.join(extract_to, f) for f in files if f.endswith(".prj")]
+    def find_shp_file_in_root(directory):
+        for file in os.listdir(directory):
+            if file.endswith(".shp"):
+                return directory
+        return None
+
+    def find_shp_file_in_subfolders(directory):
+        for root, dirs, files in os.walk(directory):
+            for file in files:
+                if file.endswith(".shp"):
+                    return root
+        return None
+
+    temp_dir = find_shp_file_in_root(extract_to)
+    if not temp_dir:
+        temp_dir = find_shp_file_in_subfolders(extract_to)
+
+    files = os.listdir(temp_dir)
+
+    shp_files = [os.path.join(temp_dir, f) for f in files if f.endswith(".shp")]
+    shx_files = [os.path.join(temp_dir, f) for f in files if f.endswith(".shx")]
+    dbf_files = [os.path.join(temp_dir, f) for f in files if f.endswith(".dbf")]
+    prj_files = [os.path.join(temp_dir, f) for f in files if f.endswith(".prj")]
 
     shp_file = shp_files[0] if shp_files else None
     shx_file = shx_files[0] if shx_files else None
@@ -770,20 +787,26 @@ def add_keycode(gdf, gpkg_path):
         gdf (GeoDataFrame): 建物データの情報を紐づけた
         shp (polygon): 国勢調査の町丁字ポリゴンデータ(現状はgpkg形式で対応)
     """
-    shp = gpd.read_file(gpkg_path)
-    shp = shp.to_crs(epsg=4326)
+    try:
+        shp = gpd.read_file(gpkg_path)
+        shp = shp.to_crs(epsg=4326)
+    except:
+        set_error(ERROR_00044)
+        raise
     try:
         shp = shp[['KEY_CODE','S_NAME','geometry']]
+        gdf = gdf.to_crs(epsg=4326)
+        gdf_add_keycode = gpd.sjoin(gdf, shp, how='left', predicate='within')
+        if 'geometry_right' in gdf_add_keycode.columns:
+                gdf_add_keycode = gdf_add_keycode.drop(columns=['geometry_right'])
+                gdf_add_keycode = gdf_add_keycode.rename(columns={'geometry_left': 'geometry'})
+        gdf_add_keycode.set_geometry("geometry")
+        if gdf_add_keycode is None:
+            raise
+        return gdf_add_keycode
     except:
         set_error(ERROR_00032)
         raise
-    gdf = gdf.to_crs(epsg=4326)
-    gdf_add_keycode = gpd.sjoin(gdf, shp, how='left', predicate='within')
-    if 'geometry_right' in gdf_add_keycode.columns:
-            gdf_add_keycode = gdf_add_keycode.drop(columns=['geometry_right'])
-            gdf_add_keycode = gdf_add_keycode.rename(columns={'geometry_left': 'geometry'})
-    gdf_add_keycode.set_geometry("geometry")
-    return gdf_add_keycode
     
 def save_geodataframe(gdf, output_path, output_type):
     """
@@ -1042,7 +1065,7 @@ def process_data(tatemono_path, e14_merged_path, gpkg_path, ken, sikuchoson, opt
             tatemono = load_and_process_data(tatemono_path, crs, geometry, file_type, data_type)
         except Exception as e:
             if ERROR_CODE is None:
-                set_error(ERROR_00023, "建物ポリゴン")
+                set_error(ERROR_00043)
                 raise Exception(f"建物ポリゴンのデータが異常です。もう一度データを確認ください。")
             raise Exception(e)
         e14_merged = load_and_process_data(e14_merged_path, crs, None, 'csv', None)
@@ -1075,8 +1098,9 @@ def process_data(tatemono_path, e14_merged_path, gpkg_path, ken, sikuchoson, opt
             tatemono_use_point_add_keycode = add_keycode(tatemono_use_point, gpkg_path)
         except Exception as e:
             if ERROR_CODE is None:
-                set_error(ERROR_00023, "国勢調査")
-                raise Exception(f"国勢調査のデータが異常です。もう一度データを確認ください。")
+                set_error(ERROR_00034)
+                raise Exception(f"建物ポリゴンデータもしくは国勢調査データのジオメトリが不正なため、エラーが発生しました。")
+            raise
 
         # 集合住宅のBuildingIDを削除（水道番号が3つ以上紐づいているbuildingIDを削除）
         try:

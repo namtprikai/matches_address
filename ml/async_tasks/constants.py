@@ -9,35 +9,35 @@ ERROR_00002 = {
 }
 ERROR_00003 = {
     "code": "IF001_e012_err_import_format",
-    "message": "サポートされていないファイル形式です: {param_st1}"
+    "message": "CSV形式（UTF-8 BOM付き）のファイルを入力してください。"
 }
 ERROR_00004 = {
     "code": "IF001_e012_err_file_loading",
-    "message": "ファイルの読み込み中にエラーが発生しました"
+    "message": "CSV形式（UTF-8 BOM付き）のファイルを入力してください。"
 }
 ERROR_00005 = {
     "code": "IF001_e012_err_cleaning",
-    "message": "データクレンジング処理中にエラーが発生しました。入力データに異常や規定外のフォーマットがないかご確認ください。"
+    "message": "インプットデータが本システムのマニュアルに記載された要件に沿って作成されているかをご確認ください。入力したインプットデータの住所カラムに記載された住所が正しい表記となっているかご確認ください。"
 }
 ERROR_00006 = {
     "code": "IF001_e013_err_import_format",
-    "message": "CSVファイルまたはテキストファイル以外は対応していません"
+    "message": "CSV形式（UTF-8 BOM付き）のファイルを入力してください。"
 }
 ERROR_00007 = {
     "code": "IF001_e013_err_file_loading",
-    "message": "ファイル {param_st1} の読み込み中にエラーが発生しました"
+    "message": "CSV形式（UTF-8 BOM付き）のファイルを入力してください。"
 }
 ERROR_00008 = {
     "code": "IF001_e013_err_encoding",
-    "message": "適切なエンコーディングが見つかりませんでした: {param_st1}"
+    "message": "CSV形式（UTF-8 BOM付き）のファイルを入力してください。"
 }
 ERROR_00009 = {
     "code": "IF001_e013_err_export_encoding",
     "message": "ファイル {param_st1} を {param_st2} エンコーディングで保存中にエラーが発生しました"
 }
 ERROR_00010 = {
-    "code": "IF001_e013_err_residential_creation",
-    "message": "住居単位データ作成プロセスにおいて、水道データの処理においてエラーが発生しました。基準日より新しい日付のデータが指定されているなど、ないかご確認ください。"
+    "code": "IF001_e013_err_residential_water_creation",
+    "message": "入力したインプットデータ（水道使用量、水道開閉栓状況）の水道番号カラムが正しく記載されているかご確認ください。入力したインプットデータ（水道使用量）のなかに、「推定したい日付」に設定した推定日の月よりも新しい月のデータが含まれている場合には、該当のデータを削除してください。"
 }
 ERROR_00011 = {
     "code": "IF001_e014_err_file_loading",
@@ -49,7 +49,7 @@ ERROR_00012 = {
 }
 ERROR_00013 = {
     "code": "IF001_e014_err_text_matching",
-    "message": "テキストマッチング処理中にエラーが発生しました。"
+    "message": "入力したインプットデータの住所カラムに記載された住所が正しい表記となっているかご確認ください。"
 }
 ERROR_00014 = {
     "code": "IF001_e016_err_file_loading",
@@ -57,7 +57,7 @@ ERROR_00014 = {
 }
 ERROR_00015 = {
     "code": "IF001_e016_err_convert_wkt",
-    "message": "WKTの解析中にエラーが発生しましたT"
+    "message": "建物ポリゴンデータで指定したジオメトリカラムが正しいWKT (Well-Known Text) 方式の文字列となっているかご確認ください。確認方法が不明な場合には、取得した建物ポリゴンデータを管理している部門に問い合わせを推奨します。"
 }
 ERROR_00016 = {
     "code": "IF001_e016_err_export_encoding_gpk",
@@ -73,19 +73,19 @@ ERROR_00018 = {
 }
 ERROR_00019 = {
     "code": "IF001_e016_err_spatial_join",
-    "message": "空間結合処理中にエラーが発生しました。ジオメトリに不正がないか、ご確認ください。"
+    "message": "CSV形式で建物ポリゴンデータを入力している場合、ジオメトリカラムの指定や記載に誤りがないかなどをご確認ください。ジオコーディング済みデータのファイル形式や緯度経度のカラム指定に誤りがないか、緯度経度データに不備がないかご確認ください。"
 }
 ERROR_00020 = {
     "code": "IF001_e013_err_date_incorrect",
-    "message": "基準日が不正です。正しいフォーマットになっているか、もしくは正しい日付となっているかかご確認ください 。"
+    "message": "入力した水道使用量データの期間に推定日が含まれているかご確認ください 。入力した水道使用量データの期間が推定日から遡って1年間が含まれているかご確認ください。"
 }
 ERROR_00021 = {
-    "code": "IF001_e013_err_allow_ext",
-    "message": "shapefile, GeoPackage, GeoJSON, CSV形式以外のファイル形式には対応していません。: {param_st1}"
+    "code": "IF001_e016_err_allow_ext",
+    "message": "本システムでサポートしているファイル形式（shp形式(zip)、gpkg形式、csv形式（geometryカラム付））を入力してください。"
 }
 ERROR_00022 = {
     "code": "IF001_e013_err_meter_reading_date",
-    "message": "'検針年月'がデータフレームに含まれていません"
+    "message": "入力したインプットデータ（水道開閉栓状況）の検針年月カラムが正しく指定されているか、日付が正しく記載されているかご確認ください。"
 }
 ERROR_00023 = {
     "code": "IF001_err_data",
@@ -93,7 +93,7 @@ ERROR_00023 = {
 }
 ERROR_00024 = {
     "code": "IF001_e016_err_geometry",
-    "message": "'geometry' 列または 'lat_geocoding_cleaned' と 'lon_geocoding_cleaned' 列が必要です"
+    "message": "'geometry' 列または 'lat_geocoding_cleaned' と 'lon_geocoding_cleaned' 列が必要です。"
 }
 ERROR_00025 = {
     "code": "IF001_e016_err_encoding",
@@ -109,41 +109,85 @@ ERROR_00027 = {
 }
 ERROR_00028 = {
     "code": "IF001_e013_err_residential_juki_creation",
-    "message": "住居単位データ作成プロセスにおいて、住民基本台帳データの処理においてエラーが発生しました。"
+    "message": "入力したインプットデータ（住民基本台帳）の世帯番号カラムが正しく記載されているかご確認ください。"
 }
 ERROR_00029 = {
     "code": "IF001_e013_err_residential_toki_creation",
-    "message": "住居単位データ作成プロセスにおいて、登記データの処理においてエラーが発生しました。"
+    "message": "入力したインプットデータ（建物情報）が本システムのマニュアルに記載された要件に沿って作成されているかご確認ください。"
 }
 ERROR_00030 = {
     "code": "IF001_e016_err_building_id",
-    "message": "建物ポリゴンにbuildingIDカラムがありません。"
+    "message": "正常なbuildingIDカラムを付与して、再度お試しください。"
 }
 ERROR_00031 = {
     "code": "IF001_e016_err_merge_building_and_textmatchedresult",
-    "message": "建物データとテキスト結合済データの結合（e14）においてエラーが発生しました。"
+    "message": "CSV形式で建物ポリゴンデータを入力している場合、ジオメトリカラムの指定や記載に誤りがないかなどをご確認ください。ジオコーディング済みデータのファイル形式や緯度経度のカラム指定に誤りがないか、緯度経度データに不備がないかご確認ください。"
 }
 ERROR_00032 = {
     "code": "IF001_e016_err_add_keycode",
-    "message": "国勢調査データにはKEY_CODEカラムとS_NAMEカラム、geometryカラムが必要です。これらのカラムが入っているかご確認ください。"
+    "message": "国勢調査データにはKEY_CODEカラムとS_NAMEカラム、geometryカラムが必要です。元データに不備がある場合には国勢調査データの管理部署（総務省）に問い合わせを推奨します。"
 }
 ERROR_00033 = {
     "code": "IF001_e016_err_data_format",
-    "message": "建物ポリゴンがサポートしていないファイル形式です。本処理でサポートしているファイルフォーマットは、shp形式(zip形式)、gpkg形式、csv形式（geometryカラム付）のみとなります。"
+    "message": "本システムでサポートしているファイル形式（shp形式(zip)、gpkg形式、csv形式（geometryカラム付））を入力してください。"
+}
+ERROR_00034 = {
+    "code": "IF001_e016_err_merge_geometry_failure",
+    "message": "Shapefile形式で建物ポリゴンデータを入力している場合、座標系情報が正しくZIP内に保存されているかなどをご確認ください。CSV形式で建物ポリゴンデータを入力している場合、ジオメトリカラムの指定や記載に誤りがないかなどをご確認ください。"
+}
+ERROR_00035 = {
+    "code": "IF001_e012_err_water_usage",
+    "message": "入力したインプットデータ（水道使用量）が本システムのマニュアルに記載された要件に沿って作成されているかご確認ください。"
+}
+ERROR_00036 = {
+    "code": "IF001_e012_err_create_data_processed",
+    "message": "入力したインプットデータ（{param_st1}）が本システムのマニュアルに記載された要件に沿って作成されているかご確認ください。"
+}
+ERROR_00037 = {
+    "code": "IF001_e013_err_suido_number",
+    "message": "水道番号が本システムのマニュアルに記載された要件に沿って作成されているかご確認ください。"
+}
+ERROR_00038 = {
+    "code": "IF001_e013_err_building_information",
+    "message": "建物情報が本システムのマニュアルに記載された要件に沿って作成されているかご確認ください。"
+}
+ERROR_00039 = {
+    "code": "IF001_e013_err_data_birth",
+    "message": "住民基本台帳の生年月日情報が本システムのマニュアルに記載された要件に沿って作成されているかご確認ください。"
+}
+ERROR_00040 = {
+    "code": "IF001_e013_err_data_move_date",
+    "message": "住定異動年月日が本システムのマニュアルに記載された要件に沿って作成されているかご確認ください。"
+}
+ERROR_00041 = {
+    "code": "IF001_e016_err_format_ext_building_polygon",
+    "message": "誤って別のファイルを読み込んでいないか、ご確認ください。"
+}
+ERROR_00042 = {
+    "code": "IF001_e016_err_csv_geometry",
+    "message": "入力しているジオメトリカラムの指定や内容に誤りがないかなどをご確認ください。"
+}
+ERROR_00043 = {
+    "code": "IF001_e016_err_data_building_polygon",
+    "message": "誤って別のファイルを読み込んでいないか、ご確認ください。データに不備がある場合にはデータ提供元に問い合わせを推奨します。"
+}
+ERROR_00044 = {
+    "code": "IF001_e016_err_data_gpkg",
+    "message": "Geopackage形式の場合、座標系情報が正しくZIP内に保存されているかなどをご確認ください。他に複数レイヤが入っている場合にデータ提供元に問い合わせを推奨します。"
 }
 
 # IF002
 ERROR_10001 = {
     "code": "IF002_e021_err_import_format",
-    "message": "CSVファイル以外は対応していません: {param_st1}"
+    "message": "CSV形式（UTF-8 BOM付き）ファイルを入力してください。"
 }
 ERROR_10002 = {
     "code": "IF002_e021_err_import_encoding",
-    "message": "適切なエンコーディングが見つかりませんでした: {param_st2}"
+    "message": "文字エンコーディングがUTF-8BOM付きのCSV形式ファイルを登録してください。"
 }
 ERROR_10003 = {
     "code": "IF002_e021_err_import_path",
-    "message": "ファイル {param_st1} の読み込み中にエラーが発生しました"
+    "message": "CSV形式（UTF-8 BOM付き）ファイルを入力してください。"
 }
 ERROR_10004 = {
     "code": "IF002_e021_err_export_format",
@@ -155,29 +199,29 @@ ERROR_10005 = {
 }
 ERROR_10006 = {
     "code": "IF002_e021_err_model_learning",
-    "message": "空き家判定の学習モデル構築中にエラーが発生しました。"
+    "message": "説明変数に使用できないカラムが選択されています。操作マニュアルに記載の説明変数に用いることができるカラムを参照してください。"
 }
 ERROR_10007 = {
     "code": "IF002_e021_err_convert_str_to_list",
-    "message": "空き家判定の学習モデル構築用のデータセットに異常がありました"
+    "message": "説明変数に指定したカラム名が文字化けしているなど読み取れない状態になっている可能性があります。ご確認ください。説明変数に指定したカラムのうち、同じカラム名称のものが複数ある可能性があります。ご確認ください。"
 }
 
 # IF003
 ERROR_20001 = {
     "code": "IF003_e022_err_import_format",
-    "message": "CSVファイル以外は対応していません: {param_st1}"
+    "message": "CSV形式（UTF-8 BOM付き）ファイルを入力してください。"
 }
 ERROR_20002 = {
     "code": "IF003_e022_err_import_encoding",
-    "message": "適切なエンコーディングが見つかりませんでした: {param_st1}"
+    "message": "CSV形式（UTF-8 BOM付き）ファイルを入力してください。"
 }
 ERROR_20003 = {
     "code": "IF003_e022_err_import_path",
-    "message": "ファイル {param_st1} の読み込み中にエラーが発生しました"
+    "message": "CSV形式（UTF-8 BOM付き）ファイルを入力してください。"
 }
 ERROR_20004 = {
     "code": "IF003_e022_err_model_missing",
-    "message": "学習に使用したデータと予測に使用するデータの列が一致しません!不足している特徴量: {param_st1}"
+    "message": "学習に使用したデータと予測に使用するデータの列が一致しないため、エラーが発生しています。不足している特徴量: {param_st1}"
 }
 ERROR_20005 = {
     "code": "IF003_e022_err_export_encoding",
@@ -189,39 +233,47 @@ ERROR_20006 = {
 }
 ERROR_20007 = {
     "code": "IF003_e022_err_insert_sql",
-    "message": "データベースへのインポートに失敗しました。"
+    "message": "セキュリティソフト等により、アプリケーションの実行ファイル内にあるデータベースシステム（SQLite）の実行がブロックされてる可能性があります。情報システム部門への問い合わせを推奨します。"
 }
 ERROR_20008 = {
     "code": "IF003_e022_err_perform_determination",
-    "message": "空き家判定処理中にエラーが発生しました。"
+    "message": "AIモデルの際に用いた名寄せ処理済データと空き家推定の分析対象に選択した名寄せ処理済データのカラム構成が異なっている可能性があります。ご確認ください。"
 }
 ERROR_20009 = {
     "code": "IF003_e032_err_areadata_csv",
-    "message": "アップロードされたCSV形式の地域集計用データにはgeometryカラム（WKTフォーマット）が入っていないため、読込ができません。"
+    "message": "地域集計用データ（CSV形式）にジオメトリカラム（WKTフォーマット）を加えてください。"
 }
 ERROR_20010 = {
     "code": "IF003_e032_err_areadata_format",
-    "message": "地域集計用データがサポートしていないファイル形式です。本処理でサポートしているファイルフォーマットは、shp形式(zip形式)、gpkg形式、csv形式（geometryカラム付）のみとなります。"
+    "message": "本システムでサポートしているファイル形式（shp形式(zip)、gpkg形式、csv形式（geometryカラム付））を入力してください。"
 }
 ERROR_20011 = {
     "code": "IF003_e032_err_areadata_import",
-    "message": "地域集計用データが適切に読み込まれていません。エンコーディングやファイル形式などに異常がないかご確認ください。"
+    "message": "本システムでサポートしているファイル形式（shp形式(zip)、gpkg形式、csv形式（geometryカラム付））を入力してください。"
 }
 ERROR_20012 = {
     "code": "IF003_e032_err_aggregation",
-    "message": "地域集計処理においてエラーが発生しています。集計に用いているデータに型の不一致や欠損がないかご確認ください。"
+    "message": "集計に用いている地域集計処理データの座標系が付与されているかご確認ください。元データに不備がある場合にはデータ提供元に問い合わせを推奨します。"
 }
 ERROR_20013 = {
     "code": "IF003_e032_err_insert_sql",
-    "message": "データベースへのインポートに失敗しました。"
+    "message": "セキュリティソフト等により、アプリケーションの実行ファイル内にあるデータベースシステム（SQLite）の実行がブロックされてる可能性があります。情報システム部門への問い合わせを推奨します。"
 }
 ERROR_20014 = {
     "code": "IF003_e032_err_allow_ext",
-    "message": "shapefile, GeoPackage, GeoJSON, CSV形式以外のファイル形式には対応していません。: {param_st1}"
+    "message": "本システムでサポートしているファイル形式（shp形式(zip)、gpkg形式、csv形式（geometryカラム付））を入力してください。"
 }
 ERROR_20015 = {
-    "code": "IF003_err_data",
-    "message": "{param_st1}のデータが異常です。もう一度データを確認ください。"
+    "code": "IF003_err_aggregation_data",
+    "message": "地域集計用データがzipに含まれていない可能性があります。shapefileの読み込みにはshp, shx, prj, dbfの４種類のファイルが必要となります。"
+}
+ERROR_20016 = {
+    "code": "IF003_e032_err_areadata_import_gpkg",
+    "message": "Geopackage形式の場合、座標系情報が正しくZIP内に保存されているかなどをご確認ください。他に複数レイヤが入っている場合にデータ提供元に問い合わせを推奨します。"
+}
+ERROR_20017 = {
+    "code": "IF003_e032_err_areadata_import_shp",
+    "message": "Shapefile形式の場合、座標系情報が正しくZIP内に保存されているかなどをご確認ください。Shapefileの読み込みにはshp, shx, prj, dbfの４種類のファイルが必要となります。"
 }
 
 # IF004
@@ -235,14 +287,12 @@ ERROR_30002 = {
 }
 ERROR_30003 = {
     "code": "IF004_e033_err_conversion",
-    "message": "ファイル の変換処理中にエラーが発生しました。正しいCRS（参照座標系）になっているかご確認ください。"
+    "message": "正しいCRS（参照座標系）になっているかご確認ください。"
 }
 ERROR_30004 = {
     "code": "IF004_e033_err_allow_ext",
-    "message": "サポートされていない出力フォーマットです。CSV形式、GeoPackage形式、GeoJSON形式のファイルを指定してください。."
+    "message": "CSV形式、GeoPackage形式、GeoJSON形式のファイルを指定してください。"
 }
-
-
 
 TRANSLATE_COLUMNS_BUILDING = {
     "id":"データ番号",

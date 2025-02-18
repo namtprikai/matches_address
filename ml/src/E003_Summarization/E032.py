@@ -274,7 +274,7 @@ class Summarization:
             allowed_file_extension = ['.shp','.gpkg','.geojson','.csv']
             # allowed_file_extensionファイル以外の場合はエラーを発生させる
             if file_extension not in allowed_file_extension:
-                set_error(ERROR_20014, file_extension)
+                set_error(ERROR_20014)
                 raise ValueError(f"shapefile, GeoPackage, GeoJSON, CSV形式以外のファイル形式には対応していません。: {file_extension}")
             
             # 複数のエンコーディングを試行                
@@ -326,10 +326,18 @@ class Summarization:
         # city_block のファイル形式に応じて読み込み
         if "shp" in self.INPUT_PATHS["city_block"]:
             print("Reading shapefile...")
-            city_block_gdf = self.read_file(self.INPUT_PATHS["city_block"])
+            try:
+                city_block_gdf = self.read_file(self.INPUT_PATHS["city_block"])
+            except:
+                set_error(ERROR_20017)
+                raise("Shapefile形式の場合、座標系情報が正しくZIP内に保存されているかなどをご確認ください。Shapefileの読み込みにはshp, shx, prj, dbfの４種類のファイルが必要となります。")
         elif "gpkg" in self.INPUT_PATHS["city_block"]:
             print("Reading GeoPackage...")
-            city_block_gdf = self.read_file(self.INPUT_PATHS["city_block"])
+            try:
+                city_block_gdf = self.read_file(self.INPUT_PATHS["city_block"])
+            except:
+                set_error(ERROR_20016)
+                raise("Geopackage形式の場合、座標系情報が正しくZIP内に保存されているかなどをご確認ください。他に複数レイヤが入っている場合にデータ提供元に問い合わせを推奨します。")
         elif "geojson" in self.INPUT_PATHS["city_block"]:
             print("Reading GeoJSON...")
             city_block_gdf = self.read_file(self.INPUT_PATHS["city_block"])
@@ -345,11 +353,11 @@ class Summarization:
                 raise ValueError("CSV does not contain a 'geometry' column with WKT data.")
         else:
             set_error(ERROR_20010)
-            raise ValueError("No valid spatial file format found")
+            raise ValueError("本処理でサポートしているファイルフォーマットは、shp形式(zip形式)、gpkg形式、csv形式（geometryカラム付）のみとなります")
 
         if city_block_gdf is None:
             set_error(ERROR_20011)
-            raise ValueError("city_block_gdf is None. File may not have been read correctly.")
+            raise ValueError("エンコーディングやファイル形式などに異常がないかご確認ください。")
         
         # 座標系変換
         residence_gdf = residence_gdf.to_crs("EPSG:4326")
@@ -423,8 +431,8 @@ def extract_zip(zip_file, extract_to):
         files = os.listdir(extract_to)
         shp_file = [os.path.join(extract_to, f) for f in files if f.endswith(".shp")][0]
     except:
-        set_error(ERROR_20015, "地域集計用データ")
-        raise Exception("地域集計用データのデータが異常です。もう一度データを確認ください。")
+        set_error(ERROR_20015)
+        raise Exception("地域集計用データがzipに含まれていない可能性があります。shapefileの読み込みにはshp, shx, prj, dbfの４種類のファイルが必要となります。")
     return shp_file
 
 
@@ -495,7 +503,7 @@ def process_summarization(akiya_pred_file, spatial_file, output_dir, key_column,
             }
 
         else:
-            set_error(ERROR_20014, file_ext)
+            set_error(ERROR_20014)
             raise ValueError(f"Unsupported file format: {file_ext}")
         
         if job_id:
@@ -517,7 +525,7 @@ def process_summarization(akiya_pred_file, spatial_file, output_dir, key_column,
             set_error(ERROR_20012)
         if task_id is not None:
             create_or_update_job_task(job_id, progress_percent="", preprocess_type=None, error_code=ERROR_CODE, error_msg=ERROR_MSG, result=json.dumps({}), id= task_id, is_finish=True)
-        raise Exception("地域集計処理においてエラーが発生しています。集計に用いているデータに型の不一致や欠損がないかご確認ください。")
+        raise Exception("集計に用いているデータに型の不一致や欠損がないかご確認ください")
 
 def set_error(value, param_st1=None, param_st2=None):
     global ERROR_CODE
