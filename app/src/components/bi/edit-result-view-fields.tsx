@@ -153,7 +153,7 @@ export const EditResultViewFields = ({
                           const newParameters = [
                             ...prevOtherParameters,
                             ...parameters,
-                          ] as SelectResultView["parameters"]; // union の型推論が効きづらいため、明示的に型を指定;
+                          ];
                           replace(newParameters);
                         }}
                         parameters={groupingFields}

@@ -71,9 +71,7 @@ export const FormGroupingResultView = ({
 
   const styles = useStyles();
 
-  const { register, getValues } = formGroupingResultView;
-
-  console.log("grouping data", getValues());
+  const { register } = formGroupingResultView;
 
   const {
     parameterFilters,

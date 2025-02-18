@@ -87,10 +87,12 @@ function FormComponent({
   return selectedResultViewId && selectedResultView ? (
     <FormProvider {...form}>
       <form className={styles.form} onSubmit={onSubmit}>
-        {Object.entries(errors).map(
-          ([key, error]) =>
-            error.message && <ErrorMessage key={key} msg={error.message} />,
-        )}
+        {Object.entries(errors).map(([key, error]) => (
+          <ErrorMessage
+            key={key}
+            msg={`【${key}】の設定を確認してください.${error.message}`}
+          />
+        ))}
         <EditResultViewFields
           dataSetResultId={selectedResultView.data_set_result_id}
         />
