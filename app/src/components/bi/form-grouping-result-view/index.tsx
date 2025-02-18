@@ -178,12 +178,21 @@ export const FormGroupingResultView = ({
                             register={register}
                             unit={unit}
                             update={(e) => {
+                              const referenceColumnType =
+                                e.target.value === "range"
+                                  ? field.value.referenceColumnType + "Range"
+                                  : field.value.referenceColumnType.replace(
+                                      "Range",
+                                      "",
+                                    );
                               update(index, {
                                 key: field.key,
                                 value: {
                                   ...field.value,
                                   // @ts-expect-error - ここで型が変わるためエラーになる
                                   operation: e.target.value,
+                                  // @ts-expect-error - 解決できない
+                                  referenceColumnType,
                                 },
                                 type: "group",
                               });

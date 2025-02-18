@@ -105,7 +105,7 @@ export const FieldNumber = ({
       {field.value.operation === "range" ? (
         <>
           <Input
-            defaultValue={field.value.startValue.toString()}
+            defaultValue={field.value.startValue?.toString()}
             placeholder="開始値"
             type="number"
             {...register(`parameters.${index}.value.startValue`)}
@@ -122,7 +122,7 @@ export const FieldNumber = ({
           </div>
           <span>〜</span>
           <Input
-            defaultValue={field.value.lastValue.toString()}
+            defaultValue={field.value.lastValue?.toString()}
             placeholder="終了値"
             type="number"
             {...register(`parameters.${index}.value.lastValue`)}
@@ -140,7 +140,7 @@ export const FieldNumber = ({
         </>
       ) : (
         <Input
-          defaultValue={field.value.value ? field.value.value.toString() : ""}
+          defaultValue={field.value.value ? field.value.value?.toString() : ""}
           {...register(`parameters.${index}.value.value`)}
           className={styles.inputValue}
           placeholder="グループごとの値"
