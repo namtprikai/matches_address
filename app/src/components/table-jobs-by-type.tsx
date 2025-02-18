@@ -1,4 +1,6 @@
 import {
+  Caption1,
+  Caption1Strong,
   Table,
   TableBody,
   makeStyles,
@@ -14,6 +16,9 @@ import { TableRowJobs } from "./table-rows-jobs";
 const useStyles = makeStyles({
   notFound: {
     fontSize: "14px",
+    padding: `${tokens.spacingVerticalS} 0`,
+    display: "grid",
+    gap: tokens.spacingVerticalXS,
   },
   root: {
     display: "grid",
@@ -72,7 +77,20 @@ export const TableJobsByType = ({ jobType }: Props): JSX.Element => {
   if (data === undefined) return <></>;
 
   if (data.length === 0) {
-    return <p className={styles.notFound}>現在実行中の処理はありません</p>;
+    return (
+      <>
+        <div className={styles.header}>
+          <h4 className={styles.h4}>処理一覧</h4>
+        </div>
+        <div className={styles.notFound}>
+          <Caption1Strong>現在実行中の処理はありません。</Caption1Strong>
+
+          <Caption1>
+            ※ご利用のパソコンの性能によっては、処理の開始に数分かかる場合があります。しばらく経っても処理の開始がされない場合は、時間をおいて処理一覧画面を再度表示してください。
+          </Caption1>
+        </div>
+      </>
+    );
   }
 
   const hasData = data && data.length > 0;
