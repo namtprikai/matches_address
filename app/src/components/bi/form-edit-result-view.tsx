@@ -1,7 +1,8 @@
 import { useAtom } from "jotai";
 import { FormProvider } from "react-hook-form";
-import { makeStyles } from "@fluentui/react-components";
-import { useEffect } from "react";
+import { Caption1Strong, makeStyles, tokens } from "@fluentui/react-components";
+import { useEffect, useState } from "react";
+import { Dismiss24Regular } from "@fluentui/react-icons";
 import { selectedResultViewIdAtom } from "../../state/selected-result-view-id-atom";
 import { type SelectResultSheet, type SelectResultView } from "../../schema";
 import { useFetchResultView } from "../../hooks/use-fetch-result-view";
@@ -17,6 +18,20 @@ const useStyles = makeStyles({
   form: {
     display: "grid",
     gap: "24px",
+  },
+  closeIcon: {
+    height: "12px",
+    width: "12px",
+  },
+  success: {
+    display: "flex",
+    alignItems: "center",
+    gap: "4px",
+    justifyContent: "center",
+  },
+  buttonContainer: {
+    display: "grid",
+    gap: "8px",
   },
 });
 
@@ -81,7 +96,7 @@ function FormComponent({
     selectedResultViewId,
   });
   const {
-    formState: { errors },
+    formState: { errors, isDirty },
   } = form;
 
   const KEY_LABEL_MAP: Record<string, string> = {
@@ -92,9 +107,30 @@ function FormComponent({
     parameters: "パラメータ",
   };
 
+  // 保存が成功したかどうかをハンドリングするためのステート
+  const [success, setSuccess] = useState(false);
+  useEffect(() => {
+    if (isDirty) {
+      setSuccess(false);
+    }
+  }, [isDirty]);
+  useEffect(() => {
+    setSuccess(false);
+  }, [selectedResultViewId]);
+
   return selectedResultViewId && selectedResultView ? (
     <FormProvider {...form}>
-      <form className={styles.form} onSubmit={onSubmit}>
+      <form
+        className={styles.form}
+        onSubmit={async (e) => {
+          try {
+            await onSubmit(e);
+            setSuccess(true);
+          } catch (error) {
+            console.error(error);
+          }
+        }}
+      >
         {Object.entries(errors).map(([key, error]) => (
           <ErrorMessage
             key={key}
@@ -105,9 +141,25 @@ function FormComponent({
           dataSetResultId={selectedResultView.data_set_result_id}
         />
         <EditResultViewFilterFields resultView={selectedResultView} />
-        <Button appearance="primary" type="submit">
-          入力内容を保存する
-        </Button>
+        <div className={styles.buttonContainer}>
+          <Button appearance="primary" type="submit">
+            入力内容を保存する
+          </Button>
+          {success && (
+            <div className={styles.success}>
+              <Caption1Strong>保存が完了しました</Caption1Strong>
+              <Button
+                appearance="transparent"
+                onClick={() => setSuccess(false)}
+              >
+                <Dismiss24Regular
+                  className={styles.closeIcon}
+                  color={tokens.colorNeutralForeground1}
+                />
+              </Button>
+            </div>
+          )}
+        </div>
       </form>
     </FormProvider>
   ) : (
