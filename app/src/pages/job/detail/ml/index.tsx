@@ -4,6 +4,7 @@ import {
   Text,
   typographyStyles,
   mergeClasses,
+  Tooltip,
 } from "@fluentui/react-components";
 import { useNavigate, useParams } from "react-router-dom";
 import {
@@ -12,7 +13,6 @@ import {
   PolarGrid,
   PolarAngleAxis,
   PolarRadiusAxis,
-  Tooltip,
 } from "recharts";
 import { ArrowLeftRegular } from "@fluentui/react-icons";
 import { DialogSaveWithName } from "../../../../components/dialog-save-with-name";
@@ -136,6 +136,7 @@ const useStyles = makeStyles({
     color: tokens.colorNeutralForeground2,
   },
   yAxisLabelText: {
+    maxWidth: "150px",
     overflow: "hidden",
     whiteSpace: "nowrap",
     textOverflow: "ellipsis",
@@ -220,11 +221,11 @@ export function MlDetail(): JSX.Element {
 
   // result オブジェクトから radarData を生成
   const radarData = [
-    { subject: "正解率", A: parseFloat(result.accuracy) },
-    { subject: "F値", A: parseFloat(result.f1Score) },
-    { subject: "特異度", A: parseFloat(result.specificity) },
-    { subject: "適合率", A: parseFloat(result.precision) },
-    { subject: "再現率", A: parseFloat(result.recall) },
+    { subject: "正解率", A: Number.parseFloat(result.accuracy) },
+    { subject: "F値", A: Number.parseFloat(result.f1Score) },
+    { subject: "特異度", A: Number.parseFloat(result.specificity) },
+    { subject: "適合率", A: Number.parseFloat(result.precision) },
+    { subject: "再現率", A: Number.parseFloat(result.recall) },
   ];
 
   // important_columns から chartData を生成
@@ -232,7 +233,7 @@ export function MlDetail(): JSX.Element {
     result.important_columns && result.important_columns.length
       ? result.important_columns.map((item) => ({
           label: item.column,
-          value: parseFloat(item.value),
+          value: Number.parseFloat(item.value),
         }))
       : [];
 
@@ -342,7 +343,6 @@ export function MlDetail(): JSX.Element {
                 name="指標"
                 stroke={isLowAccuracy ? ERROR_COLOR : SAFE_COLOR}
               />
-              <Tooltip />
             </RadarChart>
             {isLowAccuracy && (
               <div className={styles.detail}>
@@ -379,9 +379,15 @@ export function MlDetail(): JSX.Element {
               {/* Y軸のラベル */}
               <div className={styles.yAxisLabel}>
                 {chartData.map((data, index) => (
-                  <Text key={index} className={styles.yAxisLabelText}>
-                    {data.label || "--"}
-                  </Text>
+                  <Tooltip
+                    key={index}
+                    content={data.label || "--"}
+                    relationship="label"
+                  >
+                    <Text className={styles.yAxisLabelText}>
+                      {data.label || "--"}
+                    </Text>
+                  </Tooltip>
                 ))}
               </div>
               <div style={{ flex: 1 }}>
