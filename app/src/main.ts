@@ -1,4 +1,12 @@
-import { app, BrowserWindow, ipcMain, session } from "electron";
+import {
+  app,
+  BrowserWindow,
+  ipcMain,
+  session,
+  Menu,
+  type MenuItemConstructorOptions,
+  type MenuItem,
+} from "electron";
 import { join } from "path";
 import os from "os";
 import { readdirSync, readFileSync } from "fs";
@@ -20,6 +28,69 @@ const port = 3000;
 
 const isDev = process.env.NODE_ENV === "development";
 
+const createMenu = (mainWindow: BrowserWindow): void => {
+  const template: Array<MenuItemConstructorOptions | MenuItem> = [
+    {
+      label: "ファイル",
+      submenu: [
+        {
+          label: "終了",
+          role: "quit",
+          accelerator: "Alt+F4",
+        },
+      ],
+    },
+    {
+      label: "表示",
+      submenu: [
+        {
+          label: "再読み込み",
+          accelerator: "CmdOrCtrl+R",
+          click: () => mainWindow.webContents.reload(),
+        },
+        {
+          label: "強制再読み込み",
+          accelerator: "Shift+CmdOrCtrl+R",
+          click: () => mainWindow.webContents.reloadIgnoringCache(),
+        },
+        { type: "separator" },
+        {
+          label: "実際のサイズ",
+          role: "resetZoom",
+          accelerator: "CmdOrCtrl+0",
+        },
+        {
+          label: "拡大",
+          role: "zoomIn",
+          accelerator: "CmdOrCtrl+Plus",
+        },
+        {
+          label: "縮小",
+          role: "zoomOut",
+          accelerator: "CmdOrCtrl+-",
+        },
+      ],
+    },
+    {
+      label: "ウィンドウ",
+      submenu: [
+        {
+          label: "最小化",
+          role: "minimize",
+          accelerator: "CmdOrCtrl+M",
+        },
+        {
+          label: "ズーム",
+          role: "zoom",
+        },
+      ],
+    },
+  ];
+
+  const menu = Menu.buildFromTemplate(template);
+  Menu.setApplicationMenu(menu);
+};
+
 const createWindow = (): void => {
   // Create the browser window.
   const mainWindow = new BrowserWindow({
@@ -29,6 +100,8 @@ const createWindow = (): void => {
       preload: join(__dirname, "preload.js"),
     },
   });
+
+  createMenu(mainWindow);
 
   // Load the app
   if (MAIN_WINDOW_VITE_DEV_SERVER_URL) {
