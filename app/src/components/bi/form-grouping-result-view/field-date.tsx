@@ -66,8 +66,10 @@ export const FieldDate = ({
 }: Props): JSX.Element => {
   const styles = useStyles();
   if (
-    field.value.referenceColumnType === "date" ||
-    field.value.referenceColumnType === "dateRange"
+    !(
+      field.value.referenceColumnType === "date" ||
+      field.value.referenceColumnType === "dateRange"
+    )
   )
     return <></>;
 
