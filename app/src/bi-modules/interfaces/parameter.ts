@@ -56,3 +56,9 @@ export const isFilterCondition = (
 ): parameter is FilterCondition => {
   return parameter.type === "filter" && parameter.key.startsWith("filter_");
 };
+
+export const isGroupCondition = (
+  parameter: Parameter,
+): parameter is GroupCondition => {
+  return parameter.type === "group" && parameter.key.startsWith("group_");
+};

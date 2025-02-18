@@ -14,7 +14,10 @@ import { DialogSurface } from "../../ui/dialog-surface";
 import { DialogTitle } from "../../ui/dialog-title";
 import { DialogActions } from "../../ui/dialog-actions";
 import { DialogContent } from "../../ui/dialog-content";
-import { type Parameter } from "../../../bi-modules/interfaces/parameter";
+import {
+  isGroupCondition,
+  type Parameter,
+} from "../../../bi-modules/interfaces/parameter";
 import { useFormGroupingResultView } from "../../../bi-modules/hooks/use-form-grouping-result-view";
 import { FieldBoolean } from "./field-boolean";
 import { FieldText } from "./field-text";
@@ -85,6 +88,10 @@ export const FormGroupingResultView = ({
     onSave,
     columnType,
   });
+
+  const formatedParameterFilters = [...parameterFilters].filter((parameter) =>
+    isGroupCondition(parameter),
+  );
 
   return (
     <>
@@ -227,10 +234,10 @@ export const FormGroupingResultView = ({
           </DialogBody>
         </DialogSurface>
       </Dialog>
-      {parameterFilters.length ? (
+      {formatedParameterFilters.length ? (
         <Caption1
           className={styles.textRight}
-        >{`${parameterFilters.length}件のグループを追加済み`}</Caption1>
+        >{`${formatedParameterFilters.length}件のグループを追加済み`}</Caption1>
       ) : null}
     </>
   );
