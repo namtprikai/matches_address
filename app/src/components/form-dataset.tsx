@@ -192,12 +192,7 @@ export const FormDataset = ({
                   {...form?.register("data.building_polygon.input_file_type")}
                 >
                   {BUILDING_FILE_TYPES.map((option) => (
-                    <option
-                      key={option.type}
-                      value={
-                        option.type as FormType["data"]["building_polygon"]["input_file_type"]
-                      }
-                    >
+                    <option key={option.type} value={option.type}>
                       {option.name}
                     </option>
                   ))}

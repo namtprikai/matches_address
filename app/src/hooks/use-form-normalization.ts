@@ -79,7 +79,7 @@ export const schema = z.object({
       columns: z.object({
         geometry: z.string(),
       }),
-      input_file_type: z.enum(["csv", "geopackage"]),
+      input_file_type: z.enum(["csv", "geopackage", "shapefile"]),
       data_type: z.enum(["plateau", "house_condition_report"]),
     }),
     census: z.object({
@@ -88,14 +88,14 @@ export const schema = z.object({
     }),
   }),
 });
-type FormType = z.infer<typeof schema>;
+export type FormNormalizationType = z.infer<typeof schema>;
 
 export const useFormNormalization = ({
   defaultValues,
 }: {
-  defaultValues?: FormType;
-}): UseFormReturn<FormType> => {
-  return useForm<FormType>({
+  defaultValues?: FormNormalizationType;
+}): UseFormReturn<FormNormalizationType> => {
+  return useForm<FormNormalizationType>({
     defaultValues: defaultValues ?? {
       settings: {
         reference_data: "resident_registry",

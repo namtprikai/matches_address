@@ -1,3 +1,5 @@
+import { type FormNormalizationType } from "../hooks/use-form-normalization";
+
 export const OUTPUT_FILE_TYPES = [
   {
     name: "CSV",
@@ -13,7 +15,10 @@ export const OUTPUT_FILE_TYPES = [
   },
 ];
 
-export const BUILDING_FILE_TYPES = [
+export const BUILDING_FILE_TYPES: {
+  name: string;
+  type: FormNormalizationType["data"]["building_polygon"]["input_file_type"];
+}[] = [
   {
     name: "CSV",
     type: "csv",
