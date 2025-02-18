@@ -11,15 +11,15 @@ const numberGroupingConditionSchema = z.object({
   label: z.string(),
   referenceColumnType: z.enum(["integer", "float"]),
   operation: z.enum(["eq", "noteq", "gt", "lt", "gte", "lte"]),
-  value: z.number(),
+  value: z.coerce.number(),
 });
 
 const numberRangeGroupingConditionSchema = z.object({
   label: z.string(),
   referenceColumnType: z.enum(["integerRange", "floatRange"]),
   operation: z.literal("range"),
-  startValue: z.number(),
-  lastValue: z.number(),
+  startValue: z.coerce.number(),
+  lastValue: z.coerce.number(),
   includesStart: z.boolean(),
   includesLast: z.boolean(),
 });

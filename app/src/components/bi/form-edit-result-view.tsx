@@ -84,13 +84,23 @@ function FormComponent({
     formState: { errors },
   } = form;
 
+  const KEY_LABEL_MAP: Record<string, string> = {
+    dataSetResultId: "データセット",
+    title: "タイトル",
+    style: "スタイル",
+    unit: "単位",
+    parameters: "パラメータ",
+  };
+
   return selectedResultViewId && selectedResultView ? (
     <FormProvider {...form}>
       <form className={styles.form} onSubmit={onSubmit}>
-        {Object.entries(errors).map(
-          ([key, error]) =>
-            error.message && <ErrorMessage key={key} msg={error.message} />,
-        )}
+        {Object.entries(errors).map(([key, error]) => (
+          <ErrorMessage
+            key={key}
+            msg={`【${KEY_LABEL_MAP[key]}】の設定を確認してください.${error.message ? `(${error.message})` : ""}`}
+          />
+        ))}
         <EditResultViewFields
           dataSetResultId={selectedResultView.data_set_result_id}
         />
