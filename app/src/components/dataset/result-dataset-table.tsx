@@ -162,7 +162,9 @@ export function ResultDataSetTable({
 
   const handleDelete = async (id: SelectDataSetResult["id"]): Promise<void> => {
     try {
-      await window.ipcRenderer.invoke("deleteRawDataset", { id });
+      await window.ipcRenderer.invoke("deleteDataSetResult", {
+        id,
+      });
       await mutate();
       onSelectionChange((prev) => prev.filter((prevId) => prevId !== id));
     } catch (error) {
