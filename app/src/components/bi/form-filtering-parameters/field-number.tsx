@@ -87,7 +87,7 @@ export const FieldNumber = ({
 
   return (
     <Field className={styles.groupField}>
-      <Label>{label ?? "カラム"}</Label>
+      <Label>{label}</Label>
       <Select onChange={update} value={field.value.operation ?? "eq"}>
         <option value="eq">等しい</option>
         <option value="noteq">等しくない</option>
