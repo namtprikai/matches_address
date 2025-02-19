@@ -1,14 +1,17 @@
-import { Checkbox, makeStyles, tokens } from "@fluentui/react-components";
-import { Delete20Regular } from "@fluentui/react-icons";
-import { type UseFormRegister } from "react-hook-form";
-import { Field } from "../../ui/field";
-import { Button } from "../../ui/button";
-import { Input } from "../../ui/input";
-import { Select } from "../../ui/select";
 import {
-  type Parameter,
-  type GroupCondition,
-} from "../../../bi-modules/interfaces/parameter";
+  Checkbox,
+  Label,
+  makeStyles,
+  tokens,
+} from "@fluentui/react-components";
+import { type UseFormSetValue, type UseFormRegister } from "react-hook-form";
+import { Delete20Regular } from "@fluentui/react-icons";
+import { type FilterCondition } from "../../../bi-modules/interfaces/parameter";
+import { Field } from "../../ui/field";
+import { Select } from "../../ui/select";
+import { Input } from "../../ui/input";
+import { Button } from "../../ui/button";
+import { type EditViewFormType } from "../../../bi-modules/interfaces/edit-view-form";
 
 const useStyles = makeStyles({
   groupField: {
@@ -19,9 +22,6 @@ const useStyles = makeStyles({
     borderBottom: `1px solid ${tokens.colorNeutralStroke1}`,
     fontSize: "14px",
   },
-  inputLabelValue: {
-    width: "128px",
-  },
   inputValue: {
     flexGrow: 1,
     flexBasis: "128px",
@@ -29,6 +29,9 @@ const useStyles = makeStyles({
   },
   inputRangeValue: {
     flexGrow: 1,
+    width: "128px",
+  },
+  inputLabelValue: {
     width: "128px",
   },
   includesField: {
@@ -50,30 +53,33 @@ const useStyles = makeStyles({
 });
 
 type Props = {
-  field: GroupCondition;
+  field: FilterCondition;
+  label: string;
+  unit: string;
+  register: UseFormRegister<EditViewFormType>;
+  setValue: UseFormSetValue<EditViewFormType>;
+  index: number;
   handleRemove: () => void;
   update: (e: React.ChangeEvent<HTMLSelectElement>) => void;
-  index: number;
-  unit: string;
-  register: UseFormRegister<{
-    parameters: Parameter[];
-  }>;
 };
 
 export const FieldNumber = ({
   field,
-  handleRemove,
-  update,
-  index,
+  label,
   unit,
   register,
+  setValue,
+  index,
+  handleRemove,
+  update,
 }: Props): JSX.Element => {
   const styles = useStyles();
+
   if (
     !(
       field.value.referenceColumnType === "float" ||
-      field.value.referenceColumnType === "integer" ||
       field.value.referenceColumnType === "floatRange" ||
+      field.value.referenceColumnType === "integer" ||
       field.value.referenceColumnType === "integerRange"
     )
   )
@@ -81,12 +87,7 @@ export const FieldNumber = ({
 
   return (
     <Field className={styles.groupField}>
-      <Input
-        className={styles.inputLabelValue}
-        defaultValue={field.value.label}
-        placeholder="グループ名"
-        {...register(`parameters.${index}.value.label`)}
-      />
+      <Label>{label ?? "カラム"}</Label>
       <Select onChange={update} value={field.value.operation ?? "eq"}>
         <option value="eq">等しい</option>
         <option value="noteq">等しくない</option>
@@ -96,17 +97,26 @@ export const FieldNumber = ({
         <option value="lte">以下</option>
         <option value="range">次の範囲</option>
       </Select>
-
       {field.value.operation === "range" ? (
         <>
           <Input
-            defaultValue={field.value.startValue?.toString()}
+            className={styles.inputRangeValue}
+            defaultValue={
+              field.value.startValue ? field.value.startValue.toString() : ""
+            }
+            max={100}
+            min={0}
+            onBlur={(e) => {
+              const parsed = parseFloat(e.target.value);
+              const value =
+                unit === "%" ? Math.max(0, Math.min(100, parsed)) : parsed;
+              e.target.value = `${value}`;
+              setValue(`parameters.${index}.value.startValue`, value);
+            }}
             placeholder="開始値"
             type="number"
-            {...register(`parameters.${index}.value.startValue`)}
-            className={styles.inputRangeValue}
           />
-          {unit}
+          {unit ?? ""}
           <div className={styles.includesField}>
             <span>含</span>
             <Checkbox
@@ -117,13 +127,23 @@ export const FieldNumber = ({
           </div>
           <span>〜</span>
           <Input
-            defaultValue={field.value.lastValue?.toString()}
+            className={styles.inputRangeValue}
+            defaultValue={
+              field.value.lastValue ? field.value.lastValue.toString() : ""
+            }
+            max={100}
+            min={0}
+            onBlur={(e) => {
+              const parsed = parseFloat(e.target.value);
+              const value =
+                unit === "%" ? Math.max(0, Math.min(100, parsed)) : parsed;
+              e.target.value = `${value}`;
+              setValue(`parameters.${index}.value.lastValue`, value);
+            }}
             placeholder="終了値"
             type="number"
-            {...register(`parameters.${index}.value.lastValue`)}
-            className={styles.inputRangeValue}
           />
-          {unit}
+          {unit ?? ""}
           <div className={styles.includesField}>
             <span>含</span>
             <Checkbox
@@ -134,14 +154,26 @@ export const FieldNumber = ({
           </div>
         </>
       ) : (
-        <Input
-          defaultValue={field.value.value ? field.value.value?.toString() : ""}
-          {...register(`parameters.${index}.value.value`)}
-          className={styles.inputValue}
-          placeholder="グループごとの値"
-          type="number"
-        />
+        <>
+          <Input
+            className={styles.inputValue}
+            defaultValue={field.value.value ? field.value.value.toString() : ""}
+            max={100}
+            min={0}
+            onBlur={(e) => {
+              const parsed = parseFloat(e.target.value);
+              const value =
+                unit === "%" ? Math.max(0, Math.min(100, parsed)) : parsed;
+              e.target.value = `${value}`;
+              setValue(`parameters.${index}.value.value`, value);
+            }}
+            placeholder="値"
+            type="number"
+          />
+          {unit ?? ""}
+        </>
       )}
+
       <Button
         appearance="subtle"
         icon={<Delete20Regular />}
