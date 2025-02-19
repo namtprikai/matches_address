@@ -39,9 +39,26 @@ export const useEditViewForm = ({
 
   useEffect(
     function resetForm() {
-      form.reset(defaultValues);
+      const parameters = defaultValues.parameters;
+      const yearParameter = parameters.find(
+        (parameter) => parameter.key === "year",
+      );
+      if (!yearParameter) {
+        parameters.push({
+          key: "year",
+          type: "filter",
+          value: {
+            start: "",
+            end: "",
+          },
+        });
+      }
+      form.reset({
+        ...defaultValues,
+        parameters,
+      });
     },
-    [defaultValues, form],
+    [defaultValues, form, selectedResultViewId],
   );
 
   const onSubmit = form.handleSubmit(async (data) => {
