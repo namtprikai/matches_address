@@ -28,9 +28,10 @@ export const ViewBar = ({ view }: Props): JSX.Element => {
 
   const xAxis = view.parameters.find((p) => p.key === "xAxis");
   const yAxis = view.parameters.find((p) => p.key === "yAxis");
-  const groupingCalc = view.parameters.find(
-    (p) => p.key === "group_aggregation" && p.type === "group_aggregation",
-  )?.value;
+  const groupingCalc =
+    view.parameters.find(
+      (p) => p.key === "group_aggregation" && p.type === "group_aggregation",
+    )?.value || "avg";
 
   const isPercentValue =
     groupingCalc === "avg" && chartProps.yAxisColumn.unit === "%";
@@ -38,7 +39,9 @@ export const ViewBar = ({ view }: Props): JSX.Element => {
   const data = chartProps.data.map((d) => ({
     ...d,
     /** 表示のために桁数を調整 */
-    y: isPercentValue ? Math.floor(d.y * 1000) / 10 : d.y,
+    y: isPercentValue
+      ? Math.floor(d.y * 1000) / 10
+      : Number.parseFloat(d.y.toFixed(1)),
   }));
 
   const [tooltipPosition, setTooltipPosition] = useState<{
