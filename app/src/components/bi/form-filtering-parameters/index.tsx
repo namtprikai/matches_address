@@ -159,7 +159,7 @@ export const FormFilteringParameters = ({
                             label={metadata?.label ?? "カラム"}
                             register={register}
                             setValue={setValue}
-                            unit={unit}
+                            unit={metadata?.unit || ""}
                           />
                         );
                       case "float":
@@ -175,7 +175,7 @@ export const FormFilteringParameters = ({
                             label={metadata?.label ?? "カラム"}
                             register={register}
                             setValue={setValue}
-                            unit={unit}
+                            unit={metadata?.unit || ""}
                             update={(e) => {
                               update(index, {
                                 key: field.key,
