@@ -118,9 +118,10 @@ export const ViewLine = ({ view }: Props): JSX.Element => {
 
   const xAxis = view.parameters.find((p) => p.key === "xAxis");
   const yAxis = view.parameters.find((p) => p.key === "yAxis");
-  const groupingCalc = view.parameters.find(
-    (p) => p.key === "group_aggregation" && p.type === "group_aggregation",
-  )?.value;
+  const groupingCalc =
+    view.parameters.find(
+      (p) => p.key === "group_aggregation" && p.type === "group_aggregation",
+    )?.value || "avg";
 
   const isPercentValue =
     groupingCalc === "avg" && chartProps.yAxisColumn.unit === "%";
