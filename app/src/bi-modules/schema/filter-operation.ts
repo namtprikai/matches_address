@@ -45,7 +45,7 @@ const booleanFilterConditionSchema = z.object({
   referenceColumnType: z.literal("boolean"),
   referenceColumn: z.string(),
   operation: z.enum(["isTrue", "isFalse"]),
-  value: z.undefined(),
+  value: z.undefined().or(z.string()),
 });
 
 export const filterConditionValueSchema = z.union([

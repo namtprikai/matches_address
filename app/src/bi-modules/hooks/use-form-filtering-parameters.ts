@@ -111,43 +111,47 @@ export const useFormFilteringParameters = ({
 
   const handleSelector = (options: HandleSelectorOption[]): void => {
     const newFields: (Parameter | null)[] = options.map((option) => {
-      if (option.active) {
-        const targetField = fields.find((field) => {
-          if (!isFilterCondition(field)) return false;
-          return field.value.referenceColumn === option.key;
-        });
-        if (targetField) {
-          return targetField;
-        }
-
-        const metadata = getColumnMetadata({
-          unit,
-          key: option.key,
-        });
-
-        if (metadata === null) {
-          return null;
-        }
-        if (metadata.type === "boolean") {
-          return null;
-        }
-
-        /** 詳細フィルター行を初期値で追加 */
-        const init = {
-          key: `filter_${(new Date().getTime() + Math.floor(10000 * Math.random())).toString(16)}`,
-          value: {
-            operation: "eq",
-            referenceColumn: option.key,
-            referenceColumnType: metadata.type,
-            value:
-              metadata.type === "float" || metadata.type === "integer" ? 0 : "",
-          },
-          type: "filter",
-        } as Parameter; /** @fixme valueが型定義合わせられない. */
-
-        return init;
+      if (!option.active) {
+        return null;
       }
-      return null;
+
+      const targetField = fields.find((field) => {
+        if (!isFilterCondition(field)) return false;
+        return field.value.referenceColumn === option.key;
+      });
+
+      if (targetField) {
+        return targetField;
+      }
+
+      const metadata = getColumnMetadata({
+        unit,
+        key: option.key,
+      });
+
+      if (metadata === null) {
+        return null;
+      }
+
+      /** @todo 確認.意図的にnullを返してた？ */
+      // if (metadata.type === "boolean") {
+      //   return null;
+      // }
+
+      /** 詳細フィルター行を初期値で追加 */
+      const init = {
+        key: `filter_${(new Date().getTime() + Math.floor(10000 * Math.random())).toString(16)}`,
+        value: {
+          operation: "eq",
+          referenceColumn: option.key,
+          referenceColumnType: metadata.type,
+          value:
+            metadata.type === "float" || metadata.type === "integer" ? 0 : "",
+        },
+        type: "filter",
+      } as Parameter; /** @fixme valueが型定義合わせられない. */
+
+      return init;
     });
     const cleanedFields = newFields.filter((field) => field !== null);
 
