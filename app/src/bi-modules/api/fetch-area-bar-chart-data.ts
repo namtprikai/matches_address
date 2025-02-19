@@ -181,7 +181,13 @@ export const fetchAreaBarChartData = async ({
     };
   }
 
-  const result = db.select().from(baseQuery).limit(limit).offset(offset).all();
+  const result = db
+    .select()
+    .from(baseQuery)
+    .limit(limit)
+    .offset(offset)
+    .orderBy(baseQuery.reference_date)
+    .all();
 
   return {
     data: result.map((item) => ({
