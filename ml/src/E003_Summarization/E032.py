@@ -49,6 +49,11 @@ class Summarization:
         key_code = key_column
         if isinstance(key_code, list):
             key_code = key_column[0]
+            if key_column[0] == key_column[1]:
+                self.key_column = [
+                    key_column[0],
+                    f"{key_column[1]}_S_NAME_TEMP"
+                ]
 
         self.data_set_result_id = data_set_result_id
         # 各データで使用するカラムを定義
@@ -363,6 +368,10 @@ class Summarization:
         residence_gdf = residence_gdf.to_crs("EPSG:4326")
         print(f"Converting CRS to EPSG:4326 for {type(city_block_gdf)}")
         city_block_gdf = city_block_gdf.to_crs("EPSG:4326")
+
+        if isinstance(self.key_column, list):
+            if "_S_NAME_TEMP" in self.key_column[1]:
+                city_block_gdf[self.key_column[1]] = city_block_gdf[self.key_column[0]]
  
         # 空間結合
         spatial_join_gdf = self.spatial_join(residence_gdf, city_block_gdf)
