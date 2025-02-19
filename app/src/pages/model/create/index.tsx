@@ -77,9 +77,6 @@ export const ModelCreate = (): JSX.Element => {
   });
   const [normalizedDataSet, setNormalizedDataSet] =
     useState<SelectNormalizedDataSet>();
-  const [explanatoryVariables, setExplanatoryVariables] = useState<string[]>(
-    [],
-  );
 
   const form = useFormModelCreate();
   const {
@@ -88,6 +85,12 @@ export const ModelCreate = (): JSX.Element => {
     formState: { errors },
     watch,
   } = form;
+
+  const [explanatoryVariables, setExplanatoryVariables] = useState<string[]>(
+    form.formState.defaultValues?.settings?.explanatory_variables?.filter(
+      (v) => v !== undefined,
+    ) || [],
+  );
 
   useEffect(
     function setCurrentValues() {
@@ -185,7 +188,7 @@ export const ModelCreate = (): JSX.Element => {
             />
           </Subtitle2>
 
-          {explanatoryVariables.length > 0 && (
+          {normalizedDataSet?.file_name && explanatoryVariables.length > 0 && (
             <div>
               {explanatoryVariables.map((column, index) => (
                 <Fragment key={column}>

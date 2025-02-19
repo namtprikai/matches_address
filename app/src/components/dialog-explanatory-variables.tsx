@@ -7,6 +7,7 @@ import {
 import { DismissFilled } from "@fluentui/react-icons";
 import { useState } from "react";
 import { type ReturnUseDialogState } from "../hooks/use-dialog-state";
+import { DEFAULT_SELECTED_COLUMNS } from "../hooks/use-form-model-create";
 import { Button } from "./ui/button";
 import { DialogSurface } from "./ui/dialog-surface";
 import { DialogBody } from "./ui/dialog-body";
@@ -35,26 +36,6 @@ const useStyles = makeStyles({
   },
 });
 
-const DEFAULT_SELECTED_COLUMNS = [
-  "世帯人数",
-  "15歳未満人数",
-  "15歳以上64歳以下人数",
-  "65歳以上人数",
-  "15歳未満構成比",
-  "15歳以上64歳以下構成比",
-  "65歳以上構成比",
-  "最大年齢",
-  "最小年齢",
-  "男女比",
-  "住定期間",
-  "水道使用量変化率_suido_residence",
-  "最大使用水量_suido_residence",
-  "合計使用水量_suido_residence",
-  "閉栓フラグ_suido_residence",
-  "構造名称_touki_residence",
-  "登記日付_touki_residence",
-];
-
 /** 仮: もっと具体的に書けそうなら書く・書けなかったら普通にstringとして書く */
 type ExplanatoryVariable = string;
 
@@ -73,11 +54,7 @@ export const DialogExplanatoryVariables = ({
 }: Props): JSX.Element => {
   const styles = useStyles();
   const [selectedExplanatoryVariable, setSelectedExplanatoryVariable] =
-    useState<ExplanatoryVariable[]>(
-      initialValues
-        ? [...DEFAULT_SELECTED_COLUMNS, ...initialValues]
-        : DEFAULT_SELECTED_COLUMNS,
-    );
+    useState<ExplanatoryVariable[]>(initialValues || []);
 
   const { isOpen: isDialogOpen, setIsOpen: setIsDialogOpen } = dialogState;
 
