@@ -26,11 +26,32 @@ export const schema = z.object({
 });
 type FormType = z.infer<typeof schema>;
 
+/** 固定値: 標準でセットされ変更は不可となる */
+export const DEFAULT_SELECTED_COLUMNS = [
+  "世帯人数",
+  "15歳未満人数",
+  "15歳以上64歳以下人数",
+  "65歳以上人数",
+  "15歳未満構成比",
+  "15歳以上64歳以下構成比",
+  "65歳以上構成比",
+  "最大年齢",
+  "最小年齢",
+  "男女比",
+  "住定期間",
+  "水道使用量変化率_suido_residence",
+  "最大使用水量_suido_residence",
+  "合計使用水量_suido_residence",
+  "閉栓フラグ_suido_residence",
+  "構造名称_touki_residence",
+  "登記日付_touki_residence",
+];
+
 export const useFormModelCreate = (): UseFormReturn<FormType> => {
   return useForm<FormType>({
     defaultValues: {
       settings: {
-        explanatory_variables: [],
+        explanatory_variables: DEFAULT_SELECTED_COLUMNS,
         /** @ref https://www.notion.so/eukarya/Python-40f49a4c1a3b498486dd0e13aaad5a4a?pvs=4#b03370ab87514812bb337e1572118b2d */
         advanced: {
           test_size: 0.3,
