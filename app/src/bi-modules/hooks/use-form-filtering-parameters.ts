@@ -5,6 +5,7 @@ import {
   type UseFormReturn,
   type UseFieldArrayReplace,
 } from "react-hook-form";
+import { useState } from "react";
 import { isObject } from "../../utils/is-object";
 import {
   isFilterCondition,
@@ -20,11 +21,6 @@ import {
 } from "../../config/column-metadata";
 import { getColumnMetadata } from "../../utils/get-column-metadata";
 
-type HandleSelectorOption = {
-  key: string;
-  active: boolean;
-};
-
 type Params = {
   style: SelectResultView["style"];
   unit: EditViewFormType["unit"];
@@ -34,7 +30,7 @@ type Params = {
 
 export type UseFormFilteringParametersReturnType = {
   handleRemove: (index: number) => void;
-  handleSelector: (options: HandleSelectorOption[]) => void;
+  handleSelector: () => void;
   onSave: (e?: React.BaseSyntheticEvent) => Promise<void>;
   optionsWithActive: {
     key: BUILDING_DATASET_COLUMN | AREA_DATASET_COLUMN;
@@ -44,6 +40,7 @@ export type UseFormFilteringParametersReturnType = {
   unit: EditViewFormType["unit"];
   filteringFormState: UseFormReturn<EditViewFormType>;
   filteringFieldState: UseFieldArrayReturn<EditViewFormType>;
+  optionWithActiveState: UseOptionWithActiveStateReturnType;
 };
 
 /**
@@ -109,7 +106,12 @@ export const useFormFilteringParameters = ({
     remove(index);
   };
 
-  const handleSelector = (options: HandleSelectorOption[]): void => {
+  const optionWithActiveState = useOptionWithActiveState({
+    init: optionsWithActive,
+  });
+
+  const handleSelector = (): void => {
+    const options = optionWithActiveState.value;
     const newFields: (Parameter | null)[] = options.map((option) => {
       if (!option.active) {
         return null;
@@ -223,6 +225,7 @@ export const useFormFilteringParameters = ({
     unit,
     filteringFormState,
     filteringFieldState,
+    optionWithActiveState,
   };
 };
 
@@ -238,3 +241,24 @@ function parsePercentageValue({
   if (referenceColumnType === "float") return value / 100;
   return value;
 }
+
+type OptionWithActive = {
+  key: BUILDING_DATASET_COLUMN | AREA_DATASET_COLUMN;
+  active: boolean;
+};
+type UseOptionWithActiveStateParams = {
+  init?: OptionWithActive[];
+};
+export type UseOptionWithActiveStateReturnType = {
+  value: OptionWithActive[];
+  setValue: React.Dispatch<React.SetStateAction<OptionWithActive[]>>;
+};
+const useOptionWithActiveState = ({
+  init,
+}: UseOptionWithActiveStateParams): UseOptionWithActiveStateReturnType => {
+  /** フィルター対象カラムを管理 */
+
+  const [value, setValue] = useState<OptionWithActive[]>(init ?? []);
+
+  return { value, setValue };
+};

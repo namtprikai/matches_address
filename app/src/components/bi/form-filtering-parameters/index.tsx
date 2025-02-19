@@ -60,6 +60,7 @@ export const FormFilteringParameters = ({
   unit,
   filteringFormState: { register, setValue },
   filteringFieldState: { fields, update },
+  optionWithActiveState,
 }: Props): JSX.Element => {
   const [open, setOpen] = useState(false);
 
@@ -92,7 +93,8 @@ export const FormFilteringParameters = ({
               action={
                 <FormFilteringResultView
                   appearance="normal"
-                  onSave={handleSelector}
+                  handleSelector={handleSelector}
+                  optionWithActiveState={optionWithActiveState}
                   options={optionsWithActive}
                   unit={unit}
                 />
@@ -112,7 +114,8 @@ export const FormFilteringParameters = ({
                   <div className={styles.selectorContainer}>
                     <FormFilteringResultView
                       appearance="primary"
-                      onSave={handleSelector}
+                      handleSelector={handleSelector}
+                      optionWithActiveState={optionWithActiveState}
                       options={optionsWithActive}
                       unit={unit}
                     />
