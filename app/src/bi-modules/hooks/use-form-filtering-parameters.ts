@@ -5,6 +5,7 @@ import {
   type UseFormReturn,
   type UseFieldArrayReplace,
 } from "react-hook-form";
+import { useState } from "react";
 import { isObject } from "../../utils/is-object";
 import {
   isFilterCondition,
@@ -20,11 +21,6 @@ import {
 } from "../../config/column-metadata";
 import { getColumnMetadata } from "../../utils/get-column-metadata";
 
-type HandleSelectorOption = {
-  key: string;
-  active: boolean;
-};
-
 type Params = {
   style: SelectResultView["style"];
   unit: EditViewFormType["unit"];
@@ -34,7 +30,7 @@ type Params = {
 
 export type UseFormFilteringParametersReturnType = {
   handleRemove: (index: number) => void;
-  handleSelector: (options: HandleSelectorOption[]) => void;
+  handleSelector: () => void;
   onSave: (e?: React.BaseSyntheticEvent) => Promise<void>;
   optionsWithActive: {
     key: BUILDING_DATASET_COLUMN | AREA_DATASET_COLUMN;
@@ -44,6 +40,7 @@ export type UseFormFilteringParametersReturnType = {
   unit: EditViewFormType["unit"];
   filteringFormState: UseFormReturn<EditViewFormType>;
   filteringFieldState: UseFieldArrayReturn<EditViewFormType>;
+  optionWithActiveState: UseOptionWithActiveStateReturnType;
 };
 
 /**
@@ -109,45 +106,54 @@ export const useFormFilteringParameters = ({
     remove(index);
   };
 
-  const handleSelector = (options: HandleSelectorOption[]): void => {
+  const optionWithActiveState = useOptionWithActiveState({
+    init: optionsWithActive,
+  });
+
+  const handleSelector = (): void => {
+    const options = optionWithActiveState.value;
     const newFields: (Parameter | null)[] = options.map((option) => {
-      if (option.active) {
-        const targetField = fields.find((field) => {
-          if (!isFilterCondition(field)) return false;
-          return field.value.referenceColumn === option.key;
-        });
-        if (targetField) {
-          return targetField;
-        }
-
-        const metadata = getColumnMetadata({
-          unit,
-          key: option.key,
-        });
-
-        if (metadata === null) {
-          return null;
-        }
-        if (metadata.type === "boolean") {
-          return null;
-        }
-
-        /** 詳細フィルター行を初期値で追加 */
-        const init = {
-          key: `filter_${(new Date().getTime() + Math.floor(10000 * Math.random())).toString(16)}`,
-          value: {
-            operation: "eq",
-            referenceColumn: option.key,
-            referenceColumnType: metadata.type,
-            value:
-              metadata.type === "float" || metadata.type === "integer" ? 0 : "",
-          },
-          type: "filter",
-        } as Parameter; /** @fixme valueが型定義合わせられない. */
-
-        return init;
+      if (!option.active) {
+        return null;
       }
-      return null;
+
+      const targetField = fields.find((field) => {
+        if (!isFilterCondition(field)) return false;
+        return field.value.referenceColumn === option.key;
+      });
+
+      if (targetField) {
+        return targetField;
+      }
+
+      const metadata = getColumnMetadata({
+        unit,
+        key: option.key,
+      });
+
+      if (metadata === null) {
+        return null;
+      }
+
+      /** @todo 確認.意図的にnullを返してた？ */
+      // if (metadata.type === "boolean") {
+      //   return null;
+      // }
+
+      /** 詳細フィルター行を初期値で追加 */
+      const init = {
+        key: `filter_${(new Date().getTime() + Math.floor(10000 * Math.random())).toString(16)}`,
+        value: {
+          operation: "eq",
+          referenceColumn: option.key,
+          referenceColumnType: metadata.type,
+          value:
+            metadata.type === "float" || metadata.type === "integer" ? 0 : "",
+        },
+        type: "filter",
+      } as Parameter; /** @fixme valueが型定義合わせられない. */
+
+      return init;
     });
     const cleanedFields = newFields.filter((field) => field !== null);
 
@@ -219,6 +225,7 @@ export const useFormFilteringParameters = ({
     unit,
     filteringFormState,
     filteringFieldState,
+    optionWithActiveState,
   };
 };
 
@@ -234,3 +241,24 @@ function parsePercentageValue({
   if (referenceColumnType === "float") return value / 100;
   return value;
 }
+
+type OptionWithActive = {
+  key: BUILDING_DATASET_COLUMN | AREA_DATASET_COLUMN;
+  active: boolean;
+};
+type UseOptionWithActiveStateParams = {
+  init?: OptionWithActive[];
+};
+export type UseOptionWithActiveStateReturnType = {
+  value: OptionWithActive[];
+  setValue: React.Dispatch<React.SetStateAction<OptionWithActive[]>>;
+};
+const useOptionWithActiveState = ({
+  init,
+}: UseOptionWithActiveStateParams): UseOptionWithActiveStateReturnType => {
+  /** フィルター対象カラムを管理 */
+
+  const [value, setValue] = useState<OptionWithActive[]>(init ?? []);
+
+  return { value, setValue };
+};

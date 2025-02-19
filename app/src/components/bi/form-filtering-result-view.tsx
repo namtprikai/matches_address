@@ -4,7 +4,6 @@ import {
   DialogTrigger,
   makeStyles,
 } from "@fluentui/react-components";
-import { useState } from "react";
 import {
   type AREA_DATASET_COLUMN,
   AREA_DATASET_COLUMN_METADATA,
@@ -18,6 +17,7 @@ import { DialogTitle } from "../ui/dialog-title";
 import { Field } from "../ui/field";
 import { DialogContent } from "../ui/dialog-content";
 import { DialogActions } from "../ui/dialog-actions";
+import { type UseOptionWithActiveStateReturnType } from "../../bi-modules/hooks/use-form-filtering-parameters";
 
 const useStyles = makeStyles({
   fieldset: {
@@ -40,44 +40,29 @@ type Props = {
     active: boolean;
   }[];
   unit: "building" | "area";
-  onSave: (options: { key: string; active: boolean }[]) => void;
+  handleSelector: () => void;
+  optionWithActiveState: UseOptionWithActiveStateReturnType;
 };
 
 export const FormFilteringResultView = ({
   options,
   appearance,
   unit,
-  onSave,
+  handleSelector,
+  optionWithActiveState,
 }: Props): JSX.Element => {
   const styles = useStyles();
-
-  const [optionState, setOptionsState] = useState<
-    {
-      key: BUILDING_DATASET_COLUMN | AREA_DATASET_COLUMN;
-      active: boolean;
-    }[]
-  >(options);
-
-  const handleClick = (): void => {
-    onSave(optionState);
-  };
-
-  const countActiveOptions = optionState.filter(
-    (option) => option.active,
-  ).length;
 
   return (
     <Dialog>
       <DialogTrigger>
         {appearance === "primary" ? (
           <Button appearance="primary" size="medium">
-            {countActiveOptions === 0
-              ? "フィルターを追加"
-              : `フィルターを編集：${countActiveOptions}件設定中`}
+            フィルターを追加
           </Button>
         ) : (
           <Button appearance="outline" size="small">
-            {countActiveOptions === 0 ? "追加" : `編集`}
+            フィルターを追加
           </Button>
         )}
       </DialogTrigger>
@@ -130,7 +115,7 @@ export const FormFilteringResultView = ({
                     key={index}
                     defaultChecked={option.active}
                     onChange={() => {
-                      setOptionsState((prev) => {
+                      optionWithActiveState.setValue((prev) => {
                         return prev.map((prevOption) => {
                           if (prevOption.key === option.key) {
                             return {
@@ -155,8 +140,8 @@ export const FormFilteringResultView = ({
           <DialogActions position="end">
             <DialogTrigger>
               <Button
-                appearance={countActiveOptions === 0 ? "outline" : "primary"}
-                onClick={handleClick}
+                appearance="primary"
+                onClick={handleSelector}
                 size="medium"
               >
                 保存
