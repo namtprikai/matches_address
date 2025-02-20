@@ -101,7 +101,9 @@ const createWindow = (): void => {
     },
   });
 
-  createMenu(mainWindow);
+  if (os.platform() === "win32") {
+    createMenu(mainWindow);
+  }
 
   // Load the app
   if (MAIN_WINDOW_VITE_DEV_SERVER_URL) {
