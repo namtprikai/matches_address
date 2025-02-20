@@ -28,10 +28,15 @@ const useStyles = makeStyles({
     alignItems: "center",
     gap: "4px",
     justifyContent: "center",
+    position: "absolute",
+    bottom: "-24px",
+    width: "100%",
   },
   buttonContainer: {
     display: "grid",
     gap: "8px",
+    position: "relative",
+    marginBottom: "8px",
   },
 });
 
@@ -126,6 +131,8 @@ function FormComponent({
           try {
             await onSubmit(e);
             setSuccess(true);
+            await new Promise((resolve) => setTimeout(resolve, 3000));
+            setSuccess(false);
           } catch (error) {
             console.error(error);
           }
