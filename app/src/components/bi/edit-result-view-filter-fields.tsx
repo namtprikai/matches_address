@@ -8,8 +8,7 @@ import { Select } from "../ui/select";
 import { Fieldset } from "../ui/fieldset";
 import { FieldLegend } from "../ui/field-legend";
 import { type EditViewFormType } from "../../bi-modules/interfaces/edit-view-form";
-import { useFormFilteringParameters } from "../../bi-modules/hooks/use-form-filtering-parameters";
-import { FormFilteringParameters } from "./form-filtering-parameters";
+import { FormFilterCondition } from "./form-filter-condition";
 import { FormAreaFilter } from "./form-area-filter";
 
 const useStyles = makeStyles({
@@ -54,13 +53,6 @@ export const EditResultViewFilterFields = ({
 
   const { data: referenceDates } = useFetchReferenceDates({
     dataSetResultId: resultView?.data_set_result_id,
-  });
-
-  const formFilteringState = useFormFilteringParameters({
-    style,
-    unit,
-    currentParameters,
-    replace,
   });
 
   const areaFilter = currentParameters.find(
@@ -179,10 +171,7 @@ export const EditResultViewFilterFields = ({
         />
       </Suspense>
 
-      <FormFilteringParameters
-        {...formFilteringState}
-        unit={unit ?? "building"}
-      />
+      <FormFilterCondition />
     </Fieldset>
   );
 };
