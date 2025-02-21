@@ -72,7 +72,7 @@ export const FormFilterCondition = ({
       filterCondition: currentFilterCondition,
     },
   });
-  const { fields, update } = filterConditionField;
+  const { fields, update, remove } = filterConditionField;
 
   const { watch, setValue: setEditViewFormValue } =
     useFormContext<EditViewFormType>();
@@ -171,12 +171,17 @@ export const FormFilterCondition = ({
                       key: field.value.referenceColumn,
                     });
 
+                    const handleRemove = (): void => {
+                      remove(index);
+                    };
+
                     switch (field.value.referenceColumnType) {
                       case "boolean":
                         return (
                           <FieldBoolean
                             key={field.id}
                             field={field}
+                            handleRemove={handleRemove}
                             index={index}
                             label={metadata?.label ?? "カラム"}
                             register={register}
@@ -187,6 +192,7 @@ export const FormFilterCondition = ({
                           <FieldText
                             key={field.id}
                             field={field}
+                            handleRemove={handleRemove}
                             index={index}
                             label={metadata?.label ?? "カラム"}
                             register={register}
@@ -198,6 +204,7 @@ export const FormFilterCondition = ({
                           <FieldDate
                             key={field.id}
                             field={field}
+                            handleRemove={handleRemove}
                             index={index}
                             label={metadata?.label ?? "カラム"}
                             register={register}
@@ -213,6 +220,7 @@ export const FormFilterCondition = ({
                           <FieldNumber
                             key={field.id}
                             field={field}
+                            handleRemove={handleRemove}
                             index={index}
                             label={metadata?.label ?? "カラム"}
                             register={register}

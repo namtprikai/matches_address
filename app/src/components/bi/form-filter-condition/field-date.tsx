@@ -59,6 +59,7 @@ type Props = {
   register: UseFormRegister<FormFilterConditionType>;
   setValue: UseFormSetValue<FormFilterConditionType>;
   index: number;
+  handleRemove: () => void;
 };
 
 export const FieldDate = ({
@@ -68,6 +69,7 @@ export const FieldDate = ({
   register,
   setValue,
   index,
+  handleRemove,
 }: Props): JSX.Element => {
   const styles = useStyles();
 
@@ -160,6 +162,7 @@ export const FieldDate = ({
       <Button
         appearance="subtle"
         icon={<Delete20Regular />}
+        onClick={handleRemove}
         type="button"
       ></Button>
     </Field>

@@ -24,6 +24,7 @@ type Props = {
   label: string;
   register: UseFormRegister<FormFilterConditionType>;
   index: number;
+  handleRemove: () => void;
 };
 
 export const FieldText = ({
@@ -31,6 +32,7 @@ export const FieldText = ({
   label,
   register,
   index,
+  handleRemove,
 }: Props): JSX.Element => {
   const styles = useStyles();
 
@@ -57,6 +59,7 @@ export const FieldText = ({
       <Button
         appearance="subtle"
         icon={<Delete20Regular />}
+        onClick={handleRemove}
         type="button"
       ></Button>
     </Field>
