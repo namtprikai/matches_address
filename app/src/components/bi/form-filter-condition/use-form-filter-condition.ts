@@ -1,5 +1,10 @@
 import { z } from "zod";
-import { useFieldArray, useForm } from "react-hook-form";
+import {
+  useFieldArray,
+  type UseFieldArrayReturn,
+  useForm,
+  type UseFormReturn,
+} from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { filterConditionSchema } from "../../../bi-modules/schema/parameter";
 
@@ -8,8 +13,17 @@ const FormFilterConditionSchema = z.object({
 });
 export type FormFilterConditionType = z.infer<typeof FormFilterConditionSchema>;
 
-export const useFormFilterCondition = () => {
+type Params = {
+  init: FormFilterConditionType;
+};
+
+type ReturnType = {
+  form: UseFormReturn<FormFilterConditionType>;
+  fieldState: UseFieldArrayReturn<FormFilterConditionType>;
+};
+export const useFormFilterCondition = ({ init }: Params): ReturnType => {
   const form = useForm<FormFilterConditionType>({
+    defaultValues: init,
     resolver: zodResolver(FormFilterConditionSchema),
   });
   const { control } = form;

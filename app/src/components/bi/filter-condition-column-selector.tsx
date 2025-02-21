@@ -5,6 +5,7 @@ import {
   makeStyles,
 } from "@fluentui/react-components";
 import { useFormContext, type UseFieldArrayReturn } from "react-hook-form";
+import { useEffect, useState } from "react";
 import {
   type AREA_DATASET_COLUMN,
   AREA_DATASET_COLUMN_METADATA,
@@ -39,12 +40,12 @@ const useStyles = makeStyles({
 
 type Props = {
   appearance: "primary" | "normal";
-  fieldState: UseFieldArrayReturn<FormFilterConditionType>;
+  filterConditionField: UseFieldArrayReturn<FormFilterConditionType>;
 };
 
 export const FilterConditionColumnSelector = ({
   appearance,
-  fieldState,
+  filterConditionField,
 }: Props): JSX.Element => {
   const styles = useStyles();
 
@@ -67,7 +68,48 @@ export const FilterConditionColumnSelector = ({
     ),
   );
 
-  const { fields: currentFields, append, remove } = fieldState;
+  const { fields: currentFields, replace } = filterConditionField;
+
+  /** 選択中のカラムを配列で管理 */
+  const [selectedColumns, setSelectedColumns] = useState<string[]>(
+    currentFields.map((item) => item.value.referenceColumn),
+  );
+
+  /** ダイアログを消すとselectedColumnsが空になってしまうため追加.あってるのか少し不安 */
+  useEffect(() => {
+    setSelectedColumns(currentFields.map((item) => item.value.referenceColumn));
+  }, [currentFields]);
+
+  const onSave = (): void => {
+    if (selectedColumns.length === 0) {
+      return replace([]);
+    }
+    /** selectedColumnsにないものは削除。あるものは既にあるかチェックしてなければ追加 */
+    const newFields = currentFields.filter((field) =>
+      selectedColumns.includes(field.value.referenceColumn),
+    );
+    selectedColumns.forEach((column) => {
+      if (currentFields.find((field) => field.value.referenceColumn === column))
+        return;
+
+      // @ts-expect-error -- columnを厳密に型定義できていないので
+      const columnMetadata = getMetadata({ key: column, unit });
+      if (!columnMetadata) return;
+      newFields.push({
+        key: `filter_${(new Date().getTime() + Math.floor(10000 * Math.random())).toString(16)}`,
+        type: "filter",
+        // @ts-expect-error -- columnを厳密に型定義できていないので
+        value: {
+          referenceColumn: column,
+          operation: "eq",
+          value: "",
+          referenceColumnType: columnMetadata.type,
+        },
+      });
+    });
+
+    replace(newFields);
+  };
 
   if (unit === null) {
     return <></>;
@@ -102,24 +144,23 @@ export const FilterConditionColumnSelector = ({
                 }
 
                 return (
-                  <Field
-                    key={index}
-                    defaultChecked={
-                      !!currentFields.find(
-                        (item) => item.value.referenceColumn === optionKey,
-                      )
-                    }
-                    onChange={(e) => {
-                      console.log("e", e);
-                    }}
-                  >
+                  <Field key={index}>
                     <Checkbox
                       defaultChecked={
-                        !!currentFields.find(
-                          (item) => item.value.referenceColumn === optionKey,
-                        )
+                        !!selectedColumns.find((item) => item === optionKey)
                       }
                       label={columnMetadata.label}
+                      onChange={(_ev, data) => {
+                        if (data.checked) {
+                          setSelectedColumns([...selectedColumns, optionKey]);
+                        } else {
+                          setSelectedColumns(
+                            selectedColumns.filter(
+                              (item) => item !== optionKey,
+                            ),
+                          );
+                        }
+                      }}
                     />
                   </Field>
                 );
@@ -130,8 +171,9 @@ export const FilterConditionColumnSelector = ({
             <DialogTrigger>
               <Button
                 appearance="primary"
-                // onClick={handleSelector}
+                onClick={onSave}
                 size="medium"
+                type="button"
               >
                 保存
               </Button>

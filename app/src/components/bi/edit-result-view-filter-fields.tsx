@@ -8,6 +8,7 @@ import { Select } from "../ui/select";
 import { Fieldset } from "../ui/fieldset";
 import { FieldLegend } from "../ui/field-legend";
 import { type EditViewFormType } from "../../bi-modules/interfaces/edit-view-form";
+import { isFilterCondition } from "../../bi-modules/interfaces/parameter";
 import { FormFilterCondition } from "./form-filter-condition";
 import { FormAreaFilter } from "./form-area-filter";
 
@@ -171,7 +172,11 @@ export const EditResultViewFilterFields = ({
         />
       </Suspense>
 
-      <FormFilterCondition />
+      <FormFilterCondition
+        currentFilterCondition={currentParameters.filter((v) =>
+          isFilterCondition(v),
+        )}
+      />
     </Fieldset>
   );
 };

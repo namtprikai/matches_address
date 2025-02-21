@@ -15,7 +15,10 @@ import { DialogTitle } from "../../ui/dialog-title";
 import { Button } from "../../ui/button";
 import { DialogActions } from "../../ui/dialog-actions";
 import { DialogContent } from "../../ui/dialog-content";
-import { isFilterCondition } from "../../../bi-modules/interfaces/parameter";
+import {
+  type FilterCondition,
+  isFilterCondition,
+} from "../../../bi-modules/interfaces/parameter";
 import { FilterConditionColumnSelector } from "../filter-condition-column-selector";
 import { type EditViewFormType } from "../../../bi-modules/interfaces/edit-view-form";
 import { FieldBoolean } from "./field-boolean";
@@ -47,24 +50,73 @@ const useStyles = makeStyles({
   },
 });
 
+type Props = {
+  currentFilterCondition: FilterCondition[];
+};
+
 /**
  * フィルタリング結果表示用のフィールド表示コンポーネント
  * FormFilteringParameters で選択されたフィルタリング条件や細かい条件を編集・表示する
  */
-export const FormFilterCondition = (): JSX.Element => {
+export const FormFilterCondition = ({
+  currentFilterCondition,
+}: Props): JSX.Element => {
   const [open, setOpen] = useState(false);
   const styles = useStyles();
 
   const {
     form: { register, setValue },
-    fieldState,
-  } = useFormFilterCondition();
-  const { fields, update } = fieldState;
+    fieldState: filterConditionField,
+  } = useFormFilterCondition({
+    init: {
+      filterCondition: currentFilterCondition,
+    },
+  });
+  const { fields, update } = filterConditionField;
 
-  const { watch } = useFormContext<EditViewFormType>();
+  const { watch, setValue: setEditViewFormValue } =
+    useFormContext<EditViewFormType>();
   const unit = watch("unit");
+  const currentParameters = watch("parameters");
 
   const saveAndClose = (): void => {
+    /** 既存のグルーピング条件を削除 */
+    const newParameters = currentParameters.filter(
+      (f) => !isFilterCondition(f),
+    );
+    /** 新しいグルーピング条件を追加 */
+    newParameters.push(
+      /**  */
+      ...fields.map((f) => {
+        switch (f.value.referenceColumnType) {
+          case "integer":
+          case "integerRange":
+            return f;
+
+          case "float":
+            return {
+              ...f,
+              value: {
+                ...f.value,
+                value: Number(f.value.value / 100),
+              },
+            };
+          case "floatRange":
+            return {
+              ...f,
+              value: {
+                ...f.value,
+                startValue: Number(f.value.startValue / 100),
+                lastValue: Number(f.value.lastValue / 100),
+              },
+            };
+          default: {
+            return f;
+          }
+        }
+      }),
+    );
+    setEditViewFormValue("parameters", newParameters);
     setOpen(false);
   };
 
@@ -90,7 +142,7 @@ export const FormFilterCondition = (): JSX.Element => {
               action={
                 <FilterConditionColumnSelector
                   appearance="primary"
-                  fieldState={fieldState}
+                  filterConditionField={filterConditionField}
                 />
               }
             >
@@ -108,7 +160,7 @@ export const FormFilterCondition = (): JSX.Element => {
                   <div className={styles.selectorContainer}>
                     <FilterConditionColumnSelector
                       appearance="primary"
-                      fieldState={fieldState}
+                      filterConditionField={filterConditionField}
                     />
                   </div>
                 ) : (

@@ -15,6 +15,8 @@ const useStyles = makeStyles({
     flex: "1",
     padding: tokens.spacingVerticalL,
     backgroundColor: tokens.colorNeutralBackground3,
+    marginLeft: "82px",
+    height: "100vh",
   },
 });
 
