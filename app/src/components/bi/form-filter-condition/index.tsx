@@ -7,6 +7,7 @@ import {
   tokens,
 } from "@fluentui/react-components";
 import { useState } from "react";
+import { useFormContext } from "react-hook-form";
 import { getColumnMetadata } from "../../../utils/get-column-metadata";
 import { DialogBody } from "../../ui/dialog-body";
 import { DialogSurface } from "../../ui/dialog-surface";
@@ -14,13 +15,17 @@ import { DialogTitle } from "../../ui/dialog-title";
 import { Button } from "../../ui/button";
 import { DialogActions } from "../../ui/dialog-actions";
 import { DialogContent } from "../../ui/dialog-content";
-import { isFilterCondition } from "../../../bi-modules/interfaces/parameter";
-import { type UseFormFilteringParametersReturnType } from "../../../bi-modules/hooks/use-form-filtering-parameters";
-import { FormFilteringResultView } from "../form-filtering-result-view";
+import {
+  type FilterCondition,
+  isFilterCondition,
+} from "../../../bi-modules/interfaces/parameter";
+import { FilterConditionColumnSelector } from "../filter-condition-column-selector";
+import { type EditViewFormType } from "../../../bi-modules/interfaces/edit-view-form";
 import { FieldBoolean } from "./field-boolean";
 import { FieldText } from "./field-text";
 import { FieldDate } from "./field-date";
 import { FieldNumber } from "./field-number";
+import { useFormFilterCondition } from "./use-form-filter-condition";
 
 const useStyles = makeStyles({
   dialogContent: {
@@ -45,29 +50,73 @@ const useStyles = makeStyles({
   },
 });
 
-type Props = UseFormFilteringParametersReturnType;
+type Props = {
+  currentFilterCondition: FilterCondition[];
+};
 
 /**
  * フィルタリング結果表示用のフィールド表示コンポーネント
  * FormFilteringParameters で選択されたフィルタリング条件や細かい条件を編集・表示する
  */
-export const FormFilteringParameters = ({
-  handleRemove,
-  handleSelector,
-  onSave,
-  optionsWithActive,
-  filteredCurrentParameters: parameters,
-  unit,
-  filteringFormState: { register, setValue },
-  filteringFieldState: { fields, update },
-  optionWithActiveState,
+export const FormFilterCondition = ({
+  currentFilterCondition,
 }: Props): JSX.Element => {
   const [open, setOpen] = useState(false);
-
   const styles = useStyles();
 
-  const saveAndClose = async (): Promise<void> => {
-    await onSave();
+  const {
+    form: { register, setValue },
+    fieldState: filterConditionField,
+  } = useFormFilterCondition({
+    init: {
+      filterCondition: currentFilterCondition,
+    },
+  });
+  const { fields, update } = filterConditionField;
+
+  const { watch, setValue: setEditViewFormValue } =
+    useFormContext<EditViewFormType>();
+  const unit = watch("unit");
+  const currentParameters = watch("parameters");
+
+  const saveAndClose = (): void => {
+    /** 既存のグルーピング条件を削除 */
+    const newParameters = currentParameters.filter(
+      (f) => !isFilterCondition(f),
+    );
+    /** 新しいグルーピング条件を追加 */
+    newParameters.push(
+      /**  */
+      ...fields.map((f) => {
+        switch (f.value.referenceColumnType) {
+          case "integer":
+          case "integerRange":
+            return f;
+
+          case "float":
+            return {
+              ...f,
+              value: {
+                ...f.value,
+                value: Number(f.value.value / 100),
+              },
+            };
+          case "floatRange":
+            return {
+              ...f,
+              value: {
+                ...f.value,
+                startValue: Number(f.value.startValue / 100),
+                lastValue: Number(f.value.lastValue / 100),
+              },
+            };
+          default: {
+            return f;
+          }
+        }
+      }),
+    );
+    setEditViewFormValue("parameters", newParameters);
     setOpen(false);
   };
 
@@ -81,22 +130,19 @@ export const FormFilteringParameters = ({
       >
         <DialogTrigger>
           <Button
-            appearance={parameters.length === 0 ? "outline" : "primary"}
+            appearance={fields.length === 0 ? "outline" : "primary"}
             size="medium"
           >
-            {parameters.length === 0 ? "詳細条件を追加" : "詳細条件を編集"}
+            {fields.length === 0 ? "詳細条件を追加" : "詳細条件を編集"}
           </Button>
         </DialogTrigger>
         <DialogSurface>
           <DialogBody>
             <DialogTitle
               action={
-                <FormFilteringResultView
-                  appearance="normal"
-                  handleSelector={handleSelector}
-                  optionWithActiveState={optionWithActiveState}
-                  options={optionsWithActive}
-                  unit={unit}
+                <FilterConditionColumnSelector
+                  appearance="primary"
+                  filterConditionField={filterConditionField}
                 />
               }
             >
@@ -112,12 +158,9 @@ export const FormFilteringParameters = ({
               <div className={styles.dialogInner}>
                 {fields.length === 0 ? (
                   <div className={styles.selectorContainer}>
-                    <FormFilteringResultView
+                    <FilterConditionColumnSelector
                       appearance="primary"
-                      handleSelector={handleSelector}
-                      optionWithActiveState={optionWithActiveState}
-                      options={optionsWithActive}
-                      unit={unit}
+                      filterConditionField={filterConditionField}
                     />
                   </div>
                 ) : (
@@ -134,7 +177,6 @@ export const FormFilteringParameters = ({
                           <FieldBoolean
                             key={field.id}
                             field={field}
-                            handleRemove={() => handleRemove(index)}
                             index={index}
                             label={metadata?.label ?? "カラム"}
                             register={register}
@@ -145,7 +187,6 @@ export const FormFilteringParameters = ({
                           <FieldText
                             key={field.id}
                             field={field}
-                            handleRemove={() => handleRemove(index)}
                             index={index}
                             label={metadata?.label ?? "カラム"}
                             register={register}
@@ -157,7 +198,6 @@ export const FormFilteringParameters = ({
                           <FieldDate
                             key={field.id}
                             field={field}
-                            handleRemove={() => handleRemove(index)}
                             index={index}
                             label={metadata?.label ?? "カラム"}
                             register={register}
@@ -173,23 +213,12 @@ export const FormFilteringParameters = ({
                           <FieldNumber
                             key={field.id}
                             field={field}
-                            handleRemove={() => handleRemove(index)}
                             index={index}
                             label={metadata?.label ?? "カラム"}
                             register={register}
                             setValue={setValue}
                             unit={metadata?.unit || ""}
-                            update={(e) => {
-                              update(index, {
-                                key: field.key,
-                                value: {
-                                  ...field.value,
-                                  // @ts-expect-error - ここで型が変わるためエラーになる
-                                  operation: e.target.value,
-                                },
-                                type: "filter", // ここは固定
-                              });
-                            }}
+                            update={update}
                           />
                         );
                       default:
@@ -207,10 +236,10 @@ export const FormFilteringParameters = ({
           </DialogBody>
         </DialogSurface>
       </Dialog>
-      {parameters.length ? (
+      {fields.length ? (
         <Caption1
           className={styles.textRight}
-        >{`${parameters.length}件の詳細フィルターを追加済み`}</Caption1>
+        >{`${fields.length}件の詳細フィルターを追加済み`}</Caption1>
       ) : null}
     </>
   );

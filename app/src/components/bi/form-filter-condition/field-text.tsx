@@ -6,7 +6,7 @@ import { Field } from "../../ui/field";
 import { Select } from "../../ui/select";
 import { Input } from "../../ui/input";
 import { Button } from "../../ui/button";
-import { type EditViewFormType } from "../../../bi-modules/interfaces/edit-view-form";
+import { type FormFilterConditionType } from "./use-form-filter-condition";
 
 const useStyles = makeStyles({
   groupField: {
@@ -22,9 +22,8 @@ const useStyles = makeStyles({
 type Props = {
   field: FilterCondition;
   label: string;
-  register: UseFormRegister<EditViewFormType>;
+  register: UseFormRegister<FormFilterConditionType>;
   index: number;
-  handleRemove: () => void;
 };
 
 export const FieldText = ({
@@ -32,7 +31,6 @@ export const FieldText = ({
   label,
   register,
   index,
-  handleRemove,
 }: Props): JSX.Element => {
   const styles = useStyles();
 
@@ -43,7 +41,7 @@ export const FieldText = ({
       <Label>{label}</Label>
       <Select
         defaultValue={field.value.operation}
-        {...register(`parameters.${index}.value.operation`)}
+        {...register(`filterCondition.${index}.value.operation`)}
       >
         <option value="eq">次に等しい</option>
         <option value="noteq">次に等しくない</option>
@@ -52,16 +50,13 @@ export const FieldText = ({
       </Select>
       <Input
         defaultValue={field.value.value}
-        {...register(`parameters.${index}.value.value`)}
+        {...register(`filterCondition.${index}.value.value`)}
         placeholder="値"
         type="text"
       />
       <Button
         appearance="subtle"
         icon={<Delete20Regular />}
-        onClick={() => {
-          handleRemove();
-        }}
         type="button"
       ></Button>
     </Field>

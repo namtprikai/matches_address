@@ -5,7 +5,7 @@ import { type FilterCondition } from "../../../bi-modules/interfaces/parameter";
 import { Field } from "../../ui/field";
 import { Select } from "../../ui/select";
 import { Button } from "../../ui/button";
-import { type EditViewFormType } from "../../../bi-modules/interfaces/edit-view-form";
+import { type FormFilterConditionType } from "./use-form-filter-condition";
 
 const useStyles = makeStyles({
   groupField: {
@@ -21,9 +21,8 @@ const useStyles = makeStyles({
 type Props = {
   field: FilterCondition;
   label: string;
-  register: UseFormRegister<EditViewFormType>;
+  register: UseFormRegister<FormFilterConditionType>;
   index: number;
-  handleRemove: () => void;
 };
 
 export const FieldBoolean = ({
@@ -31,7 +30,6 @@ export const FieldBoolean = ({
   label,
   register,
   index,
-  handleRemove,
 }: Props): JSX.Element => {
   const styles = useStyles();
 
@@ -42,7 +40,7 @@ export const FieldBoolean = ({
       <Label>{label}</Label>
       <Select
         defaultValue={field.value.operation}
-        {...register(`parameters.${index}.value.operation`)}
+        {...register(`filterCondition.${index}.value.operation`)}
       >
         <option value="isTrue">真である</option>
         <option value="isFalse">偽である</option>
@@ -50,9 +48,6 @@ export const FieldBoolean = ({
       <Button
         appearance="subtle"
         icon={<Delete20Regular />}
-        onClick={() => {
-          handleRemove();
-        }}
         type="button"
       ></Button>
     </Field>

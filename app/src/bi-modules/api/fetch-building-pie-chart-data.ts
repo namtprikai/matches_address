@@ -141,8 +141,11 @@ export const fetchBuildingPieChartData = async ({
     /** 数値を変換 */
     const float = groupConditions.map((groupCondition) => {
       switch (groupCondition.value.referenceColumnType) {
-        case "float":
         case "integer":
+        case "integerRange":
+          return groupCondition;
+
+        case "float":
           return {
             ...groupCondition,
             value: {
@@ -151,7 +154,6 @@ export const fetchBuildingPieChartData = async ({
             },
           };
         case "floatRange":
-        case "integerRange":
           return {
             ...groupCondition,
             value: {

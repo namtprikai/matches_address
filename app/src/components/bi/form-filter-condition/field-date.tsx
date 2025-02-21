@@ -11,7 +11,7 @@ import { Field } from "../../ui/field";
 import { Select } from "../../ui/select";
 import { Input } from "../../ui/input";
 import { Button } from "../../ui/button";
-import { type EditViewFormType } from "../../../bi-modules/interfaces/edit-view-form";
+import { type FormFilterConditionType } from "./use-form-filter-condition";
 
 const useStyles = makeStyles({
   groupField: {
@@ -56,31 +56,25 @@ type Props = {
   field: FilterCondition;
   label: string;
   unit: string;
-  register: UseFormRegister<EditViewFormType>;
-  setValue: UseFormSetValue<EditViewFormType>;
+  register: UseFormRegister<FormFilterConditionType>;
+  setValue: UseFormSetValue<FormFilterConditionType>;
   index: number;
-  handleRemove: () => void;
-  update: (e: React.ChangeEvent<HTMLSelectElement>) => void;
 };
 
-export const FieldNumber = ({
+export const FieldDate = ({
   field,
   label,
   unit,
   register,
   setValue,
   index,
-  handleRemove,
-  update,
 }: Props): JSX.Element => {
   const styles = useStyles();
 
   if (
     !(
-      field.value.referenceColumnType === "float" ||
-      field.value.referenceColumnType === "floatRange" ||
-      field.value.referenceColumnType === "integer" ||
-      field.value.referenceColumnType === "integerRange"
+      field.value.referenceColumnType === "date" ||
+      field.value.referenceColumnType === "dateRange"
     )
   )
     return <></>;
@@ -88,13 +82,16 @@ export const FieldNumber = ({
   return (
     <Field className={styles.groupField}>
       <Label>{label}</Label>
-      <Select onChange={update} value={field.value.operation ?? "eq"}>
-        <option value="eq">等しい</option>
-        <option value="noteq">等しくない</option>
-        <option value="gt">より大きい</option>
-        <option value="lt">より小さい</option>
-        <option value="gte">以上</option>
-        <option value="lte">以下</option>
+      <Select
+        defaultValue={field.value.operation}
+        {...register(`filterCondition.${index}.value.operation`)}
+      >
+        <option value="eq">次に等しい</option>
+        <option value="noteq">次に等しくない</option>
+        <option value="gt">次より後</option>
+        <option value="lt">次より前</option>
+        <option value="gte">次以降</option>
+        <option value="lte">次以前</option>
         <option value="range">次の範囲</option>
       </Select>
       {field.value.operation === "range" ? (
@@ -111,18 +108,17 @@ export const FieldNumber = ({
               const value =
                 unit === "%" ? Math.max(0, Math.min(100, parsed)) : parsed;
               e.target.value = `${value}`;
-              setValue(`parameters.${index}.value.startValue`, value);
+              setValue(`filterCondition.${index}.value.startValue`, value);
             }}
             placeholder="開始値"
-            type="number"
+            type="date"
           />
-          {unit ?? ""}
           <div className={styles.includesField}>
             <span>含</span>
             <Checkbox
               className={styles.checkbox}
               defaultChecked={field.value.includesStart ?? true}
-              {...register(`parameters.${index}.value.includesStart`)}
+              {...register(`filterCondition.${index}.value.includesStart`)}
             />
           </div>
           <span>〜</span>
@@ -138,48 +134,32 @@ export const FieldNumber = ({
               const value =
                 unit === "%" ? Math.max(0, Math.min(100, parsed)) : parsed;
               e.target.value = `${value}`;
-              setValue(`parameters.${index}.value.lastValue`, value);
+              setValue(`filterCondition.${index}.value.lastValue`, value);
             }}
             placeholder="終了値"
-            type="number"
+            type="date"
           />
-          {unit ?? ""}
           <div className={styles.includesField}>
             <span>含</span>
             <Checkbox
               className={styles.checkbox}
               defaultChecked={field.value.includesLast ?? true}
-              {...register(`parameters.${index}.value.includesLast`)}
+              {...register(`filterCondition.${index}.value.includesLast`)}
             />
           </div>
         </>
       ) : (
-        <>
-          <Input
-            className={styles.inputValue}
-            defaultValue={field.value.value ? field.value.value.toString() : ""}
-            max={100}
-            min={0}
-            onBlur={(e) => {
-              const parsed = parseFloat(e.target.value);
-              const value =
-                unit === "%" ? Math.max(0, Math.min(100, parsed)) : parsed;
-              e.target.value = `${value}`;
-              setValue(`parameters.${index}.value.value`, value);
-            }}
-            placeholder="値"
-            type="number"
-          />
-          {unit ?? ""}
-        </>
+        <Input
+          defaultValue={field.value.value ? field.value.value.toString() : ""}
+          {...register(`filterCondition.${index}.value.value`)}
+          className={styles.inputValue}
+          placeholder="値"
+          type="date"
+        />
       )}
-
       <Button
         appearance="subtle"
         icon={<Delete20Regular />}
-        onClick={() => {
-          handleRemove();
-        }}
         type="button"
       ></Button>
     </Field>
