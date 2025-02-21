@@ -64,6 +64,7 @@ type Props = {
   setValue: UseFormSetValue<FormFilterConditionType>;
   update: UseFieldArrayUpdate<FormFilterConditionType>;
   index: number;
+  handleRemove: () => void;
 };
 
 export const FieldNumber = ({
@@ -74,6 +75,7 @@ export const FieldNumber = ({
   setValue,
   index,
   update,
+  handleRemove,
 }: Props): JSX.Element => {
   const styles = useStyles();
 
@@ -192,6 +194,7 @@ export const FieldNumber = ({
       <Button
         appearance="subtle"
         icon={<Delete20Regular />}
+        onClick={handleRemove}
         type="button"
       ></Button>
     </Field>
