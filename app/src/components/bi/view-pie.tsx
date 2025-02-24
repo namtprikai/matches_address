@@ -15,6 +15,7 @@ import { makeStyles, tokens } from "@fluentui/react-components";
 import { CHART_COLORS } from "../../config/chart-colors";
 import { useFetchPieChartProps } from "../../bi-modules/hooks/use-fetch-pie-chart-props";
 import { type PieView } from "../../bi-modules/interfaces/view";
+import { LoadingChart } from "./loading-chart";
 
 const useStyle = makeStyles({
   tooltip: {
@@ -32,7 +33,7 @@ type Props = {
 };
 
 export const ViewPie = ({ view }: Props): JSX.Element => {
-  const { chartProps } = useFetchPieChartProps({ view });
+  const { chartProps, isLoading } = useFetchPieChartProps({ view });
 
   const label = view.parameters.find((p) => p.key === "label");
   const value = view.parameters.find((p) => p.key === "value");
@@ -49,6 +50,10 @@ export const ViewPie = ({ view }: Props): JSX.Element => {
       ? Math.floor(d.y * 1000) / 10
       : Number.parseFloat(d.y.toFixed(1)), // floatな値を扱うことがあるため、桁が溢れないように小数点第一位まで表示する
   }));
+
+  if (isLoading) {
+    return <LoadingChart />;
+  }
 
   if (!label || !value) {
     return <div>パラメーターの値を正しく設定してください</div>;

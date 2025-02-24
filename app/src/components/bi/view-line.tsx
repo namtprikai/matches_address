@@ -17,6 +17,7 @@ import {
 import { CHART_COLORS } from "../../config/chart-colors";
 import { type LineView } from "../../bi-modules/interfaces/view";
 import { useFetchLineChartProps } from "../../bi-modules/hooks/use-fetch-line-chart-props";
+import { LoadingChart } from "./loading-chart";
 
 const CustomizedDot = ({
   cx,
@@ -114,7 +115,7 @@ type Props = {
 };
 
 export const ViewLine = ({ view }: Props): JSX.Element => {
-  const { chartProps } = useFetchLineChartProps({ view });
+  const { chartProps, isLoading } = useFetchLineChartProps({ view });
 
   const xAxis = view.parameters.find((p) => p.key === "xAxis");
   const yAxis = view.parameters.find((p) => p.key === "yAxis");
@@ -131,6 +132,10 @@ export const ViewLine = ({ view }: Props): JSX.Element => {
       ? Math.floor(d.y * 1000) / 10
       : Number.parseFloat(d.y.toFixed(1)), // floatな値を扱うことがあるため、桁が溢れないように小数点第一位まで表示する
   }));
+
+  if (isLoading) {
+    return <LoadingChart />;
+  }
 
   if (!xAxis || !yAxis) {
     return <div>パラメーターの値を正しく設定してください</div>;

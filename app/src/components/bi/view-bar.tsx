@@ -15,6 +15,7 @@ import { CHART_COLORS } from "../../config/chart-colors";
 import { Pagination } from "../ui/pagination";
 import { useFetchBarChartProps } from "../../bi-modules/hooks/use-fetch-bar-chart-props";
 import { type BarView } from "../../bi-modules/interfaces/view";
+import { LoadingChart } from "./loading-chart";
 
 type Props = {
   view: BarView;
@@ -22,7 +23,7 @@ type Props = {
 
 export const ViewBar = ({ view }: Props): JSX.Element => {
   /** @fixme useFetchが不要回数呼び出されていそう */
-  const { chartProps, pagination } = useFetchBarChartProps({
+  const { chartProps, pagination, isLoading } = useFetchBarChartProps({
     view,
   });
 
@@ -51,6 +52,10 @@ export const ViewBar = ({ view }: Props): JSX.Element => {
 
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
   const [activeToolTip, setActiveToolTip] = useState<boolean>(false);
+
+  if (isLoading) {
+    return <LoadingChart />;
+  }
 
   // カラムが設定されていない場合はエラーを表示
   if (!xAxis || !yAxis) {
