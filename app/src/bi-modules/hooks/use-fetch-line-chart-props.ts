@@ -24,6 +24,8 @@ export const useFetchLineChartProps = ({ view }: Params): ReturnType => {
   const { chartProps, handleChartProps } = useChartProps();
   const { isLoading, handleIsLoading } = useIsLoading({ init: true });
 
+  console.log({ view, chartProps });
+
   const fetch = useCallback(async (): Promise<void> => {
     try {
       handleIsLoading(true);

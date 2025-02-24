@@ -11,6 +11,7 @@ import { Button } from "../ui/button";
 import { useEditViewForm } from "../../bi-modules/hooks/use-edit-view-form";
 import { type EditViewFormType } from "../../bi-modules/interfaces/edit-view-form";
 import { ErrorMessage } from "../error-message";
+import { floatToPercent } from "../../bi-modules/util/floatTop";
 import { EditResultViewFields } from "./edit-result-view-fields";
 import { EditResultViewFilterFields } from "./edit-result-view-filter-fields";
 
@@ -76,7 +77,7 @@ export const FormEditResultView = ({
         title: selectedResultView?.title ?? "",
         style: selectedResultView?.style ?? "map",
         unit: selectedResultView?.unit ?? "building",
-        parameters: selectedResultView?.parameters ?? [],
+        parameters: floatToPercent(selectedResultView?.parameters || []) ?? [],
       }}
       selectedResultSheetId={selectedResultSheetId}
       selectedResultViewId={selectedResultViewId}
