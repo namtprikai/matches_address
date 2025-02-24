@@ -127,14 +127,7 @@ export const ViewLine = ({ view }: Props): JSX.Element => {
   const isPercentValue =
     groupingCalc === "avg" && chartProps.yAxisColumn.unit === "%";
 
-  console.log("isPercentValue", isPercentValue);
   const data = chartProps.data.map((d) => {
-    console.log("d", d, {
-      ...d,
-      y: isPercentValue
-        ? Math.floor(d.y * 1000) / 10
-        : Number.parseFloat(d.y.toFixed(1)), // floatな値を扱うことがあるため、桁が溢れないように小数点第一位まで表示する
-    });
     return {
       ...d,
       y: isPercentValue
@@ -142,8 +135,6 @@ export const ViewLine = ({ view }: Props): JSX.Element => {
         : Number.parseFloat(d.y.toFixed(1)), // floatな値を扱うことがあるため、桁が溢れないように小数点第一位まで表示する
     };
   });
-
-  console.log("data", data);
 
   if (isLoading) {
     return <LoadingChart />;

@@ -86,7 +86,6 @@ export const FormFilterCondition = ({
     );
     /** 新しいグルーピング条件を追加 */
     newParameters.push(...data.filterCondition);
-    console.log({ newParameters, data });
     setEditViewFormValue("parameters", newParameters);
     setOpen(false);
   });
