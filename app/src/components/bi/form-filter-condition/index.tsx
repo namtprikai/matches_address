@@ -111,7 +111,6 @@ export const FormFilterCondition = ({
             <DialogTitle
               action={
                 <FilterConditionColumnSelector
-                  appearance="primary"
                   filterConditionField={filterConditionField}
                 />
               }
@@ -207,7 +206,7 @@ export const FormFilterCondition = ({
               </div>
             </DialogContent>
             <DialogActions position="end">
-              <Button onClick={saveAndClose} type="button">
+              <Button appearance="primary" onClick={saveAndClose} type="button">
                 保存
               </Button>
             </DialogActions>

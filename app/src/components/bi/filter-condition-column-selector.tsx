@@ -39,12 +39,12 @@ const useStyles = makeStyles({
 });
 
 type Props = {
-  appearance: "primary" | "normal";
+  appearance?: "primary" | "normal";
   filterConditionField: UseFieldArrayReturn<FormFilterConditionType>;
 };
 
 export const FilterConditionColumnSelector = ({
-  appearance,
+  appearance = "normal",
   filterConditionField,
 }: Props): JSX.Element => {
   const styles = useStyles();
