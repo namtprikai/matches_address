@@ -6,6 +6,7 @@ import { useFetchResultViews } from "../../hooks/use-fetch-result-views";
 import { type EditViewFormType } from "../interfaces/edit-view-form";
 import { type SelectResultSheet, type SelectResultView } from "../../schema";
 import { useFetchResultView } from "../../hooks/use-fetch-result-view";
+import { toFloat } from "../util/toFloat";
 
 type Params = {
   defaultValues: EditViewFormType;
@@ -64,12 +65,15 @@ export const useEditViewForm = ({
   const onSubmit = form.handleSubmit(async (data) => {
     if (!selectedResultViewId) return;
 
+    const value = {
+      data_set_result_id: data.dataSetResultId,
+      ...data,
+      parameters: toFloat(data.parameters),
+    };
+
     await window.ipcRenderer.invoke("updateResultViews", {
       resultViewId: selectedResultViewId,
-      value: {
-        data_set_result_id: data.dataSetResultId,
-        ...data,
-      },
+      value,
     });
 
     void mutateResultView();

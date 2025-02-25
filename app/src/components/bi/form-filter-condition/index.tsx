@@ -65,7 +65,7 @@ export const FormFilterCondition = ({
   const styles = useStyles();
 
   const {
-    form: { register, setValue },
+    form: { register, setValue, handleSubmit },
     fieldState: filterConditionField,
   } = useFormFilterCondition({
     init: {
@@ -79,46 +79,16 @@ export const FormFilterCondition = ({
   const unit = watch("unit");
   const currentParameters = watch("parameters");
 
-  const saveAndClose = (): void => {
+  const saveAndClose = handleSubmit((data) => {
     /** 既存のグルーピング条件を削除 */
     const newParameters = currentParameters.filter(
       (f) => !isFilterCondition(f),
     );
     /** 新しいグルーピング条件を追加 */
-    newParameters.push(
-      /**  */
-      ...fields.map((f) => {
-        switch (f.value.referenceColumnType) {
-          case "integer":
-          case "integerRange":
-            return f;
-
-          case "float":
-            return {
-              ...f,
-              value: {
-                ...f.value,
-                value: Number(f.value.value / 100),
-              },
-            };
-          case "floatRange":
-            return {
-              ...f,
-              value: {
-                ...f.value,
-                startValue: Number(f.value.startValue / 100),
-                lastValue: Number(f.value.lastValue / 100),
-              },
-            };
-          default: {
-            return f;
-          }
-        }
-      }),
-    );
+    newParameters.push(...data.filterCondition);
     setEditViewFormValue("parameters", newParameters);
     setOpen(false);
-  };
+  });
 
   return (
     <>
@@ -141,7 +111,6 @@ export const FormFilterCondition = ({
             <DialogTitle
               action={
                 <FilterConditionColumnSelector
-                  appearance="primary"
                   filterConditionField={filterConditionField}
                 />
               }
@@ -237,7 +206,7 @@ export const FormFilterCondition = ({
               </div>
             </DialogContent>
             <DialogActions position="end">
-              <Button onClick={saveAndClose} type="button">
+              <Button appearance="primary" onClick={saveAndClose} type="button">
                 保存
               </Button>
             </DialogActions>
