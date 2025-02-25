@@ -132,7 +132,7 @@ function FormComponent({
           try {
             await onSubmit(e);
             setSuccess(true);
-            await new Promise((resolve) => setTimeout(resolve, 300));
+            await new Promise((resolve) => setTimeout(resolve, 0));
             setSuccess(false);
             window.location.reload();
           } catch (error) {
