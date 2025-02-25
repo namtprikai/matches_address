@@ -78,8 +78,6 @@ export const useEditViewForm = ({
 
     void mutateResultView();
     void mutateResultViews();
-
-    window.location.reload();
   });
 
   return { form, onSubmit, selectedResultView };
