@@ -10,13 +10,10 @@ import pandas as pd
 import geopandas as gpd
 import os
 import shutil
-import sqlite3
 import zipfile 
 from shapely.geometry import MultiPolygon, Polygon
 from shapely.wkt import loads as load_wkt
 from shapely import wkt
-from datetime import datetime
-import argparse
 import chardet
 from pandas.errors import ParserError
 import fiona
@@ -104,7 +101,6 @@ class Summarization:
             地域ごとの住戸数、空き家数、空き家率、若年層率、高齢者率を集計したGeoDataFrame。
         """
         akiya_pred_cols = self.INPUT_COLUMNS["akiya_pred"]
-        # gdf[akiya_pred_cols["predicted_label"]] = gdf[akiya_pred_cols["predicted_label"]].map({"true": 1, "false": 0})
 
         # 各市区町村ブロックごとに集計を行う
         summerized_gdf = gdf.groupby(self.key_column).agg(
@@ -179,7 +175,6 @@ class Summarization:
         if not city_block_gdf.has_sindex:
             city_block_gdf.sindex  # 空間インデックスを作成
 
-        print(residence_gdf.head(5), city_block_gdf.head(5))
         # 空間結合を実施（centroid_geometry列を使用）
         spatial_join_gdf = gpd.sjoin(residence_gdf.set_geometry('centroid_geometry'), 
                                     city_block_gdf, how="inner", predicate="intersects", 
@@ -314,40 +309,29 @@ class Summarization:
             raise
     
     def process(self):
-        # データを読み込む
-        print('空き家データの読み込み')
-        
-        print(f'{self.INPUT_PATHS["akiya_pred"]}を{detect_encoding}で読み込みます')
         residence_gdf = pd.read_csv(self.INPUT_PATHS["akiya_pred"], encoding='utf-8-sig')
-        print('csvを読み込みました')
         # 'geometry'列をWKT形式からジオメトリに変換
         residence_gdf['geometry'] = residence_gdf['geometry'].apply(wkt.loads)
         # GeoDataFrameに変換
-        print('gdfに変換します')
         residence_gdf = gpd.GeoDataFrame(residence_gdf, geometry='geometry')
-        print('読み込み完了')
         # 投影法の指定 (必要に応じてEPSGコードを指定)
         residence_gdf.set_crs(epsg=4326, inplace=True)
         # city_block のファイル形式に応じて読み込み
         if "shp" in self.INPUT_PATHS["city_block"]:
-            print("Reading shapefile...")
             try:
                 city_block_gdf = self.read_file(self.INPUT_PATHS["city_block"])
             except:
                 set_error(ERROR_20017)
                 raise("Shapefile形式の場合、座標系情報が正しくZIP内に保存されているかなどをご確認ください。Shapefileの読み込みにはshp, shx, prj, dbfの４種類のファイルが必要となります。")
         elif "gpkg" in self.INPUT_PATHS["city_block"]:
-            print("Reading GeoPackage...")
             try:
                 city_block_gdf = self.read_file(self.INPUT_PATHS["city_block"])
             except:
                 set_error(ERROR_20016)
                 raise("Geopackage形式の場合、座標系情報が正しくZIP内に保存されているかなどをご確認ください。他に複数レイヤが入っている場合にデータ提供元に問い合わせを推奨します。")
         elif "geojson" in self.INPUT_PATHS["city_block"]:
-            print("Reading GeoJSON...")
             city_block_gdf = self.read_file(self.INPUT_PATHS["city_block"])
         elif "csv" in self.INPUT_PATHS["city_block"]:
-            print("Reading CSV with WKT...")
             city_block_df = self.read_file(self.INPUT_PATHS["city_block"])
 
             if "geometry" in city_block_df.columns:
@@ -366,7 +350,6 @@ class Summarization:
         
         # 座標系変換
         residence_gdf = residence_gdf.to_crs("EPSG:4326")
-        print(f"Converting CRS to EPSG:4326 for {type(city_block_gdf)}")
         city_block_gdf = city_block_gdf.to_crs("EPSG:4326")
 
         if isinstance(self.key_column, list):
@@ -529,7 +512,6 @@ def process_summarization(akiya_pred_file, spatial_file, output_dir, key_column,
             
         return output_path
     except Exception as e:
-        print(e)
         if ERROR_CODE is None:
             set_error(ERROR_20012)
         if task_id is not None:
@@ -546,56 +528,3 @@ def set_error(value, param_st1=None, param_st2=None):
         ERROR_MSG = value['message'].format(param_st1=param_st1)
     else:
         ERROR_MSG = value['message']
-
-def main():
-    parser = argparse.ArgumentParser(description="E032 - 地域集計機能")
-    
-    # 空き家推定ファイルのパスを指定
-    parser.add_argument("akiya_pred_file", help="【D902】空き家推定結果データのファイルパス")
-
-    parser.add_argument("--job_id", default=None)
-    parser.add_argument("--db_path", default=None)
-    
-    # 小地域データとして、gpkg か zip のどちらかを指定
-    parser.add_argument(
-        "spatial_file", 
-        help="【D013】国勢調査小地域データ（町丁・字等) - .gpkgまたは.zipファイルのパス"
-    )
-
-    # 集計に使用するカラム名の指定
-    parser.add_argument(
-        "--key_column", 
-        default="KEY_CODE", 
-        help="集計に使用するカラム名（デフォルト: KEY_CODE）"
-    )
-
-    # 出力ディレクトリのオプション
-    parser.add_argument(
-        "--output_dir", 
-        default=".", 
-        help="出力ディレクトリ（デフォルト: カレントディレクトリ）"
-    )
-    
-    args = parser.parse_args()
-
-    # 入力ファイルの拡張子を確認
-    spatial_file_ext = os.path.splitext(args.spatial_file)[1].lower()
-
-    if spatial_file_ext not in [".zip", ".gpkg"]:
-        raise ValueError("読み込めるファイル形式は .zip または .gpkg のみです。")
-
-    # process_summarization関数を呼び出して処理を実行
-    output_path = process_summarization(
-        args.akiya_pred_file,
-        args.spatial_file,
-        args.output_dir,
-        args.key_column,
-        args.job_id,
-        args.db_path
-    )
-
-    print(f"地域別集計データが保存されました: {output_path}")
-
-
-if __name__ == "__main__":
-    main()

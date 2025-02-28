@@ -14,7 +14,6 @@ from typing import List, Tuple
 import io
 import os
 import re
-import argparse
 import chardet
 import pandas as pd
 from sklearn.feature_extraction.text import CountVectorizer
@@ -38,14 +37,6 @@ except ImportError:
     from async_tasks.utils import *
     from async_tasks.constants import *
 
-# カスタムCSS
-CUSTOM_CSS = """
-#csv label {
-    font-size: 20px;
-    font-weight: bold;
-    color: lightblue;
-}
-"""
 
 OUTPUT_PATH = "matched_data.csv"
 ERROR_CODE=None
@@ -142,7 +133,6 @@ def get_column_names(csv_file: str) -> List[str]:
         return df.columns.tolist()
     except Exception as e:
         # エラーが発生した場合、メッセージを表示して空のリストを返す
-        print(f"ファイル {csv_file} の読み込み中にエラーが発生しました: {e}")
         return []
 
 def normalize_dates(df, column, formats=['%Y/%m/%d', '%d/%m/%Y', '%Y-%m-%d', '%m/%d/%Y', '%Y%m%d']):
@@ -452,7 +442,6 @@ def embedding_address(main_csv: io.BytesIO | str, sub_csv: io.BytesIO | str, mai
 
         return saved_file_path, f"{complete_match_ratio}\n{threshold_match_ratio}\n{sub_complete_match_ratio}"
     except Exception as e:
-        print(e)
         if ERROR_CODE is None:
             set_error(ERROR_00013)
         if task_id is not None:
@@ -479,7 +468,6 @@ def save_csv(df, path):
         try:
             # 各エンコーディングでCSVファイルとして保存を試みる
             df.to_csv(abs_path, encoding=encoding, index=False)
-            print(f"ファイルが {encoding} エンコーディングで正常に保存されました: {abs_path}")
             return abs_path
         except Exception as e:
             set_error(ERROR_00012, abs_path, encoding)
@@ -496,38 +484,3 @@ def set_error(value, param_st1=None, param_st2=None):
         ERROR_MSG = value['message'].format(param_st1=param_st1)
     else:
         ERROR_MSG = value['message']
-
-def main():
-    parser = argparse.ArgumentParser(description="E014 - テキストマッチング機能")
-    parser.add_argument("--main_csv", required=True, help="メインのCSVファイルのパス")
-    parser.add_argument("--sub_csv", required=True, help="サブのCSVファイルのパス")
-    parser.add_argument("--main_column", required=True, help="メインファイルの結合キーとなる列名")
-    parser.add_argument("--sub_column", required=True, help="サブファイルの結合キーとなる列名")
-    parser.add_argument("--merge_base", required=True, help="結合の基準となるファイル名")
-    parser.add_argument("--ngram", type=int, default=2, help="N-gramのサイズ（デフォルト: 2）")
-    parser.add_argument("--threshold", type=float, default=0.5, help="類似度の閾値（デフォルト: 0.5）")
-    parser.add_argument("--output_directory", help="出力ファイルのパス", default=None)
-    parser.add_argument("--job_id", default=None)
-    parser.add_argument("--db_path", default=None)
-    
-    args = parser.parse_args()
-
-    output_path, results = embedding_address(
-        args.main_csv,
-        args.sub_csv,
-        args.main_column,
-        args.sub_column,
-        args.merge_base,
-        args.output_directory,
-        args.ngram,
-        args.threshold,
-        1000,
-        args.job_id,
-        args.db_path
-    )
-    
-    print(f"結果ファイル: {output_path}")
-    print(results)
-
-if __name__ == "__main__":
-    main()

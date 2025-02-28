@@ -164,17 +164,11 @@ class DataProcessor:
             try:
                 # データフレームをCSVとして保存
                 df.to_csv(path, encoding=encoding, index=False, errors='replace')
-                # 成功した場合、メッセージを表示して関数を終了
-                print(f"ファイルが {encoding} handle_optional_fileに保存されました: {path}")
                 return
             except Exception as e:
                 # エラーが発生した場合、メッセージを表示して次のエンコーディングを試す
                 set_error(ERROR_00001, path, encoding)
-                # print(f"ファイル {path} を {encoding} エンコーディングで保存中にエラーが発生しました: {e}")
                 raise
-
-        # すべてのエンコーディングで失敗した場合のメッセージ
-        # print(f"ファイル {path} をいずれのエンコーディングでも保存できませんでした。")
     
     def process(self):
         """
@@ -359,7 +353,6 @@ class EachFileProcessor(DataProcessor):
         # ファイルを読み込む
         df = read_file(self.INPUT_PATHS[file_key], file_key)
         if df is None:
-            print(f"{file_key}の処理をスキップします。")
             return
         
         cols = INPUT_COLUMNS[file_key]
@@ -570,7 +563,6 @@ def handle_optional_file(file, key, main_df, main_address_col, INPUT_COLUMNS):
     任意のファイルが指定されなかった場合、ダミーデータを生成し、ファイルが指定された場合はread_fileを使用する
     """
     if file is None or not os.path.exists(file):
-        print(f"{key}データが入力されていません。ダミーデータを生成します。 - ${file}")
         return generate_dummy_data(main_df, main_address_col, INPUT_COLUMNS[key])
     else:
         return read_file(file, key)  # read_file関数を使用してファイルを読み込む
@@ -739,22 +731,18 @@ def process_data(input_files, output_directory, main_data_type, job_id, columns,
         for file_key in input_paths.keys():
             progress_percent += 16
             progress_percent_job += 2
-            # 処理中のファイル名を表示
-            print(f"{file_key}データを処理中...")
             # EachFileProcessorのprocess_fileメソッドを呼び出して各ファイルを処理
             processor.process_file(file_key)
             if job_id:
                 create_or_update_job_task(job_id, progress_percent=str(progress_percent), preprocess_type="e012", error_code=None, error_msg=None, result=None, id= task_id)
                 create_or_update_job(job_id, progress_percent_job)
                 
-        print("すべての処理が完了しました!")
         if job_id:
             create_or_update_job_task(job_id, progress_percent="100", preprocess_type="e012", error_code=None, error_msg=None, result=json.dumps({}), id= task_id, is_finish=True)
         # 処理済みファイルのパスリストを返す
         # 出力パスのうち、実際にファイルが生成されたもののみをリストにして返す
         return [path for path in output_paths.values() if os.path.exists(path)]
     except Exception as e:
-        print(e)
         if ERROR_CODE is None:
             set_error(ERROR_00005)
         if task_id is not None:
@@ -772,38 +760,5 @@ def set_error(value, param_st1=None, param_st2=None):
     else:
         ERROR_MSG = value['message']
         
-
-def main():
-    parser = argparse.ArgumentParser(description="E012 - データクレンジング機能")
-    parser.add_argument("--suido_status", required=True, help="水道ステータスデータファイルのパス")
-    parser.add_argument("--suido_use", required=True, help="水道使用量データファイルのパス")
-    parser.add_argument("--juki", required=True, help="住基データファイルのパス")
-    parser.add_argument("--touki", required=True, help="登記データファイルのパス")
-    parser.add_argument("--akiya_result", required=True, help="空き家結果データファイルのパス")
-    parser.add_argument("--geocoding", required=True, help="ジオコーディングデータファイルのパス")
-    parser.add_argument("--output_directory", help="出力ファイルのパス", default=None)
-    parser.add_argument("--job_id", default=None)
-    parser.add_argument("--db_path", default=None)
-    parser.add_argument("--columns", default=None)
-    
-    args = parser.parse_args()
-
-    input_files = {
-        "suido_status": args.suido_status,
-        "suido_use": args.suido_use,
-        "juki": args.juki,
-        "touki": args.touki,
-        "akiya_result": args.akiya_result,
-        "geocoding": args.geocoding
-    }
-
-    processed_files = process_data(input_files, args.output_directory, args.job_id, args.columns, args.db_path)
-    
-    print("処理済みファイル:")
-    for file in processed_files:
-        print(file)
-
-if __name__ == "__main__":
-    main()
 
         

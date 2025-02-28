@@ -12,51 +12,6 @@ def connect_sqllite(db_path: str):
     global CURSOR
     CONNECTION = sqlite3.connect(db_path)
     CURSOR = CONNECTION.cursor()
-    create_table_if_not_exist()
-
-
-def create_table_if_not_exist():
-    CURSOR.execute("""
-    create table if not exists jobs (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        status TEXT,
-        type TEXT CHECK(type IN ('preprocess', 'ml', 'result')),
-        parameters TEXT NOT NULL,
-        process_id INTEGER NOT NULL,
-        is_named INTEGER NOT NULL,
-        
-        created_at TEXT DEFAULT (CURRENT_TIMESTAMP) NOT NULL,
-        updated_at TEXT DEFAULT (CURRENT_TIMESTAMP) NOT NULL
-    )
-    """)
-    CURSOR.execute("""
-    create table if not exists job_tasks (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        job_id INTEGER NOT NULL,
-        progress_percent TEXT,
-        preprocess_type TEXT,
-        error_code TEXT,
-        result BLOB,
-        finished_at TEXT DEFAULT NULL,
-        created_at TEXT DEFAULT (CURRENT_TIMESTAMP) NOT NULL,
-        updated_at TEXT DEFAULT (CURRENT_TIMESTAMP) NOT NULL,
-        
-        FOREIGN KEY (job_id) REFERENCES jobs(id)
-    )
-    """)
-
-    CURSOR.execute("""
-    create table if not exists job_results (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        job_id INTEGER NOT NULL,
-        file_path TEXT NOT NULL,
-        created_at TEXT DEFAULT (CURRENT_TIMESTAMP) NOT NULL,
-        updated_at TEXT DEFAULT (CURRENT_TIMESTAMP) NOT NULL,
-        
-        FOREIGN KEY (job_id) REFERENCES jobs(id)
-    )
-    """)
-    CONNECTION.commit()
 
 def create_or_update_job(job_id: int, status: str, job_type: str = "", process_id: int = 0, is_named: int = 0, parameters: str = "") -> int:
     try:
@@ -75,7 +30,6 @@ def create_or_update_job(job_id: int, status: str, job_type: str = "", process_i
 
         return job_id
     except sqlite3.Error as e:
-        print(f"An error occurred: {e}")
         CONNECTION.rollback()
         return None
     
@@ -102,7 +56,6 @@ def create_or_update_job_task(job_id: int, progress_percent: str, preprocess_typ
         CONNECTION.commit()
         return id
     except Exception as e:
-        print(f"An error occurred: {e}")
         CONNECTION.rollback()
         raise e
     
@@ -114,7 +67,6 @@ def create_job_results(job_id: int, file_path: str):
                             """, (job_id, file_path))
         CONNECTION.commit()
     except sqlite3.Error as e:
-        print(f"An error occurred: {e}")
         CONNECTION.rollback()
         
 def concatenate(path_1: str, path_2: str):
@@ -128,7 +80,6 @@ def create_data_set_detail_buildings_or_area(input_data, table_name="data_set_de
         input_data.to_sql(table_name, CONNECTION, if_exists='append', index=False)
         return True
     except sqlite3.Error as e:
-        print(f"An error occurred: {e}")
         return False
         
 def create_data_set_results(title: str = ""):
@@ -150,7 +101,6 @@ def create_data_set_results(title: str = ""):
         id = CURSOR.lastrowid
         return id
     except sqlite3.Error as e:
-        print(f"An error occurred: {e}")
         CONNECTION.rollback()
         return None
     
@@ -162,5 +112,4 @@ def get_data_set_detail_buildings_or_area(data_set_result_id, reference_date=Non
             return pd.read_sql(f"SELECT * FROM {table_name} where data_set_result_id = {data_set_result_id} and reference_date = '{reference_date}'", CONNECTION)
             
     except sqlite3.Error as e:
-        print(f"An error occurred: {e}")
         return None

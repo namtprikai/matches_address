@@ -63,7 +63,6 @@ def main():
 
         create_job_results(job_id, f"{random_str}.{output_format}")
     except Exception as e:
-        print(e)
         if job_id:
             create_or_update_job(job_id, "error")
     finally:

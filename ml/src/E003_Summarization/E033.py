@@ -1,5 +1,3 @@
-import argparse
-import logging
 import os
 import sys
 import geopandas as gpd
@@ -23,34 +21,6 @@ except ImportError:
 
 ERROR_CODE=None
 ERROR_MSG=None
-
-# 一般的な座標系のリスト
-COMMON_CRS = [
-    "EPSG:4326 (WGS84)",
-    "EPSG:3857 (Webメルカトル)",
-    "EPSG:2443 (日本測地系2000 / 平面直角座標系 I)",
-    "EPSG:2444 (日本測地系2000 / 平面直角座標系 II)",
-    "EPSG:2445 (日本測地系2000 / 平面直角座標系 III)",
-    "EPSG:2446 (日本測地系2000 / 平面直角座標系 IV)",
-    "EPSG:2447 (日本測地系2000 / 平面直角座標系 V)",
-    "EPSG:2448 (日本測地系2000 / 平面直角座標系 VI)",
-    "EPSG:2449 (日本測地系2000 / 平面直角座標系 VII)",
-    "EPSG:2450 (日本測地系2000 / 平面直角座標系 VIII)",
-    "EPSG:2451 (日本測地系2000 / 平面直角座標系 IX)",
-    "EPSG:2452 (日本測地系2000 / 平面直角座標系 X)",
-    "EPSG:2453 (日本測地系2000 / 平面直角座標系 XI)",
-    "EPSG:2454 (日本測地系2000 / 平面直角座標系 XII)",
-    "EPSG:2455 (日本測地系2000 / 平面直角座標系 XIII)",
-    "EPSG:2456 (日本測地系2000 / 平面直角座標系 XIV)",
-    "EPSG:2457 (日本測地系2000 / 平面直角座標系 XV)",
-    "EPSG:2458 (日本測地系2000 / 平面直角座標系 XVI)",
-    "EPSG:2459 (日本測地系2000 / 平面直角座標系 ⅩVII)",
-    "EPSG:2460 (日本測地系2000 / 平面直角座標系 ⅩVIII)",
-    "EPSG:2461 (日本測地系2000 / 平面直角座標系 ⅩIX)",
-]
-
-# ログ設定
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 def remove_z_coordinate(geometry):
     """
@@ -115,20 +85,17 @@ def export_data(gdf, output_path, output_format, target_unit, job_id=None):
             for encoding in encodings:
                 try:
                     gdf.to_csv(output_path, index=False, encoding=encoding)
-                    logging.info(f"CSV exported successfully using {encoding} encoding.")
                     return output_path
                 except Exception as e:
-                    logging.warning(f"Failed to export CSV with {encoding} encoding: {e}")
+                    pass
             raise ValueError("Failed to export CSV with all attempted encodings.")
         elif output_format.lower() == 'geojson':
             gdf = rename_columns(gdf, output_format.lower(), target_unit)
             gdf.to_file(output_path, driver='GeoJSON')
-            logging.info("GeoJSON exported successfully.")
         elif output_format.lower() == 'geopackage':
             gdf = rename_columns(gdf, output_format.lower(), target_unit)
             gdf['fid'] = range(1, len(gdf) + 1)
             gdf.to_file(output_path, driver='GPKG')
-            logging.info("GPKG exported successfully.")
         else:
             set_error(ERROR_30004)
             raise ValueError("CSV形式、GeoPackage形式、GeoJSON形式のファイルを指定してください。")
@@ -161,10 +128,8 @@ def processing(params, job_id=None, db_path=None):
             create_or_update_job_task(job_id, progress_percent="20", preprocess_type=None, error_code=None, error_msg=None, result=json.dumps({}), id= task_id)
             create_or_update_job(job_id, 20)
         if params.get('target_crs'):
-            logging.info(f"Target CRS specified: {params['target_crs']}")
             target_crs = params['target_crs']
             if gdf.crs.to_string().upper() != target_crs.upper():
-                logging.info(f"Converting CRS from {gdf.crs} to {target_crs}")
                 target_crs = target_crs.split(':')
                 if len(target_crs) > 1:
                     target_crs = target_crs[1].split(' ')[0]
@@ -172,24 +137,17 @@ def processing(params, job_id=None, db_path=None):
                     target_crs = target_crs[0]
                 target_crs_epsg = int(target_crs)
                 gdf = gdf.to_crs(epsg=target_crs_epsg)
-                logging.info(f"CRS conversion completed. New CRS: {gdf.crs}")
-            else:
-                logging.info("Input CRS matches target CRS. No conversion needed.")
-        else:
-            logging.info("No target CRS specified. Skipping conversion.")
 
         if job_id:
             create_or_update_job_task(job_id, progress_percent="40", preprocess_type=None, error_code=None, error_msg=None, result=json.dumps({}), id= task_id)
             create_or_update_job(job_id, 40)
         
-        logging.info(f"Exporting data to {output_path}")
         output_file_path = export_data(gdf, output_path, params['output_format'], target_unit, job_id)
 
         if job_id:
             create_or_update_job_task(job_id, progress_percent="100", preprocess_type=None, error_code=None, error_msg=None, result=json.dumps({}), id= task_id, is_finish=True)
             create_or_update_job(job_id, 80)
             
-        logging.info("Processing completed successfully")
         return output_file_path
     except Exception as e:
         if ERROR_CODE is None:
@@ -209,42 +167,3 @@ def set_error(value, param_st1=None, param_st2=None):
         ERROR_MSG = value['message'].format(param_st1=param_st1)
     else:
         ERROR_MSG = value['message']
-
-def main():
-    parser = argparse.ArgumentParser(description="E033 - データ出力機能")
-    parser.add_argument("input_file", help="入力ファイルのパス (D902・D903)")
-    parser.add_argument("output_format", choices=['csv', 'geojson'], help="出力データ形式")
-    parser.add_argument("--target_crs", choices=COMMON_CRS + ['custom'], help="変換後の座標系")
-    parser.add_argument("--custom_crs", help="カスタム座標系 (例: EPSG:2249)")
-    parser.add_argument("--output_path", help="出力ファイルのパス")
-    parser.add_argument("--job_id", default=None)
-    parser.add_argument("--db_path", default=None)
-    
-    args = parser.parse_args()
-
-    # Set target_crs based on input
-    if args.target_crs == 'custom':
-        if not args.custom_crs:
-            parser.error("--custom_crs is required when --target_crs is 'custom'")
-        target_crs = args.custom_crs
-    else:
-        target_crs = args.target_crs
-
-    # Set default output path if not provided
-    if not args.output_path:
-        output_dir = os.path.dirname(args.input_file)
-        output_filename = f"D903.{args.output_format.lower()}"
-        args.output_path = os.path.join(output_dir, output_filename)
-
-    params = {
-        'input_file': args.input_file,
-        'output_format': args.output_format,
-        'target_crs': target_crs,
-        'output_path': args.output_path
-    }
-
-    result = processing(params, args.job_id, args.db_path)
-    print(result)
-
-if __name__ == '__main__':
-    main()

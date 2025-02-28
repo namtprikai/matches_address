@@ -17,7 +17,6 @@ import math
 import os
 import random
 import string
-import argparse
 import sys
 import uuid
 import chardet
@@ -25,10 +24,6 @@ import geopandas as gpd
 import pandas as pd
 import zipfile
 import shutil
-import subprocess
-import glob
-from tqdm import tqdm
-from concurrent.futures import ThreadPoolExecutor
 from shapely import wkt, wkb
 from shapely.geometry import Point
 from pyproj import CRS, Transformer
@@ -58,111 +53,6 @@ pd.set_option("display.max_columns", None)
 
 # 水道データ結合の際の、オプション。0；交差結合、1:最近傍結合
 option = 0
-
-# 各データで利用するカラムを定義
-COLUMNS = {
-    "tatemono": {
-        'gml_id': "id",
-        'class': "区分",
-        'measuredHeight': "計測高さ",
-        'measuredHeight_uom': "計測高さ計測単位",
-        'srcScale': "地図情報レベル",
-        'geometrySrcDesc': "幾何属性作成⽅法",
-        'thematicSrcDesc': "主題属性作成⽅法",
-        'lod1HeightType': "建築物の⾼さの算出⽅法",
-        'buildingID': "建築物に付与される固有の識別",
-        'prefecture': "⼟地が所在する都道府県の都道府県コ−ド",
-        'city': "⼟地が所在する市区町村の市区町村コ−ド",
-        'description': "概要",
-        'rank': "浸水ランク",
-        'depth': "浸水深",
-        'depth_uom': "浸水深の単位",
-        'adminType': "浸水リスク指定機関区分",
-        'scale': "浸水規模",
-        'duration': "継続時間",
-        'duration_uom': "継続時間単位",
-        '建築確認申請の用途': "建築確認申請の用途",
-        '地上階数': "地上階数",
-        '地下階数': "地下階数",
-        'value': "拡張属性",
-        'value_uom': "拡張属性の単位",
-        'buildingDisasterRiskAttribute|BuildingInlandFloodingRiskAttribute|description': "内水浸水リスク説明",
-        'buildingDisasterRiskAttribute|BuildingInlandFloodingRiskAttribute|rank': "内水浸水リスクランク",
-        'buildingDisasterRiskAttribute|BuildingInlandFloodingRiskAttribute|depth': "内水浸水深",
-        'buildingDisasterRiskAttribute|BuildingInlandFloodingRiskAttribute|depth_uom': "内水浸水深の単位",
-        'name': "名称",
-        'areaType': "土砂災害リスク区域区分",
-        'buildingDisasterRiskAttribute|BuildingRiverFloodingRiskAttribute|description': "洪水浸水リスク説明",
-        'buildingDisasterRiskAttribute|BuildingRiverFloodingRiskAttribute|rank': "洪水浸水リスクランク",
-        'buildingDisasterRiskAttribute|BuildingRiverFloodingRiskAttribute|depth': "洪水浸水深",
-        'buildingDisasterRiskAttribute|BuildingRiverFloodingRiskAttribute|depth_uom': "洪水浸水深の単位",
-        'buildingDisasterRiskAttribute|BuildingLandSlideRiskAttribute|description': "洪水浸水リスク説明",
-        '大規模店舗名称': "大規模店舗名称",
-        'appearanceSrcDesc': "テクスチャ作成⽅法",
-        'branchID': "建物ID 枝番",
-        'geometry': "建物ポリゴン情報"
-    },
-    "e14_merged": {
-        'count': "人数",
-        'count_age_under_15': "15歳以下人数",
-        'count_age_under_15_ratio': "15歳以下割合",
-        'count_age_15_to_64': "15ー64歳人数",
-        'count_age_15_to_64_ratio': "15ー64歳割合",
-        'count_age_over_65': "65歳以上人数",
-        'count_age_over_65_ratio': "65歳以上割合",
-        'count_male': "男性人数",
-        'male_ratio': "男性割合",
-        'count_female': "女性人数",
-        'female_ratio': "女性割合",
-        'residence_duration': "居住期間",
-        '開閉栓区分': "開閉栓区分",
-        'max_suido_use': "最大使用量",
-        'target': "ターゲット数",
-        'geometry': "位置情報"
-    },
-    "plateaugml": {
-        'class_plateaugml': "class",
-        'usage_plateaugml': "usage",
-        'yearOfConstruction_plateaugml': "yearOfConstruction",
-        'measuredHeight_plateaugml': "measuredHeight",
-        'storeysAboveGround_plateaugml': "storeysAboveGround",
-        'creationDate_plateaugml': "creationDate",
-        'buildingDataQualityAttribute_plateaugml': "buildingDataQualityAttribute",
-        'buildingDetailAttribute_plateaugml': "buildingDetailAttribute",
-        'buildingIDAttribute_plateaugml': "buildingIDAttribute",
-        'geometry_plateaugml': "geometry"
-    }
-}
-
-
-# データごとの出力するカラムを定義
-OUTPUT_COLUMNS = {
-    "tatemono": ['count', 'count_age_under_15', 'count_age_under_15_ratio',
-                 'count_age_15_to_64', 'count_age_15_to_64_ratio', 'count_age_over_65',
-                 'count_age_over_65_ratio', 'count_male', 'male_ratio', 'count_female',
-                 'female_ratio', 'residence_duration', '開閉栓区分', 'max_suido_use',
-                 'target', 'gml_id_left', 'class', 'measuredHeight',
-                 'measuredHeight_uom', 'srcScale', 'geometrySrcDesc', 'thematicSrcDesc',
-                 'lod1HeightType', 'buildingID', 'prefecture_left', 'city_left',
-                 'description', 'rank', 'depth', 'depth_uom', 'adminType', 'scale',
-                 'duration', 'duration_uom', '建築確認申請の用途', '地上階数', '地下階数', 'value',
-                 'value_uom',
-                 'buildingDisasterRiskAttribute|BuildingInlandFloodingRiskAttribute|description',
-                 'buildingDisasterRiskAttribute|BuildingInlandFloodingRiskAttribute|rank',
-                 'buildingDisasterRiskAttribute|BuildingInlandFloodingRiskAttribute|depth',
-                 'buildingDisasterRiskAttribute|BuildingInlandFloodingRiskAttribute|depth_uom',
-                 'name', 'areaType',
-                 'buildingDisasterRiskAttribute|BuildingRiverFloodingRiskAttribute|description',
-                 'buildingDisasterRiskAttribute|BuildingRiverFloodingRiskAttribute|rank',
-                 'buildingDisasterRiskAttribute|BuildingRiverFloodingRiskAttribute|depth',
-                 'buildingDisasterRiskAttribute|BuildingRiverFloodingRiskAttribute|depth_uom',
-                 'buildingDisasterRiskAttribute|BuildingLandSlideRiskAttribute|description',
-                 '大規模店舗名称', 'appearanceSrcDesc', 'branchID', 'geometry'
-                 ],
-    "merged_ratio": ["結合割合"]
-    }
-
-WGS84 = 6668
 
 PREF_TO_COORD_NUMBER = {
     "長崎県": 1,
@@ -833,7 +723,6 @@ def save_geodataframe(gdf, output_path, output_type):
         for encoding in encodings:
             try:
                 gdf.to_file(output_path, driver="GPKG", encoding=encoding)
-                print(f"ファイルが {encoding} エンコーディングでGeoPackage形式で正常に保存されました: {output_path}")
                 return
             except Exception as e:
                 set_error(ERROR_00016, output_path, encoding)
@@ -843,7 +732,6 @@ def save_geodataframe(gdf, output_path, output_type):
         for encoding in encodings:
             try:
                 gdf.to_csv(output_path, index=False, encoding=encoding)
-                print(f"ファイルが {encoding} エンコーディングでCSV形式で正常に保存されました: {output_path}")
                 return
             except Exception as e:
                 set_error(ERROR_00017, output_path, encoding)
@@ -868,37 +756,6 @@ def unzip_file(zip_file, extract_to):
         zip_ref.extractall(extract_to)
 
 
-def convert_gml_to_gpkg(gml_file):
-    """
-    GMLファイルをGeoPackage形式に変換し、LOD0データのみを抽出する。
-
-    Parameters
-    ----------
-    gml_file : str
-        GMLファイルのパス。
-    """
-    gpkg_file = f"{gml_file[:-4]}.gpkg"
-
-    cmd = [
-        "ogr2ogr",
-        "-f", "GPKG",               # 出力フォーマットをGeoPackageに指定
-        "-dim", "2",                # 2次元に制限
-        "-nlt", "MULTIPOLYGON",     # 出力をマルチポリゴンに制限
-        "-skipfailures",            # 処理中に失敗をスキップ
-        gpkg_file,                  # 出力ファイル
-        gml_file                    # 入力ファイル
-    ]
-
-    # コマンドの実行
-    result = subprocess.run(cmd, capture_output=True, text=True)
-
-    # コマンド結果をログ出力
-    if result.returncode != 0:
-        # KeyError -> set_error(ERROR_0000X, path, encoding)
-        print(f"Error: {result.stderr}")
-    else:
-        print(f"Successfully created {gpkg_file}")  
-
 def add_plateaugml_suffix(gdf):
     """
     GeoDataFrameのカラムに'_plateaugml'の接尾辞を追加する
@@ -916,139 +773,6 @@ def add_plateaugml_suffix(gdf):
     gdf = gdf.rename(columns=lambda col: f"{col}_plateaugml" if col != 'geometry' else col)
     return gdf
 
-
-def process_plateaugml(temp_dir, output_dir, crs):
-    """
-    ZIPファイルからGMLファイルを抽出し、GeoPackage形式に変換する処理。
-    PLATEAUデータを建物データと空間結合する処理を含む。
-
-    Parameters
-    ----------
-    input_zip_file : str
-        入力のZIPファイルのパス。
-    output_gpkg_file : str
-        出力のGeoPackageファイルのパス。
-    buildings_gdf : GeoDataFrame
-        空間結合する建物データのGeoDataFrame。
-    """
-
-
-    ## 1. building
-    #"""
-    output_gpkg_file = os.path.join(output_dir, "plateau_bldg.gpkg")
-
-    # 解凍されたディレクトリからudx/bldgフォルダ内のGMLファイルを取得
-    gml_files = glob.glob(os.path.join(temp_dir, "bldg", "*.gml"))
-    # GMLファイルの処理
-    with ThreadPoolExecutor(max_workers=4) as executor:
-        list(tqdm(executor.map(convert_gml_to_gpkg, gml_files), total=len(gml_files)))
-
-    # 生成されたGPKGファイルを結合
-    gdf_list = []
-    gpkg_files = glob.glob(os.path.join(temp_dir, "bldg", "*.gpkg"))
-    gdf_plateu_all = gpd.GeoDataFrame()
-    for gpkg_file in tqdm(gpkg_files):
-        try:
-            gdf = gpd.read_file(gpkg_file)
-            # CRSが定義されていない場合、crsを設定
-            if gdf.crs is None:
-                gdf.set_crs(crs, inplace=True)
-            # CRSを変換
-            gdf = gdf.to_crs(crs)
-            gdf_list.append(gdf)
-        except Exception as e:
-            continue
-    gdf_list = [gdf for gdf in gdf_list if not gdf.empty]
-    gdf_plateu_all = pd.concat(gdf_list, ignore_index=True)
-
-    # gdf_plateu_allにCRSが設定されているか確認し、なければデフォルトでEPSG:4326を設定
-    if gdf_plateu_all.crs is None:
-        print("CRSが設定されていないため、EPSG:4326を設定します。")
-        gdf_plateu_all.set_crs(epsg=4326, inplace=True)
-
-    # 座標系変換（必要であれば他の座標系に変換）
-    gdf_plateu_all = gdf_plateu_all.to_crs(epsg=4326)
-    gdf_plateu_all.to_file(output_gpkg_file, driver="GPKG")
-    #"""
-
-    ## 2. landuse
-    """
-    output_gpkg_file = os.path.join(output_dir, "plateau_landuse.gpkg")
-    # 解凍されたディレクトリからudx/bldgフォルダ内のGMLファイルを取得
-    gml_files = glob.glob(os.path.join(temp_dir, "udx", "luse", "*.gml"))
-    
-    # GMLファイルの処理
-    with ThreadPoolExecutor(max_workers=4) as executor:
-        list(tqdm(executor.map(convert_gml_to_gpkg, gml_files), total=len(gml_files)))
-
-    # 生成されたGPKGファイルを結合
-    gdf_list = []
-    gpkg_files = glob.glob(os.path.join(temp_dir, "udx", "luse", "*.gpkg"))
-    gdf_plateu_all = gpd.GeoDataFrame()
-    for gpkg_file in tqdm(gpkg_files):
-        try:
-            gdf = gpd.read_file(gpkg_file)
-            # CRSが定義されていない場合、crsを設定
-            if gdf.crs is None:
-                gdf.set_crs(crs, inplace=True)
-            # CRSを変換
-            gdf = gdf.to_crs(crs)
-            gdf_list.append(gdf)
-        except Exception as e:
-            continue
-    gdf_list = [gdf for gdf in gdf_list if not gdf.empty]
-    gdf_plateu_all = pd.concat(gdf_list, ignore_index=True)
-
-    # gdf_plateu_allにCRSが設定されているか確認し、なければデフォルトでEPSG:4326を設定
-    if gdf_plateu_all.crs is None:
-        print("CRSが設定されていないため、EPSG:4326を設定します。")
-        gdf_plateu_all.set_crs(epsg=4326, inplace=True)
-
-    # 座標系変換（必要であれば他の座標系に変換）
-    gdf_plateu_all = gdf_plateu_all.to_crs(epsg=4326)
-    gdf_plateu_all.to_file(output_gpkg_file, driver="GPKG")
-    """
-
-    ## 3. urban plannning
-    """
-    output_gpkg_file = os.path.join(output_dir, "plateau_urbanplanning.gpkg")
-    # 解凍されたディレクトリからudx/bldgフォルダ内のGMLファイルを取得
-    gml_files = glob.glob(os.path.join(temp_dir, "udx", "urf", "*.gml"))
-    
-    # GMLファイルの処理
-    with ThreadPoolExecutor(max_workers=4) as executor:
-        list(tqdm(executor.map(convert_gml_to_gpkg, gml_files), total=len(gml_files)))
-
-    # 生成されたGPKGファイルを結合
-    gdf_list = []
-    gpkg_files = glob.glob(os.path.join(temp_dir, "udx", "urf", "*.gpkg"))
-    gdf_plateu_all = gpd.GeoDataFrame()
-    for gpkg_file in tqdm(gpkg_files):
-        try:
-            gdf = gpd.read_file(gpkg_file)
-            # CRSが定義されていない場合、crsを設定
-            if gdf.crs is None:
-                gdf.set_crs(crs, inplace=True)
-            # CRSを変換
-            gdf = gdf.to_crs(crs)
-            gdf_list.append(gdf)
-        except Exception as e:
-            continue
-    gdf_list = [gdf for gdf in gdf_list if not gdf.empty]
-    gdf_plateu_all = pd.concat(gdf_list, ignore_index=True)
-
-    # gdf_plateu_allにCRSが設定されているか確認し、なければデフォルトでEPSG:4326を設定
-    if gdf_plateu_all.crs is None:
-        print("CRSが設定されていないため、EPSG:4326を設定します。")
-        gdf_plateu_all.set_crs(epsg=4326, inplace=True)
-
-    # 座標系変換（必要であれば他の座標系に変換）
-    gdf_plateu_all = gdf_plateu_all.to_crs(epsg=4326)
-    gdf_plateu_all.to_file(output_gpkg_file, driver="GPKG")
-    """
-
-    # 一時ファイルのクリーンアップ
-    #shutil.rmtree(temp_dir)
 
 def process_data(tatemono_path, e14_merged_path, gpkg_path, ken, sikuchoson, option, output_type, output_path=None, job_id=None, db_path=None, geometry='geometry', input_source=[], file_type='', data_type=''):
     try:
@@ -1134,7 +858,6 @@ def process_data(tatemono_path, e14_merged_path, gpkg_path, ken, sikuchoson, opt
 
         return output_path, join_ratio
     except Exception as e:
-        print(e)
         if ERROR_CODE is None:
             set_error(ERROR_00019)
         if task_id is not None:
@@ -1151,43 +874,3 @@ def set_error(value, param_st1=None, param_st2=None):
         ERROR_MSG = value['message'].format(param_st1=param_st1)
     else:
         ERROR_MSG = value['message']
-
-def main():
-    parser = argparse.ArgumentParser(description="E016 - 空間結合機能")
-    parser.add_argument("--tatemono", required=True, help="建物データのファイルパス (CSV)")
-    parser.add_argument("--e14_merged", required=True, help="水道データのファイルパス (CSV)")
-    parser.add_argument("--gpkg", required=True, help="国勢調査の町丁字ポリゴンデータのGPKGファイルパス")
-    parser.add_argument("--ken", required=True, help="都道府県名")
-    parser.add_argument("--sikuchoson", required=True, help="市区町村名")
-    parser.add_argument("--join_option", choices=["交差結合", "最近傍結合"], default="交差結合", help="結合方式")
-    parser.add_argument("--output_format", choices=["csv", "gpkg"], default="csv", help="出力形式")
-    parser.add_argument("--input_zip_file", default=None)
-    parser.add_argument("--output_path", help="出力ファイルのパス", default=None)
-    parser.add_argument("--job_id", default=None)
-    parser.add_argument("--db_path", default=None)
-
-    args = parser.parse_args()
-
-    # 結合オプションを設定（0: 交差結合、1: 最近傍結合）
-    option = 0 if args.join_option == "交差結合" else 1
-
-    # データ処理を実行
-    output_path, join_ratio = process_data(
-        args.tatemono, 
-        args.e14_merged, 
-        args.gpkg, 
-        args.ken, 
-        args.sikuchoson, 
-        option, 
-        args.output_format, 
-        input_zip_file=args.input_zip_file, 
-        output_path=args.output_path,
-        job_id=args.job_id,
-        db_path=args.db_path
-    )
-
-    print(f"出力ファイル: {output_path}")
-    print(f"結合率: {join_ratio}%")
-
-if __name__ == "__main__":
-    main()

@@ -7,7 +7,6 @@ import json
 import os
 import pickle
 import shutil
-import argparse
 import sys
 import uuid
 import chardet
@@ -38,32 +37,6 @@ pd.set_option('display.max_columns', None)
 
 ERROR_CODE=None
 ERROR_MSG=None
-
-def setup_directory(base_dir):
-    """
-    作業ディレクトリを設定する
-
-    Parameters
-    ----------
-    base_dir : str
-        ベースディレクトリのパス
-
-    Returns
-    -------
-    links04_path : str
-        作成されたLinks04ディレクトリへのパス
-    """
-    # Links04フォルダのパスを生成
-    links04_path = os.path.join(base_dir, 'Links04')
-
-    # Links04フォルダが存在しない場合は作成
-    os.makedirs(links04_path, exist_ok=True)
-
-    # 現在の作業ディレクトリをLinks04フォルダに変更
-    os.chdir(links04_path)
-
-    # Links04ディレクトリへのパスを返す
-    return links04_path
 
 def detect_encoding(file_path):
     """
@@ -191,7 +164,7 @@ def load_models(model_zip, job_id):
     for _ in range(10):  # Try up to 10 times
         try:
             shutil.rmtree(temp_dir)  # Attempt to delete the directory
-            break  # Exit loop if deletion is successful
+            break
         except PermissionError:
             time.sleep(0.5)  # Wait 0.5 seconds before retrying
 
@@ -286,13 +259,6 @@ def insert_sqlite(input_data, data_set_result_id):
     ------
     Exception
         データベースにデータを挿入またはファイル出力する際にエラーが発生した場合に例外を発生させる
-
-    Notes
-    -----
-    - input_dataのカラム名は、日本語から英語に変換される
-    - データは、年に基づいて命名されたテーブルに挿入され、ファイルも同名で出力される（例: D902_akiyaresult_2024.csv）
-    - データベースに既にテーブルが存在する場合、そのテーブルは置き換えられる
-    - 処理中にエラーが発生した場合、そのエラーメッセージが表示され、接続は必ず閉じられる
     """
 
     try:
@@ -457,11 +423,7 @@ def process_and_predict(input_folder, input_file, model_directory, threshold, ou
             task_id = create_or_update_job_task(job_id, progress_percent="0", preprocess_type=None, error_code=None, error_msg=None, result=json.dumps({}))
             create_or_update_job(job_id, process)
             process += process_init
-        # ディレクトリの設定
-        print("ディレクトリを設定中...")
-
-        # 入力データの読み込み
-        print("入力データを読み込み中...")
+  
         input_path = os.path.join(input_folder, input_file)
         input_data = read_csv(input_path)
 
@@ -488,7 +450,6 @@ def process_and_predict(input_folder, input_file, model_directory, threshold, ou
         prediction_data = prediction_data.drop(columns=['geometry'], errors='ignore')
 
         # Get models and columns train
-        print("訓練済みモデルを読み込み中...")
         models, columns = load_models(model_directory, job_id)
         if not columns:
             columns = required_features
@@ -532,7 +493,6 @@ def process_and_predict(input_folder, input_file, model_directory, threshold, ou
             create_or_update_job(job_id, process)
             process += process_init
         # 特徴量のチェック
-        print("特徴量をチェック中...")
         prediction_data, features_match, message = check_features(prediction_data, features_columns, outcome_variable)
         if not features_match:
             if sqlite_enabled and job_id:
@@ -540,14 +500,11 @@ def process_and_predict(input_folder, input_file, model_directory, threshold, ou
             return message, None
 
         # 予測の実行
-        print("予測中...")
         test_preds, test_preds_proba = predict(models, prediction_data, features_columns, threshold)
         if sqlite_enabled and job_id:
             create_or_update_job_task(job_id, progress_percent="70", preprocess_type=None, error_code=None, error_msg=None, result=json.dumps({}), id= task_id)
             create_or_update_job(job_id, process)
             process += process_init
-        # 結果の保存
-        print("結果を保存中...")
 
         # 元のinput_dataに予測結果を追加
         input_data['predicted_label'] = test_preds
@@ -569,7 +526,6 @@ def process_and_predict(input_folder, input_file, model_directory, threshold, ou
             try:
                 # 各エンコーディングでCSVファイルとして保存を試みる
                 input_data.to_csv(output_file, index=False, encoding=encoding)
-                print(f"ファイルが {encoding} エンコーディングで正常に保存されました: {output_file}")
 
                 if sqlite_enabled and job_id:
                     create_or_update_job_task(job_id, progress_percent="100", preprocess_type=None, error_code=None, error_msg=None, result=json.dumps({}), id= task_id, is_finish=True)
@@ -579,13 +535,10 @@ def process_and_predict(input_folder, input_file, model_directory, threshold, ou
             except Exception as e:
                 # 保存中にエラーが発生した場合、エラーメッセージを表示して次のエンコーディングを試す
                 set_error(ERROR_20005, output_file, encoding)
+                raise
 
-        # すべてのエンコーディングで保存に失敗した場合のメッセージ
-        if sqlite_enabled and job_id:
-            raise
         return f"{output_file} への予測結果の保存に失敗しました", None
     except Exception as e:
-        print(e)
         if ERROR_CODE is None:
             set_error(ERROR_20008)
         if task_id is not None:
@@ -620,49 +573,3 @@ def normalize_dates(df, column, formats=['%Y/%m/%d', '%d/%m/%Y', '%Y-%m-%d', '%m
     df[column] = df[temp_column]
     
     return df.drop(f'{column}_normalized',axis=1)
-
-def main():
-    # !!!!!! 引数で指定に要変更
-    REQUIRED_FEATURES = [
-        '世帯人数', '15歳未満人数', '15歳以上64歳以下人数', '65歳以上人数', '15歳未満構成比', 
-        '15歳以上64歳以下構成比', '65歳以上構成比', '最大年齢', '最小年齢', '男女比',
-        '住定期間', '水道使用量変化率_suido_residence', '最大使用水量_suido_residence',
-        '平均使用水量_suido_residence', '閉栓フラグ_suido_residence', '構造名称_touki_residence', '登記日付_touki_residence'
-    ]
-    # !!!!!! 引数で指定に要変更
-    OUTCOME_VARIABLE = 'akiya_result_cleaned_flag'
-    DEFAULT_THRESHOLD = 0.3
-    OUTPUT_FILE = 'D902.csv'
-
-    parser = argparse.ArgumentParser(description="E022 - 空き家分類機能")
-    parser.add_argument("input_file", help="入力CSVファイルのパス (D901)")
-    parser.add_argument("model_directory", help="モデルファイルが格納されているディレクトリーのパス")
-    parser.add_argument("--threshold", type=float, default=DEFAULT_THRESHOLD, help="二値分類の閾値")
-    parser.add_argument("--output_file", default=OUTPUT_FILE, help="出力CSVファイルのパス (D902)")
-    parser.add_argument("--job_id", default=None)
-    parser.add_argument("--db_path", default=None)
-    
-    args = parser.parse_args()
-
-    input_folder = os.path.dirname(args.input_file)
-    input_file = os.path.basename(args.input_file)
-
-    result_message, output_path = process_and_predict(
-        input_folder,
-        input_file,
-        args.model_directory,
-        args.threshold,
-        args.output_file,
-        REQUIRED_FEATURES,
-        OUTCOME_VARIABLE,
-        args.job_id,
-        args.db_path
-    )
-
-    print(result_message)
-    if output_path:
-        print(f"出力ファイル: {output_path}")
-       
-
-if __name__ == "__main__":
-    main()

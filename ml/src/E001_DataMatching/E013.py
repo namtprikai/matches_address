@@ -7,7 +7,6 @@ import json
 import os
 import sys
 from datetime import datetime, timedelta
-import argparse
 import chardet
 import numpy as np
 import pandas as pd
@@ -174,15 +173,9 @@ class DataProcessor:
             try:
                 # 各エンコーディングでCSVファイルとして保存を試みる
                 df.to_csv(path, encoding=encoding, index=False)
-                print(f"ファイルが {encoding} エンコーディングで正常に保存されました: {path}")
                 return
             except Exception as e:
                 set_error(ERROR_00009, path, encoding)
-                # 保存中にエラーが発生した場合、エラーメッセージを表示して次のエンコーディングを試す
-                # print(f"ファイル {path} を {encoding} エンコーディングで保存中にエラーが発生しました: {e}")
-        
-        # すべてのエンコーディングで保存に失敗した場合のメッセージ
-        # print(f"ファイル {path} をいずれのエンコーディングでも保存できませんでした。")
 
     @staticmethod
     def drop_duplicates(df, subset, keep="first"):
@@ -591,10 +584,6 @@ class JukiProcessor(DataProcessor):
         """
         cols = COLUMNS["juki"]
         
-        # 無効な生年月日データがある場合、警告を出力
-        if df[cols["birth"]].isna().any():
-            print("無効な生年月日データが含まれています。")
-        
         # 年齢を計算
         try:
             df["年齢"] = (self.reference_date - df[cols["birth"]]).dt.days // 365
@@ -711,10 +700,6 @@ class JukiProcessor(DataProcessor):
         
         # 「住定異動年月日」を datetime に変換（フォーマット指定、エラーは NaT に）
         df[cols["move_date"]] = pd.to_datetime(df[cols["move_date"]], format='%Y%m%d', errors='coerce')
-
-        # 無効な日付が含まれている場合は警告を出す
-        if df[cols["move_date"]].isna().any():
-            print("無効な日付が含まれています。")
         
         # 住定期間を計算（基準日から住定異動年月日を引く）
         try:
@@ -944,23 +929,13 @@ def process_all_data(suido_use_file, suido_status_file, juki_file, tatemono_file
                 progress_percent_job += 8
                 create_or_update_job_task(job_id, progress_percent=progress_percent, preprocess_type="e013", error_code=None, error_msg=None, result=None, id= task_id)
                 create_or_update_job(job_id, progress_percent_job)
-            print(f"{file_key}データを処理中...")
             processor_class(input_paths, output_paths, reference_date, search_period).process()
-            
-            # 処理後のファイルが存在するかを確認
-            output_file = output_paths[file_key]
-            if os.path.exists(output_file):
-                print(f"{output_file} が生成されました。")
-            else:
-                print(f"エラー: {output_file} が生成されていません。")
 
-        print("すべての処理が完了しました!")
         if job_id:
             create_or_update_job_task(job_id, progress_percent="100", preprocess_type="e013", error_code=None, error_msg=None, result=json.dumps({}), id= task_id, is_finish=True)
         
         return [path for path in output_paths.values() if os.path.exists(path)]
     except Exception as e:
-        print(e)
         if ERROR_CODE is None:
             set_error(ERROR_00010)
         if task_id is not None:
@@ -997,39 +972,3 @@ def set_error(value, param_st1=None, param_st2=None):
         ERROR_MSG = value['message'].format(param_st1=param_st1)
     else:
         ERROR_MSG = value['message']
-    
-def main():
-    parser = argparse.ArgumentParser(description="E013 - 住居単位データ作成機能")
-    parser.add_argument("--suido_use", required=True, help="水道使用量データファイルのパス")
-    parser.add_argument("--suido_status", required=True, help="水道状況データファイルのパス")
-    parser.add_argument("--juki", required=True, help="住民基本台帳データファイルのパス")
-    parser.add_argument("--tatemono_file", required=True, help="建物データファイル")
-    parser.add_argument("--reference_date", type=int, required=True, help="基準日 (YYYY-MM-DD)")
-    parser.add_argument("--search_period", type=int, required=True, help="検索期間（年）")
-    parser.add_argument("--output_directory", help="出力ファイルのパス", default=None)
-    parser.add_argument("--job_id", default=None)
-    parser.add_argument("--db_path", default=None)
-    parser.add_argument("--columns", default=None)
-    
-    args = parser.parse_args()
-
-    processed_files = process_all_data(
-        args.suido_use,
-        args.suido_status,
-        args.juki,
-        args.tatemono_file,
-        args.reference_date,
-        args.search_period,
-        args.output_directory,
-        args.job_id,
-        args.columns,
-        args.db_path
-    )
-    
-    print("処理済みファイル:")
-    for file in processed_files:
-        print(file)
-
-
-if __name__ == "__main__":
-    main()

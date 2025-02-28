@@ -14,15 +14,11 @@ import json
 from itertools import chain
 
 import chardet
-import matplotlib.pyplot as plt
-import japanize_matplotlib
-import seaborn as sns
 import numpy as np
 import pandas as pd
 import lightgbm as lgb
 import optuna
 import zipfile
-import argparse
 from concurrent.futures import ThreadPoolExecutor
 
 from memory_profiler import profile
@@ -47,14 +43,6 @@ except ImportError:
 # Set pandas display options
 pd.set_option('display.max_columns', None)
 
-CUSTOM_CSS = """
-#csv label {
-    font-size: 20px;
-    font-weight: bold;
-    color: lightblue;
-}
-"""
-
 # Define constants
 CONSTANTS = {
     'model_name' : 'LightGBM',
@@ -68,31 +56,8 @@ CONSTANTS = {
     'outcome_variable': 'akiya_result_cleaned_flag'
     }
 
-CONNECTION = None
-CURSOR = None
 ERROR_CODE = None
 ERROR_MSG=None
-
-def setup_directory():
-    """
-    作業ディレクトリを設定する
-
-    Returns
-    -------
-    links04_path : str
-        作成されたLinks04ディレクトリへのパス
-    """
-    # ユーザーのホームディレクトリにLinks04フォルダのパスを生成
-    links04_path = os.path.join(os.path.expanduser('~'), 'Links04')
-    
-    # Links04フォルダが存在しない場合は作成
-    os.makedirs(links04_path, exist_ok=True)
-
-    # 現在の作業ディレクトリをLinks04フォルダに変更
-    os.chdir(links04_path)
-    
-    # Links04ディレクトリへのパスを返す
-    return links04_path
 
 def detect_encoding(file_path):
     """
@@ -211,11 +176,9 @@ def prepare_learning_data(df, explanatory_variables, explanatory_variables_dict)
                 explanatory_variables = ast.literal_eval(explanatory_variables)
             except (ValueError, SyntaxError) as e:
                 set_error(ERROR_10007)
-                # print(f"Error parsing data: {e}")
                 raise
 
         merged_variables = list(dict.fromkeys(chain(CONSTANTS['explanatory_variables'], explanatory_variables)))
-        print(learning_data.head(),merged_variables, explanatory_variables)
         # `merged_variables` の中で `learning_data` に存在するカラムのみを選択
         valid_columns = [col for col in merged_variables if col in learning_data.columns]
 
@@ -266,7 +229,6 @@ def split_data(df, params, explanatory_variables_dict):
     # アンダーサンプリングが有効な場合、学習セットを調整
     if params['undersample']:
         if y.value_counts(normalize=True)[1] < 0.02:
-            print("conducting SMOTE")
             X_train[CONSTANTS['outcome_variable']] = y_train
             for suido_stats_col in [ "最大使用水量", "最小使用水量", "平均使用水量"]:
                 if suido_stats_col in X_train.columns:
@@ -341,13 +303,9 @@ def train_lgb_with_optuna(train_df, params, citycode_value, targetyear_value, ou
     -------
     lgbm_models : list
         学習済みのLightGBMモデルのリスト
-    oof_pred : ndarray
-        Out-of-fold予測
     feature_importances_dict_train : dict
         学習データの特徴量重要度を含む辞書
     """
-    # 全体の時間計測開始
-    start_total_time = time.time()  
 
     # 学習データを特徴量（X）と目的変数（y）に分割
     id_train = train_df.copy()
@@ -439,13 +397,9 @@ def train_lgb_with_optuna(train_df, params, citycode_value, targetyear_value, ou
     if sqlite_enabled and job_id:
         create_or_update_job_task(job_id, progress_percent="40", preprocess_type=None, error_code=None, error_msg=None, result=json.dumps({}), id= task_id)
         create_or_update_job(job_id , "40")
-    # 最良のハイパーパラメータを表示
-    print("Best Hyperparameters:", best_params)
     
     # 学習済みモデルを格納するリスト
     lgbm_models = []
-    # Out-of-fold予測を格納する配列
-    oof_pred = np.zeros(len(X_train))
     # 特徴量重要度を格納する空のデータフレームを作成
     df_feature_importances = pd.DataFrame()
     
@@ -470,37 +424,12 @@ def train_lgb_with_optuna(train_df, params, citycode_value, targetyear_value, ou
         # 現在のフォールドの特徴量重要度をデータフレームに追加
         df_feature_importances = pd.concat([df_feature_importances, feature_importances], axis=0)
 
-        # 検証セットで予測を行う
-        preds_proba = model.predict_proba(X_val)[:, 1]
-        preds = (preds_proba >= params['threshold']).astype(int)
-        oof_pred[val_index] = preds
-        
-        # 混同行列を計算
-        cm = confusion_matrix(y_val, preds)
-   
-        # 特異度を計算
-        tn, fp, fn, tp = cm.ravel()
-        specificity = tn / (tn + fp) if (tn + fp) > 0 else 0
-
-        # 現在のフォールドの評価指標を表示
-        print(f"Model: LightGBM, Fold: {fold + 1}")
-        print(f"Confusion Matrix:\n{cm}")
-        print(f"Accuracy: {accuracy_score(y_val, preds)}")
-        print(f"Precision: {precision_score(y_val, preds, zero_division=1)}")
-        print(f"Recall: {recall_score(y_val, preds, zero_division=1)}")
-        print(f"F1 Score: {f1_score(y_val, preds, zero_division=1)}")
-        print(f"Specificity: {specificity}")
-
         # 学習済みモデルをリストに追加
         lgbm_models.append(model)
     
     if sqlite_enabled and job_id:
         create_or_update_job_task(job_id, progress_percent="50", preprocess_type=None, error_code=None, error_msg=None, result=json.dumps({}), id= task_id)
         create_or_update_job(job_id , "50")
-    # 全体の学習時間の終了
-    end_total_time = time.time()
-    total_time = end_total_time - start_total_time
-    print(f"Total training time: {total_time:.2f} seconds")
 
     # 平均特徴量重要度を計算
     mean_feature_importances = df_feature_importances.groupby("feature")["importance"].mean().reset_index()
@@ -545,7 +474,7 @@ def train_lgb_with_optuna(train_df, params, citycode_value, targetyear_value, ou
         create_or_update_job_task(job_id, progress_percent="70", preprocess_type=None, error_code=None, error_msg=None, result=json.dumps({}), id= task_id)
         create_or_update_job(job_id , "70")
     # 学習済みモデル、Out-of-fold予測、学習データの特徴量重要度を返す
-    return lgbm_models, oof_pred, feature_importances_dict_train, model_zip_file_path
+    return lgbm_models, feature_importances_dict_train, model_zip_file_path
 
 ### 3. 精度検証
 # - 入力：テスト用データ
@@ -648,41 +577,9 @@ def evaluate_models_on_test(test_df, models, params):
         "f1": f1_score(y_test, test_preds, zero_division=1),
         "specificity": specificity
     }
-
-    # テストデータの評価指標を表示
-    print("Test Data Evaluation:")
-    print(f"Confusion Matrix: {score_dict['cm']}")
-    print(f"Accuracy: {score_dict['accuracy']}")
-    print(f"Precision: {score_dict['precision']}")
-    print(f"Recall: {score_dict['recall']}")
-    print(f"F1 Score: {score_dict['f1']}")
-    print(f"Specificity: {score_dict['specificity']}")
-
-    # 全フォールドの平均特徴量重要度を計算
-    mean_feature_importances = feature_importances.groupby("feature")["importance"].mean().reset_index()
-    mean_feature_importances = mean_feature_importances.sort_values(by="importance", ascending=False)
-    feature_importances_dict_test = mean_feature_importances.to_dict(orient='records')
-
-    # 特徴量重要度をプロット
-    plt.figure(figsize=(10, 8))
-    sns.barplot(x="importance", y="feature", data=mean_feature_importances)
-    plt.title("Feature Importances")  
-    plt.xlabel("Importance")   
-    plt.ylabel("Feature")     
-
-    plt.tight_layout()
-    feature_importance_plot = "feature_importances.png"
-    plt.show()
-
-    # 特徴量重要度を表示
-    print("Feature Importances:")
-    print(mean_feature_importances)
-    
-    # 予測ラベルをテストセットに追加
-    test_df['predicted_label'] = test_preds
     
     # 予測結果、評価指標、特徴量重要度を返す
-    return pred, score_dict, feature_importances_dict_test, feature_importance_plot
+    return pred, score_dict
 
 def merge_and_save_results(df, pred, output_file):
     """
@@ -714,15 +611,10 @@ def merge_and_save_results(df, pred, output_file):
         try:
             # 各エンコーディングでCSVファイルとして保存を試みる
             merged_df.to_csv(output_file, encoding=encoding, index=False)
-            print(f"ファイルが {encoding} エンコーディングで正常に保存されました: {output_file}")
             return merged_df
         except Exception as e:
             # 保存中にエラーが発生した場合、エラーメッセージを表示して次のエンコーディングを試す
             set_error(ERROR_10004, output_file, encoding)
-            # print(f"ファイル {output_file} を {encoding} エンコーディングで保存中にエラーが発生しました: {e}")
-    
-    # すべてのエンコーディングで保存に失敗した場合のメッセージ
-    # print(f"ファイル {output_file} をいずれのエンコーディングでも保存できませんでした。")
     return merged_df
 
 def save_metrics_and_importances(score_dict, feature_importances_dict_train, citycode_value, targetyear_value, output_path):
@@ -949,12 +841,12 @@ def train_and_evaluate(db_path, input_file, output_path, explanatory_variables, 
         if sqlite_enabled and job_id:
             create_or_update_job_task(job_id, progress_percent="30", preprocess_type=None, error_code=None, error_msg=None, result=json.dumps({}), id= task_id)
             create_or_update_job(job_id , "30")
-        models, oof_pred, feature_importances_dict_train, model_zip_file_path = train_lgb_with_optuna(train_df, params, citycode_value, targetyear_value, output_path, job_id, task_id, sqlite_enabled)
+        models, feature_importances_dict_train, model_zip_file_path = train_lgb_with_optuna(train_df, params, citycode_value, targetyear_value, output_path, job_id, task_id, sqlite_enabled)
         
         if sqlite_enabled and job_id:
             create_or_update_job_task(job_id, progress_percent="80", preprocess_type=None, error_code=None, error_msg=None, result=json.dumps({}), id= task_id)
             create_or_update_job(job_id , "80")
-        pred, score_dict, feature_importances_dict_test, feature_importance_plot = evaluate_models_on_test(test_df, models, params)
+        pred, score_dict = evaluate_models_on_test(test_df, models, params)
         
         if sqlite_enabled and job_id:
             create_or_update_job_task(job_id, progress_percent="90", preprocess_type=None, error_code=None, error_msg=None, result=json.dumps({}), id= task_id)
@@ -962,13 +854,10 @@ def train_and_evaluate(db_path, input_file, output_path, explanatory_variables, 
 
         if citycode_value is not None:
             output_file = f'{output_path}/data/{citycode_value}/E021/outputs/D902.csv'
-            feature_importance_plot = f'{output_path}/data/{citycode_value}/E021/outputs/{feature_importance_plot}'
         else:
             output_file = f'{output_path}/D902.csv'
-            feature_importance_plot = f'{output_path}/{feature_importance_plot}'
         
-        updated_df = merge_and_save_results(df, pred, output_file)
-        plt.savefig(feature_importance_plot)
+        merge_and_save_results(df, pred, output_file)
 
         # Save evaluation metrics and feature importances
         data_zip_file_path = save_metrics_and_importances(score_dict, feature_importances_dict_train, citycode_value, targetyear_value, output_path)
@@ -976,16 +865,6 @@ def train_and_evaluate(db_path, input_file, output_path, explanatory_variables, 
         if sqlite_enabled and job_id:
             create_or_update_job_task(job_id, progress_percent="95", preprocess_type=None, error_code=None, error_msg=None, result=json.dumps({}), id= task_id)
             create_or_update_job(job_id , "95")
-        # Create a string with the evaluation results
-        result_str = (
-            #f"Feature Importance: {feature_importances_dict_test}\n" 
-            f"Confusion Matrix: {score_dict['cm']}\n"
-            f"Accuracy: {score_dict['accuracy']:.4f}\n"
-            f"Precision: {score_dict['precision']:.4f}\n"
-            f"Recall: {score_dict['recall']:.4f}\n"
-            f"F1 Score: {score_dict['f1']:.4f}\n"
-            f"Specificity: {score_dict['specificity']:.4f}\n"
-            )
         
         converted_data = [
             {"column": item["feature"], "value": item["importance"]}
@@ -1006,10 +885,9 @@ def train_and_evaluate(db_path, input_file, output_path, explanatory_variables, 
             create_or_update_job_task(job_id, progress_percent="100", preprocess_type=None, error_code=None, error_msg=None, result=json.dumps(result, ensure_ascii=False), id= task_id, is_finish=True)
             create_or_update_job(job_id , "complete")
 
-        return result_str, feature_importance_plot, output_file, model_zip_file_path, data_zip_file_path
+        return output_file, model_zip_file_path, data_zip_file_path
 
     except Exception as e:
-        print(e)
         if ERROR_CODE is None:
             set_error(ERROR_10006)
         if task_id is not None:
@@ -1027,49 +905,3 @@ def set_error(value, param_st1=None, param_st2=None):
         ERROR_MSG = value['message'].format(param_st1=param_st1)
     else:
         ERROR_MSG = value['message']
-    
-def main():
-    parser = argparse.ArgumentParser(description="E021 - 空き家学習機能")
-    parser.add_argument("--parameters", type=str)
-    args = parser.parse_args()
- 
-    json_dict = json.loads(args.parameters)
-
-    params = {
-        'db_path': json_dict.get("database_path", None),
-        'input_path': json_dict.get('input_path', None),
-        'output_path': json_dict.get('output_path', '.'),
-        'explanatory_variables': json_dict.get('settings', {}).get('explanatory_variables', []),
-        'test_size': json_dict.get('settings', {}).get('advanced', {}).get('test_size', 0.3),
-        'n_splits': json_dict.get('settings', {}).get('advanced', {}).get('n_splits', 3),
-        'undersample': json_dict.get('settings', {}).get('advanced', {}).get('undersample', 1),
-        'undersample_ratio': json_dict.get('settings', {}).get('advanced', {}).get('undersample_ratio', 3.0),
-        'threshold': json_dict.get('settings', {}).get('advanced', {}).get('threshold', 0.3),
-        'hyperparameter_flag': json_dict.get('settings', {}).get('advanced', {}).get('hyperparameter_flag', 1),
-        'n_trials': json_dict.get('settings', {}).get('advanced', {}).get('n_trials', 100),
-        'lambda_l1': json_dict.get('settings', {}).get('advanced', {}).get('lambda_l1', 0),
-        'lambda_l2': json_dict.get('settings', {}).get('advanced', {}).get('lambda_l2', 0),
-        'num_leavs': json_dict.get('settings', {}).get('advanced', {}).get('num_leavs', 31),
-        'feature_fraction': json_dict.get('settings', {}).get('advanced', {}).get('feature_fraction', 1.0),
-        'bagging_fraction': json_dict.get('settings', {}).get('advanced', {}).get('bagging_fraction', 1.0),
-        'bagging_freq': json_dict.get('settings', {}).get('advanced', {}).get('bagging_freq', 0),
-        'min_data_in_leaf': json_dict.get('settings', {}).get('advanced', {}).get('min_data_in_leaf', 20),
-        'citycode_value': json_dict.get('citycode_value', None),
-        'targetyear_value': json_dict.get('targetyear_value', None),
-        'job_id': json_dict.get('job_id', None)
-    }
-
-
-    try:
-        result_str, feature_importance_plot, output_file, model_zip_file_path, data_zip_file_path  = train_and_evaluate(*params.values())
-        
-        print(result_str)
-        print(f"Feature importance plot saved as: {feature_importance_plot}")
-        print(f"Output file saved as: {output_file}")
-    except Exception as e:
-        print(f"An error occurred: {e}")
-    finally:
-        if CONNECTION is not None:
-            CONNECTION.close()
-if __name__ == "__main__":
-    main()

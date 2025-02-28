@@ -206,12 +206,7 @@ def main():
         output_path_e016 = output_directory.replace(f"/{random_str}", "")
         output_path_e016 = f"{output_path_e016}/{random_str}.csv"
 
-        gpkg_path = params.get("urban_planning", None)
-        if not gpkg_path:
-            gpkg_path = params.get("census", None)
-
-        if gpkg_path:
-            gpkg_path = concatenate(params.get('output_path'), gpkg_path)
+        gpkg_path = concatenate(params.get('output_path'), params.get("census", None))
         
         tatemono_path = concatenate(params.get('output_path'), params.get('building_polygon'))
 
@@ -236,7 +231,6 @@ def main():
         create_job_results(job_id, f"{random_str}.csv")
 
     except Exception as e:
-        print(e)
         if job_id:
             create_or_update_job(job_id, "error")
     finally:
