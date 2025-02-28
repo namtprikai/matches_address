@@ -338,9 +338,112 @@ class CleanData:
             text = re.sub(r'(\w゜)', lambda x: chr(ord(x.group(1)[0]) + 2), text)
         return text 
     
+    def convert_wareki_to_seireki(date_str):
+        """
+        和暦を西暦に変換する
+
+        Parameters
+        ----------
+        date_str : str
+            和暦表記の日付（例: "平成25年03月20日"）
+
+        Returns
+        -------
+        str
+            西暦形式に変換された日付（例: "20130320"）
+        """
+        try:
+            # 和暦の元号と対応する西暦の開始年を辞書で定義
+            era_dict = {
+                '令和': 2019,
+                '平成': 1989,
+                '昭和': 1926,
+                '大正': 1912,
+                '明治': 1868
+            }
+
+            # 正規表現で和暦表記の日付を検出
+            pattern = r'(?P<era>令和|平成|昭和|大正|明治)(?P<year>\d+)年(?P<month>\d{1,2})月(?P<day>\d{1,2})日'
+            match = re.match(pattern, date_str)
+
+            if match:
+                era = match.group('era')
+                year = int(match.group('year'))
+                month = int(match.group('month'))
+                day = int(match.group('day'))
+
+                # 元号を西暦に変換
+                seireki_year = era_dict[era] + year - 1
+                return f"{seireki_year:04d}{month:02d}{day:02d}"
+
+            return date_str  # 和暦表記でない場合はそのまま返す
+        except:
+            return date_str
+
+    @staticmethod
+    def convert_short_date_to_full_date(date_str):
+        """
+        6桁の短縮表記（例: "130320"）を8桁の西暦形式（例: "20130320"）に変換する
+
+        Parameters
+        ----------
+        date_str : str
+            6桁の短縮表記（例: "130320"）
+
+        Returns
+        -------
+        str
+            8桁の西暦形式（例: "20130320"）
+        """
+        # 6桁の短縮表記の場合（例: "130320"）
+        if re.match(r'^\d{6}$', date_str):
+            # 1900年代か2000年代かを推定して西暦を補完
+            year_prefix = '20' if int(date_str[:2]) < 50 else '19'
+            return f"{year_prefix}{date_str[:2]}{date_str[2:4]}{date_str[4:6]}"
+        
+        return date_str  # 6桁でない場合はそのまま返す
+
+    @staticmethod
+    def convert_date_to_seireki(date_str):
+        """
+        日付を統一して西暦8桁形式に変換する（和暦や短縮表記を対応）
+
+        Parameters
+        ----------
+        date_str : str
+            和暦や短縮表記の日付
+
+        Returns
+        -------
+        str
+            8桁の西暦形式の日付
+        """
+        try:
+            if not isinstance(date_str, str):
+                date_str = str(date_str)
+            # 和暦をまず変換
+            date_str = CleanData.convert_wareki_to_seireki(date_str)
+            # 6桁の日付を8桁に変換
+            return CleanData.convert_short_date_to_full_date(date_str)
+        except:
+            return date_str
+    
 
 # 各ファイルごとの処理クラス
 class EachFileProcessor(DataProcessor):
+
+    # 日付カラムの定義
+    date_columns_mapping = {
+        "suido_status": ["使用開始日", "使用中止日"],
+        "juki": ["生年月日", "住定異動年月日"],
+        "touki": ["登記日付"],
+        "akiya_result": [],
+        "geocoding": []
+    }
+
+    def __init__(self, input_paths, output_paths):
+        super().__init__(input_paths, output_paths)
+
     def process_file(self, file_key):
         """
         指定されたファイルキーに対応するファイルを処理する
@@ -365,15 +468,20 @@ class EachFileProcessor(DataProcessor):
 
         if file_key == "suido_use":
             df = df.rename(columns=rename_columns)
-            missing_cols = set(OUTPUT_COLUMNS_INITIAL[file_key].values()) - set(df.columns)
+            # 入力ファイルのすべてのカラム名を取得
+            all_columns = set(df.columns)
+
+            missing_cols = set(OUTPUT_COLUMNS_INITIAL[file_key].values()) - all_columns
             if missing_cols:
                 set_error(ERROR_00035)
                 raise Exception("水道使用量のデータが異常です。もう一度データを確認ください。")
             
+            df = self.convert_japanese_era_to_gregorian(df, file_key)
+            
             self.save_csv(df, self.OUTPUT_PATHS[file_key])
         else:
             # 住所列が欠損している行を削除
-            df = df.dropna(subset=cols[f"{file_key}_address"])
+            df = df.dropna(subset=[cols[f"{file_key}_address"]])
             
             # 住所の正規化処理を適用
             df["正規化住所"] = (df[cols[f"{file_key}_address"]]
@@ -384,15 +492,27 @@ class EachFileProcessor(DataProcessor):
                         .apply(CleanData.convert_address))
             
             df = df.rename(columns=rename_columns)
+            # 入力ファイルのすべてのカラム名を取得
+            all_columns = set(df.columns)
 
-            missing_cols = set(OUTPUT_COLUMNS_INITIAL[file_key].values()) - (set(df.columns))
+            missing_cols = set(OUTPUT_COLUMNS_INITIAL[file_key].values()) - all_columns
             file_name = FILE_NAME_JP[file_key]
             if missing_cols:
                 set_error(ERROR_00036, file_name)
                 raise Exception(f"{file_name}のデータが異常です。もう一度データを確認ください。")
             
+            df = self.convert_japanese_era_to_gregorian(df, file_key)
             # 処理結果をCSVファイルとして保存
             self.save_csv(df, self.OUTPUT_PATHS[file_key])
+
+    def convert_japanese_era_to_gregorian(self, df, file_key):
+        # 日付カラムの変換を実行
+        if file_key in self.date_columns_mapping:
+            for date_col in self.date_columns_mapping[file_key]:
+                if date_col in df.columns:
+                    df[date_col] = df[date_col].apply(CleanData.convert_date_to_seireki)
+        
+        return df
 
 def set_output_column():
     global OUTPUT_COLUMNS 
@@ -524,18 +644,18 @@ def read_file(path, key, **kwargs):
             for encoding in encodings:
                 try:
                     # 各エンコーディングでファイルの読み込みを試みる
-                    df = pd.read_csv(path, encoding=encoding, low_memory=False, **kwargs)
+                    df = pd.read_csv(path, encoding=encoding, low_memory=False, dtype=str, **kwargs)
                     break  # 読み込み成功したらループを抜ける
                 except UnicodeDecodeError:
                     continue
             else:
                 # エンコーディングが見つからなかった場合
                 detected_encoding = detect_encoding(path)
-                df = pd.read_csv(path, encoding=detected_encoding, **kwargs)
+                df = pd.read_csv(path, encoding=detected_encoding, dtype=str, **kwargs)
         
         elif file_extension in ['.xlsx', '.xls']:
             # Excelファイルを読み込む
-            df = pd.read_excel(path, **kwargs)
+            df = pd.read_excel(path, dtype=str, **kwargs)
         
         else:
             set_error(ERROR_00003)
