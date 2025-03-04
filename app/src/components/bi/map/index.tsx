@@ -61,7 +61,7 @@ export function Map({ dataSetResultId, view }: MapProps): JSX.Element {
     <div>
       <div className={styles.filters}>
         <div className={styles.filter}>
-          <div>空き家確率</div>
+          <div>空き家推定確率</div>
           <div>
             <VacancyLevelCheckbox
               setVacancyLevels={setVacancyLevels}

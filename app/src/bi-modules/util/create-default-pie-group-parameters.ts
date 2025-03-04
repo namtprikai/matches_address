@@ -6,22 +6,22 @@ const values: {
   lastValue: number;
 }[] = [
   {
-    label: "空き家確率0~25%",
+    label: "空き家推定確率0~25%",
     startValue: 0,
     lastValue: 25,
   },
   {
-    label: "空き家確率26~50%",
+    label: "空き家推定確率26~50%",
     startValue: 26,
     lastValue: 50,
   },
   {
-    label: "空き家確率51~75%",
+    label: "空き家推定確率51~75%",
     startValue: 51,
     lastValue: 75,
   },
   {
-    label: "空き家確率76~100%",
+    label: "空き家推定確率76~100%",
     startValue: 76,
     lastValue: 100,
   },

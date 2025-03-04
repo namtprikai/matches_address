@@ -114,7 +114,7 @@ export function JobPreview(): JSX.Element {
     },
     {
       key: "predicted_probability",
-      name: "空き家確率",
+      name: "空き家推定確率",
       className: useStyles().headerColumn,
       onRender: (item) => `${item.predicted_probability.toFixed(2)}%`,
     },

@@ -371,7 +371,7 @@ const areaMetadata: Record<keyof SelectDataSetDetailArea, Item> = {
     unit: "",
   },
   predicted_probability: {
-    label: "空き家確率",
+    label: "空き家推定確率",
     unit: "%",
   },
   created_at: {
