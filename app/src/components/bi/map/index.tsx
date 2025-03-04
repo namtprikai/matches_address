@@ -4,6 +4,11 @@ import { useFetchReferenceDates } from "../../../hooks/use-fetch-reference-dates
 import { type SelectDataSetResult } from "../../../schema";
 import { type MapView } from "../../../bi-modules/interfaces/view";
 import {
+  AREA_DATASET_COLUMN_METADATA,
+  BUILDING_DATASET_COLUMN_METADATA,
+} from "../../../config/column-metadata";
+import { TextWithTooltip } from "../../ui/text-with-tooltip";
+import {
   VacancyLevelCheckbox,
   type VacancyLevels,
 } from "./vacancy-level-checkbox";
@@ -57,11 +62,21 @@ export function Map({ dataSetResultId, view }: MapProps): JSX.Element {
     [referenceDates],
   );
 
+  const meta =
+    unit === "area"
+      ? AREA_DATASET_COLUMN_METADATA["predicted_probability"]
+      : BUILDING_DATASET_COLUMN_METADATA["predicted_probability"];
+
   return (
     <div>
       <div className={styles.filters}>
         <div className={styles.filter}>
-          <div>空き家確率</div>
+          <div>
+            <TextWithTooltip
+              textNode={meta.label}
+              tooltipContent={meta.description}
+            />
+          </div>
           <div>
             <VacancyLevelCheckbox
               setVacancyLevels={setVacancyLevels}

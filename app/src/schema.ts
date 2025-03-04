@@ -422,13 +422,13 @@ export const data_set_detail_buildings = sqliteTable(
     area_type: text("area_type"),
 
     /**
-     * 空き家確率
+     * 空き家推定結果
      *
      * 1: 空き家 / 0: 居住
      */
     predicted_label: integer("predicted_label"),
     /**
-     * 空き家確率
+     * 空き家推定確率
      *
      * 0~1の小数で表現（8byte 浮動小数点）
      */
@@ -526,7 +526,7 @@ export const data_set_detail_areas = sqliteTable("data_set_detail_areas", {
   key_code: text("key_code"),
 
   /**
-   * 空き家確率
+   * 空き家推定確率
    *
    * 0~1の小数で表現（8byte 浮動小数点）
    */
