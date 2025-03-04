@@ -10,6 +10,7 @@ import { Field } from "../ui/field";
 import { Dropdown } from "../ui/dropdown";
 import { DialogFieldOption } from "../dialog-field-option";
 import { DynamicColumnOptions } from "./dynamic-column-options";
+import { DialogDynamicParameterInput } from "./dialog-dynamic-parameter-input";
 
 const useStyles = makeStyles({
   selectedOptions: {
@@ -28,6 +29,10 @@ const useStyles = makeStyles({
   noSelectedLabel: {
     lineHeight: "32px",
     fontSize: "12px",
+  },
+  labelContainer: {
+    display: "flex",
+    alignItems: "center",
   },
 });
 
@@ -67,7 +72,14 @@ export const DynamicParameterInput = forwardRef<
   const styles = useStyles();
   if (props.type === "select") {
     return (
-      <Field label={props.fieldOption.label}>
+      <Field
+        label={
+          <div className={styles.labelContainer}>
+            {props.fieldOption.label}
+            <DialogDynamicParameterInput fieldOption={props.fieldOption} />
+          </div>
+        }
+      >
         {props.type === "select" && (
           <Select
             ref={ref as ForwardedRef<HTMLSelectElement>}
