@@ -16,6 +16,7 @@ import {
  * View: 保存する際の型
  */
 interface ViewBase {
+  id: number;
   dataSetResultId: number;
   style: "bar" | "line" | "pie" | "table" | "map";
   title: string;
