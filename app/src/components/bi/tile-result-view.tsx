@@ -173,6 +173,7 @@ export const TileResultView = ({
         <TileViewStyle
           view={
             {
+              id: resultView.id,
               dataSetResultId: resultView.data_set_result_id,
               style: resultView.style,
               unit: resultView.unit,

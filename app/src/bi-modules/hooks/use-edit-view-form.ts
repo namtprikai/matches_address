@@ -1,12 +1,14 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, type UseFormReturn } from "react-hook-form";
 import { useEffect } from "react";
+import { useSetAtom } from "jotai";
 import { editViewFormSchema } from "../schema/edit-view-form";
 import { useFetchResultViews } from "../../hooks/use-fetch-result-views";
 import { type EditViewFormType } from "../interfaces/edit-view-form";
 import { type SelectResultSheet, type SelectResultView } from "../../schema";
 import { useFetchResultView } from "../../hooks/use-fetch-result-view";
 import { toFloat } from "../util/toFloat";
+import { submittedEditViewFormAtom } from "../../state/submitted-edit-view-form-atom";
 
 type Params = {
   defaultValues: EditViewFormType;
@@ -29,6 +31,8 @@ export const useEditViewForm = ({
     resolver: zodResolver(editViewFormSchema),
     defaultValues,
   });
+
+  const setSubmittedEditViewFormState = useSetAtom(submittedEditViewFormAtom);
 
   const { mutate: mutateResultViews } = useFetchResultViews({
     sheetId: selectedResultSheetId,
@@ -78,6 +82,10 @@ export const useEditViewForm = ({
 
     void mutateResultView();
     void mutateResultViews();
+
+    setSubmittedEditViewFormState(true);
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    setSubmittedEditViewFormState(false);
   });
 
   return { form, onSubmit, selectedResultView };
