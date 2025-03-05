@@ -41,8 +41,9 @@ export const useFetchPieChartProps = ({ view }: Params): ReturnType => {
       handleIsLoading(false);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps -- handleIsLoading を追加するよう指摘されるが、追加すると無限ループになるため無視 @fixme
-  }, [pagination.limitPerPage, pagination.page, view, handleChartProps]);
+  }, [pagination.limitPerPage, pagination.page, handleChartProps]);
 
+  /** 初期化 */
   useEffect(() => {
     fetch().catch(console.error);
   }, [fetch]);
