@@ -942,20 +942,18 @@ def process_all_data(suido_use_file, suido_status_file, juki_file, tatemono_file
             create_or_update_job_task(job_id, progress_percent="", preprocess_type="e013", error_code=ERROR_CODE, error_msg=ERROR_MSG, result=json.dumps({}), id= task_id, is_finish=True)
         raise Exception("住居単位データ作成プロセスにおいて、水道データの処理においてエラーが発生しました。")
 
-def normalize_dates(df, column, formats=['%Y/%m/%d', '%d/%m/%Y', '%Y-%m-%d', '%m/%d/%Y', '%Y%m%d']):
+def normalize_dates(df, column, formats=['%Y/%m/%d', '%Y-%m-%d', '%d/%m/%Y', '%d-%m-%Y', '%m/%d/%Y', '%m-%d-%Y', '%Y%m%d']):
     # Initialize the temporary column with NaN values
     temp_column = f'{column}_normalized'
     df[temp_column] = np.nan
 
+    df[column] = df[column].astype(str).str.split().str[0]
     # Try the provided formats on the invalid values
     for fmt in formats:
         mask = df[temp_column].isna() & df[column].notna()
         df.loc[mask, temp_column] = pd.to_datetime(
             df.loc[mask, column], format=fmt, errors='coerce'
         )
-
-        if df[temp_column].notna().sum() > 0:
-            break
 
     # Remove the time portion and keep only the date
     df[column] = pd.to_datetime(df[temp_column], errors='coerce')
