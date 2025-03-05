@@ -41,9 +41,10 @@ export const useFetchLineChartProps = ({ view }: Params): ReturnType => {
     } finally {
       handleIsLoading(false);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- handleIsLoading を追加するよう指摘されるが、追加すると無限ループになるため無視 @fixme
-  }, [pagination.limitPerPage, pagination.page, view, handleChartProps]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- handleIsLoading を追加するよう指摘されるが、追加すると無限ループになるため無視 @fixme / view を追加されるよう指摘されるが、fetch が変わることはないので無視 @fixme
+  }, [pagination.limitPerPage, pagination.page, handleChartProps]);
 
+  /** 初期化 */
   useEffect(() => {
     fetch().catch(console.error);
   }, [fetch]);
