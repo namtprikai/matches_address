@@ -1,4 +1,5 @@
 import {
+  Body1,
   Checkbox,
   Dialog,
   DialogTrigger,
@@ -133,6 +134,9 @@ export const FilterConditionColumnSelector = ({
           <DialogTitle>カラムを選択</DialogTitle>
           <DialogContent border>
             <div className={styles.fieldset}>
+              {columnOptions.length === 0 && (
+                <Body1>現在の設定条件で選択可能なカラムがありません</Body1>
+              )}
               {columnOptions.map((optionKey, index) => {
                 if (!optionKey) {
                   return <></>;
