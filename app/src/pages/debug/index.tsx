@@ -1,6 +1,15 @@
-import { makeStyles, tokens } from "@fluentui/react-components";
+import {
+  Button,
+  Card,
+  makeStyles,
+  Subtitle2,
+  tokens,
+} from "@fluentui/react-components";
 import { BreadcrumbBase, BreadcrumbItem } from "../../components/ui/breadcrumb";
 import { ROUTES } from "../../routes";
+import { DebugCreateDatasets } from "./_debug-create-datasets";
+import { DummyDataButtons } from "./_dummy_data_buttons";
+import { DebugCreateButtons } from "./_debug-create-buttuns";
 
 const useStyles = makeStyles({
   root: {
@@ -19,6 +28,11 @@ const useStyles = makeStyles({
     minHeight: "300px",
     padding: `${tokens.spacingVerticalXXL} ${tokens.spacingHorizontalXXL}`,
     gap: tokens.spacingVerticalXL,
+  },
+
+  container: {
+    display: "grid",
+    gap: tokens.spacingVerticalL,
   },
 });
 
@@ -39,7 +53,38 @@ export function Debug(): JSX.Element {
         ))}
       />
       <h2 className={styles.heading}>開発者向け</h2>
-      <div></div>
+
+      <div className={styles.container}>
+        <Card>
+          <Subtitle2>分析</Subtitle2>
+          <DebugCreateDatasets />
+        </Card>
+
+        <Card>
+          <Subtitle2>モデル構築</Subtitle2>
+          <div>
+            <Button
+              onClick={() => {
+                window.ipcRenderer
+                  .invoke("_debugInsertModelFiles")
+                  .catch(console.error);
+              }}
+              size="small"
+            >
+              作成(debug)
+            </Button>
+          </div>
+        </Card>
+        <Card>
+          <Subtitle2>データセット管理</Subtitle2>
+          <DummyDataButtons />
+        </Card>
+
+        <Card>
+          <Subtitle2>処理一覧</Subtitle2>
+          <DebugCreateButtons />
+        </Card>
+      </div>
     </div>
   );
 }
