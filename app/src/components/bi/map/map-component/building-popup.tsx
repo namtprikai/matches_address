@@ -102,7 +102,7 @@ export const BuildingPopup = forwardRef<HTMLDivElement, Props>(
             <div className={styles.item}>
               <span className={styles.itemLabel}>水道使用量</span>
               <span className={styles.itemValue}>
-                {properties.total_water_usage}L
+                {properties.total_water_usage}立米
               </span>
             </div>
             <div className={styles.item}>
