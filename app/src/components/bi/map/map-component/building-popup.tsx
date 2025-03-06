@@ -132,15 +132,6 @@ export const BuildingPopup = forwardRef<HTMLDivElement, Props>(
               </span>
             </div>
           </div>
-          <div>
-            <h3 className={styles.heading}>
-              <span className={mergeClasses(styles.square, styles.otherIcon)} />
-              その他
-            </h3>
-            <div className={styles.item}>
-              <span>災害避難経路等の情報表示</span>
-            </div>
-          </div>
         </div>
       </div>
     );
