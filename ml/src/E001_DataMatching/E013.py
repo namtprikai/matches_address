@@ -784,6 +784,8 @@ class TatemonoProcessor(DataProcessor):
             "S造": ["S造", "鉄骨造"],
             "SRC造": ["SRC造", "鉄骨鉄筋コンクリート造"]
         }
+        structure_values  = ["木造", "RC造", "S造", "SRC造", "その他"]
+        df["structure_dummy"] = structure_values + [structure_values[-1]] * (len(df) - len(structure_values))
 
         df["構造名称"] = "その他"
         for key, values in structure_dict.items():
@@ -791,7 +793,11 @@ class TatemonoProcessor(DataProcessor):
             df.loc[df[cols["structure"]].str.contains(pattern, na=False), "構造名称"] = key
 
         label_encoder = LabelEncoder()
-        df["構造名称"] = label_encoder.fit_transform(df["構造名称"])
+        # Initialize and fit LabelEncoder on "structure_dummy" to ensure it learns all possible keys from structure_dict
+        df["structure_dummy"] = label_encoder.fit_transform(df["structure_dummy"])
+        # Encode "構造名称" using the previously fitted LabelEncoder
+        df["構造名称"] = df["構造名称"].map(lambda x: label_encoder.transform([x])[0] if x in label_encoder.classes_ else -1)
+        df = df.drop('structure_dummy', axis=1, errors='ignore')
 
         return df
 
