@@ -11,6 +11,7 @@ const config: ForgeConfig = {
   packagerConfig: {
     asar: true,
     extraResource: ["../ml/dist", "drizzle", "../app/dummy-data"],
+    name: "LINKS SOMA 空き家推定システム",
     win32metadata: {
       CompanyName: "国土交通省総合政策局情報政策課",
       FileDescription: "行政データと機械学習技術を用いた地域空き家推定システム",
@@ -18,6 +19,7 @@ const config: ForgeConfig = {
       ProductName: "LINKS SOMA 空き家推定システム",
       InternalName: "links-soma",
     },
+    icon: "./public/icon",
   },
   rebuildConfig: {},
   makers: [
