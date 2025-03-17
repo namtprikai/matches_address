@@ -38,11 +38,6 @@ jobs:
       - name: Set up Cloud SDK
         uses: google-github-actions/setup-gcloud@v2
 
-      - name: Verify GCP access
-        run: |
-          gcloud auth list
-          gcloud storage ls gs://${{ env.BASEMAP_BUCKET }}/
-
       - name: Install dependencies
         run: npm ci
       - name: Setup home directory for PyInstaller
@@ -105,11 +100,6 @@ jobs:
 
       - name: Set up Cloud SDK
         uses: google-github-actions/setup-gcloud@v2
-
-      - name: Verify GCP access
-        run: |
-          gcloud auth list
-          gcloud storage ls gs://${{ env.BASEMAP_BUCKET }}/
 
       - name: Download base artifact
         uses: actions/download-artifact@v4
