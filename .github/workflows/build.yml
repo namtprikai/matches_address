@@ -9,6 +9,10 @@ env:
   WORKLOAD_IDENTITY_PROVIDER: ${{ secrets.WORKLOAD_IDENTITY_PROVIDER }}
   SERVICE_ACCOUNT: ${{ secrets.SERVICE_ACCOUNT }}
 
+permissions:
+  contents: read
+  id-token: write
+
 jobs:
   build-once:
     runs-on: windows-latest
