@@ -21,6 +21,13 @@ jobs:
           cache: "npm"
           cache-dependency-path: "**/package-lock.json"
 
+      - name: Setup Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          create_credentials_file: true
+          workload_identity_provider: $WORKLOAD_IDENTITY_PROVIDER
+          service_account: $SERVICE_ACCOUNT google-github-actions/setup-gcloud@v2
+
       - name: Install dependencies
         run: npm ci
       - name: Setup home directory for PyInstaller
@@ -43,6 +50,11 @@ jobs:
           pip install poetry==1.8.3
           pip install pyinstaller
 
+      - name: Download default basemap
+        shell: pwsh
+        run: |
+          gcloud storage cp gs://${{ env.BASEMAP_BUCKET }}/basemaps/chubu/basemap.pmtiles ./app/public/basemap.pmtiles
+
       - name: Build ML & Electron App
         shell: pwsh
         run: |
@@ -58,6 +70,9 @@ jobs:
   package-region-specific:
     needs: build-once
     runs-on: windows-latest
+    env:
+      WORKLOAD_IDENTITY_PROVIDER: ${{ secrets.GCS_WORKLOAD_IDENTITY_PROVIDER }}
+      SERVICE_ACCOUNT: ${{ secrets.GCS_SERVICE_ACCOUNT }}
     strategy:
       matrix:
         region:
@@ -68,8 +83,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Cloud SDK
+      - name: Setup Cloud SDK
         uses: google-github-actions/setup-gcloud@v2
+        with:
+          create_credentials_file: true
+          workload_identity_provider: $WORKLOAD_IDENTITY_PROVIDER
+          service_account: $SERVICE_ACCOUNT google-github-actions/setup-gcloud@v2
 
       - name: Download base artifact
         uses: actions/download-artifact@v4
@@ -88,4 +107,4 @@ jobs:
           # $version = (Get-Content "app/package.json" | ConvertFrom-Json).version
           $finalZipName = "links-soma.zip"
           Compress-Archive -Path links-soma-win32-x64/* -DestinationPath $finalZipName
-          gcloud storage cp $finalZipName gs://${{ env.BUILDS_BUCKET }}/${{ matrix.region }}/
+          gcloud storage cp $finalZipName gs://${{ env.BUILDS_BUCKET }}/build/${{ matrix.region }}/
