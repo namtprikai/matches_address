@@ -81,7 +81,6 @@ jobs:
         shell: pwsh
         run: |
           # $version = (Get-Content "app/package.json" | ConvertFrom-Json).version
-          $date = Get-Date -Format "yyyyMMdd"
-          $finalZipName = "LINKS_SOMA_${date}.zip"
+          $finalZipName = "links-soma.zip"
           Compress-Archive -Path links-soma-win32-x64/* -DestinationPath $finalZipName
           gcloud storage cp $finalZipName gs://${{ env.BUILDS_BUCKET }}/${{ matrix.region }}/
