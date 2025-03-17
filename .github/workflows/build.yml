@@ -28,12 +28,22 @@ jobs:
           cache-dependency-path: "**/package-lock.json"
 
       - name: Set up GCloud Auth
+        id: auth
         uses: google-github-actions/auth@v2
         with:
           service_account: ${{ env.SERVICE_ACCOUNT }}
           workload_identity_provider: ${{ env.WORKLOAD_IDENTITY_PROVIDER }}
+          token_format: "access_token"
+          create_credentials_file: true
+          export_environment_variables: true
+
       - name: Set up Cloud SDK
         uses: google-github-actions/setup-gcloud@v2
+
+      - name: Verify GCP access
+        run: |
+          gcloud auth list
+          gcloud storage ls gs://${{ env.BASEMAP_BUCKET }}/
 
       - name: Install dependencies
         run: npm ci
@@ -89,12 +99,22 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Set up GCloud Auth
+        id: auth
         uses: google-github-actions/auth@v2
         with:
           service_account: ${{ env.SERVICE_ACCOUNT }}
           workload_identity_provider: ${{ env.WORKLOAD_IDENTITY_PROVIDER }}
+          token_format: "access_token"
+          create_credentials_file: true
+          export_environment_variables: true
+
       - name: Set up Cloud SDK
         uses: google-github-actions/setup-gcloud@v2
+
+      - name: Verify GCP access
+        run: |
+          gcloud auth list
+          gcloud storage ls gs://${{ env.BASEMAP_BUCKET }}/
 
       - name: Download base artifact
         uses: actions/download-artifact@v4
