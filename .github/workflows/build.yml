@@ -40,7 +40,7 @@ jobs:
       - name: Download default basemap
         shell: pwsh
         run: |
-          gcloud storage cp gs://${{ env.BASEMAP_BUCKET }}/basemaps/chubu/basemap.pmtiles ./app/public/basemap.pmtiles
+          gsutil cp gs://${{ env.BASEMAP_BUCKET }}/basemaps/chubu/basemap.pmtiles ./app/public/basemap.pmtiles
 
       - name: Install dependencies
         run: npm ci
@@ -109,7 +109,7 @@ jobs:
       - name: Replace basemap for region (${{ matrix.region }})
         shell: pwsh
         run: |
-          gcloud storage cp gs://${{ env.BASEMAP_BUCKET }}/basemaps/${{ matrix.region }}/basemap.pmtiles links-soma-win32-x64/resources/basemap.pmtiles
+          gsutil cp gs://${{ env.BASEMAP_BUCKET }}/basemaps/${{ matrix.region }}/basemap.pmtiles links-soma-win32-x64/resources/basemap.pmtiles
 
       - name: Package ZIP
         shell: pwsh
@@ -117,4 +117,4 @@ jobs:
           # $version = (Get-Content "app/package.json" | ConvertFrom-Json).version
           $finalZipName = "links-soma.zip"
           Compress-Archive -Path links-soma-win32-x64/* -DestinationPath $finalZipName
-          gcloud storage cp $finalZipName gs://${{ env.BUILDS_BUCKET }}/build/${{ matrix.region }}/
+          gsutil cp $finalZipName gs://${{ env.BUILDS_BUCKET }}/build/${{ matrix.region }}/
