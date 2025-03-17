@@ -71,8 +71,8 @@ jobs:
     needs: build-once
     runs-on: windows-latest
     env:
-      WORKLOAD_IDENTITY_PROVIDER: ${{ secrets.GCS_WORKLOAD_IDENTITY_PROVIDER }}
-      SERVICE_ACCOUNT: ${{ secrets.GCS_SERVICE_ACCOUNT }}
+      WORKLOAD_IDENTITY_PROVIDER: ${{ secrets.WORKLOAD_IDENTITY_PROVIDER }}
+      SERVICE_ACCOUNT: ${{ secrets.SERVICE_ACCOUNT }}
     strategy:
       matrix:
         region:
