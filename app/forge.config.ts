@@ -10,7 +10,12 @@ import { FuseV1Options, FuseVersion } from "@electron/fuses";
 const config: ForgeConfig = {
   packagerConfig: {
     asar: true,
-    extraResource: ["../ml/dist", "drizzle", "../app/dummy-data"],
+    extraResource: [
+      "../ml/dist",
+      "drizzle",
+      "../app/dummy-data",
+      "../app/public/basemap.pmtiles",
+    ],
     name: "LINKS SOMA 空き家推定システム",
     win32metadata: {
       CompanyName: "国土交通省総合政策局情報政策課",
