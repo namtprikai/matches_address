@@ -44,7 +44,7 @@ jobs:
       - name: Upload base artifact
         uses: actions/upload-artifact@v4
         with:
-          name: electron-app-base
+          name: links-soma-win32-x64
           path: app/out/links-soma-win32-x64
 
   package-region-specific:
@@ -63,18 +63,19 @@ jobs:
       - name: Download base artifact
         uses: actions/download-artifact@v4
         with:
-          name: electron-app-base
-          path: electron-app-region
+          name: links-soma-win32-x64
+          path: links-soma-win32-x64
 
       - name: Replace basemap for region (${{ matrix.region }})
         shell: pwsh
         run: |
-          gcloud storage cp gs://${{ env.BASEMAP_BUCKET }}/basemaps/${{ matrix.region }}/basemap.pmtiles electron-app-region/resources/basemap.pmtiles
+          gcloud storage cp gs://${{ env.BASEMAP_BUCKET }}/basemaps/${{ matrix.region }}/basemap.pmtiles links-soma-win32-x64/resources/basemap.pmtiles
 
       - name: Package ZIP
         shell: pwsh
         run: |
-          $version = (Get-Content "app/package.json" | ConvertFrom-Json).version
-          $finalZipName = "LINKS_SOMA_v${version}_${{ matrix.region }}.zip"
-          Compress-Archive -Path electron-app-region/* -DestinationPath $finalZipName
-          gcloud storage cp $finalZipName gs://${{ env.BUILDS_BUCKET }}/
+          # $version = (Get-Content "app/package.json" | ConvertFrom-Json).version
+          $date = Get-Date -Format "yyyyMMdd"
+          $finalZipName = "LINKS_SOMA_${date}.zip"
+          Compress-Archive -Path links-soma-win32-x64/* -DestinationPath $finalZipName
+          gcloud storage cp $finalZipName gs://${{ env.BUILDS_BUCKET }}/${{ matrix.region }}/
