@@ -38,6 +38,11 @@ jobs:
       - name: Set up Cloud SDK
         uses: google-github-actions/setup-gcloud@v2
 
+      - name: Download default basemap
+        shell: pwsh
+        run: |
+          gcloud storage cp gs://${{ env.BASEMAP_BUCKET }}/basemaps/chubu/basemap.pmtiles ./app/public/basemap.pmtiles
+
       - name: Install dependencies
         run: npm ci
       - name: Setup home directory for PyInstaller
@@ -59,11 +64,6 @@ jobs:
           python -m pip install --upgrade pip
           pip install poetry==1.8.3
           pip install pyinstaller
-
-      - name: Download default basemap
-        shell: pwsh
-        run: |
-          gcloud storage cp gs://${{ env.BASEMAP_BUCKET }}/basemaps/chubu/basemap.pmtiles ./app/public/basemap.pmtiles
 
       - name: Build ML & Electron App
         shell: pwsh
