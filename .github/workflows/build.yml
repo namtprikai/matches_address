@@ -30,6 +30,11 @@ jobs:
           echo HOME=C:\Users\temp>> %GITHUB_ENV%
           echo USERPROFILE=C:\Users\temp>> %GITHUB_ENV%
 
+      - name: Install Poetry
+        shell: pwsh
+        run: |
+          (Invoke-WebRequest -Uri https://install.python-poetry.org -UseBasicParsing).Content | python -
+
       - name: Build ML & Electron App
         shell: pwsh
         run: |
