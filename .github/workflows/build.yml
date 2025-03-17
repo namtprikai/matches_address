@@ -14,7 +14,8 @@ jobs:
     strategy:
       matrix:
         region:
-          [hokkaido, tohoku, kanto, chubu, kansai, chugoku, shikoku, kyushu]
+          [chubu]
+          # [hokkaido, tohoku, kanto, chubu, kansai, chugoku, shikoku, kyushu]
       fail-fast: false
 
     steps:
