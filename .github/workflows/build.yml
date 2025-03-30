@@ -70,6 +70,10 @@ jobs:
           cd ml && poetry install --no-root && npm run build
           cd ../app && npm run make
 
+      - name: ls build
+        shell: pwsh
+        run: ls app/out
+
       - name: Upload base artifact
         uses: actions/upload-artifact@v4
         with:
