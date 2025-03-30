@@ -77,8 +77,8 @@ jobs:
       - name: Upload base artifact
         uses: actions/upload-artifact@v4
         with:
-          name: links-soma-win32-x64
-          path: app/out/links-soma-win32-x64
+          name: links_soma
+          path: app/out/links_soma_空き家推定システム-win32-x64
 
   package-region-specific:
     needs: build-once
@@ -107,8 +107,8 @@ jobs:
       - name: Download base artifact
         uses: actions/download-artifact@v4
         with:
-          name: links-soma-win32-x64
-          path: links-soma-win32-x64
+          name: LINKS_SOMA_空き家推定システム
+          path: links_soma_win32-x64
 
       - name: Replace basemap for region (${{ matrix.region }})
         shell: pwsh
