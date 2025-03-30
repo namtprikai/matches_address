@@ -1,4 +1,4 @@
-name: Electron Build
+name: Build Electron Apps
 
 on:
   workflow_dispatch: {}
@@ -8,48 +8,29 @@ env:
   BUILDS_BUCKET: links-soma
   WORKLOAD_IDENTITY_PROVIDER: ${{ secrets.WORKLOAD_IDENTITY_PROVIDER }}
   SERVICE_ACCOUNT: ${{ secrets.SERVICE_ACCOUNT }}
-
 permissions:
   contents: read
   id-token: write
 
 jobs:
-  build-once:
+  build:
     runs-on: windows-latest
+
+    strategy:
+      matrix:
+        region:
+          [hokkaido, tohoku, kanto, chubu, kansai, chugoku, shikoku, kyushu]
+      fail-fast: false
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-
-      - uses: actions/setup-node@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
           node-version: "20"
           cache: "npm"
           cache-dependency-path: "**/package-lock.json"
-
-      - name: Set up GCloud Auth
-        id: auth
-        uses: google-github-actions/auth@v2
-        with:
-          service_account: ${{ env.SERVICE_ACCOUNT }}
-          workload_identity_provider: ${{ env.WORKLOAD_IDENTITY_PROVIDER }}
-
-      - name: Set up Cloud SDK
-        uses: google-github-actions/setup-gcloud@v2
-
-      - name: Download default basemap
-        shell: pwsh
-        run: |
-          gsutil cp gs://${{ env.BASEMAP_BUCKET }}/basemaps/chubu/basemap.pmtiles ./app/public/basemap.pmtiles
-
-      - name: Install dependencies
-        run: npm ci
-      - name: Setup home directory for PyInstaller
-        shell: cmd
-        run: |
-          mkdir "C:\Users\temp"
-          echo HOME=C:\Users\temp>> %GITHUB_ENV%
-          echo USERPROFILE=C:\Users\temp>> %GITHUB_ENV%
 
       - name: Setup Python
         uses: actions/setup-python@v4
@@ -64,38 +45,14 @@ jobs:
           pip install poetry==1.8.3
           pip install pyinstaller
 
-      - name: Build ML & Electron App
-        shell: pwsh
+      - name: Install dependencies
+        env:
+          HUSKY: "0"
         run: |
-          cd ml && poetry install --no-root && npm run build
-          cd ../app && npm run make
+          npm ci
+          cd ml && poetry install --no-root
 
-      - name: ls build
-        shell: pwsh
-        run: ls app/out
-
-      - name: Upload base artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: links_soma
-          path: app/out/links_soma_空き家推定システム-win32-x64
-
-  package-region-specific:
-    needs: build-once
-    runs-on: windows-latest
-
-    strategy:
-      matrix:
-        region:
-          # [chubu]
-          [hokkaido, tohoku, kanto, chubu, kansai, chugoku, shikoku, kyushu]
-      fail-fast: false
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Set up GCloud Auth
-        id: auth
+      - name: Google Auth
         uses: google-github-actions/auth@v2
         with:
           service_account: ${{ env.SERVICE_ACCOUNT }}
@@ -104,21 +61,31 @@ jobs:
       - name: Set up Cloud SDK
         uses: google-github-actions/setup-gcloud@v2
 
-      - name: Download base artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: LINKS_SOMA_空き家推定システム
-          path: links_soma_win32-x64
-
-      - name: Replace basemap for region (${{ matrix.region }})
+      - name: Download pmtiles
         shell: pwsh
         run: |
-          gsutil cp gs://${{ env.BASEMAP_BUCKET }}/basemaps/${{ matrix.region }}/basemap.pmtiles links-soma-win32-x64/resources/basemap.pmtiles
+          gcloud storage cp gs://${{ env.BASEMAP_BUCKET }}/basemaps/${{ matrix.region }}/basemap.pmtiles app/public/
+          echo "Download completed for ${{ matrix.region }}"
+
+      - name: Setup home directory for PyInstaller
+        shell: cmd
+        run: |
+          mkdir "C:\Users\temp"
+          echo HOME=C:\Users\temp>> %GITHUB_ENV%
+          echo USERPROFILE=C:\Users\temp>> %GITHUB_ENV%
+
+      - name: Build ML
+        working-directory: ./ml
+        run: npm run build
+
+      - name: Build App
+        working-directory: ./app
+        run: npm run make
 
       - name: Package ZIP
         shell: pwsh
         run: |
           # $version = (Get-Content "app/package.json" | ConvertFrom-Json).version
           $finalZipName = "links-soma.zip"
-          Compress-Archive -Path links-soma-win32-x64/* -DestinationPath $finalZipName
+          Compress-Archive -Path app/out/links_soma_空き家推定システム-win32-x64/* -DestinationPath $finalZipName
           gsutil cp $finalZipName gs://${{ env.BUILDS_BUCKET }}/build/${{ matrix.region }}/

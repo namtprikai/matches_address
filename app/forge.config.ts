@@ -11,7 +11,7 @@ const config: ForgeConfig = {
   packagerConfig: {
     asar: true,
     extraResource: [
-      // "../ml/dist",
+      "../ml/dist",
       "drizzle",
       "../app/dummy-data",
       "../app/public/basemap.pmtiles",

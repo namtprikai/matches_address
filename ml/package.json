@@ -2,6 +2,6 @@
   "name": "ml",
   "private": true,
   "scripts": {
-    "build": ""
+    "build": "node build.js"
   }
 }
