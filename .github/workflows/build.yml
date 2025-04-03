@@ -87,5 +87,5 @@ jobs:
         run: |
           # $version = (Get-Content "app/package.json" | ConvertFrom-Json).version
           $finalZipName = "links-soma.zip"
-          Compress-Archive -Path app/out/links_soma_空き家推定システム-win32-x64/* -DestinationPath $finalZipName
+          Compress-Archive -Path app/out/links_soma-win32-x64/* -DestinationPath $finalZipName
           gsutil cp $finalZipName gs://${{ env.BUILDS_BUCKET }}/build/${{ matrix.region }}/
