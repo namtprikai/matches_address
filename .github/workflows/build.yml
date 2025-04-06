@@ -20,8 +20,7 @@ jobs:
     strategy:
       matrix:
         region:
-          [chubu]
-          # [hokkaido, tohoku, kanto, chubu, kansai, chugoku, shikoku, kyushu]
+          [hokkaido, tohoku, kanto, chubu, kansai, chugoku, shikoku, kyushu]
       fail-fast: false
 
     steps:
@@ -54,40 +53,28 @@ jobs:
           npm ci
           cd ml && poetry install --no-root
 
+
+
+          - name: Google Auth
+          uses: google-github-actions/auth@v2
+          with:
+            service_account: ${{ env.SERVICE_ACCOUNT }}
+            workload_identity_provider: ${{ env.WORKLOAD_IDENTITY_PROVIDER }}
+
+            - name: Set up Cloud SDK
+            uses: google-github-actions/setup-gcloud@v2
+
       - name: Build ML
         working-directory: ./ml
         shell: pwsh
         run: |
           ./build.ps1
 
-      #upload ml/dist to artifact
-      - name: Upload ML
-        uses: actions/upload-artifact@v4
-        with:
-          name: ml
-          path: ml/dist
-
-      - name: Google Auth
-        uses: google-github-actions/auth@v2
-        with:
-          service_account: ${{ env.SERVICE_ACCOUNT }}
-          workload_identity_provider: ${{ env.WORKLOAD_IDENTITY_PROVIDER }}
-
-      - name: Set up Cloud SDK
-        uses: google-github-actions/setup-gcloud@v2
-
       - name: Download pmtiles
         shell: pwsh
         run: |
           gcloud storage cp gs://${{ env.BASEMAP_BUCKET }}/basemaps/${{ matrix.region }}/basemap.pmtiles app/public/
           echo "Download completed for ${{ matrix.region }}"
-
-      - name: Setup home directory for PyInstaller
-        shell: cmd
-        run: |
-          mkdir "C:\Users\temp"
-          echo HOME=C:\Users\temp>> %GITHUB_ENV%
-          echo USERPROFILE=C:\Users\temp>> %GITHUB_ENV%
 
       - name: Build App
         working-directory: ./app
@@ -100,3 +87,9 @@ jobs:
           $finalZipName = "links-soma.zip"
           Compress-Archive -Path app/out/links_soma-win32-x64/* -DestinationPath $finalZipName
           gsutil cp $finalZipName gs://${{ env.BUILDS_BUCKET }}/build/${{ matrix.region }}/
+
+      - name: Upload App
+        uses: actions/upload-artifact@v4
+        with:
+          name: links-soma-${{ matrix.region }}
+          path: app/out/links_soma-win32-x64
