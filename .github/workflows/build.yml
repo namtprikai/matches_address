@@ -45,7 +45,6 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install poetry==1.8.3
-          pip install pyinstaller
 
       - name: Install dependencies
         env:
@@ -53,6 +52,19 @@ jobs:
         run: |
           npm ci
           cd ml && poetry install --no-root
+
+      - name: Build ML
+        working-directory: ./ml
+        shell: pwsh
+        run: |
+          ./build.ps1
+
+      #upload ml/dist to artifact
+      - name: Upload ML
+        uses: actions/upload-artifact@v4
+        with:
+          name: ml/dist
+          path: ml/dist
 
       - name: Google Auth
         uses: google-github-actions/auth@v2
@@ -75,12 +87,6 @@ jobs:
           mkdir "C:\Users\temp"
           echo HOME=C:\Users\temp>> %GITHUB_ENV%
           echo USERPROFILE=C:\Users\temp>> %GITHUB_ENV%
-
-      - name: Build ML
-        working-directory: ./ml
-        shell: pwsh
-        run: |
-          ./build.ps1
 
       - name: Build App
         working-directory: ./app
