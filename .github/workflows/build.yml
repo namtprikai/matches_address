@@ -20,7 +20,8 @@ jobs:
     strategy:
       matrix:
         region:
-          [hokkaido, tohoku, kanto, chubu, kansai, chugoku, shikoku, kyushu]
+          [chubu]
+          # [hokkaido, tohoku, kanto, chubu, kansai, chugoku, shikoku, kyushu]
       fail-fast: false
 
     steps:
@@ -63,7 +64,7 @@ jobs:
       - name: Upload ML
         uses: actions/upload-artifact@v4
         with:
-          name: ml/dist
+          name: ml
           path: ml/dist
 
       - name: Google Auth
