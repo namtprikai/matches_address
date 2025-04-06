@@ -53,16 +53,14 @@ jobs:
           npm ci
           cd ml && poetry install --no-root
 
+      - name: Google Auth
+        uses: google-github-actions/auth@v2
+        with:
+          service_account: ${{ env.SERVICE_ACCOUNT }}
+          workload_identity_provider: ${{ env.WORKLOAD_IDENTITY_PROVIDER }}
 
-
-          - name: Google Auth
-          uses: google-github-actions/auth@v2
-          with:
-            service_account: ${{ env.SERVICE_ACCOUNT }}
-            workload_identity_provider: ${{ env.WORKLOAD_IDENTITY_PROVIDER }}
-
-            - name: Set up Cloud SDK
-            uses: google-github-actions/setup-gcloud@v2
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
 
       - name: Build ML
         working-directory: ./ml
