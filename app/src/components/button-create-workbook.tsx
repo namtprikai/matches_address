@@ -2,10 +2,14 @@ import { AddFilled, Dismiss24Regular } from "@fluentui/react-icons";
 import {
   Dialog,
   DialogTrigger,
+  Field,
   makeStyles,
   tokens,
 } from "@fluentui/react-components";
-import { useNavigate, type FormProps } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import { z } from "zod";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "./ui/button";
 import { Form } from "./ui/form";
 import { DialogSurface } from "./ui/dialog-surface";
@@ -21,22 +25,33 @@ const useStyles = makeStyles({
   },
 });
 
+const formSchema = z.object({
+  title: z.string().min(1, {
+    message: "ワークブック名を入力してください",
+  }),
+});
+
 export const ButtonCreateWorkbook = (): JSX.Element => {
   const styles = useStyles();
   const navigate = useNavigate();
 
-  /** フォーム制御についてはあとで考える */
-  const handleSubmit: FormProps["onSubmit"] = (e) => {
-    e.preventDefault();
-    const asyncSubmit = async (): Promise<void> => {
-      const data = Object.fromEntries(new FormData(e.currentTarget));
-      const res = await window.ipcRenderer.invoke("createWorkbooks", {
-        title: data.title.toString(),
-      });
-      navigate(`/analysis/workbook/${res.id}/edit`);
-    };
-    asyncSubmit().catch(console.error);
-  };
+  const {
+    handleSubmit,
+    formState: { errors },
+    register,
+  } = useForm({
+    defaultValues: {
+      title: "",
+    },
+    resolver: zodResolver(formSchema),
+  });
+
+  const onSubmit = handleSubmit(async (data): Promise<void> => {
+    const res = await window.ipcRenderer.invoke("createWorkbooks", {
+      title: data.title,
+    });
+    navigate(`/analysis/workbook/${res.id}/edit`);
+  });
 
   return (
     <Dialog>
@@ -75,12 +90,13 @@ export const ButtonCreateWorkbook = (): JSX.Element => {
             ワークブック名
           </DialogTitle>
           <DialogContent>
-            <Form id="create-workbook" onSubmit={handleSubmit}>
-              <Input className={styles.input} name="title" />
+            <Form id="create-workbook" onSubmit={onSubmit}>
+              <Field validationMessage={errors.title?.message}>
+                <Input className={styles.input} {...register("title")} />
+              </Field>
             </Form>
           </DialogContent>
           <DialogActions>
-            {/* <DialogTrigger> */}
             <Button
               appearance="primary"
               form="create-workbook"
@@ -89,7 +105,6 @@ export const ButtonCreateWorkbook = (): JSX.Element => {
             >
               保存
             </Button>
-            {/* </DialogTrigger> */}
           </DialogActions>
         </DialogBody>
       </DialogSurface>
