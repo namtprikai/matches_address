@@ -37,7 +37,8 @@ export const dbPath = (() => {
 })();
 
 const betterSqlite3 = new Database(dbPath, {
-  verbose: console.info,
+  verbose:
+    import.meta.env.VITE_VALID_VERBOSE === "true" ? console.info : undefined,
 });
 
 // パフォーマンス向上のためWALモードを有効にする
