@@ -23,27 +23,28 @@ def main():
     json_dict = json.loads(args.parameters)
     if isinstance(json_dict, str):
         json_dict = json.loads(json_dict)
-
-    params = {
-        'db_path': json_dict.get('database_path'),
-        'output_path': json_dict.get('output_path'),
-        'output_format': json_dict.get('output_file_type', 'csv'),
-        'target_crs': json_dict.get('output_coordinate', 'EPSG:4326 (WGS84)'),
-        'target_unit': json_dict.get('target_unit', 'building'),
-        'reference_date': json_dict.get('reference_date', None),
-        'data_set_results_id': json_dict.get('data_set_results_id', '')
-    }
-
-    random_str = str(uuid.uuid4())
-    output_directory = concatenate(params.get('output_path'), random_str)
     job_id = None
     try:
-        if not params.get('db_path'):
+        database_path = json_dict.get('database_path', None)
+        if not database_path:
             raise Exception("Error: database_path field is required")
         
-        connect_sqllite(params.get('db_path'))
-
+        connect_sqllite(database_path)
         job_id = create_or_update_job(None ,"", "export", os.getpid(), 0, args.parameters)
+
+        params = {
+            'db_path': database_path,
+            'output_path': json_dict.get('output_path'),
+            'output_format': json_dict.get('output_file_type', 'csv'),
+            'target_crs': json_dict.get('output_coordinate', 'EPSG:4326 (WGS84)'),
+            'target_unit': json_dict.get('target_unit', 'building'),
+            'reference_date': json_dict.get('reference_date', None),
+            'data_set_results_id': json_dict.get('data_set_results_id', '')
+        }
+
+        random_str = str(uuid.uuid4())
+        output_directory = concatenate(params.get('output_path'), random_str)
+
         output_format = params.get('output_format')
         if params.get('output_format') == 'geopackage':
             output_format = 'gpkg'

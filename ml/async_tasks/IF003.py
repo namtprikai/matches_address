@@ -24,28 +24,28 @@ def main():
     json_dict = json.loads(args.parameters)
     if isinstance(json_dict, str):
         json_dict = json.loads(json_dict)
-
-    params = {
-        'db_path': json_dict.get('database_path', None),
-        'output_path': json_dict.get('output_path', ''),
-        'model_path': json_dict.get('model_path', None),
-        'threshold': json_dict.get('settings', {}).get('threshold', "0.3"),
-        'area_grouping': json_dict.get('area_grouping', {}).get('path', None),
-        'area_grouping_columns': json_dict.get('area_grouping', {}).get('columns', {}),
-        'normalized_dataset_paths': json_dict.get('normalized_dataset_paths', [])
-    }
-
-    random_str = str(uuid.uuid4())
-    output_directory = concatenate(params.get('output_path'), random_str)
-
     job_id = None
     try:
-        if not params.get('db_path'):
+        database_path = json_dict.get('database_path', None)
+        if not database_path:
             raise Exception("Error: database_path field is required")
 
-        connect_sqllite(params.get('db_path'))
+        connect_sqllite(database_path)
 
         job_id = create_or_update_job(None ,"", "result", os.getpid(), 0, args.parameters)
+        params = {
+            'db_path': database_path,
+            'output_path': json_dict.get('output_path', ''),
+            'model_path': json_dict.get('model_path', None),
+            'threshold': json_dict.get('settings', {}).get('threshold', "0.3"),
+            'area_grouping': json_dict.get('area_grouping', {}).get('path', None),
+            'area_grouping_columns': json_dict.get('area_grouping', {}).get('columns', {}),
+            'normalized_dataset_paths': json_dict.get('normalized_dataset_paths', [])
+        }
+
+        random_str = str(uuid.uuid4())
+        output_directory = concatenate(params.get('output_path'), random_str)
+
         file_path = f"{output_directory}/D902.csv"
 
         model_path = concatenate(params.get('output_path'), params.get('model_path'))

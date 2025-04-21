@@ -853,7 +853,8 @@ def process_data(tatemono_path, e14_merged_path, gpkg_path, ken, sikuchoson, opt
         if job_id:
             result = {
                 "joining_rate": join_ratio,
-                "input_source": input_source
+                "input_source": input_source,
+                'success_rate': len(tatemono_use_point_add_keycode) / len(tatemono_use_point)
             }
             create_or_update_job_task(job_id, progress_percent="100", preprocess_type="e016", error_code=None, error_msg=None, result=json.dumps(result, ensure_ascii=False), id= task_id, is_finish=True)
 

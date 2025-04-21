@@ -22,40 +22,41 @@ def main():
     json_dict = json.loads(args.parameters)
     if isinstance(json_dict, str):
         json_dict = json.loads(json_dict)
-
-    params = {
-        'db_path': json_dict.get("database_path", None),
-        'input_path': json_dict.get('input_path', None),
-        'output_path': json_dict.get('output_path', '.'),
-        'explanatory_variables': json_dict.get('settings', {}).get('explanatory_variables', []),
-        'test_size': json_dict.get('settings', {}).get('advanced', {}).get('test_size', 0.3),
-        'n_splits': json_dict.get('settings', {}).get('advanced', {}).get('n_splits', 3),
-        'undersample': json_dict.get('settings', {}).get('advanced', {}).get('undersample', 1),
-        'undersample_ratio': json_dict.get('settings', {}).get('advanced', {}).get('undersample_ratio', 3.0),
-        'threshold': json_dict.get('settings', {}).get('advanced', {}).get('threshold', 0.3),
-        'hyperparameter_flag': json_dict.get('settings', {}).get('advanced', {}).get('hyperparameter_flag', 1),
-        'n_trials': json_dict.get('settings', {}).get('advanced', {}).get('n_trials', 100),
-        'lambda_l1': json_dict.get('settings', {}).get('advanced', {}).get('lambda_l1', 0),
-        'lambda_l2': json_dict.get('settings', {}).get('advanced', {}).get('lambda_l2', 0),
-        'num_leaves': json_dict.get('settings', {}).get('advanced', {}).get('num_leaves', 31),
-        'feature_fraction': json_dict.get('settings', {}).get('advanced', {}).get('feature_fraction', 1.0),
-        'bagging_fraction': json_dict.get('settings', {}).get('advanced', {}).get('bagging_fraction', 1.0),
-        'bagging_freq': json_dict.get('settings', {}).get('advanced', {}).get('bagging_freq', 0),
-        'min_data_in_leaf': json_dict.get('settings', {}).get('advanced', {}).get('min_data_in_leaf', 20),
-        'citycode_value': json_dict.get('citycode_value', None),
-        'targetyear_value': json_dict.get('targetyear_value', None)
-    }
-
-    random_str = str(uuid.uuid4())
-    output_directory = concatenate(params.get('output_path'), random_str)
-    
     job_id = None
     try:
-        if not params.get('db_path'):
+        database_path = json_dict.get('database_path', None)
+        if not database_path:
             raise Exception("Error: database_path field is required")
 
-        connect_sqllite(params.get('db_path'))
+        connect_sqllite(database_path)
         job_id = create_or_update_job(None ,"", "ml", os.getpid(), 0, args.parameters)
+
+        params = {
+            'db_path': database_path,
+            'input_path': json_dict.get('input_path', None),
+            'output_path': json_dict.get('output_path', '.'),
+            'explanatory_variables': json_dict.get('settings', {}).get('explanatory_variables', []),
+            'test_size': json_dict.get('settings', {}).get('advanced', {}).get('test_size', 0.3),
+            'n_splits': json_dict.get('settings', {}).get('advanced', {}).get('n_splits', 3),
+            'undersample': json_dict.get('settings', {}).get('advanced', {}).get('undersample', 1),
+            'undersample_ratio': json_dict.get('settings', {}).get('advanced', {}).get('undersample_ratio', 3.0),
+            'threshold': json_dict.get('settings', {}).get('advanced', {}).get('threshold', 0.3),
+            'hyperparameter_flag': json_dict.get('settings', {}).get('advanced', {}).get('hyperparameter_flag', 1),
+            'n_trials': json_dict.get('settings', {}).get('advanced', {}).get('n_trials', 100),
+            'lambda_l1': json_dict.get('settings', {}).get('advanced', {}).get('lambda_l1', 0),
+            'lambda_l2': json_dict.get('settings', {}).get('advanced', {}).get('lambda_l2', 0),
+            'num_leaves': json_dict.get('settings', {}).get('advanced', {}).get('num_leaves', 31),
+            'feature_fraction': json_dict.get('settings', {}).get('advanced', {}).get('feature_fraction', 1.0),
+            'bagging_fraction': json_dict.get('settings', {}).get('advanced', {}).get('bagging_fraction', 1.0),
+            'bagging_freq': json_dict.get('settings', {}).get('advanced', {}).get('bagging_freq', 0),
+            'min_data_in_leaf': json_dict.get('settings', {}).get('advanced', {}).get('min_data_in_leaf', 20),
+            'citycode_value': json_dict.get('citycode_value', None),
+            'targetyear_value': json_dict.get('targetyear_value', None)
+        }
+
+        random_str = str(uuid.uuid4())
+        output_directory = concatenate(params.get('output_path'), random_str)
+    
         params['input_path'] = concatenate(params.get('output_path'), json_dict.get('input_path'))
         params['output_path'] = output_directory
         params['job_id'] = job_id
