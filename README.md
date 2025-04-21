@@ -69,10 +69,10 @@ sudo xcodebuild -license
 |---------------|------------------------------|
 | `main`        | 公開可能なソースコードを管理するブランチ      |
 | `develop`     | 開発中の最新版（統合用）     |
-| `feature/*`   | 機能ごとの開発ブランチ. Developブランチから作成する        |
+| `feat/*`   | 機能ごとの開発ブランチ. Developブランチから作成する        |
 | `hotfix/*`    | 緊急対応用ブランチ. mainブランチから作成する           |
 
-- `feature/*` は `develop` へPR
+- `feat/*` は `develop` へPR
 - `hotfix/*` は `main` へ直接PR
 - `main` ← `develop` はリリース時に実施
 
