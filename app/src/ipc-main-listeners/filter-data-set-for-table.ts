@@ -13,11 +13,13 @@ import {
 import { formatTableValue } from "../utils/format-table-value";
 import { getColumnMetadata } from "../utils/get-column-metadata";
 import { type TableView } from "../bi-modules/interfaces/view";
-import { type FilterCondition } from "../bi-modules/interfaces/parameter";
+import {
+  type YearFilter,
+  type FilterCondition,
+  type AreaFilter,
+} from "../bi-modules/interfaces/parameter";
 import { filterQueryBuilder } from "../bi-modules/api/builder/filter-query-builder";
 import { type IpcMainListener } from ".";
-
-type FilterDataSetForTableResponse = TableProps;
 
 interface BaseProps {
   view: TableView;
@@ -49,7 +51,7 @@ type Params = {
 export const filterDataSetForTable = (async (
   _: unknown,
   { view, pagination: { limit, offset } }: Params,
-): Promise<FilterDataSetForTableResponse> => {
+): Promise<TableProps> => {
   const { dataSetResultId, parameters, unit } = view;
   const yearFilter = parameters.find((p) => p.key === "year");
   const areaFilter = parameters.find((p) => p.key === "area");
@@ -125,69 +127,17 @@ export const filterDataSetForTable = (async (
   }
 
   if (unit === "area") {
-    const all = db
-      .select(
-        columnsToSelectField({
-          type: "area",
-          columns: columns as AREA_DATASET_COLUMN[],
-        }),
-      )
-      .from(data_set_detail_areas)
-      .where(
-        and(
-          eq(data_set_detail_areas.data_set_result_id, dataSetResultId),
-          yearFilter?.value.start
-            ? gte(
-                data_set_detail_buildings.reference_date,
-                `${yearFilter.value.start}-01-01`,
-              )
-            : undefined,
-          yearFilter?.value.end
-            ? lte(
-                data_set_detail_buildings.reference_date,
-                `${yearFilter.value.end}-12-31`,
-              )
-            : undefined,
-          ...filterQueryBuilder({ conditions: filterConditions ?? [] }),
-          or(
-            // 地域区分文字列のリストからeq条件を作成
-            ...(areaFilter?.value ?? []).map((area) =>
-              eq(data_set_detail_areas.area_group, area),
-            ),
-          ),
-        ),
-      )
-      .limit(limit)
-      .offset(offset)
-      .all();
-
-    return {
-      columns: columns.map((column) => {
-        const columnMetadata =
-          AREA_DATASET_COLUMN_METADATA[column as AREA_DATASET_COLUMN];
-        return {
-          key: column,
-          label: columnMetadata.label,
-          unit: columnMetadata.unit,
-        };
-      }),
-      data: all.map((row) => {
-        const rowArray = Object.entries(row);
-        const formattedRow = rowArray.reduce((acc, [key, value]) => {
-          const metadata = getColumnMetadata({
-            key,
-            unit,
-          });
-
-          return {
-            ...acc,
-            [key]: formatTableValue(value, metadata),
-          };
-        }, {});
-
-        return formattedRow;
-      }),
-    };
+    return byArea({
+      columns: columns as AREA_DATASET_COLUMN[],
+      dataSetResultId,
+      yearFilter,
+      areaFilter,
+      filterConditions,
+      pagination: {
+        limit,
+        offset,
+      },
+    });
   }
 
   return {
@@ -195,3 +145,92 @@ export const filterDataSetForTable = (async (
     data: [],
   };
 }) satisfies IpcMainListener;
+
+type ByArea = {
+  columns: AREA_DATASET_COLUMN[];
+  dataSetResultId: number;
+  yearFilter: YearFilter | undefined;
+  areaFilter: AreaFilter | undefined;
+  filterConditions: FilterCondition[];
+  pagination: {
+    limit: number;
+    offset: number;
+  };
+};
+const byArea = (params: ByArea): TableProps => {
+  const {
+    columns,
+    dataSetResultId,
+    yearFilter,
+    areaFilter,
+    filterConditions,
+    pagination: { limit, offset },
+  } = params;
+
+  const all = db
+    .select(
+      columnsToSelectField({
+        type: "area",
+        columns,
+      }),
+    )
+    .from(data_set_detail_areas)
+    .where(
+      and(
+        eq(data_set_detail_areas.data_set_result_id, dataSetResultId),
+        yearFilter?.value.start
+          ? gte(
+              data_set_detail_buildings.reference_date,
+              `${yearFilter.value.start}-01-01`,
+            )
+          : undefined,
+        yearFilter?.value.end
+          ? lte(
+              data_set_detail_buildings.reference_date,
+              `${yearFilter.value.end}-12-31`,
+            )
+          : undefined,
+        ...filterQueryBuilder({ conditions: filterConditions ?? [] }),
+        or(
+          // 地域区分文字列のリストからeq条件を作成
+          ...(areaFilter?.value ?? []).map((area) =>
+            eq(data_set_detail_areas.area_group, area),
+          ),
+        ),
+      ),
+    )
+    .limit(limit)
+    .offset(offset)
+    .all();
+
+  const formattedColumns = columns.map((column) => {
+    const columnMetadata = AREA_DATASET_COLUMN_METADATA[column];
+    return {
+      key: column,
+      label: columnMetadata.label,
+      unit: columnMetadata.unit,
+    };
+  });
+
+  const data = all.map((row) => {
+    const rowArray = Object.entries(row);
+    const formattedRow = rowArray.reduce((acc, [key, value]) => {
+      const metadata = getColumnMetadata({
+        key,
+        unit: "area",
+      });
+
+      return {
+        ...acc,
+        [key]: formatTableValue(value, metadata),
+      };
+    }, {});
+
+    return formattedRow;
+  });
+
+  return {
+    columns: formattedColumns,
+    data,
+  };
+};
