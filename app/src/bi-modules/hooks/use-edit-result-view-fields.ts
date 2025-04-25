@@ -28,7 +28,9 @@ export const useEditResultViewFields = ({
   dataSetResultId,
 }: Params): ReturnType => {
   const form = useFormContext<EditViewFormType>();
-  const { control, setValue } = form;
+  const { control, setValue, watch } = form;
+
+  const formUnit = watch("unit");
 
   /** 設定値パラメータを扱うためのフィールドステート */
   const fieldArray = useFieldArray({
@@ -78,7 +80,7 @@ export const useEditResultViewFields = ({
     fieldArray,
     handleStyleChange,
     resetParametersByStyle: (style) => {
-      replace(createResetParametersByStyle(style));
+      replace(createResetParametersByStyle(style, formUnit));
     },
   };
 };
@@ -86,11 +88,14 @@ export const useEditResultViewFields = ({
 /** Utility */
 const createResetParametersByStyle = (
   style: SelectResultView["style"],
+  unit: SelectResultView["unit"] = "area",
 ): Parameter[] => {
   if (!style) return [];
   const option = TILE_VIEW_CONFIG[style];
   if (!option) return [];
   const parameters: (Parameter | null)[] = option.fields.map((field) => {
+    const building = field.option.filter((o) => o.unit === "building");
+    const area = field.option.filter((o) => o.unit === "area");
     switch (field.key) {
       case "xAxis":
         return {
@@ -107,7 +112,8 @@ const createResetParametersByStyle = (
       case "columns":
         return {
           key: field.key,
-          value: field.option[0].value,
+          /** 集計単位を切り替えたときにunitの更新タイミングがずれるため以下のような分岐. area[1].valueとしているのはarea_groupを指定するため */
+          value: unit === "building" ? area[1].value : building[0].value,
           type: "column",
         };
       case "label":
