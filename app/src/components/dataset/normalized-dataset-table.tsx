@@ -18,10 +18,11 @@ import {
   TableSelectionCell,
 } from "@fluentui/react-components";
 import {
+  AddRegular,
   ArrowDownloadRegular,
   MoreVerticalRegular,
 } from "@fluentui/react-icons";
-import { type Dispatch, type SetStateAction, type MouseEvent } from "react";
+import { type MouseEvent, useRef, useState } from "react";
 import { Button } from "../ui/button";
 import { type SelectNormalizedDataSet } from "../../schema";
 import { useFetchNormalizedDatasets } from "../../hooks/use-fetch-normalized-datasets";
@@ -31,16 +32,21 @@ import { downloadDataSetFile } from "../../utils/download-data-set-file";
 import { useFetchRawOrNormalizedDataSetFile } from "../../hooks/use-fetch-raw-or-normalized-data-set-file";
 import { usePagination } from "../../hooks/use-pagination";
 import { Pagination } from "../ui/pagination";
+import {
+  handleUpload,
+  handleUploadButtonClick,
+} from "../../pages/dataset/_util";
 import { DataPreviewDialog } from "./data-preview-dialog";
 import { EditNameDialog } from "./edit-name-dialog";
 import { DeleteDataSetRowDialog } from "./delete-dataset-row-dialog";
 import { DataPreviewTable } from "./data-preview-table";
+import { DeleteRowsDialog } from "./delete-rows-dialog";
 
 const useStyles = makeStyles({
   tableHeader: {
     backgroundColor: tokens.colorNeutralBackground3,
   },
-  actions: {
+  cellActions: {
     display: "flex",
     alignItems: "center",
     justifyContent: "flex-end",
@@ -60,18 +66,54 @@ const useStyles = makeStyles({
   dataPreviewTableContainer: {
     marginTop: tokens.spacingVerticalS,
   },
+  actions: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    "& > div": {
+      display: "flex",
+      alignItems: "center",
+      gap: tokens.spacingHorizontalM,
+    },
+  },
+  uploadButton: {
+    display: "flex",
+    alignItems: "center",
+    gap: tokens.spacingHorizontalXS,
+  },
+  iconButton: {
+    border: `1px solid ${tokens.colorNeutralStroke2}`,
+    borderRadius: tokens.borderRadiusMedium,
+    "&:hover, &:active, &:focus, &:focus-within": {
+      border: `1px solid ${tokens.colorNeutralStroke1Selected}`,
+    },
+  },
+  datasetList: {
+    marginTop: tokens.spacingVerticalL,
+  },
 });
 
-type Props = {
-  selectedIds: SelectNormalizedDataSet["id"][];
-  onSelectionChange: Dispatch<SetStateAction<SelectNormalizedDataSet["id"][]>>;
-};
-
-export function NormalizedDataSetTable({
-  onSelectionChange,
-  selectedIds,
-}: Props): JSX.Element {
+export function NormalizedDataSetTable(): JSX.Element {
   const styles = useStyles();
+
+  const [selectedIds, setSelectedIds] = useState<number[]>([]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleDeleteSelectedItems = async (): Promise<void> => {
+    await Promise.all(
+      selectedIds.map((id) =>
+        window.ipcRenderer.invoke("deleteNormalizedDataset", {
+          id,
+        }),
+      ),
+    )
+      .then(() => {
+        void mutate();
+        setSelectedIds([]);
+      })
+      .catch(console.error);
+  };
+
   const columns = [
     createTableColumn<SelectNormalizedDataSet>({ columnId: "name" }),
     createTableColumn<SelectNormalizedDataSet>({ columnId: "date" }),
@@ -101,7 +143,7 @@ export function NormalizedDataSetTable({
       ...row,
       onClick: (e: MouseEvent) => {
         toggleRow(e, row.rowId);
-        onSelectionChange((prev) =>
+        setSelectedIds((prev) =>
           selected
             ? prev.filter((id) => id !== row.item.id)
             : [...prev, row.item.id],
@@ -114,7 +156,7 @@ export function NormalizedDataSetTable({
 
   const handleToggleAll = (e: MouseEvent): void => {
     toggleAllRows(e);
-    onSelectionChange((prev) =>
+    setSelectedIds((prev) =>
       prev.length === (data?.length || 0)
         ? []
         : data?.map((dataset) => dataset.id) || [],
@@ -127,7 +169,7 @@ export function NormalizedDataSetTable({
     try {
       await window.ipcRenderer.invoke("deleteNormalizedDataset", { id });
       await mutate();
-      onSelectionChange((prev) => prev.filter((prevId) => prevId !== id));
+      setSelectedIds((prev) => prev.filter((prevId) => prevId !== id));
     } catch (error) {
       console.error("Delete operation failed:", error);
     }
@@ -138,29 +180,64 @@ export function NormalizedDataSetTable({
     selectedIds.length > 0 && selectedIds.length < (data?.length || 0);
 
   return (
-    <Table>
-      <TableHeader className={styles.tableHeader}>
-        <TableRow>
-          <TableSelectionCell
-            checkboxIndicator={{ "aria-label": "Select all rows" }}
-            checked={allSelected ? true : someSelected ? "mixed" : false}
-            onClick={handleToggleAll}
+    <>
+      <div className={styles.actions}>
+        <div>
+          <input
+            ref={fileInputRef}
+            onChange={async (e) =>
+              handleUpload(e, "normalization").then(() => mutate())
+            }
+            style={{ display: "none" }}
+            type="file"
           />
-          <TableHeaderCell>データセット名</TableHeaderCell>
-          <TableHeaderCell>アップロード日</TableHeaderCell>
-          <TableHeaderCell></TableHeaderCell>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {rows.map((row) => (
-          <Row
-            {...row}
-            key={row.item.id}
-            onDelete={() => handleDelete(row.item.id)}
+          <Button
+            appearance="outline"
+            className={styles.uploadButton}
+            onClick={() =>
+              handleUploadButtonClick({
+                fileInputRef,
+              })
+            }
+          >
+            <AddRegular />
+            新規アップロード
+          </Button>
+        </div>
+        <div>
+          <span>{selectedIds.length}件選択中</span>
+          <DeleteRowsDialog
+            disabled={selectedIds.length === 0}
+            onDelete={handleDeleteSelectedItems}
           />
-        ))}
-      </TableBody>
-    </Table>
+        </div>
+      </div>
+      <div className={styles.datasetList}>
+        <Table>
+          <TableHeader className={styles.tableHeader}>
+            <TableRow>
+              <TableSelectionCell
+                checkboxIndicator={{ "aria-label": "Select all rows" }}
+                checked={allSelected ? true : someSelected ? "mixed" : false}
+                onClick={handleToggleAll}
+              />
+              <TableHeaderCell>データセット名</TableHeaderCell>
+              <TableHeaderCell>アップロード日</TableHeaderCell>
+              <TableHeaderCell></TableHeaderCell>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {rows.map((row) => (
+              <Row
+                {...row}
+                key={row.item.id}
+                onDelete={() => handleDelete(row.item.id)}
+              />
+            ))}
+          </TableBody>
+        </Table>
+      </div>
+    </>
   );
 }
 
@@ -180,6 +257,7 @@ function Row({
   onDelete,
 }: RowProps): JSX.Element {
   const styles = useStyles();
+
   const dataPreviewDialogState = useDialogState(false);
   const pagination = usePagination(50);
   const { data } = useFetchRawOrNormalizedDataSetFile({
@@ -231,7 +309,7 @@ function Row({
         />
       </TableCell>
       <TableCell>{formatDate(item.updated_at, "YYYY/MM/DD")}</TableCell>
-      <TableCell className={styles.actions}>
+      <TableCell className={styles.cellActions}>
         <Button
           appearance="subtle"
           aria-label="ダウンロード"

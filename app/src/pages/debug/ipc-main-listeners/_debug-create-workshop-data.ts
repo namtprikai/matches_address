@@ -30,6 +30,7 @@ export const _debugCreateWorkshopData = (async (
         .values({
           ...(rest as unknown as InsertDataSetDetailBuilding),
           data_set_result_id: dataSetResultsId,
+          reference_date: rest.reference_date || "", // TODO: 2023-10-01に固定しているが、実際はCSVから取得する
         })
         .execute();
     },
@@ -45,6 +46,7 @@ export const _debugCreateWorkshopData = (async (
         .values({
           ...(rest as unknown as InsertDataSetDetailArea),
           data_set_result_id: dataSetResultsId,
+          reference_date: rest.reference_date || "", // TODO: 2023-10-01に固定しているが、実際はCSVから取得する
         })
         .execute();
     },

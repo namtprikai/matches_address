@@ -1,8 +1,8 @@
 import useSWR, { type SWRResponse } from "swr";
-import { type ResultDataSetUnit } from "../components/dataset/result-dataset-table";
+import { type ResultDataSetUnit } from "../components/dataset/result-dataset-table/types";
 
 type Params = {
-  dataSetResultId: number;
+  dataSetResultId: number | null;
   type: ResultDataSetUnit;
   page: number;
   limitPerPage: number;
@@ -19,6 +19,9 @@ const fetcher = ([id, type, page, limitPerPage]: [
   Params["limitPerPage"],
   string,
 ]): Promise<ResultDataSetsResponse> => {
+  if (id === null) {
+    return Promise.resolve(undefined);
+  }
   switch (type) {
     case "building": {
       const result = window.ipcRenderer.invoke(

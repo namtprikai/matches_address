@@ -69,6 +69,7 @@ import { selectRawDatasetWithFilePath } from "./select-raw-dataset-with-file-pat
 import { selectJobsWithPagination } from "./select-jobs-with-pagination";
 import { fetchChartData } from "./fetch-chart-data";
 import { deleteJob } from "./delete-job";
+import { createResultDatasets } from "./create-result-datasets";
 
 export const ipcMainListeners = {
   helloFromPython,
@@ -138,6 +139,7 @@ export const ipcMainListeners = {
   selectJobsWithPagination,
   fetchChartData,
   deleteJob,
+  createResultDatasets,
 };
 
 export const execFileAsync = promisify(execFile);

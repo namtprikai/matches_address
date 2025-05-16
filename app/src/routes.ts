@@ -1,3 +1,5 @@
+import { type ResultDataSetUnit } from "./components/dataset/result-dataset-table/types";
+
 export const ROUTES = {
   HOME: "/",
   JOB: {
@@ -36,7 +38,31 @@ export const ROUTES = {
       return `/analysis/workbook/${id}/edit?${query.toString()}`;
     },
   },
-  DATASET: "/dataset",
+  DATASET: ({
+    queryParams,
+  }: {
+    queryParams?: {
+      tab: string | null;
+      previewId?: string;
+      previewType?: ResultDataSetUnit;
+    };
+  }) => {
+    const query = new URLSearchParams();
+    const base = "/dataset";
+    if (!queryParams) {
+      return base;
+    }
+    if (queryParams.tab) {
+      query.set("tab", String(queryParams.tab));
+    }
+    if (queryParams.previewId) {
+      query.set("previewId", String(queryParams.previewId));
+    }
+    if (queryParams.previewType) {
+      query.set("previewType", String(queryParams.previewType));
+    }
+    return `${base}?${query.toString()}`;
+  },
   MODEL: {
     ROOT: "/model",
     CREATE: "/model/create",

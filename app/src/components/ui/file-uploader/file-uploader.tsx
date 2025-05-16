@@ -19,6 +19,7 @@ const useStyles = makeStyles({
     border: "2px dashed #ccc",
     borderRadius: "5px",
     cursor: "pointer",
+    padding: tokens.spacingHorizontalM,
   },
   spin: {
     animation: "$spin 2s linear infinite",
