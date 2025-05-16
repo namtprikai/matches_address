@@ -13,6 +13,7 @@ export type AreaProperties = Pick<
   | "area_group"
   | "area"
   | "vacant_house_count"
+  | "total_building_count"
 >;
 
 interface Props {
@@ -97,6 +98,12 @@ export const AreaPopup = forwardRef<HTMLDivElement, Props>(
               <span className={styles.itemLabel}>空き家件数</span>
               <span className={styles.itemValue}>
                 {properties.vacant_house_count}件
+              </span>
+            </div>
+            <div className={styles.item}>
+              <span className={styles.itemLabel}>地域内の家屋件数</span>
+              <span className={styles.itemValue}>
+                {properties.total_building_count}件
               </span>
             </div>
           </div>
