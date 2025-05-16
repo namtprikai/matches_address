@@ -27,12 +27,13 @@ def main():
     job_id = None
     try:
         database_path = json_dict.get('database_path', None)
+        job_id = json_dict.get('job_id', None)
         if not database_path:
             raise Exception("Error: database_path field is required")
 
         connect_sqllite(database_path)
 
-        job_id = create_or_update_job(None ,"", "result", os.getpid(), 0, args.parameters)
+        job_id = create_or_update_job(job_id ,"", "result", os.getpid(), 0, args.parameters, True)
         params = {
             'db_path': database_path,
             'output_path': json_dict.get('output_path', ''),

@@ -13,7 +13,7 @@ def connect_sqllite(db_path: str):
     CONNECTION = sqlite3.connect(db_path)
     CURSOR = CONNECTION.cursor()
 
-def create_or_update_job(job_id: int, status: str, job_type: str = "", process_id: int = 0, is_named: int = 0, parameters: str = "") -> int:
+def create_or_update_job(job_id: int, status: str, job_type: str = "", process_id: int = 0, is_named: int = 0, parameters: str = "", is_update_all: bool = False) -> int:
     try:
         if job_id is None:
             CURSOR.execute("""
@@ -21,6 +21,10 @@ def create_or_update_job(job_id: int, status: str, job_type: str = "", process_i
                     VALUES (?, ?, ?, ?, ?)
                         """, (status, job_type, parameters, process_id, is_named))
             job_id = CURSOR.lastrowid
+        elif is_update_all:
+            CURSOR.execute("""
+                UPDATE jobs SET status = ?, type = ?, parameters = ?, process_id = ?, is_named = ? WHERE id = ?
+                        """, (status, job_type, parameters, process_id, is_named, job_id))
         else:
             CURSOR.execute("""
                 UPDATE jobs SET status = ? WHERE id = ?
