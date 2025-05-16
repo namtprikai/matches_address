@@ -4,6 +4,7 @@ import { dbDirectory, dbPath } from "../../utils/db";
 import { binaryPath, type IpcMainListener } from "..";
 import { processLogger } from "../../utils/process-logger";
 import { type PreprocessParameters } from "../../@types/job-parameters";
+import { startJobProcess } from "./_start-job-process";
 
 export const execE001 = (async (
   _: unknown,
@@ -17,14 +18,18 @@ export const execE001 = (async (
     const output_path = dbDirectory;
     const database_path = dbPath;
 
+    const jobProcess = await startJobProcess({ jobType: "preprocess" });
+
+    if (jobProcess.status !== "success") {
+      console.error("Job process start failed");
+      return false;
+    }
+
     const postParameters = {
       ...parameters,
       output_path,
       database_path,
     };
-
-    // eslint-disable-next-line no-console -- for debug @todo remove
-    console.log("--- start execE001 ---", postParameters);
 
     // childProcessに入れてバックグラウンド実行
     const cp = spawn(

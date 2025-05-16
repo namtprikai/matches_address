@@ -4,6 +4,7 @@ import { binaryPath, type IpcMainListener } from "../";
 import { getErrorMessage } from "../../utils/get-error-message";
 import { processLogger } from "../../utils/process-logger";
 import { type ModelCreateParameters } from "../../@types/job-parameters";
+import { startJobProcess } from "./_start-job-process";
 
 type Params = {
   data: ModelCreateParameters;
@@ -15,12 +16,16 @@ export const buildModel = (async (
 ): Promise<boolean> => {
   const { data } = params;
 
-  // eslint-disable-next-line no-console -- for debug @todo remove
-  console.log("--- start buildModel ---", data);
-
   try {
     const output_path = dbDirectory;
     const database_path = dbPath;
+
+    const jobProcess = await startJobProcess({ jobType: "ml" });
+
+    if (jobProcess.status !== "success") {
+      console.error("Job process start failed");
+      return false;
+    }
 
     // childProcessに入れてバックグラウンド実行
     const cp = spawn(
@@ -30,6 +35,7 @@ export const buildModel = (async (
         JSON.stringify(
           JSON.stringify({
             ...data,
+            job_id: jobProcess.data.jobId,
             output_path,
             database_path,
           }),

@@ -4,6 +4,7 @@ import { binaryPath, type IpcMainListener } from "../";
 import { getErrorMessage } from "../../utils/get-error-message";
 import { processLogger } from "../../utils/process-logger";
 import { type ResultParameters } from "../../@types/job-parameters";
+import { startJobProcess } from "./_start-job-process";
 
 type Params = {
   data: ResultParameters;
@@ -15,12 +16,16 @@ export const evaluateData = (async (
 ): Promise<boolean> => {
   const { data } = params;
 
-  // eslint-disable-next-line no-console -- for debug @todo remove
-  console.log("--- start evaluateData ---", data);
-
   try {
     const output_path = dbDirectory;
     const database_path = dbPath;
+
+    const jobProcess = await startJobProcess({ jobType: "result" });
+
+    if (jobProcess.status !== "success") {
+      console.error("Job process start failed");
+      return false;
+    }
 
     // childProcessに入れてバックグラウンド実行
     const cp = spawn(
@@ -30,6 +35,7 @@ export const evaluateData = (async (
         JSON.stringify(
           JSON.stringify({
             ...data,
+            job_id: jobProcess.data.jobId,
             output_path,
             database_path,
           }),

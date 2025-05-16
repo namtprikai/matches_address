@@ -594,7 +594,6 @@ export const jobs = sqliteTable("jobs", {
   parameters: text("parameters", { mode: "json" })
     .$type<JobParameters>()
     .notNull(),
-
   created_at: text("created_at")
     .default(sql`(CURRENT_TIMESTAMP)`)
     .notNull(),

@@ -28,10 +28,15 @@ export type ExportParameters = {
   reference_date: string;
 };
 
-export type JobParameters = BaseParameters &
-  (
-    | PreprocessParameters
-    | ModelCreateParameters
-    | ResultParameters
-    | ExportParameters
-  );
+export type JobParameters =
+  | (BaseParameters &
+      (
+        | PreprocessParameters
+        | ModelCreateParameters
+        | ResultParameters
+        | ExportParameters
+      ))
+  | {
+      parameterType: "unknown";
+      [key: string]: unknown;
+    };

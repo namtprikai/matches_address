@@ -4,6 +4,7 @@ import { binaryPath, type IpcMainListener } from "..";
 import { getErrorMessage } from "../../utils/get-error-message";
 import { processLogger } from "../../utils/process-logger";
 import { type ExportParameters } from "../../@types/job-parameters";
+import { startJobProcess } from "./_start-job-process";
 
 export const exportData = (async (
   _: unknown,
@@ -13,12 +14,15 @@ export const exportData = (async (
 ): Promise<boolean> => {
   const { data } = params;
 
-  // eslint-disable-next-line no-console -- for debug @todo remove
-  console.log("--- start exportData ---", data);
-
   try {
     const output_path = dbDirectory;
     const database_path = dbPath;
+
+    const jobProcess = await startJobProcess({ jobType: "export" });
+
+    if (jobProcess.status !== "success") {
+      throw new Error("Job process start failed");
+    }
 
     // childProcessに入れてバックグラウンド実行
     const cp = spawn(
@@ -28,6 +32,7 @@ export const exportData = (async (
         JSON.stringify(
           JSON.stringify({
             ...data,
+            job_id: jobProcess.data.jobId,
             output_path,
             database_path,
           }),
@@ -42,7 +47,6 @@ export const exportData = (async (
 
     return true;
   } catch (error) {
-    console.error(getErrorMessage(error));
-    return false;
+    throw new Error(getErrorMessage(error));
   }
 }) satisfies IpcMainListener;

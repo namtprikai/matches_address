@@ -5,13 +5,13 @@ import {
   tokens,
   TableCell,
   mergeClasses,
-  Spinner,
 } from "@fluentui/react-components";
 import { useNavigate } from "react-router-dom";
 import { type SelectJob } from "../schema";
 import { formatDate } from "../utils/format-date";
 import { type JobType, TYPE_DISPLAY_MAP } from "../config/job-type-display-map";
 import { TableRowMenu } from "./ui/table-row-menu";
+import { LoaderIcon } from "./ui/loader-icon";
 
 const useStyles = makeStyles({
   table: {
@@ -53,6 +53,10 @@ const useStyles = makeStyles({
     borderRadius: tokens.borderRadiusSmall,
     color: "#6264A7",
     backgroundColor: "#6264a71f",
+  },
+  statusCellPending: {
+    color: "#bdbdbd",
+    backgroundColor: "#eee",
   },
   statusCellError: {
     color: "#C4314B",
@@ -118,13 +122,13 @@ export const TableRowJobs = ({
                 styles.statusCell,
                 item.status === "error" && styles.statusCellError,
                 item.status === "complete" && styles.statusCellComplete,
+                item.status === "" && styles.statusCellPending,
               )}
             >
               {statusInfo.label}
             </span>
             {statusInfo.icon}
           </div>
-          {item.status === "" && <Spinner size="tiny" />}
         </div>
       </TableCell>
       <TableCell className={styles.tableCell}>
@@ -154,13 +158,10 @@ function getStatusInfo(status: SelectJob["status"]): {
       icon: <ErrorCircleFilled style={{ color: "#C4314B", fontSize: 18 }} />,
     };
   } else if (status === "") {
-    return { label: "進行中 0%" };
+    return { label: "待機中", icon: <LoaderIcon style={{ margin: "2px" }} /> };
   } else if (status === "complete") {
     return { label: "完了" };
   } else {
-    /** "" | "error" | "complete"以外はそのまま表示、という型表現をSchemaで書けなかったためignore */
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment -- 理由は上段の通り
-    // @ts-ignore
     return {
       label: status ? `進行中 ${Math.round(status)}%` : "",
     };
