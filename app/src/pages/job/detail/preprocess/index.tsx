@@ -9,6 +9,7 @@ import {
   TableRow,
   TableCell,
   mergeClasses,
+  Caption1,
 } from "@fluentui/react-components";
 import { ErrorCircleFilled, ArrowLeftRegular } from "@fluentui/react-icons";
 import { useNavigate, useParams } from "react-router-dom";
@@ -281,6 +282,12 @@ export function PreprocessDetail(): JSX.Element {
                         <TableCell className={styles.tableCell}>
                           <div className={styles.successRateCell}>
                             {getIndexRate(item)}
+                            {item.result?.taskResultType === "preprocess" &&
+                            item.result.success_rate ? (
+                              <Caption1>{`(${item.result.success_rate})`}</Caption1>
+                            ) : (
+                              ""
+                            )}
                             {item.error_code && (
                               <ErrorCircleFilled className={styles.errorIcon} />
                             )}
@@ -315,7 +322,7 @@ export function PreprocessDetail(): JSX.Element {
 // 成功率を取得する関数
 function getIndexRate(item: SelectJobTask): string {
   if (item.result?.taskResultType === "preprocess") {
-    return parseFloat(item.result.joining_rate).toFixed(1);
+    return `${parseFloat(item.result.joining_rate).toFixed(1)}%`;
   } else {
     return "N/A";
   }

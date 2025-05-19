@@ -4,6 +4,7 @@ type PreprocessTaskResult = {
 
   joining_rate: string;
   input_source?: string[];
+  success_rate?: string;
 };
 
 type ModelCreateTaskResult = {
