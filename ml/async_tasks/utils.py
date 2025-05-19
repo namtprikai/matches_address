@@ -2,7 +2,8 @@
 from datetime import datetime, timezone
 import sqlite3
 import pandas as pd
-
+from typing import List, Dict
+import json
 
 CONNECTION = None
 CURSOR = None
@@ -108,12 +109,121 @@ def create_data_set_results(title: str = ""):
         CONNECTION.rollback()
         return None
     
-def get_data_set_detail_buildings_or_area(data_set_result_id, reference_date=None, table_name="data_set_detail_buildings"):
+def get_data_result_views(sheet_id):
     try:
-        if not reference_date:
-            return pd.read_sql(f"SELECT * FROM {table_name} where data_set_result_id = {data_set_result_id}", CONNECTION)
-        else:
-            return pd.read_sql(f"SELECT * FROM {table_name} where data_set_result_id = {data_set_result_id} and reference_date = '{reference_date}'", CONNECTION)
-            
+        return pd.read_sql(f"SELECT * FROM result_views where id = {sheet_id}", CONNECTION)
     except sqlite3.Error as e:
         return None
+
+def filter_query_builder(conditions: List[Dict]) -> List[str]:
+    sql_conditions = []
+
+    for cond in conditions:
+        cond = cond.get("value")
+        col = cond.get("referenceColumn", None)
+        op = cond.get("operation", None)
+        col_type = cond.get("referenceColumnType", None)
+        if col and col_type:
+            if col_type in ["text", "date"]:
+                val = f"'{cond['value']}'"
+                if op == "eq":
+                    sql_conditions.append(f"{col} = {val}")
+                elif op == "noteq":
+                    sql_conditions.append(f"{col} != {val}")
+                elif op == "contains":
+                    sql_conditions.append(f"{col} LIKE '%{cond['value']}%'")
+                elif op == "notContains":
+                    sql_conditions.append(f"{col} NOT LIKE '%{cond['value']}%'")
+                elif op in ["gt", "gte", "lt", "lte"]:
+                    ops_map = {"gt": ">", "gte": ">=", "lt": "<", "lte": "<="}
+                    sql_conditions.append(f"{col} {ops_map[op]} {val}")
+
+            elif col_type in ["integer", "float"]:
+                val = cond["value"]
+                if op == "eq":
+                    sql_conditions.append(f"{col} = {val}")
+                elif op == "noteq":
+                    sql_conditions.append(f"{col} != {val}")
+                elif op in ["gt", "gte", "lt", "lte"]:
+                    ops_map = {"gt": ">", "gte": ">=", "lt": "<", "lte": "<="}
+                    sql_conditions.append(f"{col} {ops_map[op]} {val}")
+
+            elif col_type in ["integerRange", "floatRange"]:
+                if op == "range":
+                    start = cond.get("startValue")
+                    end = cond.get("lastValue")
+                    include_start = ">=" if cond.get("includesStart") else ">"
+                    include_end = "<=" if cond.get("includesLast") else "<"
+                    sql_conditions.append(f"{col} {include_start} {start} AND {col} {include_end} {end}")
+
+            elif col_type == "dateRange":
+                if op == "range":
+                    start = cond.get("startValue")
+                    end = cond.get("lastValue")
+                    include_start = ">=" if cond.get("includesStart") else ">"
+                    include_end = "<=" if cond.get("includesLast") else "<"
+                    sql_conditions.append(f"{col} {include_start} '{start}' AND {col} {include_end} '{end}'")
+
+            elif col_type == "boolean":
+                if op == "isTrue":
+                    sql_conditions.append(f"{col} = 1")
+                elif op == "isFalse":
+                    sql_conditions.append(f"{col} = 0")
+
+    return sql_conditions
+
+def format_sql(sql, params):
+    for param in params:
+        if isinstance(param, str):
+            param = f"'{param}'"
+        elif param is None:
+            param = "NULL"
+        sql = sql.replace("?", str(param), 1)
+    return sql
+
+def get_data_set_detail_buildings_or_area(view: dict):
+    try:
+        # All param for filter
+        data_set_result_id = view.get("data_set_result_id")
+        parameters = json.loads(view.get("parameters", "[]"))
+        year_filter = next((p for p in parameters if p.get("key") == "year"), None)
+        area_filter = next((p for p in parameters if p.get("key") == "area"), None)
+        columns = next((p for p in parameters if p.get("key") == "columns" and p.get("type") == "column"), None)
+        filter_conditions = [p for p in parameters if p.get("key").startswith("filter_")]
+
+        table_name = "data_set_detail_buildings" if view.get("unit") == 'building' else 'data_set_detail_areas'
+        columns_name = "*"
+        if columns is not None:
+            columns_name = columns.get("value")
+            if "geometry" not in columns_name.split(","):
+                columns_name += ", geometry"
+
+        sql = f"SELECT {columns_name} FROM {table_name} WHERE data_set_result_id = ?"
+        params = [data_set_result_id]
+
+        # Year filter
+        if year_filter:
+            if "start" in year_filter["value"] and year_filter["value"]["start"]:
+                sql += " AND reference_date >= ?"
+                params.append(f"{year_filter['value']['start']}-01-01")
+            if "end" in year_filter["value"] and year_filter["value"]["end"]:
+                sql += " AND reference_date <= ?"
+                params.append(f"{year_filter['value']['end']}-12-31")
+
+        # Area filter
+        if area_filter and area_filter.get("value"):
+            placeholders = ", ".join(["?"] * len(area_filter["value"]))
+            sql += f" AND area_group IN ({placeholders})"
+            params.extend(area_filter["value"])
+
+        # --- Dynamic filters
+        if filter_conditions:
+            filter_sql = filter_query_builder(filter_conditions)
+            sql += " AND " + " AND ".join(filter_sql) if filter_sql else ""
+        
+        # Load data
+        df = pd.read_sql(sql, CONNECTION, params=params)
+
+        return df
+    except Exception as e:
+        raise

@@ -34,9 +34,9 @@ def remove_z_coordinate(geometry):
     else:
         return geometry
 
-def read_input_data(data_set_results_id, reference_date, table_name):
+def read_input_data(result_views):
     try:
-        df = get_data_set_detail_buildings_or_area(data_set_results_id, reference_date, table_name)
+        df = get_data_set_detail_buildings_or_area(result_views)
         
         if df is None:
             raise Exception("No data found")
@@ -66,7 +66,7 @@ def rename_columns(gdf, ext, job_id=None, target_unit="building"):
         rename_dict = {col: columns[col] for col in gdf.columns if col in columns and col != "geometry"}
         selected_columns = list(rename_dict.keys()) + (["geometry"] if "geometry" in gdf.columns else [])
     else:
-        rename_dict = columns
+        rename_dict = {col: columns[col] for col in gdf.columns if col in columns}
         selected_columns = list(rename_dict.keys())
 
     gdf = gdf[selected_columns]
@@ -116,21 +116,33 @@ def processing(params, job_id=None, db_path=None):
     try:
         if db_path:
             connect_sqllite(db_path)
-        data_set_results_id = params['data_set_results_id']
-        table_name = "data_set_detail_buildings"
-        target_unit = params['target_unit']
-        if (target_unit == 'area'):
-            table_name = 'data_set_detail_areas'
-            
         output_path = params['output_path']
         task_id = None
         if job_id:
             task_id = create_or_update_job_task(job_id, progress_percent="0", preprocess_type=None, error_code=None, error_msg=None, result=json.dumps({}))
 
-        gdf = read_input_data(data_set_results_id, params.get("reference_date"), table_name)
+        view_id = params.get("view_id", None)
+        result_views = None
+        if view_id is not None:
+            result_views = get_data_result_views(view_id)
+            result_views = result_views.to_dict(orient='records')
+            if len(result_views):
+                result_views = result_views[0]
+        else:
+            result_views = {
+                "data_set_result_id": params.get("data_set_results_id", None),
+                "unit": params.get("target_unit", None),
+                "parameters": '[]'
+            }
+
         if job_id:
-            create_or_update_job_task(job_id, progress_percent="20", preprocess_type=None, error_code=None, error_msg=None, result=json.dumps({}), id= task_id)
+            create_or_update_job_task(job_id, progress_percent="20", preprocess_type=None, error_code=None, error_msg=None, result=json.dumps({}), id=task_id)
             create_or_update_job(job_id, 20)
+
+        gdf = read_input_data(result_views)
+        if job_id:
+            create_or_update_job_task(job_id, progress_percent="30", preprocess_type=None, error_code=None, error_msg=None, result=json.dumps({}), id= task_id)
+            create_or_update_job(job_id, 30)
         if params.get('target_crs'):
             target_crs = params['target_crs']
             if gdf.crs.to_string().upper() != target_crs.upper():
@@ -145,7 +157,7 @@ def processing(params, job_id=None, db_path=None):
         if job_id:
             create_or_update_job_task(job_id, progress_percent="40", preprocess_type=None, error_code=None, error_msg=None, result=json.dumps({}), id= task_id)
             create_or_update_job(job_id, 40)
-        
+        target_unit = result_views.get('unit', None)
         output_file_path = export_data(gdf, output_path, params['output_format'], target_unit, job_id)
 
         if job_id:

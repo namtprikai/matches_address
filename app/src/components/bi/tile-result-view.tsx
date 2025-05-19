@@ -15,7 +15,7 @@ import {
   tokens,
   Option,
 } from "@fluentui/react-components";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { type SelectResultView } from "../../schema";
 import { THEME_COLORS } from "../../config/theme-colors";
@@ -27,7 +27,6 @@ import { DialogActions } from "../ui/dialog-actions";
 import { Button } from "../ui/button";
 import { DialogContent } from "../ui/dialog-content";
 import { Dropdown } from "../ui/dropdown";
-import { useFetchReferenceDates } from "../../hooks/use-fetch-reference-dates";
 import { useDialogState } from "../../hooks/use-dialog-state";
 import { DialogExportMessage } from "../dialog-export-message";
 import { OUTPUT_FILE_TYPES } from "../../config/file-types";
@@ -114,19 +113,15 @@ export const TileResultView = ({
   const handleDownload = async (
     fileType: string,
     coordinate: string,
-    reference_date: string | undefined,
   ): Promise<void> => {
-    if (!resultView.data_set_result_id || !resultView.unit || !reference_date)
-      return;
+    if (!resultView.data_set_result_id || !resultView.unit) return;
     await window.ipcRenderer
       .invoke("exportData", {
         data: {
           parameterType: "export",
           output_file_type: fileType,
           output_coordinate: coordinate,
-          data_set_results_id: resultView.data_set_result_id,
-          target_unit: resultView.unit,
-          reference_date,
+          view_id: resultView.id,
         },
       })
       .then(() => {
@@ -162,10 +157,7 @@ export const TileResultView = ({
         action={
           <div className={styles.cardHeaderActions}>
             {resultView.data_set_result_id && (
-              <DownloadDialog
-                dataSetResultId={resultView.data_set_result_id}
-                onSubmit={handleDownload}
-              />
+              <DownloadDialog onSubmit={handleDownload} />
             )}
             <DeleteDialog onSubmit={handleDelete} />
           </div>
@@ -200,15 +192,9 @@ export const TileResultView = ({
 };
 
 function DownloadDialog({
-  dataSetResultId,
   onSubmit,
 }: {
-  dataSetResultId: number;
-  onSubmit: (
-    fileType: string,
-    coordinate: string,
-    reference_date: string | undefined,
-  ) => void;
+  onSubmit: (fileType: string, coordinate: string) => void;
 }): JSX.Element {
   const styles = useStyles();
   const { isOpen, setIsOpen } = useDialogState();
@@ -217,24 +203,6 @@ function DownloadDialog({
   );
   const [selectedCoordinate, setSelectedCoordinate] = useState(
     OUTPUT_COORDINATES[0].code,
-  );
-
-  const { data: referenceDates } = useFetchReferenceDates({
-    dataSetResultId,
-  });
-
-  const [selectedReferenceDate, setSelectedReferenceDate] = useState<
-    string | undefined
-  >(referenceDates?.[0]);
-
-  useEffect(
-    function fetchReferenceDatesEffect() {
-      if (!referenceDates) return;
-      setSelectedReferenceDate(
-        (prevSelectedDate) => prevSelectedDate || referenceDates[0],
-      );
-    },
-    [referenceDates],
   );
 
   return (
@@ -309,35 +277,12 @@ function DownloadDialog({
                 ))}
               </Dropdown>
             </div>
-            <div className={styles.dropdown}>
-              <label id="reference-date">推定日</label>
-              {selectedReferenceDate && (
-                <Dropdown
-                  aria-labelledby="reference-date"
-                  defaultSelectedOptions={[selectedReferenceDate]}
-                  defaultValue={selectedReferenceDate}
-                  onOptionSelect={(_, data) =>
-                    setSelectedReferenceDate(data.optionValue || "")
-                  }
-                >
-                  {referenceDates?.map((date) => (
-                    <Option key={date} value={date}>
-                      {date}
-                    </Option>
-                  ))}
-                </Dropdown>
-              )}
-            </div>
           </DialogContent>
           <DialogActions>
             <Button
               appearance="primary"
               onClick={() => {
-                onSubmit(
-                  selectedFileType,
-                  selectedCoordinate,
-                  selectedReferenceDate,
-                );
+                onSubmit(selectedFileType, selectedCoordinate);
                 setIsOpen(false);
               }}
             >

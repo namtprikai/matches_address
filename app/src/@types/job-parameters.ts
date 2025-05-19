@@ -23,9 +23,10 @@ export type ExportParameters = {
 } & {
   output_file_type: string;
   output_coordinate: string;
-  target_unit: "building" | "area";
-  data_set_results_id: number;
-  reference_date: string;
+  target_unit?: "building" | "area";
+  data_set_results_id?: number;
+  reference_date?: string; // データセット管理からダウンロードする場合に必要
+  view_id?: number; // 参照されるビューがある場合
 };
 
 export type JobParameters =
