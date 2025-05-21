@@ -60,13 +60,15 @@ export const EditResultViewFields = ({
   return (
     <>
       <Field label="データセットを選択">
-        <Select {...register("dataSetResultId")}>
-          {dataSetResults?.map((item) => (
-            <option key={item.id} value={item.id}>
-              {item.title || "タイトルなし"}
-            </option>
-          ))}
-        </Select>
+        {dataSetResults && (
+          <Select {...register("dataSetResultId")}>
+            {dataSetResults.map((item) => (
+              <option key={item.id} value={item.id}>
+                {item.title || "タイトルなし"}
+              </option>
+            ))}
+          </Select>
+        )}
       </Field>
       <Field label="ビューのタイトル">
         <Input placeholder="選択中のビューのタイトル" {...register("title")} />
