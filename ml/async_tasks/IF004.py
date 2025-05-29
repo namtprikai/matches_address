@@ -40,7 +40,8 @@ def main():
             'target_crs': json_dict.get('output_coordinate', 'EPSG:4326 (WGS84)'),
             'target_unit': json_dict.get('target_unit', 'building'),
             'data_set_results_id': json_dict.get('data_set_results_id', None),
-            'view_id': json_dict.get('view_id', None)
+            'view_id': json_dict.get('view_id', None),
+            'reference_date': json_dict.get('reference_date', None),
         }
 
         random_str = str(uuid.uuid4())
@@ -58,6 +59,7 @@ def main():
             'output_format': params.get('output_format'),
             'view_id': params.get('view_id'),
             'target_crs': params.get('target_crs'),
+            'reference_date': params.get('reference_date'),
             'output_path': file_path
         }
         E033(new_params, job_id, params.get('db_path'))

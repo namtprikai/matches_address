@@ -185,6 +185,7 @@ def get_data_set_detail_buildings_or_area(view: dict):
     try:
         # All param for filter
         data_set_result_id = view.get("data_set_result_id")
+        reference_date = view.get("reference_date", None)
         parameters = json.loads(view.get("parameters", "[]"))
         year_filter = next((p for p in parameters if p.get("key") == "year"), None)
         area_filter = next((p for p in parameters if p.get("key") == "area"), None)
@@ -201,6 +202,9 @@ def get_data_set_detail_buildings_or_area(view: dict):
         sql = f"SELECT {columns_name} FROM {table_name} WHERE data_set_result_id = ?"
         params = [data_set_result_id]
 
+        if reference_date: 
+            sql += " AND reference_date = ?"
+            params.append(reference_date)
         # Year filter
         if year_filter:
             if "start" in year_filter["value"] and year_filter["value"]["start"]:

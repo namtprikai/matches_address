@@ -132,7 +132,8 @@ def processing(params, job_id=None, db_path=None):
             result_views = {
                 "data_set_result_id": params.get("data_set_results_id", None),
                 "unit": params.get("target_unit", None),
-                "parameters": '[]'
+                "parameters": '[]',
+                "reference_date": params.get("reference_date", None)
             }
 
         if job_id:
