@@ -436,7 +436,7 @@ def embedding_address(main_csv: io.BytesIO | str, sub_csv: io.BytesIO | str, mai
         res = {
             'joining_rate': (merged_rows + ngram_rows) / data_rows * 100,
             'input_source': input_source,
-            'success_rate': len(result_df) / data_rows
+            'success_rate': f"{len(result_df)}件/{data_rows}件中"
         }
         if job_id:
             create_or_update_job_task(job_id, progress_percent="100", preprocess_type="e014", error_code=None, error_msg=None, result=json.dumps(res, ensure_ascii=False), id= task_id, is_finish=True)
