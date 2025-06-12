@@ -5,8 +5,10 @@ import { formatDate } from "../../../../utils/format-date";
 import styles from "./building-popup.module.css";
 import { PREDICTED_PROBABILITY } from ".";
 
+/** Popup表示に必要な値 */
 export type BuildingProperties = Pick<
   SelectDataSetDetailBuilding,
+  | "id"
   | "geometry"
   | "predicted_probability"
   | "normalized_address"

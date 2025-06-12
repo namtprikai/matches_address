@@ -12,7 +12,6 @@ import { useState } from "react";
 import { ArrowDownloadRegular } from "@fluentui/react-icons";
 import { type ReferenceDate } from "../../../../ipc-main-listeners/select-reference-dates";
 import { Dropdown } from "../../../ui/dropdown";
-import { OUTPUT_COORDINATES } from "../../../bi/tile-result-view";
 import { OUTPUT_FILE_TYPES } from "../../../../config/file-types";
 import { type SelectDataSetResult } from "../../../../schema";
 import { DialogBody } from "../../../ui/dialog-body";
@@ -23,6 +22,7 @@ import { DialogSurface } from "../../../ui/dialog-surface";
 import { useDialogState } from "../../../../hooks/use-dialog-state";
 import { Button } from "../../../ui/button";
 import { type ResultDataSetUnit } from "../types";
+import { OUTPUT_COORDINATES } from "../../../../config/output-coordinates";
 
 const useStyles = makeStyles({
   radioGroup: {

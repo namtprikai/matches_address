@@ -10,6 +10,7 @@ const RESULT_VIEWS_STYLE: {
   line: "折れ線グラフ",
   pie: "円グラフ",
   table: "表",
+  "map-with-table": "地図と表",
 };
 
 type ResultViewsUnit = (typeof result_views.unit.enumValues)[number];

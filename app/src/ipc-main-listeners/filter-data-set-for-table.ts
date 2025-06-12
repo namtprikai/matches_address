@@ -12,7 +12,10 @@ import {
 
 import { formatTableValue } from "../utils/format-table-value";
 import { getColumnMetadata } from "../utils/get-column-metadata";
-import { type TableView } from "../bi-modules/interfaces/view";
+import {
+  type MapWithTableView,
+  type TableView,
+} from "../bi-modules/interfaces/view";
 import {
   type YearFilter,
   type FilterCondition,
@@ -41,7 +44,7 @@ interface UnitAreaProps extends BaseProps {
 export type FilterDataSetForTableArgs = UnitBuildingProps | UnitAreaProps;
 
 type Params = {
-  view: TableView;
+  view: TableView | MapWithTableView;
   pagination: {
     limit: number;
     offset: number;
@@ -63,12 +66,13 @@ export const filterDataSetForTable = (async (
 
   if (unit === "building") {
     const all = await db
-      .select(
-        columnsToSelectField({
+      .select({
+        ...columnsToSelectField({
           type: "building",
           columns: columns as BUILDING_DATASET_COLUMN[],
         }),
-      )
+        id: data_set_detail_buildings.id,
+      })
       .from(data_set_detail_buildings)
       .where(
         and(
@@ -168,12 +172,13 @@ const byArea = (params: ByArea): TableProps => {
   } = params;
 
   const all = db
-    .select(
-      columnsToSelectField({
+    .select({
+      ...columnsToSelectField({
         type: "area",
         columns,
       }),
-    )
+      id: data_set_detail_areas.id,
+    })
     .from(data_set_detail_areas)
     .where(
       and(

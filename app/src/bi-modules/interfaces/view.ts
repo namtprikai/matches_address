@@ -12,13 +12,22 @@ import {
   type GroupAggregation,
 } from "./parameter";
 
+export const VIEW_STYLES = [
+  "bar",
+  "line",
+  "pie",
+  "table",
+  "map",
+  "map-with-table",
+] as const;
+
 /**
  * View: 保存する際の型
  */
 interface ViewBase {
   id: number;
   dataSetResultId: number;
-  style: "bar" | "line" | "pie" | "table" | "map";
+  style: (typeof VIEW_STYLES)[number];
   title: string;
   unit: "building" | "area";
   parameters: ParameterBase[];
@@ -81,4 +90,16 @@ export interface TableView extends ViewBase {
   parameters: (YearFilter | AreaFilter | FilterCondition | TableColumns)[];
 }
 
-export type View = BarView | LineView | PieView | TableView | MapView;
+/** 地図 + テーブル */
+export interface MapWithTableView extends ViewBase {
+  style: "map-with-table";
+  parameters: (YearFilter | AreaFilter | FilterCondition | TableColumns)[];
+}
+
+export type View =
+  | BarView
+  | LineView
+  | PieView
+  | TableView
+  | MapView
+  | MapWithTableView;

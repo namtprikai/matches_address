@@ -27,6 +27,7 @@ const values: {
   },
 ];
 
+/** 円グラフの初期値をグループ型Parameterとしてvaluesの内容でセットする */
 export const createDefaultPieGroupParameters =
   (): SelectResultView["parameters"] => {
     const result: SelectResultView["parameters"] = values.map((value) => ({

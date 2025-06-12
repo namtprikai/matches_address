@@ -4,7 +4,8 @@ import {
   mergeClasses,
   tokens,
 } from "@fluentui/react-components";
-import { type MapProps } from ".";
+import { type VacancyLevel } from "./types";
+import { type UseVacancyLevelCheckboxReturn } from "./hooks";
 
 const useStyles = makeStyles({
   container: {
@@ -41,41 +42,14 @@ const useStyles = makeStyles({
   },
 });
 
-export type VacancyLevel = "low" | "medium" | "high";
-export type VacancyLevels = Record<VacancyLevel, boolean>;
-
-interface Props {
-  vacancyLevels: VacancyLevels;
-  setVacancyLevels: (vacancyLevels: VacancyLevels) => void;
-  unit: MapProps["view"]["unit"];
-}
+type Props = UseVacancyLevelCheckboxReturn;
 
 export function VacancyLevelCheckbox({
   vacancyLevels,
-  setVacancyLevels: onChange,
-  unit,
+  handleChange,
+  labels,
 }: Props): JSX.Element {
   const styles = useStyles();
-
-  const handleChange: React.ChangeEventHandler<HTMLInputElement> = (event) => {
-    onChange({
-      ...vacancyLevels,
-      [event.target.name]: event.target.checked,
-    });
-  };
-
-  const labels: Record<VacancyLevel, string> =
-    unit === "building"
-      ? {
-          low: "0~29%",
-          medium: "30~79%",
-          high: "80%~",
-        }
-      : {
-          low: "0~3%",
-          medium: "4~10%",
-          high: "11%~",
-        };
 
   return (
     <div className={styles.container}>

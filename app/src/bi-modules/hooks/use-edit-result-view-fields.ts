@@ -8,15 +8,13 @@ import { type SelectResultView } from "../../schema";
 import { type EditViewFormType } from "../interfaces/edit-view-form";
 import { useFetchReferenceDates } from "../../hooks/use-fetch-reference-dates";
 import { TILE_VIEW_CONFIG } from "../../config/tile-view-config";
-import { createDefaultLineGroupParameters } from "../util/create-default-line-group-parameters";
-import { createDefaultPieGroupParameters } from "../util/create-default-pie-group-parameters";
-import { type Parameter } from "../interfaces/parameter";
+import { createViewDefaultParameters } from "../util/create-view-default-parameters";
 
 type Params = {
   dataSetResultId: SelectResultView["data_set_result_id"];
 };
 
-type ReturnType = {
+export type UseEditResultViewFieldsReturnType = {
   form: UseFormReturn<EditViewFormType>;
   fieldArray: UseFieldArrayReturn<EditViewFormType>;
   handleStyleChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
@@ -26,7 +24,7 @@ type ReturnType = {
 /** @note useFormContextを内部で利用 */
 export const useEditResultViewFields = ({
   dataSetResultId,
-}: Params): ReturnType => {
+}: Params): UseEditResultViewFieldsReturnType => {
   const form = useFormContext<EditViewFormType>();
   const { control, setValue, watch } = form;
 
@@ -46,9 +44,9 @@ export const useEditResultViewFields = ({
 
   const handleStyleChange = (e: React.ChangeEvent<HTMLSelectElement>): void => {
     const value = e.target.value as SelectResultView["style"];
+
     if (!value) return;
-    // styleに合わせてparameterをリセット
-    const defaultParameters = createResetParametersByStyle(value);
+
     // 種類の値を更新
     setValue("style", value);
     // 集計単位の初期値を設定する
@@ -58,21 +56,10 @@ export const useEditResultViewFields = ({
         : TILE_VIEW_CONFIG[value].fields[0].option[0].unit;
     setValue("unit", unit);
 
-    switch (value) {
-      case "line": {
-        const parameters = createDefaultLineGroupParameters(referenceDates);
-        setValue("parameters", [...defaultParameters, ...parameters]);
-        return;
-      }
-      case "pie": {
-        const parameters = createDefaultPieGroupParameters();
-        setValue("parameters", [...defaultParameters, ...parameters]);
-        return;
-      }
-      default:
-        setValue("parameters", defaultParameters);
-        return;
-    }
+    setValue(
+      "parameters",
+      createViewDefaultParameters(value, formUnit, referenceDates),
+    );
   };
 
   return {
@@ -80,57 +67,7 @@ export const useEditResultViewFields = ({
     fieldArray,
     handleStyleChange,
     resetParametersByStyle: (style) => {
-      replace(createResetParametersByStyle(style, formUnit));
+      replace(createViewDefaultParameters(style, formUnit, referenceDates));
     },
   };
-};
-
-/** Utility */
-const createResetParametersByStyle = (
-  style: SelectResultView["style"],
-  unit: SelectResultView["unit"] = "area",
-): Parameter[] => {
-  if (!style) return [];
-  const option = TILE_VIEW_CONFIG[style];
-  if (!option) return [];
-  const parameters: (Parameter | null)[] = option.fields.map((field) => {
-    const building = field.option.filter((o) => o.unit === "building");
-    const area = field.option.filter((o) => o.unit === "area");
-    switch (field.key) {
-      case "xAxis":
-        return {
-          key: field.key,
-          value: field.option[0].value,
-          type: "column",
-        };
-      case "yAxis":
-        return {
-          key: field.key,
-          value: field.option[0].value,
-          type: "column",
-        };
-      case "columns":
-        return {
-          key: field.key,
-          /** 集計単位を切り替えたときにunitの更新タイミングがずれるため以下のような分岐. area[1].valueとしているのはarea_groupを指定するため */
-          value: unit === "building" ? area[1].value : building[0].value,
-          type: "column",
-        };
-      case "label":
-        return {
-          key: field.key,
-          value: field.option[0].value,
-          type: "column",
-        };
-      case "value":
-        return {
-          key: field.key,
-          value: field.option[0].value,
-          type: "column",
-        };
-      default:
-        return null;
-    }
-  });
-  return parameters.filter((p) => p !== null);
 };

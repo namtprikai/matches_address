@@ -1,6 +1,6 @@
 import { makeStyles } from "@fluentui/react-components";
 import { useFetchResultViews } from "../hooks/use-fetch-result-views";
-import { TileResultView } from "./bi/tile-result-view";
+import { ViewContainer } from "./bi/view";
 import { ButtonCreateView } from "./button-create-view";
 import { EmptyEditResultViews } from "./empty-edit-result-views";
 
@@ -78,7 +78,7 @@ export const PreviewResultSheet = ({ sheetId }: Props): JSX.Element | null => {
     <div className={styles.root}>
       <div className={resultViewsGridTemplate}>
         {data.map((item) => (
-          <TileResultView
+          <ViewContainer
             key={item.id}
             className={styles[`view${item.layoutIndex}` as keyof typeof styles]}
             focusable

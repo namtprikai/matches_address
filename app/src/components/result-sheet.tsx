@@ -1,6 +1,6 @@
 import { makeStyles, tokens } from "@fluentui/react-components";
 import { useFetchResultViews } from "../hooks/use-fetch-result-views";
-import { TileResultView } from "./bi/tile-result-view";
+import { ViewContainer } from "./bi/view";
 import { EmptyResultViews } from "./empty-result-views";
 
 const useStyles = makeStyles({
@@ -74,7 +74,7 @@ export const ResultSheet = ({ sheetId }: Props): JSX.Element => {
     <div className={styles.root}>
       <div className={resultViewsGridTemplate}>
         {data.map((item) => (
-          <TileResultView
+          <ViewContainer
             key={item.id}
             className={styles[`view${item.layoutIndex}` as keyof typeof styles]}
             resultView={item}

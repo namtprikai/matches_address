@@ -3,6 +3,7 @@ import { sql } from "drizzle-orm";
 import { type JobParameters } from "./@types/job-parameters";
 import { type JobTaskResult } from "./@types/job-task-result";
 import { type Parameter } from "./bi-modules/interfaces/parameter";
+import { VIEW_STYLES } from "./bi-modules/interfaces/view";
 
 export const users = sqliteTable("users", {
   id: integer("id").primaryKey(),
@@ -50,7 +51,7 @@ export const result_views = sqliteTable("result_views", {
 
   title: text("title"),
   unit: text("unit", { enum: ["building", "area"] }),
-  style: text("style", { enum: ["map", "bar", "line", "pie", "table"] }),
+  style: text("style", { enum: VIEW_STYLES }),
 
   layoutIndex:
     integer(

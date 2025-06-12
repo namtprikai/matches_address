@@ -1,8 +1,9 @@
 import { type TileViewFieldOption } from "../@types/charts";
+import { type VIEW_STYLES } from "../bi-modules/interfaces/view";
 import { TILE_VIEW_CONFIG } from "../config/tile-view-config";
 
 export const getResultViewFieldOption = (
-  style: "pie" | "bar" | "line" | "table" | "map",
+  style: (typeof VIEW_STYLES)[number],
   key: string,
 ): TileViewFieldOption | undefined => {
   // ハードコーディングされたチャートごとの設定を取得

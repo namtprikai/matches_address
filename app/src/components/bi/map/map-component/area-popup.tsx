@@ -6,6 +6,7 @@ import { PREDICTED_PROBABILITY } from ".";
 
 export type AreaProperties = Pick<
   SelectDataSetDetailArea,
+  | "id"
   | "geometry"
   | "predicted_probability"
   | "young_population_ratio"

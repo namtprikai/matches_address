@@ -1,10 +1,7 @@
 import { Dropdown, Option } from "@fluentui/react-components";
+import { type ReferenceDateDropdownReturn } from "./hooks";
 
-interface Props {
-  selectedDate: string | undefined;
-  setSelectedDate: (date: string | undefined) => void;
-  referenceDates: string[] | undefined;
-}
+type Props = ReferenceDateDropdownReturn;
 
 export function ReferenceDateDropdown({
   selectedDate,

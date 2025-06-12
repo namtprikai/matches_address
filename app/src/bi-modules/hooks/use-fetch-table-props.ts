@@ -4,10 +4,10 @@ import {
   usePagination,
   type UsePaginationReturnType,
 } from "../../hooks/use-pagination";
-import { type TableView } from "../interfaces/view";
+import { type MapWithTableView, type TableView } from "../interfaces/view";
 
 type Params = {
-  view: TableView;
+  view: TableView | MapWithTableView;
 };
 
 type ReturnType = {

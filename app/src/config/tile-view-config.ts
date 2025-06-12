@@ -1,7 +1,174 @@
-import { type TileViewFieldOption, type TileViewStyle } from "../@types/charts";
+import { type TileViewFieldOption } from "../@types/charts";
+import { type VIEW_STYLES } from "../bi-modules/interfaces/view";
+
+const TABLE_FIELDS: TileViewFieldOption[] = [
+  {
+    key: "columns",
+    label: "カラム",
+    type: "dialog",
+    option: [
+      {
+        unit: "building",
+        value: "household_size",
+      },
+      {
+        unit: "building",
+        value: "household_code",
+      },
+      {
+        unit: "building",
+        value: "normalized_address",
+      },
+      {
+        unit: "building",
+        value: "area_group",
+      },
+      {
+        unit: "building",
+        value: "reference_date",
+      },
+      {
+        unit: "building",
+        value: "members_under_15",
+      },
+      {
+        unit: "building",
+        value: "members_15_to_64",
+      },
+      {
+        unit: "building",
+        value: "members_over_65",
+      },
+      {
+        unit: "building",
+        value: "percentage_under_15",
+      },
+      {
+        unit: "building",
+        value: "percentage_15_to_64",
+      },
+      {
+        unit: "building",
+        value: "percentage_over_65",
+      },
+      {
+        unit: "building",
+        value: "gender_ratio",
+      },
+      {
+        unit: "building",
+        value: "water_supply_number",
+      },
+      {
+        unit: "building",
+        value: "water_disconnection_flag",
+      },
+      {
+        unit: "building",
+        value: "max_water_usage",
+      },
+      {
+        unit: "building",
+        value: "avg_water_usage",
+      },
+      {
+        unit: "building",
+        value: "total_water_usage",
+      },
+      {
+        unit: "building",
+        value: "min_water_usage",
+      },
+      {
+        unit: "building",
+        value: "water_supply_source_info",
+      },
+      {
+        unit: "building",
+        value: "structure_name",
+      },
+      {
+        unit: "building",
+        value: "registration_date",
+      },
+      {
+        unit: "building",
+        value: "registration_source_info",
+      },
+      {
+        unit: "building",
+        value: "vacant_house_id",
+      },
+      {
+        unit: "building",
+        value: "vacant_house_address",
+      },
+      {
+        unit: "building",
+        value: "predicted_probability",
+      },
+      {
+        unit: "building",
+        value: "duration",
+      },
+      {
+        unit: "building",
+        value: "measuredheight",
+      },
+      {
+        unit: "building",
+        value: "rank",
+      },
+      {
+        unit: "building",
+        value: "depth",
+      },
+      {
+        unit: "building",
+        value: "floors_above_ground",
+      },
+      {
+        unit: "building",
+        value: "inland_flooding_risk_rank",
+      },
+      {
+        unit: "building",
+        value: "inland_flooding_risk_depth",
+      },
+      {
+        unit: "building",
+        value: "landslide_risk_desc",
+      },
+      {
+        unit: "building",
+        value: "river_flooding_risk_rank",
+      },
+      {
+        unit: "building",
+        value: "river_flooding_risk_depth",
+      },
+      {
+        unit: "building",
+        value: "river_flooding_risk_desc",
+      },
+      {
+        unit: "area",
+        value: "area",
+      },
+      { unit: "area", value: "area_group" },
+      { unit: "area", value: "young_population_ratio" },
+      { unit: "area", value: "elderly_population_ratio" },
+      { unit: "area", value: "total_building_count" },
+      { unit: "area", value: "vacant_house_count" },
+      { unit: "area", value: "predicted_probability" },
+    ],
+    multiple: true,
+    grouping: false,
+  },
+];
 
 /**
- * 各チャートのパラーメーターやグルーピング可能かどうかなどの設定をハードコードで定義している
+ * 各チャートのパラーメーターやグルーピング可能かどうかなどの設定のうち、データセットの状態に依存しない設定を定義
  * 永続化の必要がない（＝エンドユーザーが変更しない）点、
  * JSONで記述するよりも型補完が効く点を踏まえ柔軟にコードができるためにTypeScriptで記述した
  */
@@ -124,174 +291,13 @@ export const TILE_VIEW_CONFIG = {
     fields: [],
   },
   table: {
-    fields: [
-      {
-        key: "columns",
-        label: "カラム",
-        type: "dialog",
-        option: [
-          {
-            unit: "building",
-            value: "household_size",
-          },
-          {
-            unit: "building",
-            value: "household_code",
-          },
-          {
-            unit: "building",
-            value: "normalized_address",
-          },
-          {
-            unit: "building",
-            value: "area_group",
-          },
-          {
-            unit: "building",
-            value: "reference_date",
-          },
-          {
-            unit: "building",
-            value: "members_under_15",
-          },
-          {
-            unit: "building",
-            value: "members_15_to_64",
-          },
-          {
-            unit: "building",
-            value: "members_over_65",
-          },
-          {
-            unit: "building",
-            value: "percentage_under_15",
-          },
-          {
-            unit: "building",
-            value: "percentage_15_to_64",
-          },
-          {
-            unit: "building",
-            value: "percentage_over_65",
-          },
-          {
-            unit: "building",
-            value: "gender_ratio",
-          },
-          {
-            unit: "building",
-            value: "water_supply_number",
-          },
-          {
-            unit: "building",
-            value: "water_disconnection_flag",
-          },
-          {
-            unit: "building",
-            value: "max_water_usage",
-          },
-          {
-            unit: "building",
-            value: "avg_water_usage",
-          },
-          {
-            unit: "building",
-            value: "total_water_usage",
-          },
-          {
-            unit: "building",
-            value: "min_water_usage",
-          },
-          {
-            unit: "building",
-            value: "water_supply_source_info",
-          },
-          {
-            unit: "building",
-            value: "structure_name",
-          },
-          {
-            unit: "building",
-            value: "registration_date",
-          },
-          {
-            unit: "building",
-            value: "registration_source_info",
-          },
-          {
-            unit: "building",
-            value: "vacant_house_id",
-          },
-          {
-            unit: "building",
-            value: "vacant_house_address",
-          },
-          {
-            unit: "building",
-            value: "predicted_probability",
-          },
-          {
-            unit: "building",
-            value: "duration",
-          },
-          {
-            unit: "building",
-            value: "measuredheight",
-          },
-          {
-            unit: "building",
-            value: "rank",
-          },
-          {
-            unit: "building",
-            value: "depth",
-          },
-          {
-            unit: "building",
-            value: "floors_above_ground",
-          },
-          {
-            unit: "building",
-            value: "inland_flooding_risk_rank",
-          },
-          {
-            unit: "building",
-            value: "inland_flooding_risk_depth",
-          },
-          {
-            unit: "building",
-            value: "landslide_risk_desc",
-          },
-          {
-            unit: "building",
-            value: "river_flooding_risk_rank",
-          },
-          {
-            unit: "building",
-            value: "river_flooding_risk_depth",
-          },
-          {
-            unit: "building",
-            value: "river_flooding_risk_desc",
-          },
-          {
-            unit: "area",
-            value: "area",
-          },
-          { unit: "area", value: "area_group" },
-          { unit: "area", value: "young_population_ratio" },
-          { unit: "area", value: "elderly_population_ratio" },
-          { unit: "area", value: "total_building_count" },
-          { unit: "area", value: "vacant_house_count" },
-          { unit: "area", value: "predicted_probability" },
-        ],
-        multiple: true,
-        grouping: false,
-      },
-    ],
+    fields: TABLE_FIELDS,
+  },
+  "map-with-table": {
+    fields: TABLE_FIELDS,
   },
 } satisfies {
-  [k in TileViewStyle]: {
+  [k in (typeof VIEW_STYLES)[number]]: {
     fields: TileViewFieldOption[];
   };
 };

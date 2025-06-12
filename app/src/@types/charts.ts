@@ -50,8 +50,6 @@ export interface TableProps {
 
 export type ChartDynamicColumnInput = "select" | "input" | "dropdown";
 
-export type TileViewStyle = "pie" | "bar" | "line" | "table" | "map";
-
 export type TileViewFieldOption = {
   key: Parameter["key"];
   label: string;
