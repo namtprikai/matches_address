@@ -65,6 +65,9 @@ const useStyles = makeStyles({
   map: {
     marginTop: tokens.spacingVerticalMNudge,
   },
+  indicator: {
+    marginLeft: 0,
+  },
 });
 
 type DrawerTableProps = InlineDrawerProps & {
@@ -94,9 +97,7 @@ const DrawerTable = ({
               onClick={() => setWithTable(false)}
             />
           }
-        >
-          一覧
-        </DrawerHeaderTitle>
+        />
       </DrawerHeader>
 
       <DrawerBody>{props.children}</DrawerBody>
@@ -162,9 +163,12 @@ export const ViewMapWithTable = ({ view }: Props): JSX.Element => {
               </div>
             </div>
             <div className={styles.filter}>
-              <div>一覧を表示</div>
+              <div>表</div>
               <Switch
                 checked={withTable}
+                indicator={{
+                  className: styles.indicator,
+                }}
                 onChange={(_, data) => {
                   setWithTable(data.checked);
                 }}

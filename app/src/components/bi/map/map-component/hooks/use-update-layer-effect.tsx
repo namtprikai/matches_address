@@ -47,7 +47,7 @@ export const useUpdateLayerEffect = ({
 
   const { selectedFeature, setSelectedFeature } = _usePopupEffectWithFeature({
     mapInstance,
-    unit: view.unit,
+    view,
   });
 
   /** レイヤーにイベント・リソースを追加 */
@@ -127,10 +127,10 @@ export const useUpdateLayerEffect = ({
 /** ポップアップの制御に関するエフェクト */
 const _usePopupEffectWithFeature = ({
   mapInstance,
-  unit,
+  view: { unit, parameters },
 }: {
   mapInstance: Map | null;
-  unit: "building" | "area";
+  view: MapView | MapWithTableView;
 }): {
   selectedFeature: FeatureData | null;
   setSelectedFeature: (feature: FeatureData | null) => void;
@@ -139,6 +139,11 @@ const _usePopupEffectWithFeature = ({
   const [selectedFeature, setSelectedFeature] = useState<FeatureData | null>(
     null,
   );
+
+  useEffect(() => {
+    /** 設定が変更された場合選択されたフィーチャーをクリア */
+    setSelectedFeature(null);
+  }, [unit, parameters]);
 
   /** ポップアップの制御 */
   useEffect(() => {
@@ -173,6 +178,14 @@ const _usePopupEffectWithFeature = ({
       center: coordinates,
       padding: { bottom: 200 },
     });
+
+    return () => {
+      // ポップアップのクリーンアップ
+      if (popupRef.current) {
+        popupRef.current.remove();
+        popupRef.current = null;
+      }
+    };
   }, [mapInstance, selectedFeature, unit]);
 
   return { selectedFeature, setSelectedFeature };
