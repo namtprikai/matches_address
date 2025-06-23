@@ -554,11 +554,12 @@ def evaluate_models_on_test(test_df, models, params):
     test_preds = (test_preds_proba >= params['threshold']).astype(int)
     
     # 予測結果を組み合わせてデータフレームを作成
-    pred = pd.concat([
-        id_test,
-        pd.DataFrame({"pred": test_preds}),
-        pd.DataFrame({"pred_proba": test_preds_proba}),
-    ], axis=1)
+    pred = pd.DataFrame({
+        "gml_id": test_df["gml_id"].values,
+        "test_flg": 1,
+        "pred": test_preds,
+        "pred_proba": test_preds_proba
+    })
 
     # 評価指標を計算
     cm = confusion_matrix(y_test, test_preds)
