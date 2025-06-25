@@ -17,10 +17,15 @@ type ReturnType = {
 };
 
 export const useFetchTableProps = ({ view }: Params): ReturnType => {
-  const pagination = usePagination(100);
   const [tableProps, setTableProps] = useState<TableProps>({
     columns: [],
     data: [],
+    totalCount: 0,
+    allCount: 0,
+  });
+  const pagination = usePagination({
+    total: tableProps.totalCount,
+    perPage: 100,
   });
 
   const fetch = useCallback(async (): Promise<void> => {

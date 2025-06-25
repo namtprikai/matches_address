@@ -160,6 +160,8 @@ export function JobPreview(): JSX.Element {
             handlePageChange={handlePageChange}
             limitPerPage={limitPerPage}
             page={page}
+            total={0}
+            totalPages={0}
           />
         </div>
       </div>

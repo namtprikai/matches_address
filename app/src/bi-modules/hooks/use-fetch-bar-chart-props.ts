@@ -23,9 +23,13 @@ type ReturnType = {
 };
 
 export const useFetchBarChartProps = ({ view }: Params): ReturnType => {
-  const pagination = usePagination(100);
   const { chartProps, handleChartProps } = useChartProps();
   const { isLoading, handleIsLoading } = useIsLoading({ init: true });
+
+  const pagination = usePagination({
+    total: chartProps.totalCount,
+    perPage: 100,
+  });
 
   const { viewId } = useWorkbookIdsSearchQuery();
   const setSubmittedEditViewFormState = useAtomValue(submittedEditViewFormAtom);

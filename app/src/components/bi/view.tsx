@@ -37,7 +37,7 @@ const useStyles = makeStyles({
     boxShadow: tokens.shadow16,
     // border分を引いている
     padding: `calc(${tokens.spacingHorizontalXXL} - 2px) calc(${tokens.spacingVerticalXXL} - 2px)`,
-    gap: tokens.spacingVerticalXL,
+    gap: 0,
   },
   cardHeaderActions: {
     display: "flex",

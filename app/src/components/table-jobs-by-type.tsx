@@ -67,7 +67,10 @@ type Props = {
 export const TableJobsByType = ({ jobType }: Props): JSX.Element => {
   const styles = useStyles();
 
-  const pagination = usePagination(50);
+  const pagination = usePagination({
+    perPage: 50,
+    total: 0 /** @todo 現在はtotalをfetchできていない */,
+  });
   const { data, mutate } = useFetchJobsWithPagination({
     type: jobType,
     page: pagination.page,

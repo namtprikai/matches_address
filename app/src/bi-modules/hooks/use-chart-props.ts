@@ -7,6 +7,8 @@ type ChartProps =
       data: { x: string; y: number }[];
       xAxisColumn: { type: "string" };
       yAxisColumn: { type: "number" };
+      totalCount: number;
+      allCount: number;
     };
 
 type ReturnType = {
@@ -19,6 +21,8 @@ export const useChartProps = (): ReturnType => {
     data: [],
     xAxisColumn: { type: "string" },
     yAxisColumn: { type: "number" },
+    totalCount: 0,
+    allCount: 0,
   });
 
   const handleChartProps = useCallback((chartProps: ChartProps): void => {

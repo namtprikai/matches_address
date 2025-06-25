@@ -18,6 +18,7 @@ import { CHART_COLORS } from "../../config/chart-colors";
 import { type LineView } from "../../bi-modules/interfaces/view";
 import { useFetchLineChartProps } from "../../bi-modules/hooks/use-fetch-line-chart-props";
 import { LoadingChart } from "./loading-chart";
+import { QueryHeader, QueryHeaderWrapper } from "./query-header";
 
 const CustomizedDot = ({
   cx,
@@ -149,37 +150,45 @@ export const ViewLine = ({ view }: Props): JSX.Element => {
   }
 
   return (
-    <ResponsiveContainer height={400} width="100%">
-      <ReLineChart data={data}>
-        <ReXAxis dataKey={"x"} unit={chartProps.xAxisColumn.unit} />
-        <ReYAxis
-          dataKey={"y"}
-          unit={groupingCalc === "count" ? "件" : chartProps.yAxisColumn.unit}
+    <div>
+      <QueryHeaderWrapper>
+        <QueryHeader
+          allCount={chartProps.allCount}
+          totalCount={chartProps.totalCount}
         />
-        <ReTooltip
-          wrapperStyle={{
-            display: "none",
-          }}
-        />
-        <ReCartesianGrid vertical={false} />
-        <ReLine
-          activeDot={
-            <CustomizedActiveDot
-              unit={
-                groupingCalc === "count" ? "件" : chartProps.yAxisColumn.unit
-              }
-            />
-          }
-          dataKey={"y"}
-          // @ts-expect-error 内部処理で適切なPropsが渡されるが型定義が不足しているためエラーが出る
-          dot={<CustomizedDot />}
-          name={chartProps.yAxisColumn.label}
-          stroke={CHART_COLORS.primary}
-          strokeWidth={2}
-          unit={groupingCalc === "count" ? "件" : chartProps.yAxisColumn.unit}
-        />
-        <ReLegend />
-      </ReLineChart>
-    </ResponsiveContainer>
+      </QueryHeaderWrapper>
+      <ResponsiveContainer height={400} width="100%">
+        <ReLineChart data={data}>
+          <ReXAxis dataKey={"x"} unit={chartProps.xAxisColumn.unit} />
+          <ReYAxis
+            dataKey={"y"}
+            unit={groupingCalc === "count" ? "件" : chartProps.yAxisColumn.unit}
+          />
+          <ReTooltip
+            wrapperStyle={{
+              display: "none",
+            }}
+          />
+          <ReCartesianGrid vertical={false} />
+          <ReLine
+            activeDot={
+              <CustomizedActiveDot
+                unit={
+                  groupingCalc === "count" ? "件" : chartProps.yAxisColumn.unit
+                }
+              />
+            }
+            dataKey={"y"}
+            // @ts-expect-error 内部処理で適切なPropsが渡されるが型定義が不足しているためエラーが出る
+            dot={<CustomizedDot />}
+            name={chartProps.yAxisColumn.label}
+            stroke={CHART_COLORS.primary}
+            strokeWidth={2}
+            unit={groupingCalc === "count" ? "件" : chartProps.yAxisColumn.unit}
+          />
+          <ReLegend />
+        </ReLineChart>
+      </ResponsiveContainer>
+    </div>
   );
 };

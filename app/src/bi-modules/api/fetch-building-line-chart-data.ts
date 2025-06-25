@@ -1,4 +1,4 @@
-import { and, eq, gte, lte, ne, or, type SQL, sql } from "drizzle-orm";
+import { and, count, eq, gte, lte, ne, or, type SQL, sql } from "drizzle-orm";
 import { db } from "../../utils/db";
 import { type LineView } from "../interfaces/view";
 import { data_set_detail_buildings } from "../../schema";
@@ -13,15 +13,10 @@ import { conditionsToCaseQueryBuilder } from "./builder/conditions-to-case-query
 
 type Params = {
   view: LineView;
-  pagination: {
-    limit: number;
-    offset: number;
-  };
 };
 
 export const fetchBuildingLineChartData = async ({
   view,
-  pagination: { limit, offset },
 }: Params): Promise<ChartProps> => {
   if (view.style !== "line") {
     throw new Error(
@@ -94,6 +89,11 @@ export const fetchBuildingLineChartData = async ({
     eq(data_set_detail_buildings.data_set_result_id, dataSetResultId),
   ];
 
+  const allQuery = query
+    .where(eq(data_set_detail_buildings.data_set_result_id, dataSetResultId))
+    .as("allQuery");
+  const allCount = await db.select({ count: count() }).from(allQuery);
+
   /** 年のフィルタ */
   if (yearFilter?.value.start) {
     queryWheres.push(
@@ -164,11 +164,16 @@ export const fetchBuildingLineChartData = async ({
       .groupBy(groupQuery[GroupLabel])
       .having(ne(groupQuery[GroupLabel], sql.raw("''")))
       .all();
+
+    const totalCount = await db.select({ count: count() }).from(baseQuery);
+
     return {
       data: result.map((item) => ({
         x: item.x as string /** @todo */,
         y: item.y as number /** @todo */,
       })),
+      totalCount: totalCount[0].count,
+      allCount: allCount[0].count,
       ...COLUMNS,
     };
   }
@@ -179,15 +184,17 @@ export const fetchBuildingLineChartData = async ({
       y: baseQuery[yAxis.value],
     })
     .from(baseQuery)
-    .limit(limit)
-    .offset(offset)
     .all();
+
+  const totalCount = await db.select({ count: count() }).from(baseQuery);
 
   return {
     data: result.map((item) => ({
       x: item.x as string /** @todo */,
       y: item.y as number /** @todo */,
     })),
+    totalCount: totalCount[0].count,
+    allCount: allCount[0].count,
     ...COLUMNS,
   };
 };

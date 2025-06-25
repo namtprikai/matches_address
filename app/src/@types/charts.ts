@@ -34,6 +34,8 @@ export interface ChartProps {
   data: ChartData[];
   xAxisColumn: ChartColumn;
   yAxisColumn: ChartColumn;
+  totalCount: number;
+  allCount: number;
 }
 
 /**
@@ -46,6 +48,8 @@ export interface TableProps {
     unit?: string;
   }[];
   data: Record<string, string | number | null>[];
+  totalCount: number;
+  allCount: number;
 }
 
 export type ChartDynamicColumnInput = "select" | "input" | "dropdown";

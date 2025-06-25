@@ -27,6 +27,7 @@ export const Pagination = ({
   handlePageChange,
   limitPerPage,
   handleLimitPerPageChange,
+  totalPages,
 }: Props): JSX.Element => {
   const styles = useStyles();
   return (
@@ -41,7 +42,7 @@ export const Pagination = ({
       </Button>
       <Caption1>{page}ページ</Caption1>
       <Button
-        // disabled={page === totalPages}
+        disabled={page === totalPages}
         onClick={() => handlePageChange(page + 1)}
         shape="rounded"
         size="small"

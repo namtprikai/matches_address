@@ -47,7 +47,10 @@ const useStyles = makeStyles({
 
 export function Job(): JSX.Element {
   const styles = useStyles();
-  const pagination = usePagination(50);
+  const pagination = usePagination({
+    perPage: 50,
+    total: 0 /** @todo 現在はtotalをfetchできていない */,
+  });
   const { data, mutate } = useFetchJobsWithPagination({
     page: pagination.page,
     limitPerPage: pagination.limitPerPage,

@@ -1,4 +1,4 @@
-import { and, eq, gte, lte, or } from "drizzle-orm";
+import { and, count, eq, gte, lte, or } from "drizzle-orm";
 import { data_set_detail_areas, data_set_detail_buildings } from "../schema";
 import { db } from "../utils/db";
 import { columnsToSelectField } from "../utils/columns-to-select-field";
@@ -65,6 +65,28 @@ export const filterDataSetForTable = (async (
     parameters.find((p) => p.key === "columns")?.value.split(",") ?? [];
 
   if (unit === "building") {
+    const whereConditons = and(
+      eq(data_set_detail_buildings.data_set_result_id, dataSetResultId),
+      yearFilter?.value.start
+        ? gte(
+            data_set_detail_buildings.reference_date,
+            `${yearFilter.value.start}-01-01`,
+          )
+        : undefined,
+      yearFilter?.value.end
+        ? lte(
+            data_set_detail_buildings.reference_date,
+            `${yearFilter.value.end}-12-31`,
+          )
+        : undefined,
+      ...filterQueryBuilder({ conditions: filterConditions ?? [] }),
+      or(
+        // 地域区分文字列のリストからeq条件を作成
+        ...(areaFilter?.value ?? []).map((area) =>
+          eq(data_set_detail_buildings.area_group, area),
+        ),
+      ),
+    );
     const all = await db
       .select({
         ...columnsToSelectField({
@@ -74,33 +96,21 @@ export const filterDataSetForTable = (async (
         id: data_set_detail_buildings.id,
       })
       .from(data_set_detail_buildings)
-      .where(
-        and(
-          eq(data_set_detail_buildings.data_set_result_id, dataSetResultId),
-          yearFilter?.value.start
-            ? gte(
-                data_set_detail_buildings.reference_date,
-                `${yearFilter.value.start}-01-01`,
-              )
-            : undefined,
-          yearFilter?.value.end
-            ? lte(
-                data_set_detail_buildings.reference_date,
-                `${yearFilter.value.end}-12-31`,
-              )
-            : undefined,
-          ...filterQueryBuilder({ conditions: filterConditions ?? [] }),
-          or(
-            // 地域区分文字列のリストからeq条件を作成
-            ...(areaFilter?.value ?? []).map((area) =>
-              eq(data_set_detail_buildings.area_group, area),
-            ),
-          ),
-        ),
-      )
+      .where(whereConditons)
       .limit(limit)
       .offset(offset)
       .all();
+
+    const totalCount = await db
+      .select({ count: count() })
+      .from(data_set_detail_buildings)
+      .where(whereConditons);
+    const allCount = await db
+      .select({ count: count() })
+      .from(data_set_detail_buildings)
+      .where(
+        and(eq(data_set_detail_buildings.data_set_result_id, dataSetResultId)),
+      );
 
     return {
       columns: columns.map((column) => {
@@ -127,6 +137,8 @@ export const filterDataSetForTable = (async (
 
         return formattedRow;
       }),
+      totalCount: totalCount[0].count,
+      allCount: allCount[0].count,
     };
   }
 
@@ -147,6 +159,8 @@ export const filterDataSetForTable = (async (
   return {
     columns: [],
     data: [],
+    totalCount: 0,
+    allCount: 0,
   };
 }) satisfies IpcMainListener;
 
@@ -161,7 +175,7 @@ type ByArea = {
     offset: number;
   };
 };
-const byArea = (params: ByArea): TableProps => {
+const byArea = async (params: ByArea): Promise<TableProps> => {
   const {
     columns,
     dataSetResultId,
@@ -170,6 +184,29 @@ const byArea = (params: ByArea): TableProps => {
     filterConditions,
     pagination: { limit, offset },
   } = params;
+
+  const whereConditions = and(
+    eq(data_set_detail_areas.data_set_result_id, dataSetResultId),
+    yearFilter?.value.start
+      ? gte(
+          data_set_detail_buildings.reference_date,
+          `${yearFilter.value.start}-01-01`,
+        )
+      : undefined,
+    yearFilter?.value.end
+      ? lte(
+          data_set_detail_buildings.reference_date,
+          `${yearFilter.value.end}-12-31`,
+        )
+      : undefined,
+    ...filterQueryBuilder({ conditions: filterConditions ?? [] }),
+    or(
+      // 地域区分文字列のリストからeq条件を作成
+      ...(areaFilter?.value ?? []).map((area) =>
+        eq(data_set_detail_areas.area_group, area),
+      ),
+    ),
+  );
 
   const all = db
     .select({
@@ -180,30 +217,7 @@ const byArea = (params: ByArea): TableProps => {
       id: data_set_detail_areas.id,
     })
     .from(data_set_detail_areas)
-    .where(
-      and(
-        eq(data_set_detail_areas.data_set_result_id, dataSetResultId),
-        yearFilter?.value.start
-          ? gte(
-              data_set_detail_buildings.reference_date,
-              `${yearFilter.value.start}-01-01`,
-            )
-          : undefined,
-        yearFilter?.value.end
-          ? lte(
-              data_set_detail_buildings.reference_date,
-              `${yearFilter.value.end}-12-31`,
-            )
-          : undefined,
-        ...filterQueryBuilder({ conditions: filterConditions ?? [] }),
-        or(
-          // 地域区分文字列のリストからeq条件を作成
-          ...(areaFilter?.value ?? []).map((area) =>
-            eq(data_set_detail_areas.area_group, area),
-          ),
-        ),
-      ),
-    )
+    .where(whereConditions)
     .limit(limit)
     .offset(offset)
     .all();
@@ -234,8 +248,20 @@ const byArea = (params: ByArea): TableProps => {
     return formattedRow;
   });
 
+  const totalCount = await db
+    .select({ count: count() })
+    .from(data_set_detail_areas)
+    .where(whereConditions);
+
+  const allCount = await db
+    .select({ count: count() })
+    .from(data_set_detail_areas)
+    .where(and(eq(data_set_detail_areas.data_set_result_id, dataSetResultId)));
+
   return {
     columns: formattedColumns,
     data,
+    totalCount: totalCount[0].count,
+    allCount: allCount[0].count,
   };
 };

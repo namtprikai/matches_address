@@ -70,6 +70,7 @@ import { selectJobsWithPagination } from "./select-jobs-with-pagination";
 import { fetchChartData } from "./fetch-chart-data";
 import { deleteJob } from "./delete-job";
 import { createResultDatasets } from "./create-result-datasets";
+import { selectDataSetCount } from "./select-data-set-count";
 
 export const ipcMainListeners = {
   helloFromPython,
@@ -140,6 +141,7 @@ export const ipcMainListeners = {
   fetchChartData,
   deleteJob,
   createResultDatasets,
+  selectDataSetCount,
 };
 
 export const execFileAsync = promisify(execFile);

@@ -8,12 +8,15 @@ import { type IpcMainListener } from ".";
 
 type Params = {
   view: View;
-  pagination: {
+  pagination?: {
     limit: number;
     offset: number;
   };
 };
 
+/**
+ * @note 冗長な分岐になっており、直接各種APIを呼び出すほうが型定義にオプショナルを与える必要がなくなりよいかもしれない。
+ */
 export const fetchChartData = (async (
   _event: IpcMainInvokeEvent,
   { view, pagination }: Params,
@@ -22,9 +25,9 @@ export const fetchChartData = (async (
     case view.style === "bar" && view.unit === "area":
       return await fetchAreaBarChartData({ view, pagination });
     case view.style === "line" && view.unit === "building":
-      return await fetchBuildingLineChartData({ view, pagination });
+      return await fetchBuildingLineChartData({ view });
     case view.style === "pie" && view.unit === "building":
-      return await fetchBuildingPieChartData({ view, pagination });
+      return await fetchBuildingPieChartData({ view });
     default:
       throw new Error(`style: ${view.style} は未対応です`);
   }

@@ -254,7 +254,10 @@ function Row({
 }: RowProps): JSX.Element {
   const styles = useStyles();
   const dataPreviewDialogState = useDialogState(false);
-  const pagination = usePagination(50);
+  const pagination = usePagination({
+    perPage: 50,
+    total: 0 /** @todo 現在はtotalをfetchできていない */,
+  });
   const { data } = useFetchRawOrNormalizedDataSetFile({
     id: item.id,
     type: "raw",

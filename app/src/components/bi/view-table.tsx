@@ -11,6 +11,7 @@ import {
 import { Pagination } from "../ui/pagination";
 import { type TableView } from "../../bi-modules/interfaces/view";
 import { useFetchTableProps } from "../../bi-modules/hooks/use-fetch-table-props";
+import { QueryHeaderWithPagination } from "./query-header";
 
 const useStyles = makeStyles({
   root: {
@@ -49,7 +50,20 @@ export const ViewTable = ({ view }: Props): JSX.Element => {
 
   return (
     <div className={styles.root}>
-      <Pagination {...pagination} />
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          flexWrap: "wrap",
+        }}
+      >
+        <QueryHeaderWithPagination
+          allCount={tableProps.allCount}
+          currentDataLength={tableProps.data.length}
+          pagination={pagination}
+        />
+        <Pagination {...pagination} />
+      </div>
       <div className={styles.tableContainer}>
         <Table className={styles.table}>
           <TableHeader className={styles.tableHeader}>

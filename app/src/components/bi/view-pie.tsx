@@ -16,6 +16,7 @@ import { CHART_COLORS } from "../../config/chart-colors";
 import { useFetchPieChartProps } from "../../bi-modules/hooks/use-fetch-pie-chart-props";
 import { type PieView } from "../../bi-modules/interfaces/view";
 import { LoadingChart } from "./loading-chart";
+import { QueryHeader, QueryHeaderWrapper } from "./query-header";
 
 const useStyle = makeStyles({
   tooltip: {
@@ -94,42 +95,50 @@ export const ViewPie = ({ view }: Props): JSX.Element => {
   };
 
   return (
-    <ResponsiveContainer height={400} width="100%">
-      <RePieChart height={400} width={400}>
-        <ReTooltip
-          content={
-            <CustomTooltip
-              unit={
-                groupAggregation?.value === "count"
-                  ? "件"
-                  : chartProps.yAxisColumn.unit
-              }
-            />
-          }
+    <div>
+      <QueryHeaderWrapper>
+        <QueryHeader
+          allCount={chartProps.allCount}
+          totalCount={chartProps.totalCount}
         />
-        <RePie
-          cx="50%"
-          cy="50%"
-          data={data}
-          dataKey="y"
-          endAngle={-270}
-          labelLine={false}
-          nameKey={"x"}
-          startAngle={90}
-        >
-          {data.map((_, index) => {
-            return (
-              <ReCell
-                key={index}
-                fill={
-                  CHART_COLORS.repeated[index % CHART_COLORS.repeated.length]
+      </QueryHeaderWrapper>
+      <ResponsiveContainer height={400} width="100%">
+        <RePieChart height={400} width={400}>
+          <ReTooltip
+            content={
+              <CustomTooltip
+                unit={
+                  groupAggregation?.value === "count"
+                    ? "件"
+                    : chartProps.yAxisColumn.unit
                 }
               />
-            );
-          })}
-        </RePie>
-        <ReLegend align="right" layout="vertical" verticalAlign="middle" />
-      </RePieChart>
-    </ResponsiveContainer>
+            }
+          />
+          <RePie
+            cx="50%"
+            cy="50%"
+            data={data}
+            dataKey="y"
+            endAngle={-270}
+            labelLine={false}
+            nameKey={"x"}
+            startAngle={90}
+          >
+            {data.map((_, index) => {
+              return (
+                <ReCell
+                  key={index}
+                  fill={
+                    CHART_COLORS.repeated[index % CHART_COLORS.repeated.length]
+                  }
+                />
+              );
+            })}
+          </RePie>
+          <ReLegend align="right" layout="vertical" verticalAlign="middle" />
+        </RePieChart>
+      </ResponsiveContainer>
+    </div>
   );
 };

@@ -16,6 +16,7 @@ import { Pagination } from "../ui/pagination";
 import { useFetchBarChartProps } from "../../bi-modules/hooks/use-fetch-bar-chart-props";
 import { type BarView } from "../../bi-modules/interfaces/view";
 import { LoadingChart } from "./loading-chart";
+import { QueryHeaderWithPagination, QueryHeaderWrapper } from "./query-header";
 
 type Props = {
   view: BarView;
@@ -76,7 +77,14 @@ export const ViewBar = ({ view }: Props): JSX.Element => {
 
   return (
     <div>
-      <Pagination {...pagination} />
+      <QueryHeaderWrapper>
+        <QueryHeaderWithPagination
+          allCount={chartProps.allCount}
+          currentDataLength={data.length}
+          pagination={pagination}
+        />
+        <Pagination {...pagination} />
+      </QueryHeaderWrapper>
       <ResponsiveContainer height={400} width="100%">
         <ReBarChart
           data={data}

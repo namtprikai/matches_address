@@ -27,6 +27,8 @@ import { MapComponent } from "./map/map-component";
 import { ResultTable } from "./result-table";
 import { useMapInit } from "./map/map-component/hooks/use-map-init";
 import { useUpdateLayerEffect } from "./map/map-component/hooks/use-update-layer-effect";
+import { QueryHeader, QueryHeaderWrapper } from "./query-header";
+import { useMapAllCount } from "./map/map-component/hooks/use-map-all-count";
 
 const useStyles = makeStyles({
   root: {
@@ -129,6 +131,11 @@ export const ViewMapWithTable = ({ view }: Props): JSX.Element => {
     view,
   });
 
+  const { allCount } = useMapAllCount({
+    dataSetResultId: view.dataSetResultId,
+    unit,
+  });
+
   /** マップに表示される指標 */
   const meta = useMemo(
     () =>
@@ -175,6 +182,12 @@ export const ViewMapWithTable = ({ view }: Props): JSX.Element => {
               />
             </div>
           </div>
+          <QueryHeaderWrapper>
+            <QueryHeader
+              allCount={allCount || 0}
+              totalCount={updateLayerEffectState.features?.length || 0}
+            />
+          </QueryHeaderWrapper>
           <div className={styles.map}>
             <MapComponent
               mapInitState={mapInitState}

@@ -1,4 +1,4 @@
-import { and, eq, gte, lte, ne, or, sql, type SQL } from "drizzle-orm";
+import { and, count, eq, gte, lte, ne, or, sql, type SQL } from "drizzle-orm";
 import { db } from "../../utils/db";
 import { type BarView } from "../interfaces/view";
 import { data_set_detail_areas } from "../../schema";
@@ -13,7 +13,7 @@ import { conditionsToCaseQueryBuilder } from "./builder/conditions-to-case-query
 
 type Params = {
   view: BarView;
-  pagination: {
+  pagination?: {
     limit: number;
     offset: number;
   };
@@ -25,8 +25,11 @@ type Params = {
  */
 export const fetchAreaBarChartData = async ({
   view,
-  pagination: { limit, offset },
+  pagination,
 }: Params): Promise<ChartProps> => {
+  if (!pagination) {
+    throw new Error("paginationは必須です");
+  }
   if (view.style !== "bar") {
     throw new Error(
       'このAPIは棒グラフ(style: "bar")のデータのみ対応しています',
@@ -38,6 +41,7 @@ export const fetchAreaBarChartData = async ({
     );
   }
 
+  const { limit, offset } = pagination;
   const { dataSetResultId } = view;
 
   // パラメータの型安全な抽出
@@ -94,6 +98,14 @@ export const fetchAreaBarChartData = async ({
   const queryWheres: (SQL<unknown> | undefined)[] = [
     eq(data_set_detail_areas.data_set_result_id, dataSetResultId),
   ];
+
+  const allQuery = query
+    .where(eq(data_set_detail_areas.data_set_result_id, dataSetResultId))
+    .as("allQuery");
+  const allCount = await db
+    .select({ count: count() })
+    .from(allQuery)
+    .then((res) => res[0].count);
 
   /** 年のフィルタ */
   if (yearFilter?.value.start) {
@@ -172,11 +184,16 @@ export const fetchAreaBarChartData = async ({
       .having(ne(groupQuery[GroupLabel], sql.raw("''")))
       .all();
 
+    /** @todo ページネーションができていないかも？ */
+    const totalCount = await db.select({ count: count() }).from(baseQuery);
+
     return {
       data: result.map((item) => ({
         x: item.x as string /** @todo */,
         y: item.y as number /** @todo */,
       })),
+      totalCount: totalCount[0].count,
+      allCount,
       ...COLUMNS,
     };
   }
@@ -189,6 +206,8 @@ export const fetchAreaBarChartData = async ({
     .orderBy(baseQuery.reference_date)
     .all();
 
+  const totalCount = await db.select({ count: count() }).from(baseQuery);
+
   return {
     data: result.map((item) => ({
       ...item,
@@ -196,6 +215,8 @@ export const fetchAreaBarChartData = async ({
       y: item[yAxis.value] as number /** @todo */,
       reference_date: item.reference_date,
     })),
+    allCount,
+    totalCount: totalCount[0].count,
     ...COLUMNS,
   };
 };

@@ -59,7 +59,10 @@ type Props = {
 export const PreviewDialog = ({ title }: Props): JSX.Element => {
   const styles = useStyles();
   const dialogState = useDialogState(false);
-  const pagination = usePagination(50);
+  const pagination = usePagination({
+    perPage: 50,
+    total: 0 /** @todo 現在はtotalをfetchできていない */,
+  });
 
   const navigate = useNavigate();
   const { previewId, previewType } = usePreviewSearchQuery();
