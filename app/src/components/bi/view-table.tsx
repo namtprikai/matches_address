@@ -11,6 +11,8 @@ import {
 import { Pagination } from "../ui/pagination";
 import { type TableView } from "../../bi-modules/interfaces/view";
 import { useFetchTableProps } from "../../bi-modules/hooks/use-fetch-table-props";
+import { useSort } from "../../hooks/use-sort";
+import { type SelectDataSetDetailBuilding } from "../../schema";
 import { QueryHeaderWithPagination } from "./query-header";
 
 const useStyles = makeStyles({
@@ -42,8 +44,12 @@ type Props = {
 };
 
 export const ViewTable = ({ view }: Props): JSX.Element => {
+  const { orderBy, headerSortProps } =
+    useSort<keyof SelectDataSetDetailBuilding>();
+
   const { tableProps, pagination } = useFetchTableProps({
     view,
+    orderBy,
   });
 
   const styles = useStyles();
@@ -73,6 +79,7 @@ export const ViewTable = ({ view }: Props): JSX.Element => {
                   <TableHeaderCell
                     key={index}
                     className={styles.tableHeaderCell}
+                    {...headerSortProps(column.key)}
                   >
                     {column.label}
                   </TableHeaderCell>

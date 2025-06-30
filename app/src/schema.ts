@@ -456,6 +456,12 @@ export type SelectDataSetDetailBuilding =
 export type InsertDataSetDetailBuilding =
   typeof data_set_detail_buildings.$inferInsert;
 
+export const isBuildingColumn = (
+  column: keyof SelectDataSetDetailBuilding | keyof SelectDataSetDetailArea,
+): column is keyof SelectDataSetDetailBuilding => {
+  return column in data_set_detail_buildings;
+};
+
 export const data_set_detail_areas = sqliteTable("data_set_detail_areas", {
   id: integer("id").primaryKey(),
   data_set_result_id: integer("data_set_result_id"),
@@ -544,6 +550,12 @@ export const data_set_detail_areas = sqliteTable("data_set_detail_areas", {
 
 export type SelectDataSetDetailArea = typeof data_set_detail_areas.$inferSelect;
 export type InsertDataSetDetailArea = typeof data_set_detail_areas.$inferInsert;
+
+export const isAreaColumn = (
+  column: keyof SelectDataSetDetailBuilding | keyof SelectDataSetDetailArea,
+): column is keyof SelectDataSetDetailArea => {
+  return column in data_set_detail_areas;
+};
 
 /** データセット:正規化済み */
 export const normalized_data_sets = sqliteTable("normalized_data_sets", {

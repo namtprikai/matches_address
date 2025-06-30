@@ -14,6 +14,11 @@ import {
   type TableView,
 } from "../../bi-modules/interfaces/view";
 import { useFetchTableProps } from "../../bi-modules/hooks/use-fetch-table-props";
+import {
+  type SelectDataSetDetailArea,
+  type SelectDataSetDetailBuilding,
+} from "../../schema";
+import { useSort } from "../../hooks/use-sort";
 import { type MapInitReturn } from "./map/map-component/hooks/use-map-init";
 import { type UpdateLayerEffectReturn } from "./map/map-component/hooks/use-update-layer-effect";
 
@@ -51,8 +56,13 @@ export const ResultTable = ({
   view,
   updateLayerEffectState: { selectedFeature, setSelectedFeature, features },
 }: Props): JSX.Element => {
+  const { orderBy, headerSortProps } = useSort<
+    keyof SelectDataSetDetailBuilding | keyof SelectDataSetDetailArea
+  >();
+
   const { tableProps, pagination } = useFetchTableProps({
     view,
+    orderBy,
   });
 
   const styles = useStyles();
@@ -61,7 +71,7 @@ export const ResultTable = ({
     <div className={styles.root}>
       <Pagination {...pagination} />
       <div className={styles.tableContainer}>
-        <Table className={styles.table}>
+        <Table className={styles.table} sortable>
           <TableHeader className={styles.tableHeader}>
             <TableRow className={styles.tableHeaderRow}>
               {tableProps.columns.map((column, index) => {
@@ -69,6 +79,7 @@ export const ResultTable = ({
                   <TableHeaderCell
                     key={index}
                     className={styles.tableHeaderCell}
+                    {...headerSortProps(column.key)}
                   >
                     {column.label}
                   </TableHeaderCell>

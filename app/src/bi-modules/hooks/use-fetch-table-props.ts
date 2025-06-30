@@ -1,13 +1,24 @@
 import { useCallback, useEffect, useState } from "react";
+import { type SortDirection } from "@fluentui/react-components";
 import { type TableProps } from "../../@types/charts";
 import {
   usePagination,
   type UsePaginationReturnType,
 } from "../../hooks/use-pagination";
 import { type MapWithTableView, type TableView } from "../interfaces/view";
+import {
+  type SelectDataSetDetailArea,
+  type SelectDataSetDetailBuilding,
+} from "../../schema";
 
 type Params = {
   view: TableView | MapWithTableView;
+  orderBy?: {
+    column:
+      | keyof SelectDataSetDetailBuilding
+      | keyof SelectDataSetDetailArea /** @note 最下層(filterDataSetForTable)でアサーションしてるせいであまり意味のない指定になっている */;
+    direction: SortDirection;
+  } | null;
 };
 
 type ReturnType = {
@@ -16,7 +27,7 @@ type ReturnType = {
   pagination: UsePaginationReturnType;
 };
 
-export const useFetchTableProps = ({ view }: Params): ReturnType => {
+export const useFetchTableProps = ({ view, orderBy }: Params): ReturnType => {
   const [tableProps, setTableProps] = useState<TableProps>({
     columns: [],
     data: [],
@@ -35,9 +46,10 @@ export const useFetchTableProps = ({ view }: Params): ReturnType => {
         limit: pagination.limitPerPage,
         offset: pagination.limitPerPage * (pagination.page - 1),
       },
+      orderBy: orderBy ?? undefined,
     });
     setTableProps(result);
-  }, [pagination.limitPerPage, pagination.page, view]);
+  }, [orderBy, pagination.limitPerPage, pagination.page, view]);
 
   useEffect(() => {
     fetch().catch(console.error);

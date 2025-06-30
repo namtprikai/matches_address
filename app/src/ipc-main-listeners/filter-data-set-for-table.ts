@@ -1,5 +1,13 @@
-import { and, count, eq, gte, lte, or } from "drizzle-orm";
-import { data_set_detail_areas, data_set_detail_buildings } from "../schema";
+import { and, asc, count, desc, eq, gte, lte, or } from "drizzle-orm";
+import { type SortDirection } from "@fluentui/react-components";
+import {
+  data_set_detail_areas,
+  data_set_detail_buildings,
+  isAreaColumn,
+  isBuildingColumn,
+  type SelectDataSetDetailArea,
+  type SelectDataSetDetailBuilding,
+} from "../schema";
 import { db } from "../utils/db";
 import { columnsToSelectField } from "../utils/columns-to-select-field";
 import { type TableProps } from "../@types/charts";
@@ -49,11 +57,15 @@ type Params = {
     limit: number;
     offset: number;
   };
+  orderBy?: {
+    column: keyof SelectDataSetDetailBuilding | keyof SelectDataSetDetailArea;
+    direction: SortDirection;
+  } | null;
 };
 
 export const filterDataSetForTable = (async (
   _: unknown,
-  { view, pagination: { limit, offset } }: Params,
+  { view, pagination: { limit, offset }, orderBy }: Params,
 ): Promise<TableProps> => {
   const { dataSetResultId, parameters, unit } = view;
   const yearFilter = parameters.find((p) => p.key === "year");
@@ -87,6 +99,21 @@ export const filterDataSetForTable = (async (
         ),
       ),
     );
+
+    const orderByConditions = (() => {
+      if (!orderBy) {
+        return asc(data_set_detail_buildings.area_group);
+      }
+
+      if (isBuildingColumn(orderBy.column)) {
+        return orderBy.direction === "ascending"
+          ? asc(data_set_detail_buildings[orderBy.column])
+          : desc(data_set_detail_buildings[orderBy.column]);
+      }
+
+      return asc(data_set_detail_buildings.area_group);
+    })();
+
     const all = await db
       .select({
         ...columnsToSelectField({
@@ -99,7 +126,7 @@ export const filterDataSetForTable = (async (
       .where(whereConditons)
       .limit(limit)
       .offset(offset)
-      .all();
+      .orderBy(orderByConditions);
 
     const totalCount = await db
       .select({ count: count() })
@@ -153,6 +180,7 @@ export const filterDataSetForTable = (async (
         limit,
         offset,
       },
+      orderBy,
     });
   }
 
@@ -174,6 +202,10 @@ type ByArea = {
     limit: number;
     offset: number;
   };
+  orderBy?: {
+    column: keyof SelectDataSetDetailArea | keyof SelectDataSetDetailBuilding;
+    direction: SortDirection;
+  } | null;
 };
 const byArea = async (params: ByArea): Promise<TableProps> => {
   const {
@@ -183,6 +215,7 @@ const byArea = async (params: ByArea): Promise<TableProps> => {
     areaFilter,
     filterConditions,
     pagination: { limit, offset },
+    orderBy,
   } = params;
 
   const whereConditions = and(
@@ -208,6 +241,20 @@ const byArea = async (params: ByArea): Promise<TableProps> => {
     ),
   );
 
+  const orderByConditions = (() => {
+    if (!orderBy) {
+      return asc(data_set_detail_areas.area_group);
+    }
+
+    if (isAreaColumn(orderBy.column)) {
+      return orderBy.direction === "ascending"
+        ? asc(data_set_detail_areas[orderBy.column])
+        : desc(data_set_detail_areas[orderBy.column]);
+    }
+
+    return asc(data_set_detail_areas.area_group);
+  })();
+
   const all = db
     .select({
       ...columnsToSelectField({
@@ -220,6 +267,7 @@ const byArea = async (params: ByArea): Promise<TableProps> => {
     .where(whereConditions)
     .limit(limit)
     .offset(offset)
+    .orderBy(orderByConditions)
     .all();
 
   const formattedColumns = columns.map((column) => {
