@@ -13,7 +13,7 @@ import { conditionsToCaseQueryBuilder } from "./builder/conditions-to-case-query
 
 type Params = {
   view: BarView;
-  pagination?: {
+  pagination: {
     limit: number;
     offset: number;
   };

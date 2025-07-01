@@ -54,6 +54,11 @@ export interface BarView extends ViewBase {
     | XAxis
     | YAxis
   )[];
+
+  pagination: {
+    limit: number;
+    offset: number;
+  };
 }
 
 /** 折れ線グラフ */

@@ -39,10 +39,12 @@ export const useFetchBarChartProps = ({ view }: Params): ReturnType => {
       try {
         handleIsLoading(true);
         const result = await window.ipcRenderer.invoke("fetchChartData", {
-          view: value,
-          pagination: {
-            limit: pagination.limitPerPage,
-            offset: pagination.limitPerPage * (pagination.page - 1),
+          view: {
+            ...value,
+            pagination: {
+              limit: pagination.limitPerPage,
+              offset: pagination.limitPerPage * (pagination.page - 1),
+            },
           },
         });
         handleChartProps(result);
