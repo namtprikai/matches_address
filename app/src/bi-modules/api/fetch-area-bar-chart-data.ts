@@ -8,15 +8,13 @@ import {
   type AREA_DATASET_COLUMN,
   AREA_DATASET_COLUMN_METADATA,
 } from "../../config/column-metadata";
+import { type PaginationQuery } from "../../@types/query";
 import { filterQueryBuilder } from "./builder/filter-query-builder";
 import { conditionsToCaseQueryBuilder } from "./builder/conditions-to-case-query-builder";
 
 type Params = {
   view: BarView;
-  pagination: {
-    limit: number;
-    offset: number;
-  };
+  pagination: PaginationQuery;
 };
 
 /**

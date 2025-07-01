@@ -1,3 +1,4 @@
+import { type PaginationQuery } from "../../@types/query";
 import {
   type AreaFilter,
   type FilterCondition,
@@ -55,10 +56,7 @@ export interface BarView extends ViewBase {
     | YAxis
   )[];
 
-  pagination: {
-    limit: number;
-    offset: number;
-  };
+  pagination: PaginationQuery;
 }
 
 /** 折れ線グラフ */

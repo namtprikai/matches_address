@@ -30,14 +30,12 @@ import {
   type AreaFilter,
 } from "../bi-modules/interfaces/parameter";
 import { filterQueryBuilder } from "../bi-modules/api/builder/filter-query-builder";
+import { type PaginationQuery } from "../@types/query";
 import { type IpcMainListener } from ".";
 
 interface BaseProps {
   view: TableView;
-  pagination: {
-    limit: number;
-    offset: number;
-  };
+  pagination: PaginationQuery;
 }
 
 interface UnitBuildingProps extends BaseProps {
@@ -53,10 +51,7 @@ export type FilterDataSetForTableArgs = UnitBuildingProps | UnitAreaProps;
 
 type Params = {
   view: TableView | MapWithTableView;
-  pagination: {
-    limit: number;
-    offset: number;
-  };
+  pagination: PaginationQuery;
   orderBy?: {
     column: keyof SelectDataSetDetailBuilding | keyof SelectDataSetDetailArea;
     direction: SortDirection;
@@ -198,10 +193,7 @@ type ByArea = {
   yearFilter: YearFilter | undefined;
   areaFilter: AreaFilter | undefined;
   filterConditions: FilterCondition[];
-  pagination: {
-    limit: number;
-    offset: number;
-  };
+  pagination: PaginationQuery;
   orderBy?: {
     column: keyof SelectDataSetDetailArea | keyof SelectDataSetDetailBuilding;
     direction: SortDirection;
