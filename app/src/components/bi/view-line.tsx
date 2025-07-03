@@ -14,9 +14,15 @@ import {
   Tooltip as FUIToolTip,
   makeStyles,
 } from "@fluentui/react-components";
+import {
+  ArrowSortDownRegular,
+  ArrowSortUpRegular,
+} from "@fluentui/react-icons";
 import { CHART_COLORS } from "../../config/chart-colors";
 import { type LineView } from "../../bi-modules/interfaces/view";
 import { useFetchLineChartProps } from "../../bi-modules/hooks/use-fetch-line-chart-props";
+import { Button } from "../ui/button";
+import { BUILDING_DATASET_COLUMN_METADATA } from "../../config/column-metadata";
 import { LoadingChart } from "./loading-chart";
 import { QueryHeader, QueryHeaderWrapper } from "./query-header";
 
@@ -58,6 +64,18 @@ const useStyles = makeStyles({
     padding: `5px ${tokens.spacingHorizontalM}`, //tokensに存在しない値
     boxShadow: tokens.shadow8,
     borderRadius: "3px", // tokensに存在しない値
+  },
+
+  positionContainer: {
+    position: "relative",
+    height: "400px",
+  },
+  buttonContainer: {
+    position: "absolute",
+    top: `${400 - 26}px`,
+    left: "22px",
+    display: "flex",
+    gap: "4px",
   },
 });
 
@@ -116,7 +134,33 @@ type Props = {
 };
 
 export const ViewLine = ({ view }: Props): JSX.Element => {
-  const { chartProps, isLoading } = useFetchLineChartProps({ view });
+  const styles = useStyles();
+
+  const {
+    chartProps,
+    isLoading,
+    useOrderBy: {
+      orderBy: { column, direction },
+      handleColumnChange,
+    },
+  } = useFetchLineChartProps({ view });
+
+  const OrderByIcon = (() => {
+    if (column !== "reference_date") return null;
+    return direction === "ascending" ? (
+      <ArrowSortUpRegular
+        color={tokens.colorNeutralForeground1}
+        fontSize={11}
+        strokeWidth={2}
+      />
+    ) : (
+      <ArrowSortDownRegular
+        color={tokens.colorNeutralForeground1}
+        fontSize={11}
+        strokeWidth={2}
+      />
+    );
+  })();
 
   const xAxis = view.parameters.find((p) => p.key === "xAxis");
   const yAxis = view.parameters.find((p) => p.key === "yAxis");
@@ -157,38 +201,60 @@ export const ViewLine = ({ view }: Props): JSX.Element => {
           totalCount={chartProps.totalCount}
         />
       </QueryHeaderWrapper>
-      <ResponsiveContainer height={400} width="100%">
-        <ReLineChart data={data}>
-          <ReXAxis dataKey={"x"} unit={chartProps.xAxisColumn.unit} />
-          <ReYAxis
-            dataKey={"y"}
-            unit={groupingCalc === "count" ? "件" : chartProps.yAxisColumn.unit}
-          />
-          <ReTooltip
-            wrapperStyle={{
-              display: "none",
+      <div className={styles.positionContainer}>
+        <ResponsiveContainer height={400} width="100%">
+          <ReLineChart data={data}>
+            <ReXAxis dataKey={"x"} unit={chartProps.xAxisColumn.unit} />
+            <ReYAxis
+              dataKey={"y"}
+              unit={
+                groupingCalc === "count" ? "件" : chartProps.yAxisColumn.unit
+              }
+            />
+            <ReTooltip
+              wrapperStyle={{
+                display: "none",
+              }}
+            />
+            <ReCartesianGrid vertical={false} />
+            <ReLine
+              activeDot={
+                <CustomizedActiveDot
+                  unit={
+                    groupingCalc === "count"
+                      ? "件"
+                      : chartProps.yAxisColumn.unit
+                  }
+                />
+              }
+              dataKey={"y"}
+              // @ts-expect-error 内部処理で適切なPropsが渡されるが型定義が不足しているためエラーが出る
+              dot={<CustomizedDot />}
+              name={chartProps.yAxisColumn.label}
+              stroke={CHART_COLORS.primary}
+              strokeWidth={2}
+              unit={
+                groupingCalc === "count" ? "件" : chartProps.yAxisColumn.unit
+              }
+            />
+            <ReLegend />
+          </ReLineChart>
+        </ResponsiveContainer>
+        <div className={styles.buttonContainer}>
+          <Button
+            onClick={() => {
+              handleColumnChange("reference_date");
             }}
-          />
-          <ReCartesianGrid vertical={false} />
-          <ReLine
-            activeDot={
-              <CustomizedActiveDot
-                unit={
-                  groupingCalc === "count" ? "件" : chartProps.yAxisColumn.unit
-                }
-              />
-            }
-            dataKey={"y"}
-            // @ts-expect-error 内部処理で適切なPropsが渡されるが型定義が不足しているためエラーが出る
-            dot={<CustomizedDot />}
-            name={chartProps.yAxisColumn.label}
-            stroke={CHART_COLORS.primary}
-            strokeWidth={2}
-            unit={groupingCalc === "count" ? "件" : chartProps.yAxisColumn.unit}
-          />
-          <ReLegend />
-        </ReLineChart>
-      </ResponsiveContainer>
+            size="small"
+            style={{
+              fontWeight: "normal",
+            }}
+          >
+            {BUILDING_DATASET_COLUMN_METADATA["reference_date"].label}
+            {OrderByIcon}
+          </Button>
+        </div>
+      </div>
     </div>
   );
 };

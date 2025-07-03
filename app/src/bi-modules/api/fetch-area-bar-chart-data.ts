@@ -1,20 +1,30 @@
-import { and, count, eq, gte, lte, ne, or, sql, type SQL } from "drizzle-orm";
+import {
+  and,
+  asc,
+  count,
+  desc,
+  eq,
+  gte,
+  lte,
+  ne,
+  or,
+  sql,
+  type SQL,
+} from "drizzle-orm";
 import { db } from "../../utils/db";
 import { type BarView } from "../interfaces/view";
-import { data_set_detail_areas } from "../../schema";
+import { data_set_detail_areas, isAreaColumn } from "../../schema";
 import { type FilterCondition } from "../interfaces/parameter";
 import { type ChartProps } from "../../@types/charts";
 import {
   type AREA_DATASET_COLUMN,
   AREA_DATASET_COLUMN_METADATA,
 } from "../../config/column-metadata";
-import { type PaginationQuery } from "../../@types/query";
 import { filterQueryBuilder } from "./builder/filter-query-builder";
 import { conditionsToCaseQueryBuilder } from "./builder/conditions-to-case-query-builder";
 
 type Params = {
   view: BarView;
-  pagination: PaginationQuery;
 };
 
 /**
@@ -23,8 +33,8 @@ type Params = {
  */
 export const fetchAreaBarChartData = async ({
   view,
-  pagination,
 }: Params): Promise<ChartProps> => {
+  const { pagination, orderBy } = view;
   if (!pagination) {
     throw new Error("paginationは必須です");
   }
@@ -82,13 +92,20 @@ export const fetchAreaBarChartData = async ({
     },
   } as const;
 
+  if (!orderBy || !orderBy.column) {
+    throw new Error("orderByは必須です");
+  }
+
   // クエリのベース作成
   let query = db
     .select({
       /** data_set_detail_areasのColumn名とそれぞれのvalueに定義された値が一致していることが前提でrawを利用 */
       [xAxis.value]: sql.raw(`${xAxis.value}`).as(xAxis.value),
       [yAxis.value]: sql.raw(`${yAxis.value}`).as(yAxis.value),
+
+      /** OrderByで利用するための取得 */
       reference_date: data_set_detail_areas.reference_date,
+      [orderBy.column]: data_set_detail_areas[orderBy.column],
     })
     .from(data_set_detail_areas)
     .$dynamic();
@@ -196,12 +213,26 @@ export const fetchAreaBarChartData = async ({
     };
   }
 
+  const orderByConditions = (() => {
+    if (!orderBy) {
+      return asc(baseQuery.reference_date);
+    }
+
+    if (isAreaColumn(orderBy.column)) {
+      return orderBy.direction === "ascending"
+        ? asc(baseQuery[orderBy.column])
+        : desc(baseQuery[orderBy.column]);
+    }
+
+    return asc(baseQuery.reference_date);
+  })();
+
   const result = db
     .select()
     .from(baseQuery)
     .limit(limit)
     .offset(offset)
-    .orderBy(baseQuery.reference_date)
+    .orderBy(orderByConditions)
     .all();
 
   const totalCount = await db.select({ count: count() }).from(baseQuery);

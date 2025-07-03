@@ -1,4 +1,8 @@
-import { type PaginationQuery } from "../../@types/query";
+import { type OrderByQuery, type PaginationQuery } from "../../@types/query";
+import {
+  type SelectDataSetDetailBuilding,
+  type SelectDataSetDetailArea,
+} from "../../schema";
 import {
   type AreaFilter,
   type FilterCondition,
@@ -57,6 +61,7 @@ export interface BarView extends ViewBase {
   )[];
 
   pagination: PaginationQuery;
+  orderBy: OrderByQuery<keyof SelectDataSetDetailArea> | null;
 }
 
 /** 折れ線グラフ */
@@ -71,6 +76,8 @@ export interface LineView extends ViewBase {
     | XAxis
     | YAxis
   )[];
+
+  orderBy: OrderByQuery<keyof SelectDataSetDetailBuilding> | null;
 }
 
 /** 円グラフ */

@@ -4,6 +4,11 @@ import { type ChartProps } from "../../@types/charts";
 import { type LineView } from "../interfaces/view";
 import { useIsLoading } from "../../hooks/use-is-loading";
 import { submittedEditViewFormAtom } from "../../state/submitted-edit-view-form-atom";
+import {
+  useOrderBy,
+  type UseOrderByReturnType,
+} from "../../hooks/use-order-by";
+import { type SelectDataSetDetailBuilding } from "../../schema";
 import { useChartProps } from "./use-chart-props";
 import { useWorkbookIdsSearchQuery } from "./use-workbook-ids-search-query";
 
@@ -15,11 +20,15 @@ type ReturnType = {
   chartProps: ChartProps;
   refetch: () => Promise<void>;
   isLoading: boolean;
+  useOrderBy: UseOrderByReturnType<keyof SelectDataSetDetailBuilding>;
 };
 
 export const useFetchLineChartProps = ({ view }: Params): ReturnType => {
   const { chartProps, handleChartProps } = useChartProps();
   const { isLoading, handleIsLoading } = useIsLoading({ init: true });
+
+  const { orderBy, handleColumnChange } =
+    useOrderBy<keyof SelectDataSetDetailBuilding>("reference_date");
 
   const { viewId } = useWorkbookIdsSearchQuery();
   const setSubmittedEditViewFormState = useAtomValue(submittedEditViewFormAtom);
@@ -29,7 +38,10 @@ export const useFetchLineChartProps = ({ view }: Params): ReturnType => {
       try {
         handleIsLoading(true);
         const result = await window.ipcRenderer.invoke("fetchChartData", {
-          view: value,
+          view: {
+            ...value,
+            orderBy,
+          },
         });
 
         handleChartProps(result);
@@ -40,7 +52,7 @@ export const useFetchLineChartProps = ({ view }: Params): ReturnType => {
       }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps -- handleIsLoading を追加するよう指摘されるが、追加すると無限ループになるため無視 @fixme / view を追加されるよう指摘されるが、fetch が変わることはないので無視 @fixme
-    [handleChartProps],
+    [handleChartProps, orderBy.column, orderBy.direction],
   );
 
   /** 初期化 */
@@ -59,5 +71,9 @@ export const useFetchLineChartProps = ({ view }: Params): ReturnType => {
     chartProps,
     refetch: () => fetch(view),
     isLoading,
+    useOrderBy: {
+      orderBy,
+      handleColumnChange,
+    },
   };
 };

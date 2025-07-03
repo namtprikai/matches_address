@@ -1,7 +1,19 @@
-import { and, count, eq, gte, lte, ne, or, type SQL, sql } from "drizzle-orm";
+import {
+  and,
+  asc,
+  count,
+  desc,
+  eq,
+  gte,
+  lte,
+  ne,
+  or,
+  type SQL,
+  sql,
+} from "drizzle-orm";
 import { db } from "../../utils/db";
 import { type LineView } from "../interfaces/view";
-import { data_set_detail_buildings } from "../../schema";
+import { data_set_detail_buildings, isBuildingColumn } from "../../schema";
 import { type FilterCondition } from "../interfaces/parameter";
 import { type ChartProps } from "../../@types/charts";
 import {
@@ -18,6 +30,7 @@ type Params = {
 export const fetchBuildingLineChartData = async ({
   view,
 }: Params): Promise<ChartProps> => {
+  const { orderBy } = view;
   if (view.style !== "line") {
     throw new Error(
       'このAPIは棒グラフ(style: "line")のデータのみ対応しています',
@@ -75,12 +88,17 @@ export const fetchBuildingLineChartData = async ({
     },
   } as const;
 
+  if (!orderBy || !orderBy.column) {
+    throw new Error("orderByは必須です");
+  }
+
   // クエリのベース作成
   let query = db
     .select({
       /** data_set_detail_buildingsのColumn名とそれぞれのvalueに定義された値が一致していることが前提でrawを利用 */
       [xAxis.value]: sql.raw(`${xAxis.value}`).as(xAxis.value),
       [yAxis.value]: sql.raw(`${yAxis.value}`).as(yAxis.value),
+      [orderBy.column]: data_set_detail_buildings[orderBy.column],
     })
     .from(data_set_detail_buildings)
     .$dynamic();
@@ -150,6 +168,20 @@ export const fetchBuildingLineChartData = async ({
       .from(baseQuery)
       .as("GroupLabel");
 
+    const orderByConditions = (() => {
+      if (!orderBy) {
+        return asc(groupQuery.reference_date);
+      }
+
+      if (isBuildingColumn(orderBy.column)) {
+        return orderBy.direction === "ascending"
+          ? asc(groupQuery[orderBy.column])
+          : desc(groupQuery[orderBy.column]);
+      }
+
+      return asc(groupQuery.reference_date);
+    })();
+
     const result = db
       .select({
         x: groupQuery[GroupLabel],
@@ -163,6 +195,7 @@ export const fetchBuildingLineChartData = async ({
       // @ts-ignore
       .groupBy(groupQuery[GroupLabel])
       .having(ne(groupQuery[GroupLabel], sql.raw("''")))
+      .orderBy(orderByConditions)
       .all();
 
     const totalCount = await db.select({ count: count() }).from(baseQuery);
@@ -178,12 +211,27 @@ export const fetchBuildingLineChartData = async ({
     };
   }
 
+  const orderByConditions = (() => {
+    if (!orderBy) {
+      return asc(baseQuery.reference_date);
+    }
+
+    if (isBuildingColumn(orderBy.column)) {
+      return orderBy.direction === "ascending"
+        ? asc(baseQuery[orderBy.column])
+        : desc(baseQuery[orderBy.column]);
+    }
+
+    return asc(baseQuery.reference_date);
+  })();
+
   const result = db
     .select({
       x: baseQuery[xAxis.value],
       y: baseQuery[yAxis.value],
     })
     .from(baseQuery)
+    .orderBy(orderByConditions)
     .all();
 
   const totalCount = await db.select({ count: count() }).from(baseQuery);

@@ -1,4 +1,8 @@
 import {
+  ArrowSortDownRegular,
+  ArrowSortUpRegular,
+} from "@fluentui/react-icons";
+import {
   ResponsiveContainer,
   BarChart as ReBarChart,
   Tooltip as ReTooltip,
@@ -10,23 +14,66 @@ import {
   CartesianGrid as ReCartesianGrid,
 } from "recharts";
 import { useState } from "react";
-import { Caption1Strong, tokens } from "@fluentui/react-components";
+import { Caption1Strong, makeStyles, tokens } from "@fluentui/react-components";
 import { CHART_COLORS } from "../../config/chart-colors";
 import { Pagination } from "../ui/pagination";
 import { useFetchBarChartProps } from "../../bi-modules/hooks/use-fetch-bar-chart-props";
 import { type BarView } from "../../bi-modules/interfaces/view";
+import { Button } from "../ui/button";
+import { AREA_DATASET_COLUMN_METADATA } from "../../config/column-metadata";
 import { LoadingChart } from "./loading-chart";
 import { QueryHeaderWithPagination, QueryHeaderWrapper } from "./query-header";
+
+const useStyles = makeStyles({
+  positionContainer: {
+    position: "relative",
+    height: "400px",
+  },
+  buttonContainer: {
+    position: "absolute",
+    top: `${400 - 26}px`,
+    left: "22px",
+    display: "flex",
+    gap: "4px",
+  },
+});
 
 type Props = {
   view: BarView;
 };
 
 export const ViewBar = ({ view }: Props): JSX.Element => {
+  const styles = useStyles();
+
   /** @fixme useFetchが不要回数呼び出されていそう */
-  const { chartProps, pagination, isLoading } = useFetchBarChartProps({
+  const {
+    chartProps,
+    pagination,
+    isLoading,
+    useOrderBy: {
+      handleColumnChange,
+      orderBy: { column, direction },
+    },
+  } = useFetchBarChartProps({
     view,
   });
+
+  const OrderByIcon = (() => {
+    if (column !== "area_group") return null;
+    return direction === "ascending" ? (
+      <ArrowSortUpRegular
+        color={tokens.colorNeutralForeground1}
+        fontSize={11}
+        strokeWidth={2}
+      />
+    ) : (
+      <ArrowSortDownRegular
+        color={tokens.colorNeutralForeground1}
+        fontSize={11}
+        strokeWidth={2}
+      />
+    );
+  })();
 
   const xAxis = view.parameters.find((p) => p.key === "xAxis");
   const yAxis = view.parameters.find((p) => p.key === "yAxis");
@@ -85,100 +132,129 @@ export const ViewBar = ({ view }: Props): JSX.Element => {
         />
         <Pagination {...pagination} />
       </QueryHeaderWrapper>
-      <ResponsiveContainer height={400} width="100%">
-        <ReBarChart
-          data={data}
-          onMouseLeave={() => {
-            setActiveToolTip(false);
-          }}
-          onMouseMove={(data, _) => {
-            if (
-              data.activeTooltipIndex === undefined ||
-              data.isTooltipActive === undefined
-            ) {
-              return;
-            }
-            setActiveIndex(data.activeTooltipIndex);
-            setTooltipPosition((prev) => {
-              if (data.activeCoordinate === undefined) {
-                return prev;
-              }
-
-              return {
-                x: data.activeCoordinate.x,
-                y: prev.y,
-              };
-            });
-            setActiveToolTip(data.isTooltipActive);
-          }}
-        >
-          <ReXAxis dataKey={"x"} unit={chartProps.xAxisColumn.unit} />
-          <ReYAxis
-            dataKey={"y"}
-            unit={groupingCalc === "count" ? "件" : chartProps.yAxisColumn.unit}
-          />
-          <ReTooltip
-            active={activeToolTip}
-            content={(props) => (
-              <div
-                style={{
-                  background: "#fff",
-                  padding: "4px 8px",
-                  margin: "2px",
-                  border: "1px solid #ccc",
-                }}
-              >
-                {props.payload?.map((item) => (
-                  <div key={item.name}>
-                    <div>{`${item.payload.x}`}</div>
-                    <div
-                      style={{ color: tokens.colorBrandStroke1 }}
-                    >{`${item.name}: ${item.payload.y}${item.unit}`}</div>
-                    <Caption1Strong>
-                      {item.payload.reference_date}
-                    </Caption1Strong>
-                  </div>
-                ))}
-              </div>
-            )}
-            cursor={false}
-            isAnimationActive={false}
-            position={tooltipPosition}
-          />
-          <ReCartesianGrid vertical={false} />
-          <ReLegend />
-          <ReBar
-            dataKey={"y"}
-            fill={CHART_COLORS.primary} // tokensに存在しない値
-            name={chartProps.yAxisColumn.label} // Legend（凡例）でも利用される
+      <div className={styles.positionContainer}>
+        <ResponsiveContainer height={400} width="100%">
+          <ReBarChart
+            data={data}
+            onMouseLeave={() => {
+              setActiveToolTip(false);
+            }}
             onMouseMove={(data, _) => {
+              if (
+                data.activeTooltipIndex === undefined ||
+                data.isTooltipActive === undefined
+              ) {
+                return;
+              }
+              setActiveIndex(data.activeTooltipIndex);
               setTooltipPosition((prev) => {
-                if (data.tooltipPosition === undefined) {
+                if (data.activeCoordinate === undefined) {
                   return prev;
                 }
 
                 return {
-                  x: prev.x,
-                  y: data.y,
+                  x: data.activeCoordinate.x,
+                  y: prev.y,
                 };
               });
+              setActiveToolTip(data.isTooltipActive);
             }}
-            unit={groupingCalc === "count" ? "件" : chartProps.yAxisColumn.unit}
           >
-            {data.map((_, index) => (
-              <ReCell
-                key={`cell-${index}`}
-                cursor="pointer"
-                fill={
-                  index === activeIndex && activeToolTip
-                    ? CHART_COLORS.teritiary
-                    : CHART_COLORS.primary
-                }
-              />
-            ))}
-          </ReBar>
-        </ReBarChart>
-      </ResponsiveContainer>
+            <ReXAxis dataKey={"x"} unit={chartProps.xAxisColumn.unit} />
+            <ReYAxis
+              dataKey={"y"}
+              unit={
+                groupingCalc === "count" ? "件" : chartProps.yAxisColumn.unit
+              }
+            />
+            <ReTooltip
+              active={activeToolTip}
+              content={(props) => (
+                <div
+                  style={{
+                    background: "#fff",
+                    padding: "4px 8px",
+                    margin: "2px",
+                    border: "1px solid #ccc",
+                  }}
+                >
+                  {props.payload?.map((item) => (
+                    <div key={item.name}>
+                      <div>{`${item.payload.x}`}</div>
+                      <div
+                        style={{ color: tokens.colorBrandStroke1 }}
+                      >{`${item.name}: ${item.payload.y}${item.unit}`}</div>
+                      <Caption1Strong>
+                        {item.payload.reference_date}
+                      </Caption1Strong>
+                    </div>
+                  ))}
+                </div>
+              )}
+              cursor={false}
+              isAnimationActive={false}
+              position={tooltipPosition}
+            />
+            <ReCartesianGrid vertical={false} />
+            <ReLegend />
+            <ReBar
+              dataKey={"y"}
+              fill={CHART_COLORS.primary} // tokensに存在しない値
+              name={chartProps.yAxisColumn.label} // Legend（凡例）でも利用される
+              onMouseMove={(data, _) => {
+                setTooltipPosition((prev) => {
+                  if (data.tooltipPosition === undefined) {
+                    return prev;
+                  }
+
+                  return {
+                    x: prev.x,
+                    y: data.y,
+                  };
+                });
+              }}
+              unit={
+                groupingCalc === "count" ? "件" : chartProps.yAxisColumn.unit
+              }
+            >
+              {data.map((_, index) => (
+                <ReCell
+                  key={`cell-${index}`}
+                  cursor="pointer"
+                  fill={
+                    index === activeIndex && activeToolTip
+                      ? CHART_COLORS.teritiary
+                      : CHART_COLORS.primary
+                  }
+                />
+              ))}
+            </ReBar>
+          </ReBarChart>
+        </ResponsiveContainer>
+        <div className={styles.buttonContainer}>
+          <Button
+            onClick={() => {
+              handleColumnChange("area_group");
+            }}
+            size="small"
+            style={{
+              fontWeight: "normal",
+            }}
+          >
+            {AREA_DATASET_COLUMN_METADATA["area_group"].label}
+            {OrderByIcon}
+          </Button>
+          {column !== "reference_date" && (
+            <Button
+              appearance="transparent"
+              onClick={() => handleColumnChange("reference_date")}
+              size="small"
+            >
+              解除
+            </Button>
+          )}
+        </div>
+      </div>
     </div>
   );
 };

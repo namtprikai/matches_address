@@ -16,7 +16,7 @@ export const fetchChartData = (async (
 ): Promise<ChartProps> => {
   switch (true) {
     case view.style === "bar" && view.unit === "area":
-      return await fetchAreaBarChartData({ view, pagination: view.pagination });
+      return await fetchAreaBarChartData({ view });
     case view.style === "line" && view.unit === "building":
       return await fetchBuildingLineChartData({ view });
     case view.style === "pie" && view.unit === "building":

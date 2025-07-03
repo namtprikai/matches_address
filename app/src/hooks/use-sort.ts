@@ -4,6 +4,7 @@ import {
   useTableFeatures,
   useTableSort,
 } from "@fluentui/react-components";
+import { type OrderByQuery } from "../@types/query";
 
 type HeaderSortProps = (columnId: TableColumnId) => {
   onClick: (e: React.MouseEvent) => void;
@@ -12,12 +13,12 @@ type HeaderSortProps = (columnId: TableColumnId) => {
 
 type UseSortReturnType<T> = {
   headerSortProps: HeaderSortProps;
-  orderBy: {
-    column: T;
-    direction: SortDirection;
-  } | null;
+  orderBy: OrderByQuery<T> | null;
 };
 
+/**
+ * fluentuiのuseTableSortをラップして、ソート機能を提供するカスタムフック
+ */
 export const useSort = <T>(): UseSortReturnType<T> => {
   const {
     sort: { getSortDirection, toggleColumnSort, sortColumn, sortDirection },

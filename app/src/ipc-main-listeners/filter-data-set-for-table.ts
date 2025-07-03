@@ -1,5 +1,4 @@
 import { and, asc, count, desc, eq, gte, lte, or } from "drizzle-orm";
-import { type SortDirection } from "@fluentui/react-components";
 import {
   data_set_detail_areas,
   data_set_detail_buildings,
@@ -30,7 +29,7 @@ import {
   type AreaFilter,
 } from "../bi-modules/interfaces/parameter";
 import { filterQueryBuilder } from "../bi-modules/api/builder/filter-query-builder";
-import { type PaginationQuery } from "../@types/query";
+import { type OrderByQuery, type PaginationQuery } from "../@types/query";
 import { type IpcMainListener } from ".";
 
 interface BaseProps {
@@ -52,10 +51,9 @@ export type FilterDataSetForTableArgs = UnitBuildingProps | UnitAreaProps;
 type Params = {
   view: TableView | MapWithTableView;
   pagination: PaginationQuery;
-  orderBy?: {
-    column: keyof SelectDataSetDetailBuilding | keyof SelectDataSetDetailArea;
-    direction: SortDirection;
-  } | null;
+  orderBy?: OrderByQuery<
+    keyof SelectDataSetDetailBuilding | keyof SelectDataSetDetailArea
+  > | null;
 };
 
 export const filterDataSetForTable = (async (
@@ -194,10 +192,9 @@ type ByArea = {
   areaFilter: AreaFilter | undefined;
   filterConditions: FilterCondition[];
   pagination: PaginationQuery;
-  orderBy?: {
-    column: keyof SelectDataSetDetailArea | keyof SelectDataSetDetailBuilding;
-    direction: SortDirection;
-  } | null;
+  orderBy?: OrderByQuery<
+    keyof SelectDataSetDetailArea | keyof SelectDataSetDetailBuilding
+  > | null;
 };
 const byArea = async (params: ByArea): Promise<TableProps> => {
   const {

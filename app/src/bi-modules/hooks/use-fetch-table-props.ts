@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useState } from "react";
-import { type SortDirection } from "@fluentui/react-components";
 import { type TableProps } from "../../@types/charts";
 import {
   usePagination,
@@ -10,15 +9,13 @@ import {
   type SelectDataSetDetailArea,
   type SelectDataSetDetailBuilding,
 } from "../../schema";
+import { type OrderByQuery } from "../../@types/query";
 
 type Params = {
   view: TableView | MapWithTableView;
-  orderBy?: {
-    column:
-      | keyof SelectDataSetDetailBuilding
-      | keyof SelectDataSetDetailArea /** @note 最下層(filterDataSetForTable)でアサーションしてるせいであまり意味のない指定になっている */;
-    direction: SortDirection;
-  } | null;
+  orderBy?: OrderByQuery<
+    keyof SelectDataSetDetailArea | keyof SelectDataSetDetailBuilding
+  > | null;
 };
 
 type ReturnType = {
