@@ -10,6 +10,7 @@ type Params = {
   data: ModelCreateParameters;
 };
 
+/** IF002:モデル構築機能の呼び出し */
 export const buildModel = (async (
   _: unknown,
   params: Params,

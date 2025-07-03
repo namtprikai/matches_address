@@ -6,6 +6,7 @@ import { processLogger } from "../../utils/process-logger";
 import { type PreprocessParameters } from "../../@types/job-parameters";
 import { startJobProcess } from "./_start-job-process";
 
+/** IF001:名寄せ処理機能の呼び出し */
 export const execE001 = (async (
   _: unknown,
   {

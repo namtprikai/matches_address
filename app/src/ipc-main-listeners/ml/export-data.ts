@@ -6,6 +6,7 @@ import { processLogger } from "../../utils/process-logger";
 import { type ExportParameters } from "../../@types/job-parameters";
 import { startJobProcess } from "./_start-job-process";
 
+/** IF004:データ出力機能の呼び出し */
 export const exportData = (async (
   _: unknown,
   params: {

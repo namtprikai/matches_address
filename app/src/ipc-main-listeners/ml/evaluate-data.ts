@@ -10,6 +10,7 @@ type Params = {
   data: ResultParameters;
 };
 
+/** IF003:空き家推定機能の呼び出し */
 export const evaluateData = (async (
   _: unknown,
   params: Params,
