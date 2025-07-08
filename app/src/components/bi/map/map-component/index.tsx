@@ -11,9 +11,7 @@ import {
   type MapWithTableView,
   type MapView,
 } from "../../../../bi-modules/interfaces/view";
-import { type AreaFilter } from "../../../../bi-modules/interfaces/parameter";
 import { type MapInitReturn } from "./hooks/use-map-init";
-import { useSetMapCenterEffect } from "./hooks/use-set-map-center-effect";
 import { type UpdateLayerEffectReturn } from "./hooks/use-update-layer-effect";
 
 export const PREDICTED_PROBABILITY: Record<
@@ -41,7 +39,6 @@ const useStyles = makeStyles({
 
 type Props = {
   view: MapView | MapWithTableView;
-  selectedDate: string | undefined;
   vacancyLevels: VacancyLevels;
   mapInitState: MapInitReturn;
   updateLayerEffectState: UpdateLayerEffectReturn;
@@ -49,25 +46,13 @@ type Props = {
 
 export function MapComponent({
   view,
-  selectedDate,
   vacancyLevels,
   mapInitState: { containerRef, mapInstance },
   updateLayerEffectState: { layerIds },
 }: Props): JSX.Element {
   const styles = useStyles();
 
-  const { unit, dataSetResultId, parameters } = view;
-  const areaFilter = parameters.find((p) => p.key === "area");
-  useSetMapCenterEffect({
-    mapInstance,
-    getGeometryParams: {
-      unit,
-      dataSetResultId,
-      selectedDate,
-      areas:
-        areaFilter?.value as AreaFilter["value"] /** [todo]なぜこの指定なのかわからないので注意 */,
-    },
-  });
+  const { unit } = view;
 
   useEffect(
     function applyFiltersEffect() {

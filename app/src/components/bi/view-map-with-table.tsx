@@ -11,7 +11,7 @@ import {
   useRestoreFocusSource,
   Switch,
 } from "@fluentui/react-components";
-import { Dismiss24Regular } from "@fluentui/react-icons";
+import { ArrowResetRegular, Dismiss24Regular } from "@fluentui/react-icons";
 import { useMemo, useState } from "react";
 import { type MapWithTableView } from "../../bi-modules/interfaces/view";
 import { TextWithTooltip } from "../ui/text-with-tooltip";
@@ -19,6 +19,7 @@ import {
   AREA_DATASET_COLUMN_METADATA,
   BUILDING_DATASET_COLUMN_METADATA,
 } from "../../config/column-metadata";
+import { type AreaFilter } from "../../bi-modules/interfaces/parameter";
 import { VacancyLevelCheckbox } from "./map/vacancy-level-checkbox";
 import { useVacancyLevelCheckbox } from "./map/vacancy-level-checkbox/hooks";
 import { ReferenceDateDropdown } from "./map/reference-date-dropdown";
@@ -29,6 +30,7 @@ import { useMapInit } from "./map/map-component/hooks/use-map-init";
 import { useUpdateLayerEffect } from "./map/map-component/hooks/use-update-layer-effect";
 import { QueryHeader, QueryHeaderWrapper } from "./query-header";
 import { useMapAllCount } from "./map/map-component/hooks/use-map-all-count";
+import { useSetMapCenterEffect } from "./map/map-component/hooks/use-set-map-center-effect";
 
 const useStyles = makeStyles({
   root: {
@@ -66,6 +68,15 @@ const useStyles = makeStyles({
   },
   map: {
     marginTop: tokens.spacingVerticalMNudge,
+    position: "relative",
+  },
+  button: {
+    position: "absolute",
+    top: tokens.spacingVerticalMNudge,
+    left: tokens.spacingHorizontalXXL,
+    zIndex: 1,
+    borderRadius: tokens.borderRadiusMedium,
+    boxShadow: tokens.shadow16,
   },
   indicator: {
     marginLeft: 0,
@@ -114,7 +125,7 @@ type Props = {
 export const ViewMapWithTable = ({ view }: Props): JSX.Element => {
   const styles = useStyles();
 
-  const { unit } = view;
+  const { unit, dataSetResultId, parameters } = view;
 
   const mapInitState = useMapInit();
 
@@ -123,6 +134,18 @@ export const ViewMapWithTable = ({ view }: Props): JSX.Element => {
   });
   const referenceDateDropdown = useReferenceDateDropdown({
     dataSetResultId: view.dataSetResultId,
+  });
+
+  const areaFilter = parameters.find((p) => p.key === "area");
+  const { resetCenter } = useSetMapCenterEffect({
+    mapInstance: mapInitState.mapInstance,
+    getGeometryParams: {
+      unit,
+      dataSetResultId,
+      selectedDate: referenceDateDropdown.selectedDate,
+      areas:
+        areaFilter?.value as AreaFilter["value"] /** [todo]なぜこの指定なのかわからないので注意 */,
+    },
   });
 
   const updateLayerEffectState = useUpdateLayerEffect({
@@ -189,9 +212,13 @@ export const ViewMapWithTable = ({ view }: Props): JSX.Element => {
             />
           </QueryHeaderWrapper>
           <div className={styles.map}>
+            <Button
+              className={styles.button}
+              icon={<ArrowResetRegular />}
+              onClick={resetCenter}
+            />
             <MapComponent
               mapInitState={mapInitState}
-              selectedDate={referenceDateDropdown.selectedDate}
               updateLayerEffectState={updateLayerEffectState}
               vacancyLevels={vacancyLevelCheckboxState.vacancyLevels}
               view={view}
