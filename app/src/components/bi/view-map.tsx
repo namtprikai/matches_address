@@ -63,7 +63,7 @@ export function Map({ view }: Props): JSX.Element {
   });
 
   const areaFilter = parameters.find((p) => p.key === "area");
-  const { resetCenter } = useSetMapCenterEffect({
+  const { resetCenter, centerIsDirty } = useSetMapCenterEffect({
     mapInstance: mapInitState.mapInstance,
     getGeometryParams: {
       unit,
@@ -122,11 +122,13 @@ export function Map({ view }: Props): JSX.Element {
         />
       </QueryHeaderWrapper>
       <div className={styles.map}>
-        <Button
-          className={styles.button}
-          icon={<ArrowResetRegular />}
-          onClick={resetCenter}
-        />
+        {centerIsDirty && (
+          <Button
+            className={styles.button}
+            icon={<ArrowResetRegular />}
+            onClick={resetCenter}
+          />
+        )}
         <MapComponent
           mapInitState={mapInitState}
           updateLayerEffectState={updateLayerEffectState}

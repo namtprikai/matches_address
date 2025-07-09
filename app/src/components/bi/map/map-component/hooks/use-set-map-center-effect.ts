@@ -12,6 +12,7 @@ type Params = {
 
 type Return = {
   resetCenter: () => void;
+  centerIsDirty: boolean;
 };
 
 /** マップの中心位置をデータセット情報をもとに設定 */
@@ -20,12 +21,22 @@ export const useSetMapCenterEffect = ({
   getGeometryParams,
 }: Params): Return => {
   const [center, setCenter] = useState<LngLatLike>(INITIAL_CENTER);
+  const [centerIsDirty, setCenterIsDirty] = useState(false);
 
   const handleCenterChange = (lngLat: LngLatLike): void => {
     setCenter(lngLat);
+    setCenterIsDirty(false);
     if (!mapInstance) return;
     mapInstance.setCenter(lngLat);
   };
+
+  mapInstance?.on("drag", () => {
+    if (mapInstance.getCenter() === center) {
+      setCenterIsDirty(false);
+    } else {
+      setCenterIsDirty(true);
+    }
+  });
 
   /** 推定結果データの1行目のポリゴンの緯度経度を取得している */
   useEffect(
@@ -46,5 +57,6 @@ export const useSetMapCenterEffect = ({
 
   return {
     resetCenter: () => handleCenterChange(center || INITIAL_CENTER),
+    centerIsDirty,
   };
 };
