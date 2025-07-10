@@ -21,6 +21,8 @@ from sklearn.metrics.pairwise import cosine_similarity
 from scipy.sparse import csr_matrix
 import numpy as np
 import warnings
+from matching_address import match_addresses
+from matched_address import matched_address as parseAddress
 
 warnings.filterwarnings("ignore")
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -266,6 +268,7 @@ def embedding_address(main_csv: io.BytesIO | str, sub_csv: io.BytesIO | str, mai
         # 名寄せ対象になる行を元情報として残す
         sub_df[f'名寄せ元情報_{sub_csv_name}'] = sub_df[sub_column]
         sub_df.rename(columns={sub_column: main_column}, inplace=True)
+        new_sub_column = main_column
         if job_id:
             create_or_update_job(job_id, progress_percent_job)
             create_or_update_job_task(job_id, progress_percent="30", preprocess_type="e014", error_code=None, error_msg=None, result=None, id= task_id)
@@ -341,107 +344,100 @@ def embedding_address(main_csv: io.BytesIO | str, sub_csv: io.BytesIO | str, mai
     
         else:
             # 完全一致による結合
-            sub_column_nenamed = [ col for col in sub_df.columns if sub_column in col ][0]
+            sub_column_nenamed = [ col for col in sub_df.columns if new_sub_column in col ][0]
             sub_df = sub_df.drop_duplicates(sub_column_nenamed, keep='first')
-            if ngram == 0:
-                df_merge = main_df.merge(sub_df, on=main_column, how='left')
-            else:
-                df_merge = main_df.merge(sub_df, on=main_column, how='inner')
-            
-        merged_rows = len(df_merge)    # 完全一致できた行数
-        # N-gramで名寄せできた行数をカウント
-        ngram_rows = 0
+            df_merge = main_df.merge(sub_df, on=main_column, how='inner')
+
         similarity_scores = []  # 類似度スコアを保存するリスト
     
-        if ngram != 0:
-            # 未結合のデータを抽出
-            main_df = main_df[~main_df[main_column].isin(df_merge[main_column])]
-            sub_df = sub_df[~sub_df[main_column].isin(df_merge[main_column])]
-            main_df = main_df.reset_index(drop=True)
-            sub_df = sub_df.reset_index(drop=True)
-            if len(main_df) > 0 and len(sub_df) > 0:
-                if job_id:
-                    create_or_update_job(job_id, progress_percent_job)
-                    create_or_update_job_task(job_id, progress_percent="40", preprocess_type="e014", error_code=None, error_msg=None, result=None, id= task_id)
-                # N-gramで類似度を計算する準備
-                vectorizer = CountVectorizer(analyzer='char', ngram_range=(ngram, ngram))
-                main_df_ngram_matrix = vectorizer.fit_transform(main_df[main_column].astype(str))
-                sub_df_ngram_matrix = vectorizer.transform(sub_df[main_column].astype(str))
-        
-                # 疎行列に変換してメモリ効率を改善
-                main_df_ngram_matrix = csr_matrix(main_df_ngram_matrix)
-                sub_df_ngram_matrix = csr_matrix(sub_df_ngram_matrix)
-        
-                # バッチ処理による類似度計算
-                for start in range(0, main_df_ngram_matrix.shape[0], batch_size):
-                    end = min(start + batch_size, main_df_ngram_matrix.shape[0])
-        
-                    # バッチ単位で類似度を計算
-                    batch_similarities = cosine_similarity(main_df_ngram_matrix[start:end], sub_df_ngram_matrix)
-                    
-                    # バッチ内の各行ごとに処理
-                    for i, similarities in enumerate(batch_similarities):
-                        top_indices = similarities.argsort()[-3:][::-1]  # 上位3件を取得
-        
-                        if similarities[top_indices[0]] >= threshold:
-                            row_index = start + i  # バッチの中での行番号をグローバルに変換
-                            for col in sub_df.columns:
-                                main_df.at[row_index, col] = sub_df.iloc[top_indices[0]][col]
-                            similarity_scores.append(similarities[top_indices[0]])  # 類似度スコアを追加
-                            ngram_rows += 1  # この行が正しく名寄せされた場合にカウント
-                        else:
-                            row_index = start + i
-                            main_df.at[row_index, f'名寄せ元情報_{sub_csv_name}'] = ""
-                            main_df.at[row_index, f'{sub_flag_name}'] = 0
-                            similarity_scores.append(similarities[top_indices[0]])  # 閾値未満の場合スコアは0
-                        
-                # 類似度スコアを結果データフレームに追加
-                main_df[f'similarity_score_{sub_csv_name}'] = similarity_scores
+        # 未結合のデータを抽出
+        main_df = main_df[~main_df[main_column].isin(df_merge[main_column])]
+        sub_df = sub_df[~sub_df[main_column].isin(df_merge[main_column])]
+        main_df = main_df.reset_index(drop=True)
+        sub_df = sub_df.reset_index(drop=True)
+
+        if len(main_df) > 0 and len(sub_df) > 0:
+            if job_id:
+                create_or_update_job(job_id, progress_percent_job)
+                create_or_update_job_task(job_id, progress_percent="40", preprocess_type="e014", error_code=None, error_msg=None, result=None, id= task_id)
+
+            # Convert all data of column address to string
+            main_df_data = main_df[main_column].astype(str)
+
+            # Convert all data of column address to string
+            sub_df_data = sub_df[main_column].astype(str)
+            matched_address = parseAddress(list(main_df_data), list(sub_df_data), threshold)
+            # matched_address = match_addresses(list(main_df_data), list(sub_df_data), threshold)
             
-                # 結果のデータフレームを作成
-                result_df = pd.concat([df_merge, main_df], axis=0, ignore_index=True)
-        
-                # flag情報を最後に持ってくる
-                result_df = result_df[[col for col in result_df.columns if col != main_flag_name] + [main_flag_name]]
+            sub_address = []
+            main_address = []
+            sub_pre = []
+            sub_town = []
+            sub_city = []
+            sub_block = []
+            sub_compare_address = []
+            main_pre = []
+            main_town = []
+            main_city = []
+            main_block = []
+            main_compare_address = []
+            for r in matched_address:
+                similarity_scores.append(r['score'])
+                sub_address.append(r['sub_address'])
+                main_address.append(r['main_address'])
+                sub_pre.append(r['sub_pre'])
+                sub_town.append(r['sub_town'])
+                sub_city.append(r['sub_city'])
+                sub_block.append(r['sub_block'])
+                sub_compare_address.append(r['sub_compare_address'])
+                main_pre.append(r['main_pre'])
+                main_town.append(r['main_town'])
+                main_city.append(r['main_city'])
+                main_block.append(r['main_block'])
+                main_compare_address.append(r['main_compare_address'])
                 
-                # カラム名にflagを含むカラムを最後に移動
-                result_df[main_flag_name] = result_df[main_flag_name].astype(int)
-                result_df[sub_flag_name] = result_df[sub_flag_name].astype(int)
-                
-                flag_columns = [col for col in result_df.columns if 'flag' in col]
-                other_columns = [col for col in result_df.columns if 'flag' not in col]
-                result_df = result_df[other_columns + flag_columns]
-            else:
-                result_df = df_merge
+
+            df_final = pd.DataFrame()
+            df_final[f'address_{main_csv_name}'] = main_address
+            df_final[f'main_pre'] = main_pre
+            df_final[f'main_city'] = main_city
+            df_final[f'main_town'] = main_town
+            df_final[f'main_block'] = main_block
+            df_final[f'main_compare_address'] = main_compare_address
+            df_final[f'address_{sub_csv_name}'] = sub_address
+            df_final[f'sub_pre'] = sub_pre
+            df_final[f'sub_city'] = sub_city
+            df_final[f'sub_town'] = sub_town
+            df_final[f'sub_block'] = sub_block
+            df_final[f'sub_compare_address'] = sub_compare_address
+            df_final['matching_score'] = similarity_scores
+            final_rows = len(df_final)
         else:
-            result_df = df_merge
-            
+            df_final = main_df
+            final_rows = len(df_final)
+
         if job_id:
             create_or_update_job(job_id, progress_percent_job)
             create_or_update_job_task(job_id, progress_percent="90", preprocess_type="e014", error_code=None, error_msg=None, result=None, id= task_id)
         # 結果をCSVファイルとして保存
-        saved_file_path = save_csv(result_df, output_path)
+        # saved_file_path = save_csv(result_df, output_path)
+        saved_file_path = save_csv(df_final, output_path)
         
         # 結果の表示
-        complete_match_ratio = f'結合元データとの完全一致割合: {merged_rows / data_rows * 100:.2f}%'
-        if ngram != 0:
-            threshold_match_ratio = f'結合元データとの閾値以上結合割合: {(merged_rows + ngram_rows) / data_rows * 100:.2f}%'
-        else:
-            threshold_match_ratio = f'結合元データとの閾値以上結合割合: {merged_rows / data_rows * 100:.2f}%'
-        sub_complete_match_ratio = f'結合先データとの完全一致割合: {merged_rows / sub_data_rows * 100:.2f}%'
+        # complete_match_ratio = f'結合元データとの完全一致割合: {final_rows / data_rows * 100:.2f}%'
+        # threshold_match_ratio = f'結合元データとの閾値以上結合割合: {final_rows / data_rows * 100:.2f}%'
+        # sub_complete_match_ratio = f'結合先データとの完全一致割合: {final_rows / sub_data_rows * 100:.2f}%'
         
-        if ngram == 0:
-            ngram_rows = 0
-            threshold_match_ratio = complete_match_ratio
-        res = {
-            'joining_rate': (merged_rows + ngram_rows) / data_rows * 100,
-            'input_source': input_source,
-            'success_rate': f"{len(result_df)}件/{data_rows}件中"
-        }
-        if job_id:
-            create_or_update_job_task(job_id, progress_percent="100", preprocess_type="e014", error_code=None, error_msg=None, result=json.dumps(res, ensure_ascii=False), id= task_id, is_finish=True)
+        # res = {
+        #     'joining_rate': final_rows / data_rows * 100,
+        #     'input_source': input_source,
+        #     'success_rate': f"{final_rows}件/{data_rows}件中"
+        # }
+        # if job_id:
+        #     create_or_update_job_task(job_id, progress_percent="100", preprocess_type="e014", error_code=None, error_msg=None, result=json.dumps(res, ensure_ascii=False), id= task_id, is_finish=True)
 
-        return saved_file_path, f"{complete_match_ratio}\n{threshold_match_ratio}\n{sub_complete_match_ratio}"
+        # return saved_file_path, f'address_{sub_csv_name}', f"{complete_match_ratio}\n{threshold_match_ratio}\n{sub_complete_match_ratio}"
+        return saved_file_path, f'address_{sub_csv_name}', ''
     except Exception as e:
         if ERROR_CODE is None:
             set_error(ERROR_00013)
