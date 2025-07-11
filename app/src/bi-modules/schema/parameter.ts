@@ -18,7 +18,7 @@ const columnSchema = z.custom<AREA_DATASET_COLUMN | BUILDING_DATASET_COLUMN>(
 
 export const parameterBaseSchema = z.object({
   key: z.string(),
-  type: z.enum(["filter", "column", "group", "group_aggregation"]),
+  type: z.enum(["filter", "column", "group", "group_aggregation", "map"]),
   value: z.any(), // unknown 型
 });
 
@@ -82,6 +82,15 @@ export const pieValueSchema = parameterBaseSchema.extend({
   value: columnSchema,
 });
 
+export const mapCenterSchema = parameterBaseSchema.extend({
+  key: z.literal("map_center"),
+  type: z.literal("map"),
+  value: z.object({
+    lng: z.number(),
+    lat: z.number(),
+  }),
+});
+
 export const parameterSchema = z.union([
   xAxisSchema,
   yAxisSchema,
@@ -93,4 +102,5 @@ export const parameterSchema = z.union([
   filterConditionSchema,
   pieLabelSchema,
   pieValueSchema,
+  mapCenterSchema,
 ]);

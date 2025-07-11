@@ -14,6 +14,7 @@ import {
   type yAxisSchema,
   type xAxisSchema,
   type parameterBaseSchema,
+  type mapCenterSchema,
 } from "../schema/parameter";
 
 export type ParameterBase = z.infer<typeof parameterBaseSchema>;
@@ -46,6 +47,8 @@ export type PieLabel = z.infer<typeof pieLabelSchema>;
 
 /** 円グラフ:値 */
 export type PieValue = z.infer<typeof pieValueSchema>;
+
+export type MapCenter = z.infer<typeof mapCenterSchema>;
 
 /** WIP: 上段の型定義はすべてSchema経由に置き換えられる */
 export type Parameter = z.infer<typeof parameterSchema>;

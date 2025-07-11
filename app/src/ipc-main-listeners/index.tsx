@@ -71,6 +71,8 @@ import { fetchChartData } from "./fetch-chart-data";
 import { deleteJob } from "./delete-job";
 import { createResultDatasets } from "./create-result-datasets";
 import { selectDataSetCount } from "./select-data-set-count";
+import { updateMapCenter } from "./update-map-center";
+import { selectMapCenter } from "./select-map-center";
 
 export const ipcMainListeners = {
   helloFromPython,
@@ -142,6 +144,8 @@ export const ipcMainListeners = {
   deleteJob,
   createResultDatasets,
   selectDataSetCount,
+  updateMapCenter,
+  selectMapCenter,
 };
 
 export const execFileAsync = promisify(execFile);

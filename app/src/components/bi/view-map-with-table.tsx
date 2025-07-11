@@ -11,7 +11,7 @@ import {
   useRestoreFocusSource,
   Switch,
 } from "@fluentui/react-components";
-import { ArrowResetRegular, Dismiss24Regular } from "@fluentui/react-icons";
+import { Dismiss24Regular } from "@fluentui/react-icons";
 import { useMemo, useState } from "react";
 import { type MapWithTableView } from "../../bi-modules/interfaces/view";
 import { TextWithTooltip } from "../ui/text-with-tooltip";
@@ -31,6 +31,7 @@ import { useUpdateLayerEffect } from "./map/map-component/hooks/use-update-layer
 import { QueryHeader, QueryHeaderWrapper } from "./query-header";
 import { useMapAllCount } from "./map/map-component/hooks/use-map-all-count";
 import { useSetMapCenterEffect } from "./map/map-component/hooks/use-set-map-center-effect";
+import { MapCenterButtons } from "./map/map-component/map-center-buttons";
 
 const useStyles = makeStyles({
   root: {
@@ -120,9 +121,10 @@ const DrawerTable = ({
 
 type Props = {
   view: MapWithTableView;
+  isPreview?: boolean; // プレビュー用のフラグ
 };
 
-export const ViewMapWithTable = ({ view }: Props): JSX.Element => {
+export const ViewMapWithTable = ({ view, isPreview }: Props): JSX.Element => {
   const styles = useStyles();
 
   const { unit, dataSetResultId, parameters } = view;
@@ -136,8 +138,15 @@ export const ViewMapWithTable = ({ view }: Props): JSX.Element => {
     dataSetResultId: view.dataSetResultId,
   });
 
+  const updateLayerEffectState = useUpdateLayerEffect({
+    mapInstance: mapInitState.mapInstance,
+    selectedDate: referenceDateDropdown.selectedDate,
+    view,
+  });
+
   const areaFilter = parameters.find((p) => p.key === "area");
-  const { resetCenter, centerIsDirty } = useSetMapCenterEffect({
+  const setMapCenterEffect = useSetMapCenterEffect({
+    resultViewId: view.id,
     mapInstance: mapInitState.mapInstance,
     getGeometryParams: {
       unit,
@@ -146,12 +155,7 @@ export const ViewMapWithTable = ({ view }: Props): JSX.Element => {
       areas:
         areaFilter?.value as AreaFilter["value"] /** [todo]なぜこの指定なのかわからないので注意 */,
     },
-  });
-
-  const updateLayerEffectState = useUpdateLayerEffect({
-    mapInstance: mapInitState.mapInstance,
-    selectedDate: referenceDateDropdown.selectedDate,
-    view,
+    clearPopup: updateLayerEffectState.clearPopup,
   });
 
   const { allCount } = useMapAllCount({
@@ -212,13 +216,7 @@ export const ViewMapWithTable = ({ view }: Props): JSX.Element => {
             />
           </QueryHeaderWrapper>
           <div className={styles.map}>
-            {centerIsDirty && (
-              <Button
-                className={styles.button}
-                icon={<ArrowResetRegular />}
-                onClick={resetCenter}
-              />
-            )}
+            <MapCenterButtons isPreview={isPreview} {...setMapCenterEffect} />
             <MapComponent
               mapInitState={mapInitState}
               updateLayerEffectState={updateLayerEffectState}

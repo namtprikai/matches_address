@@ -81,7 +81,7 @@ export const PreviewResultSheet = ({ sheetId }: Props): JSX.Element | null => {
           <ViewContainer
             key={item.id}
             className={styles[`view${item.layoutIndex}` as keyof typeof styles]}
-            focusable
+            isPreview
             resultView={item}
           />
         ))}

@@ -8,27 +8,28 @@ import { ViewMapWithTable } from "./view-map-with-table";
 
 type Props = {
   view: View;
+  isPreview?: boolean;
 };
 
 /** ビューの分岐をするコンポーネント */
-export const ViewStyle = ({ view }: Props): JSX.Element => {
+export const ViewStyle = ({ view, ...props }: Props): JSX.Element => {
   const { style, unit } = view;
 
   switch (true) {
     case style === "pie" && unit === "building":
-      return <ViewPie view={view} />;
+      return <ViewPie view={view} {...props} />;
     case style === "bar" && unit === "area":
-      return <ViewBar view={view} />;
+      return <ViewBar view={view} {...props} />;
     case style === "line" && unit === "building":
-      return <ViewLine view={view} />;
+      return <ViewLine view={view} {...props} />;
     case style === "table": {
-      return <ViewTable view={view} />;
+      return <ViewTable view={view} {...props} />;
     }
     case style === "map": {
-      return <Map view={view} />;
+      return <Map view={view} {...props} />;
     }
     case style === "map-with-table": {
-      return <ViewMapWithTable view={view} />;
+      return <ViewMapWithTable view={view} {...props} />;
     }
   }
 

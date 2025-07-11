@@ -23,7 +23,7 @@ import { DeleteDialog } from "./dialog-delete";
 type Props = {
   resultView: SelectResultView;
   className?: string;
-  focusable?: boolean;
+  isPreview?: boolean;
   cardProps?: CardProps;
 };
 
@@ -65,7 +65,7 @@ const useStyles = makeStyles({
 export const ViewContainer = ({
   resultView,
   className,
-  focusable,
+  isPreview = false,
 }: Props): JSX.Element => {
   const styles = useStyles();
   const navigate = useNavigate();
@@ -98,7 +98,7 @@ export const ViewContainer = ({
         selected && styles.selected,
         className,
       )}
-      onClick={focusable ? handleClick : undefined}
+      onClick={isPreview ? handleClick : undefined}
     >
       <CardHeader
         action={
@@ -125,6 +125,7 @@ export const ViewContainer = ({
         <div>パラメーターの値を正しく設定してください</div>
       ) : resultView.unit && resultView.data_set_result_id ? (
         <ViewStyle
+          isPreview={isPreview}
           view={
             {
               id: resultView.id,

@@ -23,9 +23,7 @@ type Props = {
 export type UpdateLayerEffectReturn = {
   layerIds: string[] | null;
   features: FeatureData[] | null;
-  selectedFeature: FeatureData | null;
-  setSelectedFeature: (feature: FeatureData | null) => void;
-};
+} & UsePopupEffectWithFeatureReturn;
 
 /**
  * BATCH_SIZEで設定した件数ごとにデータを取得し、レイヤを追加し、Popupを管理するエフェクト.
@@ -45,10 +43,11 @@ export const useUpdateLayerEffect = ({
     setFeatures(newFeatures);
   };
 
-  const { selectedFeature, setSelectedFeature } = _usePopupEffectWithFeature({
-    mapInstance,
-    view,
-  });
+  const { selectedFeature, setSelectedFeature, clearPopup } =
+    _usePopupEffectWithFeature({
+      mapInstance,
+      view,
+    });
 
   /** レイヤーにイベント・リソースを追加 */
   useEffect(() => {
@@ -121,7 +120,19 @@ export const useUpdateLayerEffect = ({
     view.parameters,
   ]);
 
-  return { layerIds, features, selectedFeature, setSelectedFeature };
+  return {
+    layerIds,
+    features,
+    selectedFeature,
+    setSelectedFeature,
+    clearPopup,
+  };
+};
+
+type UsePopupEffectWithFeatureReturn = {
+  selectedFeature: FeatureData | null;
+  setSelectedFeature: (feature: FeatureData | null) => void;
+  clearPopup: () => void;
 };
 
 /** ポップアップの制御に関するエフェクト */
@@ -131,14 +142,18 @@ const _usePopupEffectWithFeature = ({
 }: {
   mapInstance: Map | null;
   view: MapView | MapWithTableView;
-}): {
-  selectedFeature: FeatureData | null;
-  setSelectedFeature: (feature: FeatureData | null) => void;
-} => {
+}): UsePopupEffectWithFeatureReturn => {
   const popupRef = useRef<Popup | null>(null);
   const [selectedFeature, setSelectedFeature] = useState<FeatureData | null>(
     null,
   );
+
+  const clearPopup = (): void => {
+    if (popupRef.current) {
+      popupRef.current.remove();
+      popupRef.current = null;
+    }
+  };
 
   useEffect(() => {
     /** 設定が変更された場合選択されたフィーチャーをクリア */
@@ -188,5 +203,5 @@ const _usePopupEffectWithFeature = ({
     };
   }, [mapInstance, selectedFeature, unit]);
 
-  return { selectedFeature, setSelectedFeature };
+  return { selectedFeature, setSelectedFeature, clearPopup };
 };

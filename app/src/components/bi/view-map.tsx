@@ -1,6 +1,5 @@
 import { useMemo } from "react";
 import { makeStyles, tokens } from "@fluentui/react-components";
-import { ArrowResetRegular } from "@fluentui/react-icons";
 import { type MapView } from "../../bi-modules/interfaces/view";
 import {
   AREA_DATASET_COLUMN_METADATA,
@@ -8,7 +7,6 @@ import {
 } from "../../config/column-metadata";
 import { TextWithTooltip } from "../ui/text-with-tooltip";
 import { type AreaFilter } from "../../bi-modules/interfaces/parameter";
-import { Button } from "../ui/button";
 import { VacancyLevelCheckbox } from "./map/vacancy-level-checkbox";
 import { MapComponent } from "./map/map-component";
 import { ReferenceDateDropdown } from "./map/reference-date-dropdown";
@@ -19,6 +17,7 @@ import { useUpdateLayerEffect } from "./map/map-component/hooks/use-update-layer
 import { QueryHeader, QueryHeaderWrapper } from "./query-header";
 import { useMapAllCount } from "./map/map-component/hooks/use-map-all-count";
 import { useSetMapCenterEffect } from "./map/map-component/hooks/use-set-map-center-effect";
+import { MapCenterButtons } from "./map/map-component/map-center-buttons";
 
 const useStyles = makeStyles({
   filters: {
@@ -34,21 +33,14 @@ const useStyles = makeStyles({
     marginTop: tokens.spacingVerticalMNudge,
     position: "relative",
   },
-  button: {
-    position: "absolute",
-    top: tokens.spacingVerticalMNudge,
-    left: tokens.spacingHorizontalXXL,
-    zIndex: 1,
-    borderRadius: tokens.borderRadiusMedium,
-    boxShadow: tokens.shadow16,
-  },
 });
 
 interface Props {
   view: MapView;
+  isPreview?: boolean; // プレビュー用のフラグ
 }
 
-export function Map({ view }: Props): JSX.Element {
+export function Map({ view, isPreview }: Props): JSX.Element {
   const { unit, dataSetResultId, parameters } = view;
 
   const styles = useStyles();
@@ -62,8 +54,15 @@ export function Map({ view }: Props): JSX.Element {
     dataSetResultId: view.dataSetResultId,
   });
 
+  const updateLayerEffectState = useUpdateLayerEffect({
+    mapInstance: mapInitState.mapInstance,
+    selectedDate: referenceDateDropdown.selectedDate,
+    view,
+  });
+
   const areaFilter = parameters.find((p) => p.key === "area");
-  const { resetCenter, centerIsDirty } = useSetMapCenterEffect({
+  const setMapCenterEffect = useSetMapCenterEffect({
+    resultViewId: view.id,
     mapInstance: mapInitState.mapInstance,
     getGeometryParams: {
       unit,
@@ -72,12 +71,7 @@ export function Map({ view }: Props): JSX.Element {
       areas:
         areaFilter?.value as AreaFilter["value"] /** [todo]なぜこの指定なのかわからないので注意 */,
     },
-  });
-
-  const updateLayerEffectState = useUpdateLayerEffect({
-    mapInstance: mapInitState.mapInstance,
-    selectedDate: referenceDateDropdown.selectedDate,
-    view,
+    clearPopup: updateLayerEffectState.clearPopup,
   });
 
   const { allCount } = useMapAllCount({
@@ -122,13 +116,7 @@ export function Map({ view }: Props): JSX.Element {
         />
       </QueryHeaderWrapper>
       <div className={styles.map}>
-        {centerIsDirty && (
-          <Button
-            className={styles.button}
-            icon={<ArrowResetRegular />}
-            onClick={resetCenter}
-          />
-        )}
+        <MapCenterButtons isPreview={isPreview} {...setMapCenterEffect} />
         <MapComponent
           mapInitState={mapInitState}
           updateLayerEffectState={updateLayerEffectState}
