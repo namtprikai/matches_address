@@ -4,13 +4,15 @@ import math
 import re
 from threading import Thread
 import threading
-import time
 from queue import Queue
 from concurrent.futures import ProcessPoolExecutor
+from joblib import Parallel, delayed
+import pandas as pd
+
 
 result_main_queue = Queue()
 result_sub_queue = Queue()
-results = Queue()
+# results = Queue()
 
 def get_levenshtein_distance_ratio(strA: str, strB: str) -> float:
     N = len(strA)
@@ -50,7 +52,7 @@ def get_parsed_town(m_town, parsed_data):
     if 'city_district' in parsed_data:
         if 'town' in parsed_data:
             return f"{parsed_data['town']}{parsed_data['city_district']}"
-        else:  
+        else:
             return parsed_data['city_district']
     else:
         return m_town if m_town else ''
@@ -94,7 +96,7 @@ def parse_address(addresses, type):
                     "block": '',
                     "full_address": ''
                 }
-            
+
         else:
             address_parse = {
                 "prefecture": '',
@@ -108,7 +110,7 @@ def parse_address(addresses, type):
             }
 
         parsed_address.append(address_parse)
-    
+
     if type == 'main':
         result_main_queue.put(parsed_address)
     else:
@@ -116,8 +118,6 @@ def parse_address(addresses, type):
     # return parsed_address
 
 def matched_address(main_df, sub_df, threshold):
-    max_batch = 200
-
     levels = [
         "prefecture",
         "city",
@@ -138,27 +138,12 @@ def matched_address(main_df, sub_df, threshold):
 
     main_parsed = result_main_queue.get()
     sub_parsed = result_sub_queue.get()
-
-    batches = [main_parsed[i:i+max_batch] for i in range(0, len(main_parsed), max_batch)]
-
-    params = [
-        batches,
-        sub_parsed,
-        levels,
-        threshold
-    ]
-
-    with ProcessPoolExecutor() as executor:
-        for batch_results in executor.map(lambda p: calc_similarity_address(*p), params):
-            for r in batch_results:
-                results.put(r)
-
-    data = results.get()
-    print(data)
-
-def calc_similarity_address(main_parsed, sub_parsed, levels, threshold):
     results = []
-    for main_data in main_parsed:
+
+    main_index = 0
+    sub_index = 0
+
+    for main_index, main_data in enumerate(main_parsed):
         match_similarity = 0.0
         sub_address = ''
         sub_pre = ''
@@ -170,7 +155,7 @@ def calc_similarity_address(main_parsed, sub_parsed, levels, threshold):
         main_town = ''
         main_city = ''
         main_block = ''
-        for sub_data in sub_parsed:
+        for sub_index, sub_data in enumerate(sub_parsed):
             similarity = 0
             new_main_address = ''
             new_sub_address = ''
@@ -185,35 +170,51 @@ def calc_similarity_address(main_parsed, sub_parsed, levels, threshold):
 
             if new_main_address and new_sub_address:
                 similarity = get_levenshtein_distance_ratio(new_main_address, new_sub_address)
-
-            if similarity >= threshold:
                 match_similarity = round(similarity, 2)
-                sub_address = sub_data['full_address']
-                main_address = main_data['full_address']
-                sub_pre = sub_data['prefecture']
-                sub_town = sub_data['town']
-                sub_city = sub_data['city']
-                sub_block = sub_data['block']
-                main_pre = main_data['prefecture']
-                main_town = main_data['town']
-                main_city = main_data['city']
-                main_block = main_data['block']
-                main_compare_address = new_main_address
-                sub_compare_address = new_sub_address
-                
-                results.put({
-                    'sub_address': sub_address,
-                    'main_address': main_address,
-                    'score': str(match_similarity),
-                    'sub_pre': sub_pre,
-                    'sub_town': sub_town,
-                    'sub_city': sub_city,
-                    'sub_block': f"'{sub_block}",
-                    'sub_compare_address': f"'{sub_compare_address}",
-                    'main_pre': main_pre,
-                    'main_town': main_town,
-                    'main_city': main_city,
-                    'main_block': f"'{main_block}",
-                    'main_compare_address': f"'{main_compare_address}",
+
+                results.append({
+                    'main_address': main_data['full_address'],
+                    'sub_address': sub_data['full_address'],
+                    'main_index': main_index,
+                    'sub_index': sub_index,
+                    'score': match_similarity,
                 })
-        results.append()
+
+            # if similarity >= threshold:
+            #     match_similarity = round(similarity, 2)
+            #     sub_address = sub_data['full_address']
+            #     main_address = main_data['full_address']
+            #     sub_pre = sub_data['prefecture']
+            #     sub_town = sub_data['town']
+            #     sub_city = sub_data['city']
+            #     sub_block = sub_data['block']
+            #     main_pre = main_data['prefecture']
+            #     main_town = main_data['town']
+            #     main_city = main_data['city']
+            #     main_block = main_data['block']
+            #     main_compare_address = new_main_address
+            #     sub_compare_address = new_sub_address
+
+            #     results.append({
+            #         'sub_address': sub_address,
+            #         'main_address': main_address,
+            #         'score': str(match_similarity),
+            #         'sub_pre': sub_pre,
+            #         'sub_town': sub_town,
+            #         'sub_city': sub_city,
+            #         'sub_block': f"'{sub_block}",
+            #         'sub_compare_address': f"'{sub_compare_address}",
+            #         'main_pre': main_pre,
+            #         'main_town': main_town,
+            #         'main_city': main_city,
+            #         'main_block': f"'{main_block}",
+            #         'main_compare_address': f"'{main_compare_address}",
+            #     })
+
+    # print(f"Total matches found: {len(results)}")
+
+    # data = results.get()
+    # print(data)
+    df = pd.DataFrame(results)
+    df.to_csv('add.csv', index=False)
+    return results
