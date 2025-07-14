@@ -1,12 +1,12 @@
 from E014 import embedding_address
 
-suido_csv = f"E:/1.Projects/geocoding_file/address-toyota/suido_residence.csv"
-juki_csv = f"E:/1.Projects/geocoding_file/address-toyota/juki_residence.csv"
-touki_csv = f"E:/1.Projects/geocoding_file/address-toyota/touki_residence.csv"
-geocoded_csv = f"E:/1.Projects/geocoding_file/address-toyota/E016.csv"
-output_path = f"E:/1.Projects/geocoding_file/address-toyota"
+suido_csv = f"C:/Users/PC/Downloads/toyohashi/1049545f-bb52-4287-b487-9432fe82b536/suido_residence.csv"
+juki_csv = f"C:/Users/PC/Downloads/toyohashi/1049545f-bb52-4287-b487-9432fe82b536/juki_residence.csv"
+touki_csv = ''
+geocoded_csv = f"C:/Users/PC/Downloads/toyohashi/1049545f-bb52-4287-b487-9432fe82b536/E016.csv"
+output_path = f"E:/1.Projects/geocoding_file/matching_data"
 merge_base = 'suido_residence.csv'
-threshold = 0.2
+threshold = 0.6
 batch_size = 1000,
 
 # 'juki': '住基',
@@ -50,8 +50,6 @@ def start(suido_csv, juki_csv, touki_csv, geocoded_csv, output_path, merge_base,
     result_column_name = address_column
     message = msg
 
-    print(result_path, '////')
-
     # Handle juki, step_1
     saved_file_path, address_column, msg = embedding_address(
         juki_csv,
@@ -59,7 +57,7 @@ def start(suido_csv, juki_csv, touki_csv, geocoded_csv, output_path, merge_base,
         "正規化住所",
         result_column_name,
         merge_base,
-        f"{output_path}/step_2.csv",
+        f"{output_path}/matched_data.csv" if touki_csv else f"{output_path}/step_2.csv",
         3,
         threshold,
         batch_size,

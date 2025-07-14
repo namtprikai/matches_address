@@ -2,6 +2,15 @@ import japanese_address
 from difflib import SequenceMatcher
 import math
 import re
+from threading import Thread
+import threading
+import time
+from queue import Queue
+from concurrent.futures import ProcessPoolExecutor
+
+result_main_queue = Queue()
+result_sub_queue = Queue()
+results = Queue()
 
 def get_levenshtein_distance_ratio(strA: str, strB: str) -> float:
     N = len(strA)
@@ -46,33 +55,46 @@ def get_parsed_town(m_town, parsed_data):
     else:
         return m_town if m_town else ''
 
-def parse_address(addresses):
+def parse_address(addresses, type):
     parsed_address = []
     for address in addresses:
         if address and address != 'nan':
-            parsed = japanese_address.parse(address)
+            try:
+                parsed = japanese_address.parse(address)
 
-            if 'unparsed_right' not in parsed:
-                parsed['block'] = ''
-            else:
-                parsed['block'] = parsed['unparsed_right']
+                if 'unparsed_right' not in parsed:
+                    parsed['block'] = ''
+                else:
+                    parsed['block'] = parsed['unparsed_right']
 
-            m_pref  = re.search(r"(.*?[都道府県])", address)
-            m_city  = re.search(r"[都道府県](.*?[市区郡])", address)
-            m_town  = get_town(address)
-            m_aza   = re.search(r"字([^0-9丁目-]+)", address)
-            m_chome = re.search(r"(\d+)丁目", address)
-            m_bango = re.search(r"(\d[\d\-]+)$", address)
-            address_parse = {
-                "prefecture": m_pref.group(1) if m_pref else '',
-                "city": m_city.group(1) if m_city else '',
-                "town": get_parsed_town(m_town, parsed),
-                "aza": m_aza.group(1) if m_aza else '',
-                "chome": m_chome.group(1) if m_chome else '',
-                "m_bango": m_bango.group(1) if m_bango else '',
-                "block": parsed['block'],
-                "full_address": address
-            }
+                m_pref  = re.search(r"(.*?[都道府県])", address)
+                m_city  = re.search(r"[都道府県](.*?[市区郡])", address)
+                m_town  = get_town(address)
+                m_aza   = re.search(r"字([^0-9丁目-]+)", address)
+                m_chome = re.search(r"(\d+)丁目", address)
+                m_bango = re.search(r"(\d[\d\-]+)$", address)
+                address_parse = {
+                    "prefecture": m_pref.group(1) if m_pref else '',
+                    "city": m_city.group(1) if m_city else '',
+                    "town": get_parsed_town(m_town, parsed),
+                    "aza": m_aza.group(1) if m_aza else '',
+                    "chome": m_chome.group(1) if m_chome else '',
+                    "m_bango": m_bango.group(1) if m_bango else '',
+                    "block": parsed['block'],
+                    "full_address": address
+                }
+            except:
+                address_parse = {
+                    "prefecture": '',
+                    "city": '',
+                    "town": '',
+                    "aza": '',
+                    "chome": '',
+                    "m_bango": '',
+                    "block": '',
+                    "full_address": ''
+                }
+            
         else:
             address_parse = {
                 "prefecture": '',
@@ -87,21 +109,55 @@ def parse_address(addresses):
 
         parsed_address.append(address_parse)
     
-    return parsed_address
+    if type == 'main':
+        result_main_queue.put(parsed_address)
+    else:
+        result_sub_queue.put(parsed_address)
+    # return parsed_address
 
 def matched_address(main_df, sub_df, threshold):
-    weights = {
-        "prefecture": 0.2,
-        "city": 0.2,
-        "town": 0.2,
-        "aza": 0.2,
-        "chome": 0.1,
-        "block": 0.1
-    }
-    main_parsed = parse_address(main_df)
-    sub_parsed = parse_address(sub_df)
+    max_batch = 200
 
-    result = []
+    levels = [
+        "prefecture",
+        "city",
+        "town",
+        "aza",
+        "chome",
+        "block"
+    ]
+    # main_parsed = parse_address(main_df)
+    # sub_parsed = parse_address(sub_df)
+
+    main_thread = threading.Thread(target=parse_address, args=(main_df, 'main'))
+    sub_thread = threading.Thread(target=parse_address, args=(sub_df, 'sub'))
+    main_thread.start()
+    sub_thread.start()
+    main_thread.join()
+    sub_thread.join()
+
+    main_parsed = result_main_queue.get()
+    sub_parsed = result_sub_queue.get()
+
+    batches = [main_parsed[i:i+max_batch] for i in range(0, len(main_parsed), max_batch)]
+
+    params = [
+        batches,
+        sub_parsed,
+        levels,
+        threshold
+    ]
+
+    with ProcessPoolExecutor() as executor:
+        for batch_results in executor.map(lambda p: calc_similarity_address(*p), params):
+            for r in batch_results:
+                results.put(r)
+
+    data = results.get()
+    print(data)
+
+def calc_similarity_address(main_parsed, sub_parsed, levels, threshold):
+    results = []
     for main_data in main_parsed:
         match_similarity = 0.0
         sub_address = ''
@@ -118,7 +174,7 @@ def matched_address(main_df, sub_df, threshold):
             similarity = 0
             new_main_address = ''
             new_sub_address = ''
-            for level, weight in weights.items():
+            for level in levels:
                 main_level = main_data.get(level, "")
                 sub_level = sub_data.get(level, "")
                 if main_level:
@@ -145,7 +201,7 @@ def matched_address(main_df, sub_df, threshold):
                 main_compare_address = new_main_address
                 sub_compare_address = new_sub_address
                 
-                result.append({
+                results.put({
                     'sub_address': sub_address,
                     'main_address': main_address,
                     'score': str(match_similarity),
@@ -160,4 +216,4 @@ def matched_address(main_df, sub_df, threshold):
                     'main_block': f"'{main_block}",
                     'main_compare_address': f"'{main_compare_address}",
                 })
-    return result
+        results.append()

@@ -347,6 +347,7 @@ def embedding_address(main_csv: io.BytesIO | str, sub_csv: io.BytesIO | str, mai
             sub_column_nenamed = [ col for col in sub_df.columns if new_sub_column in col ][0]
             sub_df = sub_df.drop_duplicates(sub_column_nenamed, keep='first')
             df_merge = main_df.merge(sub_df, on=main_column, how='inner')
+            print(len(df_merge), 'len')
 
         similarity_scores = []  # 類似度スコアを保存するリスト
     
