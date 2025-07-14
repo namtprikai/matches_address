@@ -210,7 +210,7 @@ def embedding_address(main_csv: io.BytesIO | str, sub_csv: io.BytesIO | str, mai
         else:
             sub_df = read_data(sub_csv)
 
-        if '住基' in input_source and '水道' in input_source:
+        if 'ジオコーディングデータ' in input_source and '水道' in input_source:
             # 日付のNormalize化をし、年月を取得
             main_start_date_col = [col for col in ['使用開始日', '住定異動年月日', '登記日付' ] if col in main_df.columns][0]
             main_df = normalize_dates(main_df,main_start_date_col)
@@ -272,7 +272,6 @@ def embedding_address(main_csv: io.BytesIO | str, sub_csv: io.BytesIO | str, mai
         if job_id:
             create_or_update_job(job_id, progress_percent_job)
             create_or_update_job_task(job_id, progress_percent="30", preprocess_type="e014", error_code=None, error_msg=None, result=None, id= task_id)
-
         if 'ジオコーディングデータ' in input_source and '水道' in input_source:
             # 水道で1つの住所に複数の水道番号が結びついている住所を取り出す
             multi_address_in_main = main_df[main_column].value_counts()[main_df[main_column].value_counts()>1].index
@@ -293,7 +292,7 @@ def embedding_address(main_csv: io.BytesIO | str, sub_csv: io.BytesIO | str, mai
                     merged_df_col_dict[colname] = tar_colname_list[0]
                 else:
                     merged_df_col_dict[colname] = colname
-            print(merged_df_col_dict, '///')
+
             # 複数住所のレコードを水道使用開始月と住定年月が同じのレコードのみで結びつける（family_thresh以上は排除）
             main_multi_sub_merge = pd.DataFrame(columns = main_single_sub_merge.columns)
             no_juki = []
@@ -346,12 +345,9 @@ def embedding_address(main_csv: io.BytesIO | str, sub_csv: io.BytesIO | str, mai
             # 完全一致による結合
             sub_column_nenamed = [ col for col in sub_df.columns if new_sub_column in col ][0]
             sub_df = sub_df.drop_duplicates(sub_column_nenamed, keep='first')
-            print(main_column, sub_column_nenamed, '///')
             df_merge = main_df.merge(sub_df, on=main_column, how='inner')
-            print(len(df_merge), 'len')
 
         merged_rows = len(df_merge)
-        similarity_scores = []  # 類似度スコアを保存するリスト
 
         # 未結合のデータを抽出
         main_df = main_df[~main_df[main_column].isin(df_merge[main_column])]
@@ -369,79 +365,53 @@ def embedding_address(main_csv: io.BytesIO | str, sub_csv: io.BytesIO | str, mai
 
             # Convert all data of column address to string
             sub_df_data = sub_df[main_column].astype(str)
-            matched_address = parseAddress(list(main_df_data), list(sub_df_data), threshold)
-            # matched_address = match_addresses(list(main_df_data), list(sub_df_data), threshold)
+            matched_address = parseAddress(list(main_df_data), list(sub_df_data))
+            sub_df = sub_df.drop(columns=['address'])
 
             for r in matched_address:
                 if r['score'] >= threshold:
                     for col in sub_df.columns:
-                    # print(r['main_index'], r['sub_index'], 'indexxxxr')
                         main_df.at[r['main_index'], col] = sub_df.at[r['sub_index'], col]
-                    main_df.at[r['main_index'], 'similarity_score'] = r['score']
-                    # main_df['similarity_score'][r['main_index']] = r['score']
-                    # else:
-                    #     main_df.at[r['main_index'], f'名寄せ元情報_{sub_csv_name}'] = ''
-                    #     main_df.at[r['main_index'], f'{sub_flag_name}'] = 0
-                    #     similarity_scores.append(0.0)
-                    # main_df.at[r['main_index'], 'a'] = 1
-                        # if col.startswith('名寄せ元情報_'):
-                        #     r[col] = sub_df.at[r['sub_index'], col]
-                    # main_df.at(r['main_index'], main_column) = r['main_address']
-                    # main_index = r['main_index']
-                    # sub_index = r['sub_index']
-                    similarity_scores.append(r['score'])
-                    # sub_address.append(r['sub_address'])
-                    # main_address.append(r['main_address'])
-                    # main_df[main_index] = pd.concat([main_df[main_index], sub_df[sub_index]], axis=1)
+                    main_df.at[r['main_index'], f'similarity_score_{sub_csv_name}'] = r['score']
+                else:
+                    main_df.at[r['main_index'], f'名寄せ元情報_{sub_csv_name}'] = ''
+                    main_df.at[r['main_index'], f'{sub_flag_name}'] = 0
+                    main_df.at[r['main_index'], f'similarity_score_{sub_csv_name}'] = 0.0
+                    
+            result_df = pd.concat([df_merge, main_df], axis=0, ignore_index=True)
+            # flag情報を最後に持ってくる
+            result_df = result_df[[col for col in result_df.columns if col != main_flag_name] + [main_flag_name]]
+            
+            # カラム名にflagを含むカラムを最後に移動
+            result_df[main_flag_name] = result_df[main_flag_name].astype(int)
+            result_df[sub_flag_name] = result_df[sub_flag_name].astype(int)
 
-            print(main_df, 'main_df')
-
-
-            # df_final = pd.DataFrame()
-            # df_final[f'address_{main_csv_name}'] = main_address
-            # df_final[f'main_pre'] = main_pre
-            # df_final[f'main_city'] = main_city
-            # df_final[f'main_town'] = main_town
-            # df_final[f'main_block'] = main_block
-            # df_final[f'main_compare_address'] = main_compare_address
-            # df_final[f'address_{sub_csv_name}'] = sub_address
-            # df_final[f'sub_pre'] = sub_pre
-            # df_final[f'sub_city'] = sub_city
-            # df_final[f'sub_town'] = sub_town
-            # df_final[f'sub_block'] = sub_block
-            # df_final[f'sub_compare_address'] = sub_compare_address
-            # df_final['matching_score'] = similarity_scores
-            print(len(df_merge), 'len df_merge')
-            print(len(matched_address), 'len matched_address')
-            # main_df[f'similarity_score_{sub_csv_name}'] = similarity_scores
-            # final_rows = len(final_rows)
+            flag_columns = [col for col in result_df.columns if 'flag' in col]
+            other_columns = [col for col in result_df.columns if 'flag' not in col]
+            result_df = result_df[other_columns + flag_columns]
         else:
-            df_merge = main_df
-            # final_rows = len(df_merge)
+            result_df = df_merge
 
         if job_id:
             create_or_update_job(job_id, progress_percent_job)
             create_or_update_job_task(job_id, progress_percent="90", preprocess_type="e014", error_code=None, error_msg=None, result=None, id= task_id)
         # 結果をCSVファイルとして保存
-        # saved_file_path = save_csv(result_df, output_path)
-        saved_file_path = save_csv(main_df, output_path)
-        print(saved_file_path, 'saved_file_path')
+        saved_file_path = save_csv(result_df, output_path)
 
         # 結果の表示
-        # complete_match_ratio = f'結合元データとの完全一致割合: {final_rows / data_rows * 100:.2f}%'
-        # threshold_match_ratio = f'結合元データとの閾値以上結合割合: {final_rows / data_rows * 100:.2f}%'
-        # sub_complete_match_ratio = f'結合先データとの完全一致割合: {final_rows / sub_data_rows * 100:.2f}%'
+        complete_match_ratio = f'結合元データとの完全一致割合: {merged_rows / data_rows * 100:.2f}%'
+        threshold_match_ratio = f'結合元データとの閾値以上結合割合: {merged_rows / data_rows * 100:.2f}%'
+        sub_complete_match_ratio = f'結合先データとの完全一致割合: {merged_rows / sub_data_rows * 100:.2f}%'
 
-        # res = {
-        #     'joining_rate': final_rows / data_rows * 100,
-        #     'input_source': input_source,
-        #     'success_rate': f"{final_rows}件/{data_rows}件中"
-        # }
-        # if job_id:
-        #     create_or_update_job_task(job_id, progress_percent="100", preprocess_type="e014", error_code=None, error_msg=None, result=json.dumps(res, ensure_ascii=False), id= task_id, is_finish=True)
+        res = {
+            'joining_rate': merged_rows / data_rows * 100,
+            'input_source': input_source,
+            'success_rate': f"{merged_rows}件/{data_rows}件中"
+        }
+        if job_id:
+            create_or_update_job_task(job_id, progress_percent="100", preprocess_type="e014", error_code=None, error_msg=None, result=json.dumps(res, ensure_ascii=False), id= task_id, is_finish=True)
 
-        # return saved_file_path, f'address_{sub_csv_name}', f"{complete_match_ratio}\n{threshold_match_ratio}\n{sub_complete_match_ratio}"
-        return saved_file_path, f'address_{sub_csv_name}', ''
+        return saved_file_path, f"{complete_match_ratio}\n{threshold_match_ratio}\n{sub_complete_match_ratio}"
     except Exception as e:
         if ERROR_CODE is None:
             set_error(ERROR_00013)

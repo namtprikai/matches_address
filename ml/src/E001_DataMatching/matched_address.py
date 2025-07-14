@@ -117,7 +117,7 @@ def parse_address(addresses, type):
         result_sub_queue.put(parsed_address)
     # return parsed_address
 
-def matched_address(main_df, sub_df, threshold):
+def matched_address(main_df, sub_df):
     levels = [
         "prefecture",
         "city",
@@ -145,16 +145,7 @@ def matched_address(main_df, sub_df, threshold):
 
     for main_index, main_data in enumerate(main_parsed):
         match_similarity = 0.0
-        sub_address = ''
-        sub_pre = ''
-        sub_town = ''
-        sub_city = ''
-        sub_block = ''
-        main_address = ''
-        main_pre = ''
-        main_town = ''
-        main_city = ''
-        main_block = ''
+        matched_data = {}
         for sub_index, sub_data in enumerate(sub_parsed):
             similarity = 0
             new_main_address = ''
@@ -165,56 +156,20 @@ def matched_address(main_df, sub_df, threshold):
                 if main_level:
                     new_main_address += main_level
                     new_sub_address += sub_level
-                    # s = SequenceMatcher(None, val1, val2).ratio()
-                    # score += weight * s
 
             if new_main_address and new_sub_address:
                 similarity = get_levenshtein_distance_ratio(new_main_address, new_sub_address)
-                match_similarity = round(similarity, 2)
 
-                results.append({
-                    'main_address': main_data['full_address'],
-                    'sub_address': sub_data['full_address'],
-                    'main_index': main_index,
-                    'sub_index': sub_index,
-                    'score': match_similarity,
-                })
-
-            # if similarity >= threshold:
-            #     match_similarity = round(similarity, 2)
-            #     sub_address = sub_data['full_address']
-            #     main_address = main_data['full_address']
-            #     sub_pre = sub_data['prefecture']
-            #     sub_town = sub_data['town']
-            #     sub_city = sub_data['city']
-            #     sub_block = sub_data['block']
-            #     main_pre = main_data['prefecture']
-            #     main_town = main_data['town']
-            #     main_city = main_data['city']
-            #     main_block = main_data['block']
-            #     main_compare_address = new_main_address
-            #     sub_compare_address = new_sub_address
-
-            #     results.append({
-            #         'sub_address': sub_address,
-            #         'main_address': main_address,
-            #         'score': str(match_similarity),
-            #         'sub_pre': sub_pre,
-            #         'sub_town': sub_town,
-            #         'sub_city': sub_city,
-            #         'sub_block': f"'{sub_block}",
-            #         'sub_compare_address': f"'{sub_compare_address}",
-            #         'main_pre': main_pre,
-            #         'main_town': main_town,
-            #         'main_city': main_city,
-            #         'main_block': f"'{main_block}",
-            #         'main_compare_address': f"'{main_compare_address}",
-            #     })
-
-    # print(f"Total matches found: {len(results)}")
-
-    # data = results.get()
-    # print(data)
+                if similarity > match_similarity:
+                    match_similarity = round(similarity, 2)
+                    matched_data = {
+                        'main_address': main_data['full_address'],
+                        'sub_address': sub_data['full_address'],
+                        'main_index': main_index,
+                        'sub_index': sub_index,
+                        'score': match_similarity,
+                    }
+        results.append(matched_data)
     df = pd.DataFrame(results)
-    df.to_csv('add.csv', index=False)
+    df.to_csv('C:/Users/PC/Downloads/toyohashi/data/add.csv', index=False)
     return results
