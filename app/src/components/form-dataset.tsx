@@ -134,12 +134,10 @@ export const FormDataset = ({
 
   return (
     <Card>
-      <p>
-        <TextWithTooltip
-          textNode={datasetLabel}
-          tooltipContent={datasetDescription}
-        />
-      </p>
+      <TextWithTooltip
+        textNode={datasetLabel}
+        tooltipContent={datasetDescription}
+      />
       <div className={styles.fieldContainer}>
         <div
           className={styles.fileSelectorContainer}
