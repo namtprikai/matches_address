@@ -255,8 +255,11 @@ def embedding_address(main_csv: io.BytesIO | str, sub_csv: io.BytesIO | str, mai
         sub_csv_name = re.sub(r'_\d+$', '', sub_csv_name)
 
 
+
         # カラム名にファイル名を付与
-        sub_df.columns = [f"{col}_{sub_csv_name}" if col != sub_column else col for col in sub_df.columns]
+        if sub_csv_name != 'juki_residence':
+            sub_df.columns = [f"{col}_{sub_csv_name}" if col != sub_column else col for col in sub_df.columns]
+        # sub_df.columns = [f"{col}_{sub_csv_name}" if col != sub_column else col for col in sub_df.columns]
 
         # 名寄せが判断できるflagを設定
         main_flag_name = f'{main_csv_name}_flag'
@@ -347,7 +350,9 @@ def embedding_address(main_csv: io.BytesIO | str, sub_csv: io.BytesIO | str, mai
             sub_df = sub_df.drop_duplicates(sub_column_nenamed, keep='first')
             df_merge = main_df.merge(sub_df, on=main_column, how='inner')
 
+
         merged_rows = len(df_merge)
+        matched_rows = 0
 
         # 未結合のデータを抽出
         main_df = main_df[~main_df[main_column].isin(df_merge[main_column])]
@@ -373,15 +378,16 @@ def embedding_address(main_csv: io.BytesIO | str, sub_csv: io.BytesIO | str, mai
                     for col in sub_df.columns:
                         main_df.at[r['main_index'], col] = sub_df.at[r['sub_index'], col]
                     main_df.at[r['main_index'], f'similarity_score_{sub_csv_name}'] = r['score']
+                    matched_rows += 1
                 else:
                     main_df.at[r['main_index'], f'名寄せ元情報_{sub_csv_name}'] = ''
                     main_df.at[r['main_index'], f'{sub_flag_name}'] = 0
                     main_df.at[r['main_index'], f'similarity_score_{sub_csv_name}'] = 0.0
-                    
+
             result_df = pd.concat([df_merge, main_df], axis=0, ignore_index=True)
             # flag情報を最後に持ってくる
             result_df = result_df[[col for col in result_df.columns if col != main_flag_name] + [main_flag_name]]
-            
+
             # カラム名にflagを含むカラムを最後に移動
             result_df[main_flag_name] = result_df[main_flag_name].astype(int)
             result_df[sub_flag_name] = result_df[sub_flag_name].astype(int)
@@ -399,14 +405,14 @@ def embedding_address(main_csv: io.BytesIO | str, sub_csv: io.BytesIO | str, mai
         saved_file_path = save_csv(result_df, output_path)
 
         # 結果の表示
-        complete_match_ratio = f'結合元データとの完全一致割合: {merged_rows / data_rows * 100:.2f}%'
-        threshold_match_ratio = f'結合元データとの閾値以上結合割合: {merged_rows / data_rows * 100:.2f}%'
-        sub_complete_match_ratio = f'結合先データとの完全一致割合: {merged_rows / sub_data_rows * 100:.2f}%'
+        complete_match_ratio = f'結合元データとの完全一致割合: {(merged_rows) / data_rows * 100:.2f}%'
+        threshold_match_ratio = f'結合元データとの閾値以上結合割合: {(merged_rows + matched_rows) / data_rows * 100:.2f}%'
+        sub_complete_match_ratio = f'結合先データとの完全一致割合: {(merged_rows + matched_rows) / sub_data_rows * 100:.2f}%'
 
         res = {
-            'joining_rate': merged_rows / data_rows * 100,
+            'joining_rate': (merged_rows + matched_rows) / data_rows * 100,
             'input_source': input_source,
-            'success_rate': f"{merged_rows}件/{data_rows}件中"
+            'success_rate': f"{(merged_rows + matched_rows)}件/{data_rows}件中"
         }
         if job_id:
             create_or_update_job_task(job_id, progress_percent="100", preprocess_type="e014", error_code=None, error_msg=None, result=json.dumps(res, ensure_ascii=False), id= task_id, is_finish=True)

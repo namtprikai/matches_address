@@ -8,11 +8,11 @@ from queue import Queue
 from concurrent.futures import ProcessPoolExecutor
 from joblib import Parallel, delayed
 import pandas as pd
+from E012 import kanji_to_chome
 
 
 result_main_queue = Queue()
 result_sub_queue = Queue()
-# results = Queue()
 
 def get_levenshtein_distance_ratio(strA: str, strB: str) -> float:
     N = len(strA)
@@ -108,14 +108,12 @@ def parse_address(addresses, type):
                 "block": '',
                 "full_address": ''
             }
-
         parsed_address.append(address_parse)
 
     if type == 'main':
         result_main_queue.put(parsed_address)
     else:
         result_sub_queue.put(parsed_address)
-    # return parsed_address
 
 def matched_address(main_df, sub_df):
     levels = [
@@ -126,8 +124,6 @@ def matched_address(main_df, sub_df):
         "chome",
         "block"
     ]
-    # main_parsed = parse_address(main_df)
-    # sub_parsed = parse_address(sub_df)
 
     main_thread = threading.Thread(target=parse_address, args=(main_df, 'main'))
     sub_thread = threading.Thread(target=parse_address, args=(sub_df, 'sub'))
@@ -153,11 +149,12 @@ def matched_address(main_df, sub_df):
             for level in levels:
                 main_level = main_data.get(level, "")
                 sub_level = sub_data.get(level, "")
-                if main_level:
+                if sub_level:
                     new_main_address += main_level
                     new_sub_address += sub_level
 
             if new_main_address and new_sub_address:
+                new_main_address = re.sub(r'([一二三四五六七八九十]+)丁目', kanji_to_chome, new_main_address)
                 similarity = get_levenshtein_distance_ratio(new_main_address, new_sub_address)
 
                 if similarity > match_similarity:
@@ -170,6 +167,5 @@ def matched_address(main_df, sub_df):
                         'score': match_similarity,
                     }
         results.append(matched_data)
-    df = pd.DataFrame(results)
-    df.to_csv('C:/Users/PC/Downloads/toyohashi/data/add.csv', index=False)
+
     return results

@@ -1,11 +1,11 @@
 from E014 import embedding_address
 
-suido_csv = f"C:/Users/PC/Downloads/toyohashi/1049545f-bb52-4287-b487-9432fe82b536/suido_residence.csv"
-juki_csv = f"C:/Users/PC/Downloads/toyohashi/1049545f-bb52-4287-b487-9432fe82b536/juki_residence.csv"
+suido_csv = f"C:/Users/congv/Downloads/match_address/matches_address/test_data/data/suido_residence.csv"
+juki_csv = f"C:/Users/congv/Downloads/match_address/matches_address/test_data/data/juki_residence.csv"
 touki_csv = ''
-geocoded_csv = f"C:/Users/PC/Downloads/toyohashi/1049545f-bb52-4287-b487-9432fe82b536/E016.csv"
-akiya_csv = f"C:/Users/PC/Downloads/toyohashi/1049545f-bb52-4287-b487-9432fe82b536/akiya_result_cleaned.csv"
-output_path = f"C:/Users/PC/Downloads/toyohashi/1049545f-bb52-4287-b487-9432fe82b536/matching_data"
+geocoded_csv = f"C:/Users/congv/Downloads/match_address/matches_address/test_data/data/E016.csv"
+akiya_csv = f"C:/Users/congv/Downloads\match_address\matches_address/1049545f-bb52-4287-b487-9432fe82b536/akiya_result_cleaned.csv"
+output_path = f"C:/Users/congv/Downloads/match_address/matches_address/matching_data"
 merge_base = 'suido_residence.csv'
 threshold = 0.6
 batch_size = 1000
@@ -108,7 +108,7 @@ def start(suido_csv, juki_csv, touki_csv, geocoded_csv, akiya_csv, output_path, 
     result_path = saved_file_path
     message = msg
 
-    print(result_path)
-    print(message)
+    # print(result_path)
+    # print(message)
 
 start(suido_csv, juki_csv, touki_csv, geocoded_csv, akiya_csv, output_path, merge_base, threshold, batch_size)
