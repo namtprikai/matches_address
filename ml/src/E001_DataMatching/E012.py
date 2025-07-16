@@ -775,7 +775,6 @@ def process_data(input_files, output_directory, main_data_type, job_id, columns,
         # 処理後のファイルの保存先パスを辞書形式で定義
         output_paths = {
             "akiya_result": f"{output_directory}/akiya_result_cleaned.csv",
-            "geocoding": f"{output_directory}/geocoding_cleaned.csv"
         }
         
         if input_files.get('suido_status'):
@@ -811,7 +810,6 @@ def process_data(input_files, output_directory, main_data_type, job_id, columns,
         if input_files.get('touki'):
             touki_df = handle_optional_file(input_files.get('touki'), "touki", main_df, main_address_col, INPUT_COLUMNS)
         akiya_result_df = handle_optional_file(input_files.get('akiya_result'), "akiya_result", main_df, main_address_col, INPUT_COLUMNS)
-        geocoding_df = handle_optional_file(input_files.get('geocoding'), "geocoding", main_df, main_address_col, INPUT_COLUMNS)
         
         if job_id:
             create_or_update_job(job_id, "5")
@@ -822,7 +820,6 @@ def process_data(input_files, output_directory, main_data_type, job_id, columns,
                 suido_use_df.to_csv(f"{output_directory}/processed_suido_use.csv", index=False)
             if input_files.get('touki'):
                 touki_df.to_csv(f"{output_directory}/processed_touki.csv", index=False)
-            geocoding_df.to_csv(f"{output_directory}/processed_geocoding.csv", index=False)
             akiya_result_df.to_csv(f"{output_directory}/processed_akiya_result.csv", index=False)
         except:
             raise
@@ -830,7 +827,6 @@ def process_data(input_files, output_directory, main_data_type, job_id, columns,
         # 入力ファイルのパスを設定
         input_paths = {
             "akiya_result": f"{output_directory}/processed_akiya_result.csv",
-            "geocoding": f"{output_directory}/processed_geocoding.csv"
         }
         
         if input_files.get('suido_status'):
@@ -863,6 +859,7 @@ def process_data(input_files, output_directory, main_data_type, job_id, columns,
         # 出力パスのうち、実際にファイルが生成されたもののみをリストにして返す
         return [path for path in output_paths.values() if os.path.exists(path)]
     except Exception as e:
+        print(f"Error occurred: {e}")
         if ERROR_CODE is None:
             set_error(ERROR_00005)
         if task_id is not None:

@@ -93,7 +93,7 @@ ERROR_00023 = {
 }
 ERROR_00024 = {
     "code": "IF001_e016_err_geometry",
-    "message": "'geometry' 列または 'lat_geocoding_cleaned' と 'lon_geocoding_cleaned' 列が必要です。"
+    "message": "'geometry' 列または 'lat' と 'lon' 列が必要です。"
 }
 ERROR_00025 = {
     "code": "IF001_e016_err_encoding",
@@ -174,6 +174,10 @@ ERROR_00043 = {
 ERROR_00044 = {
     "code": "IF001_e016_err_data_gpkg",
     "message": "Geopackage形式の場合、座標系情報が正しくZIP内に保存されているかなどをご確認ください。他に複数レイヤが入っている場合にデータ提供元に問い合わせを推奨します。"
+}
+ERROR_00045 = {
+    "code": "IF001_fn015_err_cleaning",
+    "message": "インプットデータが本システムのマニュアルに記載された要件に沿って作成されているかをご確認ください。入力したインプットデータの住所カラムに記載された住所が正しい表記となっているかご確認ください。"
 }
 
 # IF002

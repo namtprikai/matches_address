@@ -931,7 +931,7 @@ def process_all_data(suido_use_file, suido_status_file, juki_file, tatemono_file
 
         os.makedirs(output_directory, exist_ok=True)
 
-        progress_percent_job = 25
+        progress_percent_job = 50
         for file_key, processor_class in processors.items():
             if job_id:
                 progress_percent += 30

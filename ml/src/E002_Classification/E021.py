@@ -891,6 +891,7 @@ def train_and_evaluate(db_path, input_file, output_path, explanatory_variables, 
         return output_file, model_zip_file_path, data_zip_file_path
 
     except Exception as e:
+        print(f"An error occurred: {e}")
         if ERROR_CODE is None:
             set_error(ERROR_10006)
         if task_id is not None:

@@ -8,6 +8,7 @@ import os
 import pickle
 import shutil
 import sys
+import traceback
 import uuid
 import chardet
 import zipfile 
@@ -292,10 +293,10 @@ def insert_sqlite(input_data, data_set_result_id):
             '名寄せ元情報_touki_residence': 'registration_source_info',
             '住所_akiya_result_cleaned': 'vacant_house_address',
             '名寄せ元情報_akiya_result_cleaned': 'vacant_house_source_info',
-            '住所_geocoding_cleaned': 'geocoded_address',
-            'lat_geocoding_cleaned': 'geocoded_latitude',
-            'lon_geocoding_cleaned': 'geocoded_longitude',
-            '名寄せ元情報_geocoding_cleaned': 'geocoding_source_info',
+            '住所_geocoding': 'geocoded_address',
+            'lat_geocoding': 'geocoded_latitude',
+            'lon_geocoding': 'geocoded_longitude',
+            '名寄せ元情報_geocoding': 'geocoding_source_info',
             'suido_residence_flag': 'has_water_supply',
             'juki_residence_flag': 'has_juki_registry',
             'touki_residence_flag': 'has_touki_registry',
@@ -314,7 +315,7 @@ def insert_sqlite(input_data, data_set_result_id):
             'geometrySrcDesc': 'geometry_src_desc',
             'thematicSrcDesc': 'thematic_src_desc',
             'lod1HeightType': 'lod1_height_type',
-            'buildingID': 'building_id',
+            'building_id': 'building_id',
             'prefecture': 'prefecture',
             'city': 'city',
             'description': 'description',
@@ -544,6 +545,8 @@ def process_and_predict(input_folder, input_file, model_directory, threshold, ou
 
         return f"{output_file} への予測結果の保存に失敗しました", None
     except Exception as e:
+        print(e)
+        traceback.print_exc()
         if ERROR_CODE is None:
             set_error(ERROR_20008)
         if task_id is not None:

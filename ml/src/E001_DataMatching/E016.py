@@ -18,6 +18,7 @@ import os
 import random
 import string
 import sys
+import traceback
 import uuid
 import chardet
 import geopandas as gpd
@@ -189,7 +190,7 @@ def read_file(path: str, **kwargs) -> pd.DataFrame:
             set_error(ERROR_00014, path)
         raise
 
-def load_and_process_data(file_path, crs, geometry, file_type, data_type):
+def load_and_process_data(file_path, crs, geometry, file_type, data_type, columns, rename_geometry=None):
     """
     ファイルを読み込み、ジオメトリデータを処理してGeoDataFrameを作成する。
 
@@ -215,6 +216,15 @@ def load_and_process_data(file_path, crs, geometry, file_type, data_type):
     if file_extension == 'csv':
         # CSVファイルを読み込む
         df = read_file(file_path)
+        if rename_geometry:
+            first_geom = df['geometry'].dropna().iloc[0]
+            if rename_geometry == "Point":
+                if 'POINT' not in first_geom:
+                    df = df.rename(columns={'geometry': 'geometry_polygon'})
+            else:
+                if 'POINT' in first_geom:
+                    df = df.rename(columns={'geometry': 'geometry_point'})
+
         if df is None:
             raise ValueError(f"ファイルの読み込みに失敗しました: {file_path}")
 
@@ -231,15 +241,21 @@ def load_and_process_data(file_path, crs, geometry, file_type, data_type):
             df['geometry'] = df['geometry'].apply(parse_wkt)
         else:
             # lat/lon列からgeometry列を作成
-            if 'lat_geocoding_cleaned' in df.columns and 'lon_geocoding_cleaned' in df.columns:
+            if 'lat' in df.columns and 'lon' in df.columns:
                 df['geometry'] = df.apply(
-                    lambda row: Point(row['lon_geocoding_cleaned'], row['lat_geocoding_cleaned'])
-                    if pd.notna(row['lat_geocoding_cleaned']) and pd.notna(row['lon_geocoding_cleaned'])
+                    lambda row: Point(row['lon'], row['lat'])
+                    if pd.notna(row['lat']) and pd.notna(row['lon'])
+                    else None, axis=1
+                )
+            elif columns.get('address_of_lot_number', {}).get('lat', None) in df.columns and columns.get('address_of_lot_number', {}).get('lon', None) in df.columns:
+                df['geometry'] = df.apply(
+                    lambda row: Point(row[columns['address_of_lot_number']['lon']], row[columns['address_of_lot_number']['lat']])
+                    if pd.notna(row[columns['address_of_lot_number']['lat']]) and pd.notna(row[columns['address_of_lot_number']['lon']])
                     else None, axis=1
                 )
             else:
                 set_error(ERROR_00024)
-                raise KeyError("'geometry' 列または 'lat_geocoding_cleaned' と 'lon_geocoding_cleaned' 列が必要です")
+                raise KeyError("'geometry' 列または 'lat' と 'lon' 列が必要です")
 
         # 無効なジオメトリを除外
         df = df[df['geometry'].notnull()]
@@ -321,6 +337,135 @@ def load_and_process_data(file_path, crs, geometry, file_type, data_type):
 
         return gdf
 
+
+def spatial_join(gdf, points_gdf, mul, crs, point_selected_column, option):
+  
+    # 結合するカラムを指定
+    points_gdf = points_gdf[point_selected_column]
+
+    if all(gdf.geometry.geom_type != 'Point'):
+        # バッファ作成の準備
+        # 重心の計算
+        gdf["centroid"] = gdf["geometry"].centroid
+        # 面積の計算
+        gdf["area"] = gdf["geometry"].area
+        
+        # ここで面積の足切りを行う
+        # 工場等との結合が行われないようにするために1000m2以上のものは削除する
+        # 平面直角座標を用いて面積を取得しているのでそのまま足切りが行える
+        gdf = gdf[gdf['area'] < 10000] 
+
+        # 重心から面積と同サイズのバッファを生成
+        rad = (mul * gdf["area"] / math.pi) ** 0.5
+
+        # bufferをgeometryにする（空間結合の準備）
+        gdf["buffer"] = gdf["centroid"].buffer(rad)
+        gdf = gdf.set_geometry("buffer")
+
+    # points_gdfにID付与（空間結合後の重複削除のために、重心との距離計算をするための準備）
+    points_gdf['ID'] = range(1, len(points_gdf) + 1)
+    # クイックルックアップのための辞書を作成する
+    geometry_dict = points_gdf.set_index('ID')['geometry'].to_dict()
+
+    # 結合オプションを設定（0: 交差結合、1: 最近傍結合）
+    if option == 1:
+        # 空間インデックスを作成
+        if not points_gdf.has_sindex:
+            points_gdf.sindex
+        if not gdf.has_sindex:
+            gdf.sindex
+        joined = gpd.sjoin_nearest(points_gdf, gdf,  how='left', distance_col='distance')
+
+        # 複数に結合しているものを削除
+        joined = joined.sort_values(by='distance').drop_duplicates(subset='ID', keep='first')
+        if 'geometry_right' in joined.columns:
+            joined = joined.rename(columns={'geometry_left': 'geometry', 'geometry_right': 'geometry_sub'})
+        else:
+            gdf = gdf.rename(columns={'geometry': 'geometry_sub'})
+            joined = joined.merge(gdf[['right_geometry']], left_on='index_right', right_index=True, how='left')
+        # 不要な列を削除
+        columns_to_drop = ["index_right", "buffer", "centroid", "area"]
+        joined = joined.drop(columns=[col for col in columns_to_drop if col in joined.columns], errors='ignore')
+        combined_gdf = joined
+
+        # geometry_sub を GeoSeries として扱う
+        combined_gdf['geometry_sub'] = gpd.GeoSeries(
+            combined_gdf['geometry_sub'], crs=combined_gdf.crs
+        ).transform(_drop_z)
+        combined_gdf['geometry_sub'] = transform_to_wgs84(
+            gpd.GeoSeries(combined_gdf['geometry_sub'], crs=combined_gdf.crs), crs
+        )
+        combined_gdf = gpd.GeoDataFrame(combined_gdf, geometry='geometry')
+        if 'building_id_left' in combined_gdf.columns and 'building_id' not in combined_gdf.columns:
+            combined_gdf.rename(columns={'building_id_left': 'building_id'}, inplace=True)
+
+    else:
+        # 空間結合(交差)の実行（ここで、水道のデータが2つ以上結合されている場合があるので、最も近いもののみを残す）
+        joined = gpd.sjoin(points_gdf, gdf, how='left', predicate='intersects')
+        # 距離を計算します。IDがNaNでない場合のみ計算します。
+        joined["distance"] = joined.apply(
+            lambda row: (
+                row.geometry.distance(geometry_dict[row["ID"]])
+                if pd.notna(row["ID"]) and row["ID"] in geometry_dict
+                else None
+            )
+            if isinstance(row.geometry, Point)
+            else (
+                row["centroid"].distance(geometry_dict[row["ID"]])
+                if pd.notna(row["ID"]) and row["ID"] in geometry_dict and row.get("centroid") is not None
+                else None
+            ),
+            axis=1
+        )
+        #　sjoinでindexが重複しているので、リセット
+        joined = joined.reset_index(drop=True)
+        if 'building_id_left' in joined.columns and 'building_id' not in joined.columns:
+            if 'building_id_right' in joined.columns:
+                joined = joined.rename(columns={'building_id_right': 'building_id'})
+            else:
+                joined = joined.rename(columns={'building_id_left': 'building_id'})
+
+        # IDが存在する行
+        filtered_gdf = joined.dropna(subset=['ID'])
+        
+        # IDが存在しない行
+        dropped_rows = joined[joined['ID'].isna()]
+        try:
+            # IDが存在する行で'buildingID'をキーにして、'distance'が最小のものを抽出(空間結合による重複を削除)
+            result_gdf = joined.loc[filtered_gdf.groupby('building_id')['distance'].idxmin().tolist()]
+        except:
+            result_gdf = joined.iloc[0:0]
+        
+        # IDあり（重複解消済み）とIDなしの結合
+        combined_gdf = pd.concat([dropped_rows, result_gdf])
+
+        # 結合後にgeometryの列名が変わるので修正
+        if 'geometry_right' in combined_gdf.columns:
+            combined_gdf = combined_gdf.rename(columns={'geometry_left': 'geometry', 'geometry_right': 'geometry_sub'})
+        else:
+            gdf = gdf.rename(columns={'geometry': 'geometry_sub'})
+            combined_gdf = combined_gdf.merge(gdf[['right_geometry']], left_on='index_right', right_index=True, how='left')
+
+        combined_gdf['geometry_sub'] = gpd.GeoSeries(
+            combined_gdf['geometry_sub'], crs=combined_gdf.crs
+        ).transform(_drop_z)
+        combined_gdf['geometry_sub'] = transform_to_wgs84(
+            gpd.GeoSeries(combined_gdf['geometry_sub'], crs=combined_gdf.crs), crs
+        )
+        # 建物のジオメトリに設定しなおして、GeoDataFrameに変換
+        combined_gdf = gpd.GeoDataFrame(combined_gdf, geometry='geometry')
+
+        # 不要な列を削除
+        columns_to_drop = ["centroid", "area", "index_left", "index_right", "buffer", "distance"]
+        combined_gdf = combined_gdf.drop(columns=[col for col in columns_to_drop if col in combined_gdf.columns], errors='ignore')
+    
+    combined_gdf.to_crs(4326, inplace=True)
+    # 結合率の算出
+    num_points = points_gdf.shape[0]
+    unique_values_count = combined_gdf["ID"].nunique()
+    join_ratio = round(unique_values_count/num_points*100, 2)
+    combined_gdf = combined_gdf.drop(columns=["ID"])
+    return combined_gdf, join_ratio
 
 def get_transformer(pref: str, city: str) -> int:
     """
@@ -502,82 +647,63 @@ def _drop_z(geom):
         return wkb.loads(wkb.dumps(geom, output_dimension=2))
     return geom  # 無効なジオメトリまたは空のジオメトリはそのまま返す
 
-def assign_points_to_buildings(buildings_gdf, points_gdf, mul, crs, point_selected_column, option):
-    """
-    建物のジオメトリとポイントのジオメトリを結合し、ポイントを建物に割り当てる
-    
-    Parameters
-    ----------
-    buildings_gdf : GeoDataFrame
-        建物のジオメトリを含むGeoDataFrame
-    points_gdf : GeoDataFrame
-        ポイントのジオメトリを含むGeoDataFrame
-    mul : float
-        バッファ半径を計算するための乗数
-    crs : int
-        座標参照系
-    point_selected_column : str
-        ポイントの選択列名
-    option : int
-        結合オプション (1: 最近接結合, それ以外: 干渉結合)
-        
-    Returns
-    -------
-    tuple
-        結合後のGeoDataFrameと結合率を含むタプル
-    """
+def assign_points_to_polygon(gdf, points_gdf, mul, crs, point_selected_column, option):
     # 結合するカラムを指定
     points_gdf = points_gdf[point_selected_column]
 
     # バッファ作成の準備
     # 重心の計算
-    buildings_gdf["centroid"] = buildings_gdf["geometry"].centroid
+    gdf["centroid"] = gdf["geometry"].centroid
     # 面積の計算
-    buildings_gdf["area"] = buildings_gdf["geometry"].area
+    gdf["area"] = gdf["geometry"].area
     
     # ここで面積の足切りを行う
     # 工場等との結合が行われないようにするために1000m2以上のものは削除する
     # 平面直角座標を用いて面積を取得しているのでそのまま足切りが行える
-    buildings_gdf = buildings_gdf[buildings_gdf['area'] < 10000] 
+    gdf = gdf[gdf['area'] < 10000] 
 
     # 重心から面積と同サイズのバッファを生成
-    rad = (mul * buildings_gdf["area"] / math.pi) ** 0.5
+    rad = (mul * gdf["area"] / math.pi) ** 0.5
 
     # bufferをgeometryにする（空間結合の準備）
-    buildings_gdf["buffer"] = buildings_gdf["centroid"].buffer(rad)
-    buildings_gdf = buildings_gdf.set_geometry("buffer")
+    gdf["buffer"] = gdf["centroid"].buffer(rad)
+    gdf = gdf.set_geometry("buffer")
 
     # points_gdfにID付与（空間結合後の重複削除のために、重心との距離計算をするための準備）
     points_gdf['ID'] = range(1, len(points_gdf) + 1)
     # クイックルックアップのための辞書を作成する
     geometry_dict = points_gdf.set_index('ID')['geometry'].to_dict()
 
+    points_gdf = points_gdf.drop(columns=['index_right'], errors='ignore')
+    gdf = gdf.drop(columns=['index_right'], errors='ignore')
+
     # 結合オプションを設定（0: 交差結合、1: 最近傍結合）
     if option == 1:
         # 空間インデックスを作成
         if not points_gdf.has_sindex:
             points_gdf.sindex
-        if not buildings_gdf.has_sindex:
-            buildings_gdf.sindex
-        joined = gpd.sjoin_nearest(points_gdf, buildings_gdf,  how='left', distance_col='distance')
+        if not gdf.has_sindex:
+            gdf.sindex
+        joined = gpd.sjoin_nearest(points_gdf, gdf,  how='left', distance_col='distance')
         # 複数に結合しているものを削除
         joined = joined.sort_values(by='distance').drop_duplicates(subset='ID', keep='first')
-        if 'geometry_right' in joined.columns:
-            joined = joined.rename(columns={'geometry_left': 'geometry', 'geometry_right': 'geometry_plateau'})
+
+        if 'geometry_left' in joined.columns:
+            joined = joined.rename(columns={'geometry_left': 'geometry_point', 'geometry_right': 'geometry'}, errors='ignore')
         else:
-            buildings_gdf = buildings_gdf.rename(columns={'geometry': 'geometry_plateau'})
-            joined = joined.merge(buildings_gdf[['right_geometry']], left_on='index_right', right_index=True, how='left')
+            joined = joined.rename(columns={'geometry': 'geometry_point', 'geometry_right': 'geometry'}, errors='ignore')
+
         # 不要な列を削除
         columns_to_drop = ["index_right", "buffer", "centroid", "area"]
         joined = joined.drop(columns=[col for col in columns_to_drop if col in joined.columns])
         combined_gdf = joined
 
-        # geometry_plateau を GeoSeries として扱う
-        combined_gdf['geometry_plateau'] = gpd.GeoSeries(
-            combined_gdf['geometry_plateau'], crs=combined_gdf.crs
+        # geometry_point を GeoSeries として扱う
+        combined_gdf['geometry_point'] = gpd.GeoSeries(
+            combined_gdf['geometry_point'], crs=combined_gdf.crs
         ).transform(_drop_z)
-        combined_gdf['geometry_plateau'] = transform_to_wgs84(
-            gpd.GeoSeries(combined_gdf['geometry_plateau'], crs=combined_gdf.crs), crs
+        combined_gdf['geometry_point'] = transform_to_wgs84(
+            gpd.GeoSeries(combined_gdf['geometry_point'], crs=combined_gdf.crs), crs
         )
         combined_gdf = gpd.GeoDataFrame(combined_gdf, geometry='geometry')
         if 'building_id_left' in combined_gdf.columns and 'building_id' not in combined_gdf.columns:
@@ -585,8 +711,7 @@ def assign_points_to_buildings(buildings_gdf, points_gdf, mul, crs, point_select
 
     else:
         # 空間結合(交差)の実行（ここで、水道のデータが2つ以上結合されている場合があるので、最も近いもののみを残す）
-        joined = gpd.sjoin(points_gdf, buildings_gdf, how='left', predicate='intersects')
-        
+        joined = gpd.sjoin(points_gdf, gdf, how='left', predicate='intersects')
         # 距離を計算します。IDがNaNでない場合のみ計算します。
         joined["distance"] = joined.apply(lambda row: row["centroid"].distance(geometry_dict[row["ID"]]) if row["centroid"] is not None and row["ID"] in geometry_dict else None, axis=1)
         #　sjoinでindexが重複しているので、リセット
@@ -610,17 +735,16 @@ def assign_points_to_buildings(buildings_gdf, points_gdf, mul, crs, point_select
         combined_gdf = pd.concat([dropped_rows, result_gdf])
         
         # 結合後にgeometryの列名が変わるので修正
-        if 'geometry_right' in combined_gdf.columns:
-            combined_gdf = combined_gdf.rename(columns={'geometry_left': 'geometry', 'geometry_right': 'geometry_plateau'})
+        if 'geometry_left' in combined_gdf.columns:
+            combined_gdf = combined_gdf.rename(columns={'geometry_left': 'geometry_point', 'geometry_right': 'geometry'}, errors='ignore')
         else:
-            buildings_gdf = buildings_gdf.rename(columns={'geometry': 'geometry_plateau'})
-            combined_gdf = combined_gdf.merge(buildings_gdf[['right_geometry']], left_on='index_right', right_index=True, how='left')
+            combined_gdf = combined_gdf.rename(columns={'geometry': 'geometry_point', 'geometry_right': 'geometry'}, errors='ignore')
 
-        combined_gdf['geometry_plateau'] = gpd.GeoSeries(
-            combined_gdf['geometry_plateau'], crs=combined_gdf.crs
+        combined_gdf['geometry_point'] = gpd.GeoSeries(
+            combined_gdf['geometry_point'], crs=combined_gdf.crs
         ).transform(_drop_z)
-        combined_gdf['geometry_plateau'] = transform_to_wgs84(
-            gpd.GeoSeries(combined_gdf['geometry_plateau'], crs=combined_gdf.crs), crs
+        combined_gdf['geometry_point'] = transform_to_wgs84(
+            gpd.GeoSeries(combined_gdf['geometry_point'], crs=combined_gdf.crs), crs
         )
         # 建物のジオメトリに設定しなおして、GeoDataFrameに変換
         combined_gdf = gpd.GeoDataFrame(combined_gdf, geometry='geometry')
@@ -667,7 +791,7 @@ def add_residenceID(gdf):
     """
     # 'buildingID'列とランダムに生成された文字列を結合して'residenceID'列を作成
     gdf = gdf.reset_index(drop=True)
-    gdf['residenceID'] = gdf['building_id'].astype(str) + '-' + gdf.apply(lambda _: generate_random_string(), axis=1)
+    gdf['residenceID'] = gdf['building_id'].astype(str).str[-7:] + '-' + gdf.apply(lambda _: generate_random_string(), axis=1)
     return gdf
 
 def add_keycode(gdf, gpkg_path):
@@ -774,8 +898,110 @@ def add_plateaugml_suffix(gdf):
     gdf = gdf.rename(columns=lambda col: f"{col}_plateaugml" if col != 'geometry' else col)
     return gdf
 
+def process_spatial_join(main_path, sub_path, ken, sikuchoson, option, output_path=None, columns=None, file_type='csv', file_name=''):
+    try:
+        polygon = None
+        point = None
+        type_sub = "Point"
+        # 座標系を設定
+        crs = get_transformer(ken, sikuchoson)
+        
+        # 建物データと水道データを読み込み、処理
+        try:
+            sub = load_and_process_data(sub_path, crs, None, file_type, None, columns, None)
+            sub.rename(
+                columns={col: f"{col}{file_name}" for col in sub.columns if col != 'geometry'},
+                inplace=True
+            )
+        except Exception as e:
+            if ERROR_CODE is None:
+                set_error(ERROR_00043)
+                raise Exception(f"建物ポリゴンのデータが異常です。もう一度データを確認ください。")
+            raise Exception(e)
+        sub.to_crs(crs, inplace=True)
+        type_sub = sub.geom_type
+        if type_sub.iloc[0] == "Point":
+            point = sub
+            polygon = load_and_process_data(main_path, crs, None, file_type, None, None, 'Polygon')
+            polygon.to_crs(crs, inplace=True)
+        else:
+            polygon = sub
+            point = load_and_process_data(main_path, crs, None, file_type, None, None, 'POINT')
+            point.to_crs(crs, inplace=True)
+            
+        # 水道データの全列を選択
+        point_selected_column = point.columns
 
-def process_data(tatemono_path, e14_merged_path, gpkg_path, ken, sikuchoson, option, output_type, output_path=None, job_id=None, db_path=None, geometry='geometry', input_source=[], file_type='', data_type=''):
+        # 建物データと水道データを結合
+        try:
+            result, join_ratio = assign_points_to_polygon(polygon, point, 2, crs, point_selected_column, option)
+        except:
+            set_error(ERROR_00031)
+            raise
+
+        result = add_residenceID(result)
+
+        # 結果を保存
+        if output_path is None:
+            output_path = os.path.join(os.getcwd(), f"D901.csv")
+
+        output_dir = os.path.dirname(output_path)
+
+        if not os.path.exists(output_dir):
+            os.makedirs(output_dir)
+
+        save_geodataframe(result, output_path, 'csv')
+
+        return output_path, join_ratio
+
+    except Exception as e:
+        print(e)
+        traceback.print_exc()
+        if ERROR_CODE is None:
+            set_error(ERROR_00019)
+        raise Exception("空間結合処理中にエラーが発生しました。ジオメトリに不正がないか、ご確認ください。")
+
+def process_census_data(census_path, abrg_geocode_path, ken, sikuchoson, output_path=None):
+    try:
+        # 座標系を設定
+        crs = get_transformer(ken, sikuchoson)
+        
+        # 建物データと水道データを読み込み、処理
+        try:
+            abrg_geocode = load_and_process_data(abrg_geocode_path, crs, None, 'csv', None, None)
+        except Exception as e:
+            if ERROR_CODE is None:
+                set_error(ERROR_00043)
+                raise Exception(ERROR_MSG)
+            raise Exception(e)
+
+        abrg_geocode.to_crs(crs, inplace=True)
+
+        try:
+            result_add_keycode = add_keycode(abrg_geocode, census_path)
+        except Exception as e:
+            if ERROR_CODE is None:
+                set_error(ERROR_00034)
+                raise Exception(ERROR_MSG)
+            raise
+
+        output_dir = os.path.dirname(output_path)
+
+        if not os.path.exists(output_dir):
+            os.makedirs(output_dir)
+
+        save_geodataframe(result_add_keycode, output_path, 'csv')
+
+        return output_path, len(result_add_keycode)
+
+    except Exception as e:
+        print(e)
+        traceback.print_exc()
+        if ERROR_CODE is None:
+            set_error(ERROR_00019)
+        raise Exception(ERROR_MSG)
+
+def process_data(tatemono_path, abrg_geocode_path, gpkg_path, ken, sikuchoson, option, output_type, output_path=None, job_id=None, db_path=None, geometry='geometry', input_source=[], file_type='', data_type='', columns=None):
     try:
         if db_path:
             connect_sqllite(db_path)
@@ -793,25 +1019,25 @@ def process_data(tatemono_path, e14_merged_path, gpkg_path, ken, sikuchoson, opt
                 set_error(ERROR_00043)
                 raise Exception(f"建物ポリゴンのデータが異常です。もう一度データを確認ください。")
             raise Exception(e)
-        e14_merged = load_and_process_data(e14_merged_path, crs, None, 'csv', None)
+        abrg_geocode = load_and_process_data(abrg_geocode_path, crs, None, 'csv', None, columns)
 
         if job_id:
-            create_or_update_job(job_id, "80")
+            create_or_update_job(job_id, "45")
             create_or_update_job_task(job_id, progress_percent="20", preprocess_type="e016", error_code=None, error_msg=None, result=None, id= task_id)
         tatemono.to_crs(crs, inplace=True)
-        e14_merged.to_crs(crs, inplace=True)
+        abrg_geocode.to_crs(crs, inplace=True)
         
         # 水道データの全列を選択
-        point_selected_column = e14_merged.columns
+        point_selected_column = abrg_geocode.columns
 
         # 建物データと水道データを結合
         try:
-            tatemono_use_point, join_ratio = assign_points_to_buildings(tatemono, e14_merged, 2, crs, point_selected_column, option)
+            tatemono_use_point, join_ratio = assign_points_to_polygon(tatemono, abrg_geocode, 2, crs, point_selected_column, option)
         except:
             set_error(ERROR_00031)
             raise
         if job_id:
-            create_or_update_job(job_id, "85")
+            create_or_update_job(job_id, "48")
             create_or_update_job_task(job_id, progress_percent="50", preprocess_type="e016", error_code=None, error_msg=None, result=None, id= task_id)
         # 住居IDを追加
         tatemono_use_point = add_residenceID(tatemono_use_point)
@@ -860,6 +1086,8 @@ def process_data(tatemono_path, e14_merged_path, gpkg_path, ken, sikuchoson, opt
 
         return output_path, join_ratio
     except Exception as e:
+        print(e)
+        traceback.print_exc()
         if ERROR_CODE is None:
             set_error(ERROR_00019)
         if task_id is not None:
