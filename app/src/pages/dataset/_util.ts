@@ -12,11 +12,17 @@ export const handleUpload = async (
   e: React.ChangeEvent<HTMLInputElement>,
   tab: "raw" | "normalization" | "result",
 ): Promise<void> => {
-  const file = e.target.files?.[0];
+  const files = e.target.files;
+  if (!files || files.length === 0) {
+    return;
+  }
   try {
-    await saveDataSetFile(file, tab);
+    await Promise.all(
+      Array.from(files).map((file) => saveDataSetFile(file, tab)),
+    );
   } catch (error) {
     console.error("Operation failed:", error);
   }
+
   e.target.value = ""; // ファイル選択をリセットする
 };

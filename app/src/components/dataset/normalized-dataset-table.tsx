@@ -185,6 +185,7 @@ export function NormalizedDataSetTable(): JSX.Element {
         <div>
           <input
             ref={fileInputRef}
+            multiple
             onChange={async (e) =>
               handleUpload(e, "normalization").then(() => mutate())
             }

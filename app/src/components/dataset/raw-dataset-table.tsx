@@ -183,6 +183,7 @@ export function RawDataSetTable(): JSX.Element {
         <div>
           <input
             ref={fileInputRef}
+            multiple
             onChange={async (e) => handleUpload(e, "raw").then(() => mutate())}
             style={{ display: "none" }}
             type="file"
