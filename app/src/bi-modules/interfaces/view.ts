@@ -15,6 +15,7 @@ import {
   type YAxis,
   type ParameterBase,
   type GroupAggregation,
+  type YAxisMinMax,
 } from "./parameter";
 
 export const VIEW_STYLES = [
@@ -58,6 +59,7 @@ export interface BarView extends ViewBase {
     | GroupAggregation
     | XAxis
     | YAxis
+    | YAxisMinMax
   )[];
 
   pagination: PaginationQuery;
@@ -75,6 +77,7 @@ export interface LineView extends ViewBase {
     | GroupAggregation
     | XAxis
     | YAxis
+    | YAxisMinMax
   )[];
 
   orderBy: OrderByQuery<keyof SelectDataSetDetailBuilding> | null;

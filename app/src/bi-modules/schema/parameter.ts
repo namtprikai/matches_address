@@ -18,7 +18,14 @@ const columnSchema = z.custom<AREA_DATASET_COLUMN | BUILDING_DATASET_COLUMN>(
 
 export const parameterBaseSchema = z.object({
   key: z.string(),
-  type: z.enum(["filter", "column", "group", "group_aggregation", "map"]),
+  type: z.enum([
+    "filter",
+    "column",
+    "group",
+    "group_aggregation",
+    "map",
+    "yAxisMinMax",
+  ]),
   value: z.any(), // unknown 型
 });
 
@@ -32,6 +39,15 @@ export const yAxisSchema = parameterBaseSchema.extend({
   key: z.literal("yAxis"),
   type: z.literal("column"),
   value: columnSchema,
+});
+
+export const yAxisMinMaxSchema = parameterBaseSchema.extend({
+  key: z.literal("yAxisMinMax"),
+  type: z.literal("yAxisMinMax"),
+  value: z.object({
+    min: z.number().nullable(),
+    max: z.number().nullable(),
+  }),
 });
 
 export const groupConditionSchema = parameterBaseSchema.extend({
@@ -103,4 +119,5 @@ export const parameterSchema = z.union([
   pieLabelSchema,
   pieValueSchema,
   mapCenterSchema,
+  yAxisMinMaxSchema,
 ]);

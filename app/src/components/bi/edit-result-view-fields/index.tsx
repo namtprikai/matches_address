@@ -9,6 +9,7 @@ import { Select } from "../../ui/select";
 import { useFetchDataSetResults } from "../../../hooks/use-fetch-data-set-results";
 import { useEditResultViewFields } from "../../../bi-modules/hooks/use-edit-result-view-fields";
 import { ColumnFields } from "./_column-fields";
+import { YAxisMinMaxFields } from "./_y-axis-min-max";
 
 type Props = {
   dataSetResultId: SelectResultView["data_set_result_id"];
@@ -68,6 +69,8 @@ export const EditResultViewFields = ({
         </Field>
 
         <ColumnFields {...editResultViewFieldsState} />
+
+        {(style === "line" || style === "bar") && <YAxisMinMaxFields />}
 
         <Field label="集計単位">
           <Select

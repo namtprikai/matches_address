@@ -169,6 +169,10 @@ export const ViewLine = ({ view }: Props): JSX.Element => {
       (p) => p.key === "group_aggregation" && p.type === "group_aggregation",
     )?.value || "avg";
 
+  const yAxisMinMax = view.parameters.find(
+    (p) => p.key === "yAxisMinMax" && p.type === "yAxisMinMax",
+  )?.value || { min: null, max: null };
+
   const isPercentValue =
     groupingCalc === "avg" && chartProps.yAxisColumn.unit === "%";
 
@@ -206,7 +210,9 @@ export const ViewLine = ({ view }: Props): JSX.Element => {
           <ReLineChart data={data}>
             <ReXAxis dataKey={"x"} unit={chartProps.xAxisColumn.unit} />
             <ReYAxis
+              allowDataOverflow
               dataKey={"y"}
+              domain={[yAxisMinMax.min || "auto", yAxisMinMax.max || "auto"]}
               unit={
                 groupingCalc === "count" ? "件" : chartProps.yAxisColumn.unit
               }

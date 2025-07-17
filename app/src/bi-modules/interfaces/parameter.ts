@@ -15,6 +15,7 @@ import {
   type xAxisSchema,
   type parameterBaseSchema,
   type mapCenterSchema,
+  type yAxisMinMaxSchema,
 } from "../schema/parameter";
 
 export type ParameterBase = z.infer<typeof parameterBaseSchema>;
@@ -24,6 +25,8 @@ export type XAxis = z.infer<typeof xAxisSchema>;
 
 /** Y軸:棒・折れ線で共通で利用される */
 export type YAxis = z.infer<typeof yAxisSchema>;
+
+export type YAxisMinMax = z.infer<typeof yAxisMinMaxSchema>;
 
 /** ラベルグループ 動的作成 */
 export type GroupCondition = z.infer<typeof groupConditionSchema>;
