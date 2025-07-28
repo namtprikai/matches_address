@@ -3,6 +3,7 @@ import {
   type MapView,
   type MapWithTableView,
 } from "../../../../../bi-modules/interfaces/view";
+import { type FilterCondition } from "../../../../../bi-modules/interfaces/parameter";
 import { type BuildingProperties } from "../building-popup";
 import { type FeatureData } from "../_types";
 import { BATCH_SIZE } from "../_const";
@@ -19,12 +20,18 @@ export const fetchAndGenFeaturesBuildings = async ({
   const areaFilter = parameters.find((p) => p.key === "area");
   const areas = areaFilter?.value as string[] | undefined;
 
+  // フィルター条件を抽出
+  const filterConditions = parameters.filter(
+    (p) => p.type === "filter" && p.key.startsWith("filter_"),
+  ) as FilterCondition[];
+
   const fetchData = await window.ipcRenderer.invoke(
     "selectBuildingsInBatches",
     {
       dataSetResultId,
       referenceDate: selectedDate,
       areas,
+      filterConditions,
 
       /** バッチ処理に必要 */
       batchSize: BATCH_SIZE,

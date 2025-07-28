@@ -5,6 +5,8 @@ import {
 } from "../schema";
 import { db } from "../utils/db";
 import { type IpcMainListener } from ".";
+import { filterQueryBuilder } from "../bi-modules/api/builder/filter-query-builder";
+import { type FilterCondition } from "../bi-modules/interfaces/parameter";
 
 export const selectBuildingsInBatches = ((
   _: unknown,
@@ -14,12 +16,14 @@ export const selectBuildingsInBatches = ((
     batchSize,
     lastId,
     areas,
+    filterConditions,
   }: {
     dataSetResultId: number;
     batchSize: number;
     referenceDate?: string;
     lastId?: number;
     areas?: string[];
+    filterConditions?: FilterCondition[];
   },
 ): SelectDataSetDetailBuilding[] | null => {
   try {
@@ -40,6 +44,7 @@ export const selectBuildingsInBatches = ((
                 ),
               )
             : undefined,
+          ...filterQueryBuilder({ conditions: filterConditions ?? [] }),
         ),
       )
       .limit(batchSize)

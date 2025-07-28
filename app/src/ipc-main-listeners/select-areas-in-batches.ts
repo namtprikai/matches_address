@@ -2,6 +2,8 @@ import { and, eq, gt, or } from "drizzle-orm";
 import { data_set_detail_areas, type SelectDataSetDetailArea } from "../schema";
 import { db } from "../utils/db";
 import { type IpcMainListener } from ".";
+import { filterQueryBuilder } from "../bi-modules/api/builder/filter-query-builder";
+import { type FilterCondition } from "../bi-modules/interfaces/parameter";
 
 export const selectAreasInBatches = ((
   _: unknown,
@@ -11,12 +13,14 @@ export const selectAreasInBatches = ((
     batchSize,
     lastId,
     areas,
+    filterConditions,
   }: {
     dataSetResultId: number;
     batchSize: number;
     referenceDate?: string;
     lastId?: number;
     areas?: string[];
+    filterConditions?: FilterCondition[];
   },
 ): SelectDataSetDetailArea[] | null => {
   try {
@@ -37,6 +41,7 @@ export const selectAreasInBatches = ((
                 ),
               )
             : undefined,
+          ...filterQueryBuilder({ conditions: filterConditions ?? [] }),
         ),
       )
       .limit(batchSize)
