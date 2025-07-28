@@ -4,9 +4,9 @@ import {
   type SelectDataSetDetailBuilding,
 } from "../schema";
 import { db } from "../utils/db";
-import { type IpcMainListener } from ".";
 import { filterQueryBuilder } from "../bi-modules/api/builder/filter-query-builder";
 import { type FilterCondition } from "../bi-modules/interfaces/parameter";
+import { type IpcMainListener } from ".";
 
 export const selectBuildingsInBatches = ((
   _: unknown,

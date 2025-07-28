@@ -288,7 +288,7 @@ export const TILE_VIEW_CONFIG = {
     ],
   },
   map: {
-    fields: [],
+    fields: TABLE_FIELDS,
   },
   table: {
     fields: TABLE_FIELDS,

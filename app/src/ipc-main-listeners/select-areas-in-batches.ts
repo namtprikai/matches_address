@@ -1,9 +1,9 @@
 import { and, eq, gt, or } from "drizzle-orm";
 import { data_set_detail_areas, type SelectDataSetDetailArea } from "../schema";
 import { db } from "../utils/db";
-import { type IpcMainListener } from ".";
 import { filterQueryBuilder } from "../bi-modules/api/builder/filter-query-builder";
 import { type FilterCondition } from "../bi-modules/interfaces/parameter";
+import { type IpcMainListener } from ".";
 
 export const selectAreasInBatches = ((
   _: unknown,
