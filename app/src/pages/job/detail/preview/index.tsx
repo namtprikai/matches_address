@@ -15,6 +15,8 @@ import {
   BreadcrumbItem,
 } from "../../../../components/ui/breadcrumb";
 import { ROUTES } from "../../../../routes";
+import { downloadFile } from "../../../../utils/download-file";
+import { useFetchJobResults } from "../../../../hooks/use-fetch-job-results";
 
 const useStyles = makeStyles({
   root: {
@@ -75,6 +77,9 @@ export function JobPreview(): JSX.Element {
   const dataSetResultId = Number(id);
 
   const { data } = useFetchBuildingPreview(dataSetResultId);
+  const { data: jobResultsData } = useFetchJobResults({
+    jobId: dataSetResultId,
+  });
 
   const handlePageChange = (newPage: number): void => {
     setPage(newPage);
@@ -139,7 +144,15 @@ export function JobPreview(): JSX.Element {
       <h2 className={styles.heading}>ファイルのプレビュー</h2>
       <div className={styles.previewWrapper}>
         <div className={styles.preview}>
-          <Button className={styles.button}>ダウンロード</Button>
+          <Button
+            className={styles.button}
+            onClick={async () => {
+              if (!jobResultsData) return;
+              await downloadFile(jobResultsData.file_path);
+            }}
+          >
+            ダウンロード
+          </Button>
         </div>
 
         <div className={styles.tableContainer}>
