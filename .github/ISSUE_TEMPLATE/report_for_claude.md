@@ -1,13 +1,9 @@
-<<<<<<< HEAD
 ---
 name: 🤖 Report for Claude
 about: Claudeが理解しやすいテンプレート
 title: "[Claude] "
 labels:
 ---
-=======
-# GitHub Issue テンプレート - AI解決支援向け
->>>>>>> e29f806d582b0f85c159859878866ed9f9da03e0
 
 ## Must Have（必須項目）
 
