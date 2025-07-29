@@ -1,3 +1,3 @@
 export const THEME_COLORS = {
-    primary: "#6264A7"
-}
+  primary: "#6264A7",
+};

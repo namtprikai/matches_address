@@ -177,7 +177,7 @@ export function PreprocessDetail(): JSX.Element {
               href: ROUTES.JOB.ROOT,
             },
             {
-              children: "処理結果 - 前処理",
+              children: "処理結果 - 名寄せ処理",
               current: true,
               href: ROUTES.JOB.DETAIL_PREPROCESS(id || ""),
             },
