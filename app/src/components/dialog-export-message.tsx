@@ -1,6 +1,7 @@
 import { Dialog, Body1 } from "@fluentui/react-components";
 import { useNavigate } from "react-router-dom";
 import { type ReturnUseDialogState } from "../hooks/use-dialog-state";
+import { ROUTES } from "../routes";
 import { Button } from "./ui/button";
 import { DialogSurface } from "./ui/dialog-surface";
 import { DialogBody } from "./ui/dialog-body";
@@ -14,7 +15,7 @@ type Props = {
 
 export const DialogExportMessage = ({ dialogState }: Props): JSX.Element => {
   const { isOpen: isDialogOpen, setIsOpen: setIsDialogOpen } = dialogState;
-  const navigator = useNavigate();
+  const navigate = useNavigate();
 
   return (
     <Dialog
@@ -35,7 +36,10 @@ export const DialogExportMessage = ({ dialogState }: Props): JSX.Element => {
             </Body1>
           </DialogContent>
           <DialogActions>
-            <Button appearance="primary" onClick={() => navigator("/job")}>
+            <Button
+              appearance="primary"
+              onClick={() => navigate(ROUTES.JOB.ROOT)}
+            >
               処理一覧画面へ
             </Button>
           </DialogActions>

@@ -140,7 +140,7 @@ export function ExportDetail(): JSX.Element {
         </div>
       </div>
       <div className={styles.restartButtonWrapper}>
-        <Button appearance="primary" onClick={() => navigate(`/job`)}>
+        <Button appearance="primary" onClick={() => navigate(ROUTES.JOB.ROOT)}>
           処理一覧へ
         </Button>
       </div>

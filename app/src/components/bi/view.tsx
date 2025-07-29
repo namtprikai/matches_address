@@ -7,13 +7,12 @@ import {
   Subtitle2,
   tokens,
 } from "@fluentui/react-components";
-import { useNavigate } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
 import { type SelectResultView } from "../../schema";
 import { THEME_COLORS } from "../../config/theme-colors";
 import { useDialogState } from "../../hooks/use-dialog-state";
 import { DialogExportMessage } from "../dialog-export-message";
 import { type View } from "../../bi-modules/interfaces/view";
-import { ROUTES } from "../../routes";
 import { useWorkbookIdsSearchQuery } from "../../bi-modules/hooks/use-workbook-ids-search-query";
 import { useViewContainer } from "../../bi-modules/hooks/use-view-container";
 import { ViewStyle } from "./view-style";
@@ -68,20 +67,19 @@ export const ViewContainer = ({
   isPreview = false,
 }: Props): JSX.Element => {
   const styles = useStyles();
-  const navigate = useNavigate();
 
-  const { workbookId, viewId } = useWorkbookIdsSearchQuery();
+  const { viewId } = useWorkbookIdsSearchQuery();
   const selected = String(resultView.id) === viewId;
+
+  const [searchParams, setSearchParams] = useSearchParams();
+
   const handleClick = (): void => {
-    navigate(
-      ROUTES.ANALYSIS.WORKBOOK_EDIT({
-        id: workbookId || "",
-        queryParams: {
-          sheetId: resultView.sheet_id,
-          viewId: resultView.id,
-        },
-      }),
-    );
+    //** 下の階層のコンポーネントでnavigateを利用した時に衝突するためクエリを直接更新する */
+    const newParams = new URLSearchParams(searchParams);
+    newParams.set("sheetId", resultView.sheet_id?.toString() || "");
+    newParams.set("viewId", resultView?.id.toString() || "");
+
+    setSearchParams(newParams);
   };
 
   const { handleDelete, handleDownload, isInvalidParameters } =
