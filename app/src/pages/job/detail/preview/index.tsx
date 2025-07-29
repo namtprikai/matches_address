@@ -9,7 +9,6 @@ import { useParams } from "react-router-dom";
 import { Table, type ColumnDefinition } from "../../../../components/ui/table";
 import { Pagination } from "../../../../components/ui/pagination";
 import { useFetchBuildingPreview } from "../../../../hooks/use-fetch-preview-data";
-import { useFetchModelFiles } from "../../../../hooks/use-fetch-model-files";
 import { type PreviewData } from "../../../../ipc-main-listeners/select-building-preview";
 import {
   BreadcrumbBase,
@@ -44,6 +43,7 @@ const useStyles = makeStyles({
   preview: {
     display: "flex",
     alignItems: "center",
+    justifyContent: "end",
     gap: tokens.spacingVerticalM,
   },
   button: {
@@ -75,11 +75,6 @@ export function JobPreview(): JSX.Element {
   const dataSetResultId = Number(id);
 
   const { data } = useFetchBuildingPreview(dataSetResultId);
-  const { data: modelData } = useFetchModelFiles();
-
-  const matchedModel = modelData?.find((model) => model.id === dataSetResultId);
-  const modelName = matchedModel?.file_name ?? "#{モデル名}";
-  const fileName = matchedModel?.file_path ?? "#{ファイル名}";
 
   const handlePageChange = (newPage: number): void => {
     setPage(newPage);
@@ -144,10 +139,6 @@ export function JobPreview(): JSX.Element {
       <h2 className={styles.heading}>ファイルのプレビュー</h2>
       <div className={styles.previewWrapper}>
         <div className={styles.preview}>
-          <div className={styles.text}>
-            モデル「{modelName}」, ファイル「{fileName}」
-            を使っての空き家分析処理
-          </div>
           <Button className={styles.button}>ダウンロード</Button>
         </div>
 
