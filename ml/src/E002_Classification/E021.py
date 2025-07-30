@@ -7,7 +7,6 @@ import ast
 import os
 import pickle
 import sys
-import time
 import uuid
 import warnings
 import json
@@ -22,9 +21,13 @@ import zipfile
 from concurrent.futures import ThreadPoolExecutor
 
 from memory_profiler import profile
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import StandardScaler
+from sklearn.compose import ColumnTransformer
+from sklearn.impute import SimpleImputer
+from sklearn.ensemble import IsolationForest
 from sklearn.metrics import accuracy_score, confusion_matrix, precision_score, recall_score, f1_score
-from sklearn.model_selection import KFold, train_test_split
-from imblearn.over_sampling import SMOTE
+from sklearn.model_selection import StratifiedKFold, train_test_split
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
 async_tasks_path = os.path.join(current_dir, '..', 'async_tasks')
@@ -195,7 +198,52 @@ def prepare_learning_data(df, explanatory_variables, explanatory_variables_dict)
     learning_data.reset_index(drop=True, inplace=True)
     return learning_data
 
-### 1. 学習用データとテスト用データに分割 
+### 1. Isolation Forestモデル作成
+# - 入力：「D901　家屋単位GISデータ【CSV】」
+# - 出力：「Isolation Forestモデル【pkl】」
+
+def make_isolation_forest_model(df, min_cont=0.01, max_cont=0.05, step=0.01):
+    """
+    指定範囲の異常比率で複数のモデルをリストに作成し、最初のモデルのみを保存する。
+
+    Args:
+        df (pd.DataFrame): 使用するデータフレーム。
+        min_cont (float): 異常比率(contamination)の下限値。
+        max_cont (float): 異常比率(contamination)の上限値（この値は含まない）。
+        step (float): 異常比率の増分（間隔）。
+
+    Returns:
+        list: 作成したIsolation Forestモデルのリスト。
+    """
+    # 浮動小数点数または整数の型の列を選択
+    float_columns = df.select_dtypes(include=['float64', 'int64']).columns.tolist()
+    # 指定された範囲と間隔で異常比率のリストを生成
+    contamination_levels = np.arange(min_cont, max_cont+step, step)
+    # 作成したモデルを格納するための空のリストを準備
+    models_list = []
+    #異常比率０の場合
+    pipeline = Pipeline([
+        ('preprocessor', ColumnTransformer([
+            ('num', StandardScaler(), float_columns)
+        ])),
+        ('imputer', SimpleImputer(strategy='median')),
+    ])
+    pipeline.fit(df)
+    models_list.append(pipeline)
+    # 各異常比率でモデルを作成し、リストに追加
+    for cont in contamination_levels:
+        pipeline = Pipeline([
+            ('preprocessor', ColumnTransformer([
+                ('num', StandardScaler(), float_columns)
+            ])),
+            ('imputer', SimpleImputer(strategy='median')),
+            ('iso_forest', IsolationForest(contamination=cont, random_state=42))
+        ])
+        pipeline.fit(df)
+        models_list.append(pipeline)
+    return models_list
+       
+### 2. 学習用データとテスト用データに分割 
 # - 入力：「D901　家屋単位GISデータ【CSV】」
 # - 出力：学習用データ（70%）、テスト用データ（30%）
 
@@ -226,53 +274,6 @@ def split_data(df, params, explanatory_variables_dict):
     # データを学習用とテスト用に分割
     # stratify = y で目的変数の分布を維持
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=params['test_size'], stratify = y, random_state = 42)
-    # アンダーサンプリングが有効な場合、学習セットを調整
-    if params['undersample']:
-        if y.value_counts(normalize=True)[1] < 0.02:
-            X_train[CONSTANTS['outcome_variable']] = y_train
-            for suido_stats_col in [ "最大使用水量", "最小使用水量", "平均使用水量"]:
-                if suido_stats_col in X_train.columns:
-                    X_train = X_train.loc[X_train[suido_stats_col].notnull()].reset_index(drop=True)
-                    y_train = X_train[CONSTANTS['outcome_variable']]
-                    X_train = X_train.drop(CONSTANTS['outcome_variable'], axis=1).reset_index(drop=True)
-                    break
-            
-            # Nullのラベルを平均もしくは最頻値（カテゴリ）で埋める
-            for col in X_train.columns:
-                if X_train[col].isnull().any():
-                    if X_train[col].dtypes == 'category':
-                        fill_value = X_train[col].mode()[0]
-                    else:
-                        fill_value = X_train[col].mean()
-                    X_train[col] = X_train[col].fillna(fill_value)
-
-            # アップサンプリング
-            oversample = SMOTE(random_state=101, sampling_strategy=params['undersample_ratio']/10, k_neighbors=4)
-            X_train, y_train = oversample.fit_resample(X_train, y_train)
-
-        else:
-            # 正例（空き家）の数をカウント
-            vacant_count = y_train.value_counts()[1]
-
-            # アンダーサンプル比に基づいて負例（非空き家）の数を決定
-            non_vacant_count = int(vacant_count * params['undersample_ratio'])
-            
-            # 正例（空き家）と負例（非空き家）のインデックスを取得
-            vacant_indices = y_train[y_train == 1].index
-            non_vacant_indices = y_train[y_train == 0].index
-            
-            # non_vacant_countが利用可能な非空き家インデックスを超えないようにする
-            non_vacant_count = min(non_vacant_count, len(non_vacant_indices))
-
-            # 必要な数の負例をランダムにサンプリング
-            sampled_non_vacant_indices = non_vacant_indices.to_series().sample(non_vacant_count, random_state=42).index
-            
-            # 正例と負例のインデックスを組み合わせる
-            new_indices = vacant_indices.union(sampled_non_vacant_indices)
-            
-            # 学習データを新しいインデックスでサブセット化
-            X_train = X_train.loc[new_indices]
-            y_train = y_train.loc[new_indices]
     
     # 説明変数と目的変数を学習用とテスト用のデータフレームに再結合
     train_df = X_train.copy()
@@ -283,12 +284,12 @@ def split_data(df, params, explanatory_variables_dict):
     # 学習用とテスト用のデータフレームを返す
     return train_df, test_df
 
-### 2. 機械学習モデル（アルゴリズム：LightGBM）の構築
+### 3. 機械学習モデル（アルゴリズム：LightGBM）の構築
 # - 入力：「1. 学習用データとテスト用データに分割」で作成した学習用データ（70%）
 # - 出力：「D014　学習済みモデル【pkl】」
 
 @profile
-def train_lgb_with_optuna(train_df, params, citycode_value, targetyear_value, output_path, job_id=None, task_id=None, sqlite_enabled=False):
+def train_lgb_with_optuna(train_df, params, citycode_value, output_path, job_id=None, task_id=None, sqlite_enabled=False):
     """
     K-Fold交差検証とOptunaによるハイパーパラメータチューニングを用いてLightGBMモデルを学習する
    
@@ -305,6 +306,8 @@ def train_lgb_with_optuna(train_df, params, citycode_value, targetyear_value, ou
         学習済みのLightGBMモデルのリスト
     feature_importances_dict_train : dict
         学習データの特徴量重要度を含む辞書
+    x_column : list
+        学習データの特徴量名を含むリスト
     """
 
     # 学習データを特徴量（X）と目的変数（y）に分割
@@ -325,7 +328,7 @@ def train_lgb_with_optuna(train_df, params, citycode_value, targetyear_value, ou
     pos_weight = (y_train == 0).sum() / (y_train == 1).sum()
 
     # K-Fold交差検証の初期化
-    kf = KFold(n_splits=params['n_splits'], shuffle=True, random_state=42)
+    kf = StratifiedKFold(n_splits=params['n_splits'], shuffle=True, random_state=42)
     categorical_features = X_train.select_dtypes(include=["object"]).columns.tolist()
     for col in categorical_features:
         X_train[col] = X_train[col].astype("category")
@@ -337,21 +340,21 @@ def train_lgb_with_optuna(train_df, params, citycode_value, targetyear_value, ou
             
             lgb_params = {
                 'objective': 'binary',
-                'lambda_l1': trial.suggest_loguniform('lambda_l1', 1e-10, 10.0),
-                'lambda_l2': trial.suggest_loguniform('lambda_l2', 1e-10, 10.0),
+                'reg_alpha': trial.suggest_loguniform('lambda_l1', 1e-10, 10.0),
+                'reg_lambda': trial.suggest_loguniform('lambda_l2', 1e-10, 10.0),
                 'num_leaves': trial.suggest_int('num_leaves', 2, 256),
-                'feature_fraction': trial.suggest_uniform('feature_fraction', 0.5, 1.0),
-                'bagging_fraction': trial.suggest_uniform('bagging_fraction', 0.5, 1.0),
-                'bagging_freq': trial.suggest_int('bagging_freq', 0, 10),
-                'min_data_in_leaf': trial.suggest_int('min_data_in_leaf', 1, 50),
+                'colsample_bytree': trial.suggest_uniform('feature_fraction', 0.5, 1.0),
+                'subsample': trial.suggest_uniform('bagging_fraction', 0.5, 1.0),
+                'subsample_freq': trial.suggest_int('bagging_freq', 0, 10),
+                'min_child_samples': trial.suggest_int('min_data_in_leaf', 1, 50),
                 'random_state': 42,
                 'verbosity': -1,
                 'scale_pos_weight': pos_weight
             }
             
         # これらのパラメータで交差検証を実行
-        accuracy_list = []
-        for fold, (train_index, val_index) in enumerate(kf.split(X_train)):
+        f1_list = []
+        for fold, (train_index, val_index) in enumerate(kf.split(X_train, y_train)):
             # このフォールドのデータを学習用と検証用に分割
             X_tr, X_val = X_train.iloc[train_index], X_train.iloc[val_index]
             y_tr, y_val = y_train.iloc[train_index], y_train.iloc[val_index]
@@ -362,13 +365,13 @@ def train_lgb_with_optuna(train_df, params, citycode_value, targetyear_value, ou
                 
             # 検証セットで予測を行う
             preds = model.predict(X_val)
-            # 精度を計算
-            accuracy = accuracy_score(y_val, preds)
-            accuracy_list.append(accuracy)
-            
-        # 全フォールドの平均精度を返す
-        return np.mean(accuracy_list)
-    
+            # F1スコアを計算
+            f1 = f1_score(y_val, preds)
+            f1_list.append(f1)
+
+        # 全フォールドの平均F1スコアを返す
+        return np.mean(f1_list)
+
     # 初期の最良パラメータを設定
     best_params = {
         'random_state': 42,
@@ -386,13 +389,13 @@ def train_lgb_with_optuna(train_df, params, citycode_value, targetyear_value, ou
     else:
         # デフォルトのハイパーパラメータを使用
         best_params = ({
-            'lambda_l1': params['lambda_l1'],
-            'lambda_l2': params['lambda_l2'],
+            'reg_alpha': params['lambda_l1'],
+            'reg_lambda': params['lambda_l2'],
             'num_leaves': params['num_leaves'],
-            'feature_fraction': params['feature_fraction'],
-            'bagging_fraction': params['bagging_fraction'],
-            'bagging_freq': params['bagging_freq'],
-            'min_data_in_leaf': params['min_data_in_leaf'],
+            'colsample_bytree': params['colsample_bytree'],
+            'subsample': params['subsample'],
+            'subsample_freq': params['subsample_freq'],
+            'min_child_samples': params['min_child_samples'],
         })
     if sqlite_enabled and job_id:
         create_or_update_job_task(job_id, progress_percent="40", preprocess_type=None, error_code=None, error_msg=None, result=json.dumps({}), id= task_id)
@@ -404,7 +407,7 @@ def train_lgb_with_optuna(train_df, params, citycode_value, targetyear_value, ou
     df_feature_importances = pd.DataFrame()
     
     # K-Fold交差検証を実行
-    for fold, (train_index, val_index) in enumerate(kf.split(X_train)):
+    for fold, (train_index, val_index) in enumerate(kf.split(X_train, y_train)):
         # このフォールドのデータを学習用と検証用に分割
         id_tr, id_val = id_train.iloc[train_index], id_train.iloc[val_index]
         X_tr, X_val = X_train.iloc[train_index], X_train.iloc[val_index]
@@ -448,11 +451,14 @@ def train_lgb_with_optuna(train_df, params, citycode_value, targetyear_value, ou
     if sqlite_enabled and job_id:
         create_or_update_job_task(job_id, progress_percent="60", preprocess_type=None, error_code=None, error_msg=None, result=json.dumps({}), id= task_id)
         create_or_update_job(job_id , "60")
+    # 学習済みモデル、Out-of-fold予測、学習データの特徴量重要度を返す
+    return lgbm_models, feature_importances_dict_train, model_zip_file_path, X_train.columns.tolist()
+
+def save_models(lgbm_models, output_file_path, x_column, targetyear_value, model_zip_file_path, sqlite_enabled=False, job_id=None, task_id=None):
 
     columns_file = os.path.join(output_file_path, f'{str(uuid.uuid4())}_columns.pkl')
     with open(columns_file, 'wb') as f:
-        pickle.dump(X_train.columns.tolist(), f)
-        
+        pickle.dump(x_column, f)
     # 各学習済みモデルをファイルに保存
     for i, model in enumerate(lgbm_models):
         if targetyear_value is not None:
@@ -473,10 +479,9 @@ def train_lgb_with_optuna(train_df, params, citycode_value, targetyear_value, ou
     if sqlite_enabled and job_id:
         create_or_update_job_task(job_id, progress_percent="70", preprocess_type=None, error_code=None, error_msg=None, result=json.dumps({}), id= task_id)
         create_or_update_job(job_id , "70")
-    # 学習済みモデル、Out-of-fold予測、学習データの特徴量重要度を返す
-    return lgbm_models, feature_importances_dict_train, model_zip_file_path
 
-### 3. 精度検証
+
+### 4. 精度検証
 # - 入力：テスト用データ
 # - 出力：「D902　空き家推定結果データ【CSV】」
 
@@ -582,6 +587,28 @@ def evaluate_models_on_test(test_df, models, params):
     # 予測結果、評価指標、特徴量重要度を返す
     return pred, score_dict
 
+def remove_by_isolation_forest_model(df, model):
+    '''
+    Isolation Forestモデルのリストそれぞれで、異常であるレコードを排除したデータをevaluate_models_on_test関数に渡す。
+    その後、F1スコアを計算し、もっともF1スコアが高いモデルを選択する。
+    
+    Args:
+        df (pd.DataFrame): 使用するデータフレーム。
+        model (IsolationForest): 評価するIsolation Forestモデル。
+    
+    Returns:
+        pd.DataFrame: 異常値を除外したデータフレーム。
+    '''
+    df_copy = df.copy()
+    # 特徴量を抽出
+    float_columns = df.select_dtypes(include=['float64', 'int64']).columns.tolist()
+    X = df_copy[float_columns]
+    # Isolation Forestモデルを使用して異常値を検出
+    df_copy['anomaly'] = model.predict(X)
+    # 異常値を除外
+    df_filtered = df_copy[df_copy['anomaly'] == 1].drop(columns=['anomaly'])
+    return df_filtered
+
 def merge_and_save_results(df, pred, output_file):
     """
     予測結果を元のデータフレームにマージし、結果を保存する
@@ -673,8 +700,28 @@ def save_metrics_and_importances(score_dict, feature_importances_dict_train, cit
 
     return data_zip_file_path
 
+def save_isolation_forest_model(model, output_path):
+    """
+    Isolation Forestモデルを指定されたパスに保存する。
 
-def train_and_evaluate(db_path, input_file, output_path, explanatory_variables, test_size, n_splits, undersample, undersample_ratio, threshold, hyperparameter_flag, n_trials, 
+    Args:
+        model (IsolationForest): 保存するIsolation Forestモデル。
+        output_path (str): モデルを保存するディレクトリのパス。
+    """
+    # モデルを保存するディレクトリを作成
+    os.makedirs(output_path, exist_ok=True)
+    
+    # モデルファイルのパスを設定
+    model_file = os.path.join(output_path, 'isolation_forest_model.pkl')
+    
+    # モデルをpickle形式で保存
+    with open(model_file, 'wb') as f:
+        pickle.dump(model, f)
+        
+ 
+ 
+### main関数
+def train_and_evaluate(db_path, input_file, output_path, isolation_forest_save_directory, isolation_forest_min_count, isolation_forest_max_count, isolation_forest_step, explanatory_variables, test_size, n_splits, undersample, undersample_ratio, threshold, hyperparameter_flag, n_trials, 
                        lambda_l1, lambda_l2, num_leaves, feature_fraction, bagging_fraction, bagging_freq, min_data_in_leaf, citycode_value, targetyear_value, job_id):
     """
     モデルを学習し評価する主要関数
@@ -806,7 +853,7 @@ def train_and_evaluate(db_path, input_file, output_path, explanatory_variables, 
         to_remove = duplicate_counts[duplicate_counts >= 2].index  # 3件以上の値を取得
         if any(to_remove) and len(to_remove) > 0:
             df = df[~df['正規化住所'].isin(to_remove)].reset_index(drop=True)  # 該当値を除外
-
+        
         # modify dataset which has irreguralar cases
         df.loc[df['最大使用水量_suido_residence'] > 30, '閉栓フラグ_suido_residence'] = 0
         df.loc[df['最大使用水量_suido_residence'] > 30, 'akiya_result_cleaned_flag'] = 0
@@ -819,6 +866,8 @@ def train_and_evaluate(db_path, input_file, output_path, explanatory_variables, 
             create_or_update_job_task(job_id, progress_percent="10", preprocess_type=None, error_code=None, error_msg=None, result=json.dumps({}), id=task_id)
             create_or_update_job(job_id, "10")
         learning_data = prepare_learning_data(df, explanatory_variables, explanatory_variables_dict)
+
+        model_list = make_isolation_forest_model(learning_data, isolation_forest_min_count, isolation_forest_max_count, isolation_forest_step)
         
         params = {
             'test_size': float(test_size),
@@ -831,26 +880,52 @@ def train_and_evaluate(db_path, input_file, output_path, explanatory_variables, 
             'lambda_l1': float(lambda_l1),
             'lambda_l2': float(lambda_l2),
             'num_leaves': int(num_leaves),
-            'feature_fraction': float(feature_fraction),
-            'bagging_fraction': float(bagging_fraction),
-            'bagging_freq': int(bagging_freq),
-            'min_data_in_leaf': int(min_data_in_leaf),
+            'colsample_bytree': float(feature_fraction),
+            'subsample': float(bagging_fraction),
+            'subsample_freq': int(bagging_freq),
+            'min_child_samples': int(min_data_in_leaf),
         }
-        if sqlite_enabled and job_id:
-            create_or_update_job_task(job_id, progress_percent="20", preprocess_type=None, error_code=None, error_msg=None, result=json.dumps({}), id= task_id)
-            create_or_update_job(job_id , "20")
-        train_df, test_df = split_data(learning_data, params, explanatory_variables_dict)
         
-        if sqlite_enabled and job_id:
-            create_or_update_job_task(job_id, progress_percent="30", preprocess_type=None, error_code=None, error_msg=None, result=json.dumps({}), id= task_id)
-            create_or_update_job(job_id , "30")
-        models, feature_importances_dict_train, model_zip_file_path = train_lgb_with_optuna(train_df, params, citycode_value, targetyear_value, output_path, job_id, task_id, sqlite_enabled)
-        
-        if sqlite_enabled and job_id:
-            create_or_update_job_task(job_id, progress_percent="80", preprocess_type=None, error_code=None, error_msg=None, result=json.dumps({}), id= task_id)
-            create_or_update_job(job_id , "80")
-        pred, score_dict = evaluate_models_on_test(test_df, models, params)
-        
+        if len(model_list) > 0:
+            results_list = []
+            for i, model in enumerate(model_list):
+                # Isolation Forestモデルを使用して異常値を除外
+                if i != 0:
+                    all_df= remove_by_isolation_forest_model(learning_data, model)
+                else:
+                    all_df = learning_data.copy()
+                if sqlite_enabled and job_id:
+                    create_or_update_job_task(job_id, progress_percent="20", preprocess_type=None, error_code=None, error_msg=None, result=json.dumps({}), id= task_id)
+                    create_or_update_job(job_id , "20")
+                train_df, test_df = split_data(all_df, params, explanatory_variables_dict)
+                if sqlite_enabled and job_id:
+                    create_or_update_job_task(job_id, progress_percent="30", preprocess_type=None, error_code=None, error_msg=None, result=json.dumps({}), id= task_id)
+                    create_or_update_job(job_id , "30")
+                lgb_model, feature_importances_dict_train, model_zip_file_path, x_columns = train_lgb_with_optuna(train_df, params, citycode_value, output_path, job_id, task_id, sqlite_enabled)
+
+                if sqlite_enabled and job_id:
+                    create_or_update_job_task(job_id, progress_percent="80", preprocess_type=None, error_code=None, error_msg=None, result=json.dumps({}), id= task_id)
+                    create_or_update_job(job_id , "80")
+                pred, score_dict = evaluate_models_on_test(test_df, lgb_model, params)
+                # F1スコアを計算
+                results_list.append({
+                    'f1_score': score_dict['f1'],
+                    'isolation_model': model,
+                    'trained_lgbm_models': lgb_model,
+                    'feature_importances': feature_importances_dict_train,
+                    'model_zip_path': model_zip_file_path,
+                    'full_score_dict': score_dict,
+                    'predictions': pred
+                })
+        if results_list:
+            best_result = max(results_list, key=lambda x: x['f1_score'])
+            iso_model = best_result['isolation_model']
+            best_model = best_result['trained_lgbm_models']
+            feature_importances_dict_train = best_result['feature_importances']
+            model_zip_file_path = best_result['model_zip_path']
+            pred = best_result['predictions']
+            score_dict = best_result['full_score_dict']
+            
         if sqlite_enabled and job_id:
             create_or_update_job_task(job_id, progress_percent="90", preprocess_type=None, error_code=None, error_msg=None, result=json.dumps({}), id= task_id)
             create_or_update_job(job_id , "90")
@@ -859,16 +934,18 @@ def train_and_evaluate(db_path, input_file, output_path, explanatory_variables, 
             output_file = f'{output_path}/data/{citycode_value}/E021/outputs/D902.csv'
         else:
             output_file = f'{output_path}/D902.csv'
-        
+        model_save_dir = os.path.splitext(model_zip_file_path)[0]
+        save_models(best_model, model_save_dir, x_columns, targetyear_value, model_zip_file_path, sqlite_enabled, job_id, task_id)
         merge_and_save_results(df, pred, output_file)
-
-        # Save evaluation metrics and feature importances
         data_zip_file_path = save_metrics_and_importances(score_dict, feature_importances_dict_train, citycode_value, targetyear_value, output_path)
-
+        save_isolation_forest_model(iso_model, isolation_forest_save_directory)
         if sqlite_enabled and job_id:
             create_or_update_job_task(job_id, progress_percent="95", preprocess_type=None, error_code=None, error_msg=None, result=json.dumps({}), id= task_id)
             create_or_update_job(job_id , "95")
-        
+        #tmp、F1スコア表示
+        for i, contamination in enumerate(results_list):
+            print(f"Contamination: {i}, F1 Score: {contamination['f1_score']:.4f}")
+
         converted_data = [
             {"column": item["feature"], "value": item["importance"]}
             for item in feature_importances_dict_train
@@ -896,7 +973,6 @@ def train_and_evaluate(db_path, input_file, output_path, explanatory_variables, 
         if task_id is not None:
             create_or_update_job_task(job_id, progress_percent="", preprocess_type=None, error_code=ERROR_CODE, error_msg=ERROR_MSG, result=json.dumps({}), id= task_id, is_finish=True)
         raise Exception("空き家推定の学習モデル構築中にエラーが発生しました。")
-
     
 def set_error(value, param_st1=None, param_st2=None):
     global ERROR_CODE
@@ -908,3 +984,37 @@ def set_error(value, param_st1=None, param_st2=None):
         ERROR_MSG = value['message'].format(param_st1=param_st1)
     else:
         ERROR_MSG = value['message']
+        
+if __name__ == "__main__":
+    train_and_evaluate(
+    # --- ファイル回りの引数 ---
+    input_file='./data/toyota/E016.csv',
+    output_path='./data/toyota/E021_outputs',
+    # --- Isolation Forest ---
+    isolation_forest_save_directory='./data/toyota/E021_outputs/',
+    isolation_forest_min_count=0.01,
+    isolation_forest_max_count=0.10,
+    isolation_forest_step=0.01,
+    # --- LightGBMのハイパーパラメータ (hyperparameter_flag=False の場合に参照される) ---
+    hyperparameter_flag=False,  # Falseの場合、以下のパラメータが使われる
+    test_size=0.3,
+    undersample=True,
+    undersample_ratio=2.0,
+    threshold=0.5,
+    lambda_l1=0.01,
+    lambda_l2=0.01,
+    num_leaves=31,
+    feature_fraction=0.8,
+    bagging_fraction=0.8,
+    bagging_freq=1,
+    min_data_in_leaf=20,
+    n_trials=50,
+    n_splits=5,
+    citycode_value='12345',
+    targetyear_value='2025',
+    job_id=1,
+
+    db_path=None,  # DBを使わない場合はNoneを指定
+    explanatory_variables=[]  # 追加の説明変数がない場合は空のリスト[]を指定
+    
+)

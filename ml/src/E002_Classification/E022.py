@@ -16,6 +16,8 @@ import pandas as pd
 import re
 import time
 import gc
+from sklearn.ensemble import IsolationForest
+from sklearn.preprocessing import StandardScaler
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
 async_tasks_path = os.path.join(current_dir, '..', 'async_tasks')
@@ -170,6 +172,45 @@ def load_models(model_zip, job_id):
 
     return models, columns
 
+def load_isolation_forest_model(path: str) -> IsolationForest:
+    """
+    指定されたパスからIsolation Forestモデルを読み込む
+    
+    Parameters
+    ----------
+    path : str
+        モデルファイルのパス
+        
+    Returns
+    -------
+    IsolationForest
+        読み込まれたIsolation Forestモデル
+    """
+    # Add outlier predictions to the DataFrame
+    with open(path, 'rb') as f:
+        pipeline = pickle.load(f)
+    return pipeline
+
+def predict_isolation_forest(df: pd.DataFrame, pipeline: IsolationForest) -> pd.DataFrame:
+    '''
+    データフレームに対してIsolation Forestモデルを使用して異常値を検出し、結果を新しい列に追加する
+    
+    Parameters
+    ----------
+    df : pd.DataFrame
+        異常値検出を行うデータフレーム
+    pipeline : IsolationForest
+        訓練済みのIsolation Forestモデル
+    
+    Returns
+    -------
+    pd.DataFrame
+        異常値フラグを追加したデータフレーム
+    '''
+
+    df['異常値フラグ'] = pipeline.predict(df)
+    return df
+    
 def check_features(new_data, required_features, outcome_variable):
     """
     新しいデータに必要な特徴量が含まれているかチェックし、余分な特徴量を削除する
@@ -406,7 +447,7 @@ def drop_duplicates(df, subset, keep="first"):
         """
         return df.drop_duplicates(subset=subset, keep=keep)
     
-def process_and_predict(input_folder, input_file, model_directory, threshold, output_file, required_features, outcome_variable, job_id=None, db_path=None, process=0, data_set_result_id=0):
+def process_and_predict(input_folder, input_file, model_directory, isolation_forest_model_path, threshold, output_file, required_features, outcome_variable, job_id=None, db_path=None, process=0, data_set_result_id=0):
     """
     入力データを処理し、予測を行い、結果を保存する
     """
@@ -442,6 +483,12 @@ def process_and_predict(input_folder, input_file, model_directory, threshold, ou
         to_remove = duplicate_counts[duplicate_counts >= 2].index  # 3件以上の値を取得
         if any(to_remove) and len(to_remove) > 0:
             input_data = input_data[~input_data['正規化住所'].isin(to_remove)].reset_index(drop=True)  # 該当値を除外
+        # トレーニング時との一貫性を保つため、gml_idが存在しない場合はインデックスから作成
+        if 'gml_id' not in input_data.columns:
+            input_data['gml_id'] = input_data.index
+        date_column = '登記日付_touki_residence'
+        if date_column in input_data.columns:
+            input_data[date_column] = pd.to_datetime(input_data[date_column], errors='coerce').dt.year
         
         if sqlite_enabled and job_id:
             create_or_update_job_task(job_id, progress_percent="20", preprocess_type=None, error_code=None, error_msg=None, result=json.dumps({}), id= task_id)
@@ -510,14 +557,21 @@ def process_and_predict(input_folder, input_file, model_directory, threshold, ou
             create_or_update_job_task(job_id, progress_percent="70", preprocess_type=None, error_code=None, error_msg=None, result=json.dumps({}), id= task_id)
             create_or_update_job(job_id, process)
             process += process_init
-
+           
         # 元のinput_dataに予測結果を追加
         input_data['predicted_label'] = test_preds
         input_data['predicted_probability'] = test_preds_proba
         input_data['geometry'] = geometry_data
-        output_dir = re.sub(r"D902.*", "", output_file)
-        os.makedirs(output_dir, exist_ok=True)
-
+        
+        #Isolation Forestモデルの読み込みと予測
+        isolation_forest_model = load_isolation_forest_model(isolation_forest_model_path)
+        input_data = predict_isolation_forest(input_data, isolation_forest_model)
+        
+        #保存
+        output_dir = os.path.dirname(output_file)
+        if output_dir:
+            os.makedirs(output_dir, exist_ok=True)
+            
         if sqlite_enabled and job_id:
             #insert SQLite
             insert_sqlite(input_data, data_set_result_id)
@@ -578,3 +632,21 @@ def normalize_dates(df, column, formats=['%Y/%m/%d', '%d/%m/%Y', '%Y-%m-%d', '%m
     df[column] = df[temp_column]
     
     return df.drop(f'{column}_normalized',axis=1)
+
+if __name__ == "__main__":
+    # Example usage
+    input_folder = "data/toyota/"
+    input_file = "E016.csv"
+    model_directory = "./data/toyota/E021_outputs/data/12345/E021/outputs/models.zip"
+    isolation_forest_model_path = "./data/toyota/E021_outputs/isolation_forest_model.pkl"
+    threshold = 0.5
+    output_file = "./data/toyota/E022_outputs/E022_output.csv"
+    required_features = ['世帯コード']
+    outcome_variable = 'akiya_result_cleaned_flag'
+    data_set_result_id = 1
+
+    result_message, output_path = process_and_predict(
+        input_folder, input_file, model_directory, isolation_forest_model_path,threshold, output_file,
+        required_features, outcome_variable, data_set_result_id=data_set_result_id
+    )
+    print(result_message)
