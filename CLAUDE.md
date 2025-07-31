@@ -87,6 +87,18 @@
 - 緊急修正: `hotfix/*`（mainから分岐）
 - コミットは明示的に要求された場合のみ実行
 
+### 6. コミット作成ルール
+
+- **1行で完結する粒度**でコミットを作成する
+- **Claude Code生成文言は含めない**（`🤖 Generated with [Claude Code]...` は削除）
+- 変更内容に応じて適切な接頭辞を使用
+  - `feat:` 新機能追加
+  - `fix:` バグ修正
+  - `refactor:` リファクタリング
+  - `style:` コードスタイル修正
+  - `docs:` ドキュメント更新
+- 例: `feat: データセット設定を一元化`, `fix: building_detailプロパティを追加`
+
 ## 重要なパス
 
 - アプリケーションDB: `app/database/database.db`
