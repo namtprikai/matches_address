@@ -46,5 +46,4 @@ ml/Gradio/E002_Classification/data/
 ml/Gradio/E003_Summarization/data/
 
 #claude
-CLAUDE*
-.claude
+CLAUDE-*
