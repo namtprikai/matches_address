@@ -13,6 +13,7 @@ import pandas as pd
 from dateutil.relativedelta import relativedelta
 from sklearn.preprocessing import LabelEncoder
 import warnings
+import re
 
 warnings.filterwarnings("ignore")
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -82,7 +83,7 @@ class DataProcessor:
                 "65歳以上人数", "65歳以上構成比", "最大年齢", "最小年齢",
                 "男女比", "住定期間", "住定異動年月日"
             ],
-            "tatemono": ["正規化住所", "構造名称", "登記日付"]
+            "tatemono": ["正規化住所", "構造名称", "登記日付", "相続の有無", "増築の有無"]
         }
 
 
@@ -232,7 +233,6 @@ class SuidoProcessor(DataProcessor):
         
         return df_cleaned
 
-
     def preprocess_suido_data(self, df):
         """
         水道データを処理し、最古の使用量と最新の使用量を取得する
@@ -279,7 +279,6 @@ class SuidoProcessor(DataProcessor):
 
         return df
 
-
     def pivot_table(self, df):
         """
         水道使用量データのピボットテーブルを作成する
@@ -303,7 +302,6 @@ class SuidoProcessor(DataProcessor):
         df_suido_use_pt = df.pivot_table(index=cols["suido_number"], columns="検針年月", values=cols["suido_usage"], aggfunc='sum').reset_index()
 
         return df_suido_use_pt
-
 
     def calculate_suido_stats(self, suido_use, suido_status):
         """
@@ -481,6 +479,32 @@ class SuidoProcessor(DataProcessor):
             row['reference_date_水道使用量'] = 0
         return row
 
+    def extract_aqueduct_closedate(self, series:pd.Series, base_date:pd.Timestamp | None=None) -> pd.Series:
+        """
+        水道閉栓から特定の日まで、何日たっているかを計算する関数
+        
+        Parameters
+        ----------
+        df : pandas.Series
+            水道閉栓日カラム
+        base_date : pd.Timestamp
+            基準日 ex)pd.to_datetime('2025-02-02')
+            
+        Returns
+        -------
+        pandas.Series
+            経過日のカラム
+        """
+        def from_float_to_datetime(series:pd.Series) -> pd.Series:
+            datetime_series = pd.to_datetime(series.astype(str).str.split('.').str[0],format='%Y%m%d',errors='coerce')
+            return datetime_series
+        if base_date == None:
+            base_date=pd.Timestamp.now()
+        datetime_series = from_float_to_datetime(series)
+        diff_series = (base_date - datetime_series).dt.days
+        diff_series.name = '閉栓してからの経過日'
+        return diff_series
+
     def process(self):
 
         cols_status = COLUMNS["suido_status"]
@@ -532,6 +556,9 @@ class SuidoProcessor(DataProcessor):
             if "水道使用量変化率" in all_columns:
                 df_suido["水道使用量変化率"] = df_suido["水道使用量変化率"].fillna(1)
 
+            #水道閉栓から特定の日まで、何日たっているかを計算
+            df_suido['閉栓からの経過日'] = self.extract_aqueduct_closedate(df_suido['使用中止日'])
+            
             # 条件1: 最大使用水量, 平均使用水量, 最小使用水量, 合計使用水量がすべて0のとき
             usage_columns = ["最大使用水量", "平均使用水量", "最小使用水量", "合計使用水量"]
 
@@ -804,6 +831,41 @@ class TatemonoProcessor(DataProcessor):
 
         return df
 
+
+    def extract_inheritance_info(self, series:pd.Series, search_word:str) -> pd.Series:
+        """
+        相続日などを抽出
+        
+        Parameters
+        ----------
+        df : pandas.Series
+            登記内容カラム
+        search_word : string
+            抽出したいイベント
+            
+        Returns
+        -------
+        pandas.Series
+            抽出結果Series
+        """
+        def get_souzoku_info(record, search_word):
+            if pd.isna(record):
+                return np.nan
+            pattern = r'[　、／]|(?=昭和|平成|令和|明治|大正)'
+            record_list = [item for item in re.split(pattern, record) if item]
+            inherit_list = []
+            for single_record in record_list:
+                if search_word in single_record and '不存在' not in single_record:
+                    inherit_list.append(single_record)
+            if inherit_list:
+                return ' '.join(inherit_list)
+            else:
+                return np.nan
+        series_copied = series.copy()
+        souzoku_series = series_copied.apply(get_souzoku_info, args=(search_word, ))
+        souzoku_series.name = f'{search_word}の有無'
+        return souzoku_series
+
     def process(self):
         """
         建物データを処理し、構造分類を追加して出力する
@@ -835,7 +897,10 @@ class TatemonoProcessor(DataProcessor):
             df_tatemono = self.classify_structure(df_tatemono)
             # 重複データを削除
             df_tatemono = self.drop_duplicates(df_tatemono, subset=cols["tatemono_address"], keep="first")
-            # 出力カラムの選択      
+            # イベント発生日抽出
+            df_tatemono['相続の有無'] = self.extract_inheritance_info(df_tatemono['建物情報_登記内容'], search_word = '相続')
+            df_tatemono['増築の有無'] = self.extract_inheritance_info(df_tatemono['建物情報_登記内容'], search_word = '増築')
+            # 出力カラムの選択
             df_tatemono = df_tatemono[self.OUTPUT_COLUMNS["tatemono"]]
             df_tatemono["reference_date"] = self.reference_date
         except:
@@ -931,11 +996,11 @@ def process_all_data(suido_use_file, suido_status_file, juki_file, tatemono_file
 
         os.makedirs(output_directory, exist_ok=True)
 
-        progress_percent_job = 25
+        progress_percent_job = 50
         for file_key, processor_class in processors.items():
             if job_id:
                 progress_percent += 30
-                progress_percent_job += 8
+                progress_percent_job += 4
                 create_or_update_job_task(job_id, progress_percent=progress_percent, preprocess_type="e013", error_code=None, error_msg=None, result=None, id= task_id)
                 create_or_update_job(job_id, progress_percent_job)
             processor_class(input_paths, output_paths, reference_date, search_period).process()

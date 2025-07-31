@@ -61,7 +61,11 @@ class Summarization:
                 "akiya_geometry": "geometry",
                 "世帯人数": "世帯人数",  # '世帯人数' カラムを追加
                 "15歳未満構成比": "15歳未満構成比",
-                "65歳以上人数": "65歳以上人数"
+                "65歳以上人数": "65歳以上人数",
+                "異常値フラグ": "異常値フラグ",
+                "matched_data_flag": "matched_data_flag",
+                "single_story_row_house_flag": "single_story_row_house_flag",
+                "buildingtype_determination_not_possible_flag": "buildingtype_determination_not_possible_flag",
             },
             "city_block": {
                 "KEY_CODE": key_code,
@@ -102,19 +106,39 @@ class Summarization:
         """
         akiya_pred_cols = self.INPUT_COLUMNS["akiya_pred"]
 
-        # 各市区町村ブロックごとに集計を行う
-        summerized_gdf = gdf.groupby(self.key_column).agg(
-            住戸数=(akiya_pred_cols["setai_code"], "count"),
-            空き家数=(akiya_pred_cols["predicted_label"], "sum"),
-            人口=(akiya_pred_cols["世帯人数"], "sum"),  
-            若年人口=(akiya_pred_cols["15歳未満構成比"], "sum"), 
-            高齢者人口=(akiya_pred_cols["65歳以上人数"], "sum"),
-            reference_date=("reference_date", "first")   
-        )
+        gdf["推定不可フラグ"] = (
+            (gdf[akiya_pred_cols["異常値フラグ"]] != 0) |
+            (gdf[akiya_pred_cols["matched_data_flag"]] != 0) |
+            (gdf[akiya_pred_cols["single_story_row_house_flag"]] != 0) |
+            (gdf[akiya_pred_cols["buildingtype_determination_not_possible_flag"]] != 0)
+        ).astype(int)
+
+        gdf["setai_code_推定可能"] = (
+            (gdf["推定不可フラグ"] == 0) & gdf[akiya_pred_cols["setai_code"]].notna()
+        ).astype(int)
+
+        gdf["空き家_推定可能"] = (
+            (gdf["推定不可フラグ"] == 0) & (gdf[akiya_pred_cols["predicted_label"]] == 1)
+        ).astype(int)
+
+        try:
+            # 各市区町村ブロックごとに集計を行う
+            summerized_gdf = gdf.groupby(self.key_column).agg(
+                推定空き家割合=("setai_code_推定可能", "sum"),
+                住戸数=(akiya_pred_cols["setai_code"], "count"),
+                空き家数=("空き家_推定可能", "sum"),
+                人口=(akiya_pred_cols["世帯人数"], "sum"),
+                若年人口=(akiya_pred_cols["15歳未満構成比"], "sum"),
+                高齢者人口=(akiya_pred_cols["65歳以上人数"], "sum"),
+                推定不可件数=("推定不可フラグ", "sum"),
+                reference_date=("reference_date", "first")
+            )
+        except Exception as e:
+            print(e)
         summerized_gdf.reset_index(inplace=True)
 
         # 空き家率を計算
-        summerized_gdf["空き家率"] = summerized_gdf["空き家数"] / summerized_gdf["住戸数"]
+        summerized_gdf["空き家率"] = summerized_gdf["空き家数"] / summerized_gdf["推定空き家割合"]
 
         # 若年層率を計算
         summerized_gdf["若年層率"] = summerized_gdf["若年人口"] / summerized_gdf["人口"]
@@ -158,7 +182,7 @@ class Summarization:
         空間インデックスを利用し、residence_gdfのジオメトリの重心（centroid）で空間結合を行います。
         """
 
-        residence_gdf = residence_gdf[["世帯コード","正規化住所","世帯人数","15歳未満人数","15歳未満構成比","15歳以上64歳以下人数","15歳以上64歳以下構成比","65歳以上人数","65歳以上構成比","男女比","住定期間","geometry","predicted_label", "reference_date"]]
+        residence_gdf = residence_gdf[["世帯コード","正規化住所","世帯人数","15歳未満人数","15歳未満構成比","15歳以上64歳以下人数","15歳以上64歳以下構成比","65歳以上人数","65歳以上構成比","男女比","住定期間","geometry","predicted_label", "reference_date", "matched_data_flag", "single_story_row_house_flag", "buildingtype_determination_not_possible_flag", "異常値フラグ"]]
         
         # 重心（centroid）を計算する前に、投影座標系（EPSG:4326）に変換
         residence_gdf_projected = residence_gdf.to_crs(epsg=4326)
@@ -205,6 +229,7 @@ class Summarization:
                 'reference_date': 'reference_date',
                 'AREA': 'area',
                 '空き家率': 'predicted_probability',
+                '推定不可件数': 'unestimable_count',
                 'geometry': 'geometry'
             }
 
@@ -238,6 +263,7 @@ class Summarization:
             # Replace NaN, None, and empty values with the found value (or leave it empty if no valid value is found)
             summerized_df['reference_date'] = summerized_df['reference_date'].replace([None, '', pd.NA], reference_date_value)
             summerized_df['predicted_probability'] = summerized_df['predicted_probability'].fillna(0)
+            summerized_df['unestimable_count'] = summerized_df['unestimable_count'].fillna(0)
             summerized_df['vacant_house_count'] = summerized_df['vacant_house_count'].fillna(0)
             summerized_df['total_building_count'] = summerized_df['total_building_count'].fillna(0)
             summerized_df['young_population_ratio'] = summerized_df['young_population_ratio'].fillna(0)
@@ -311,7 +337,7 @@ class Summarization:
     def process(self):
         residence_gdf = pd.read_csv(self.INPUT_PATHS["akiya_pred"], encoding='utf-8-sig')
         # 'geometry'列をWKT形式からジオメトリに変換
-        residence_gdf['geometry'] = residence_gdf['geometry'].apply(wkt.loads)
+        residence_gdf['geometry'] = residence_gdf['geometry_plateau'].apply(wkt.loads)
         # GeoDataFrameに変換
         residence_gdf = gpd.GeoDataFrame(residence_gdf, geometry='geometry')
         # 投影法の指定 (必要に応じてEPSGコードを指定)

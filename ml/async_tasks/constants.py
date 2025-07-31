@@ -93,7 +93,7 @@ ERROR_00023 = {
 }
 ERROR_00024 = {
     "code": "IF001_e016_err_geometry",
-    "message": "'geometry' 列または 'lat_geocoding_cleaned' と 'lon_geocoding_cleaned' 列が必要です。"
+    "message": "'geometry' 列または 'lat' と 'lon' 列が必要です。"
 }
 ERROR_00025 = {
     "code": "IF001_e016_err_encoding",
@@ -174,6 +174,11 @@ ERROR_00043 = {
 ERROR_00044 = {
     "code": "IF001_e016_err_data_gpkg",
     "message": "Geopackage形式の場合、座標系情報が正しくZIP内に保存されているかなどをご確認ください。他に複数レイヤが入っている場合にデータ提供元に問い合わせを推奨します。"
+}
+
+ERROR_00046 = {
+    "code": "IF001_e016_err_load_data",
+    "message": "{param_st1}のデータが異常です。もう一度データを確認ください。"
 }
 
 # IF002
@@ -379,7 +384,10 @@ TRANSLATE_COLUMNS_BUILDING = {
     "predicted_label":"空き家推定結果",
     "predicted_probability":"空き家推定確率",
     "created_at":"空き家推定データ作成日",
-    "area_group":"地域名称"
+    "area_group":"地域名称",
+    "outlier_flag": "異常値フラグ",
+    "single_story_row_house_flag": "平屋長屋フラグ",
+    "buildingtype_determination_not_possible_flag": "建物種別判定不可フラグ"
 }
 
 TRANSLATE_COLUMNS_AREA = {
@@ -396,5 +404,6 @@ TRANSLATE_COLUMNS_AREA = {
     "updated_at":"更新日",
     "vacant_house_count":"推定空き家数",
     "predicted_probability":"推定空き家割合",
+    "unestimable_count":"推定不可件数",
     "area_group":"地域名称"
 }

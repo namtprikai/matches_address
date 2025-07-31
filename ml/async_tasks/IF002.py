@@ -36,6 +36,9 @@ def main():
             'db_path': database_path,
             'input_path': json_dict.get('input_path', None),
             'output_path': json_dict.get('output_path', '.'),
+            'isolation_forest_min_count': json_dict.get('isolation_forest_min_count', 0.01),
+            'isolation_forest_max_count': json_dict.get('isolation_forest_max_count', 0.10),
+            'isolation_forest_step': json_dict.get('isolation_forest_step', 0.01),
             'explanatory_variables': json_dict.get('settings', {}).get('explanatory_variables', []),
             'test_size': json_dict.get('settings', {}).get('advanced', {}).get('test_size', 0.3),
             'n_splits': json_dict.get('settings', {}).get('advanced', {}).get('n_splits', 3),
@@ -52,13 +55,13 @@ def main():
             'bagging_freq': json_dict.get('settings', {}).get('advanced', {}).get('bagging_freq', 0),
             'min_data_in_leaf': json_dict.get('settings', {}).get('advanced', {}).get('min_data_in_leaf', 20),
             'citycode_value': json_dict.get('citycode_value', None),
-            'targetyear_value': json_dict.get('targetyear_value', None)
+            'targetyear_value': json_dict.get('targetyear_value', None),
         }
 
         random_str = str(uuid.uuid4())
         output_directory = concatenate(params.get('output_path'), random_str)
     
-        params['input_path'] = concatenate(params.get('output_path'), json_dict.get('input_path'))
+        params['input_path'] = concatenate(params.get('output_path'), params.get('input_path'))
         params['output_path'] = output_directory
         params['job_id'] = job_id
         

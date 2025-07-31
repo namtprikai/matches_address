@@ -721,7 +721,7 @@ def save_isolation_forest_model(model, output_path):
  
  
 ### main関数
-def train_and_evaluate(db_path, input_file, output_path, isolation_forest_save_directory, isolation_forest_min_count, isolation_forest_max_count, isolation_forest_step, explanatory_variables, test_size, n_splits, undersample, undersample_ratio, threshold, hyperparameter_flag, n_trials, 
+def train_and_evaluate(db_path, input_file, output_path, isolation_forest_min_count, isolation_forest_max_count, isolation_forest_step, explanatory_variables, test_size, n_splits, undersample, undersample_ratio, threshold, hyperparameter_flag, n_trials, 
                        lambda_l1, lambda_l2, num_leaves, feature_fraction, bagging_fraction, bagging_freq, min_data_in_leaf, citycode_value, targetyear_value, job_id):
     """
     モデルを学習し評価する主要関数
@@ -888,35 +888,39 @@ def train_and_evaluate(db_path, input_file, output_path, isolation_forest_save_d
         
         if len(model_list) > 0:
             results_list = []
+            if sqlite_enabled and job_id:
+                create_or_update_job_task(job_id, progress_percent="20", preprocess_type=None, error_code=None,
+                                          error_msg=None, result=json.dumps({}), id=task_id)
+                create_or_update_job(job_id, "20")
             for i, model in enumerate(model_list):
-                # Isolation Forestモデルを使用して異常値を除外
-                if i != 0:
-                    all_df= remove_by_isolation_forest_model(learning_data, model)
-                else:
-                    all_df = learning_data.copy()
-                if sqlite_enabled and job_id:
-                    create_or_update_job_task(job_id, progress_percent="20", preprocess_type=None, error_code=None, error_msg=None, result=json.dumps({}), id= task_id)
-                    create_or_update_job(job_id , "20")
-                train_df, test_df = split_data(all_df, params, explanatory_variables_dict)
-                if sqlite_enabled and job_id:
-                    create_or_update_job_task(job_id, progress_percent="30", preprocess_type=None, error_code=None, error_msg=None, result=json.dumps({}), id= task_id)
-                    create_or_update_job(job_id , "30")
-                lgb_model, feature_importances_dict_train, model_zip_file_path, x_columns = train_lgb_with_optuna(train_df, params, citycode_value, output_path, job_id, task_id, sqlite_enabled)
+                try:
+                    # Isolation Forestモデルを使用して異常値を除外
+                    if i != 0:
+                        all_df = remove_by_isolation_forest_model(learning_data, model)
+                    else:
+                        all_df = learning_data.copy()
 
-                if sqlite_enabled and job_id:
-                    create_or_update_job_task(job_id, progress_percent="80", preprocess_type=None, error_code=None, error_msg=None, result=json.dumps({}), id= task_id)
-                    create_or_update_job(job_id , "80")
-                pred, score_dict = evaluate_models_on_test(test_df, lgb_model, params)
-                # F1スコアを計算
-                results_list.append({
-                    'f1_score': score_dict['f1'],
-                    'isolation_model': model,
-                    'trained_lgbm_models': lgb_model,
-                    'feature_importances': feature_importances_dict_train,
-                    'model_zip_path': model_zip_file_path,
-                    'full_score_dict': score_dict,
-                    'predictions': pred
-                })
+                    train_df, test_df = split_data(all_df, params, explanatory_variables_dict)
+                    lgb_model, feature_importances_dict_train, model_zip_file_path, x_columns = train_lgb_with_optuna(
+                        train_df, params, citycode_value, output_path, job_id, task_id, sqlite_enabled)
+
+                    pred, score_dict = evaluate_models_on_test(test_df, lgb_model, params)
+                    # F1スコアを計算
+                    results_list.append({
+                        'f1_score': score_dict['f1'],
+                        'isolation_model': model,
+                        'trained_lgbm_models': lgb_model,
+                        'feature_importances': feature_importances_dict_train,
+                        'model_zip_path': model_zip_file_path,
+                        'full_score_dict': score_dict,
+                        'predictions': pred
+                    })
+                except:
+                    continue
+        if sqlite_enabled and job_id:
+            create_or_update_job_task(job_id, progress_percent="80", preprocess_type=None, error_code=None,
+                                      error_msg=None, result=json.dumps({}), id=task_id)
+            create_or_update_job(job_id, "80")
         if results_list:
             best_result = max(results_list, key=lambda x: x['f1_score'])
             iso_model = best_result['isolation_model']
@@ -935,10 +939,10 @@ def train_and_evaluate(db_path, input_file, output_path, isolation_forest_save_d
         else:
             output_file = f'{output_path}/D902.csv'
         model_save_dir = os.path.splitext(model_zip_file_path)[0]
+        save_isolation_forest_model(iso_model, output_path)
         save_models(best_model, model_save_dir, x_columns, targetyear_value, model_zip_file_path, sqlite_enabled, job_id, task_id)
         merge_and_save_results(df, pred, output_file)
         data_zip_file_path = save_metrics_and_importances(score_dict, feature_importances_dict_train, citycode_value, targetyear_value, output_path)
-        save_isolation_forest_model(iso_model, isolation_forest_save_directory)
         if sqlite_enabled and job_id:
             create_or_update_job_task(job_id, progress_percent="95", preprocess_type=None, error_code=None, error_msg=None, result=json.dumps({}), id= task_id)
             create_or_update_job(job_id , "95")
@@ -968,6 +972,7 @@ def train_and_evaluate(db_path, input_file, output_path, isolation_forest_save_d
         return output_file, model_zip_file_path, data_zip_file_path
 
     except Exception as e:
+        print(e)
         if ERROR_CODE is None:
             set_error(ERROR_10006)
         if task_id is not None:
@@ -984,37 +989,3 @@ def set_error(value, param_st1=None, param_st2=None):
         ERROR_MSG = value['message'].format(param_st1=param_st1)
     else:
         ERROR_MSG = value['message']
-        
-if __name__ == "__main__":
-    train_and_evaluate(
-    # --- ファイル回りの引数 ---
-    input_file='./data/toyota/E016.csv',
-    output_path='./data/toyota/E021_outputs',
-    # --- Isolation Forest ---
-    isolation_forest_save_directory='./data/toyota/E021_outputs/',
-    isolation_forest_min_count=0.01,
-    isolation_forest_max_count=0.10,
-    isolation_forest_step=0.01,
-    # --- LightGBMのハイパーパラメータ (hyperparameter_flag=False の場合に参照される) ---
-    hyperparameter_flag=False,  # Falseの場合、以下のパラメータが使われる
-    test_size=0.3,
-    undersample=True,
-    undersample_ratio=2.0,
-    threshold=0.5,
-    lambda_l1=0.01,
-    lambda_l2=0.01,
-    num_leaves=31,
-    feature_fraction=0.8,
-    bagging_fraction=0.8,
-    bagging_freq=1,
-    min_data_in_leaf=20,
-    n_trials=50,
-    n_splits=5,
-    citycode_value='12345',
-    targetyear_value='2025',
-    job_id=1,
-
-    db_path=None,  # DBを使わない場合はNoneを指定
-    explanatory_variables=[]  # 追加の説明変数がない場合は空のリスト[]を指定
-    
-)

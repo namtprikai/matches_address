@@ -13,11 +13,9 @@ import chardet
 import zipfile 
 import numpy as np
 import pandas as pd
-import re
 import time
 import gc
 from sklearn.ensemble import IsolationForest
-from sklearn.preprocessing import StandardScaler
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
 async_tasks_path = os.path.join(current_dir, '..', 'async_tasks')
@@ -154,12 +152,16 @@ def load_models(model_zip, job_id):
     model_files = extract_zip(model_zip, temp_dir)
     models = []
     columns = []
+    isolation_forest_model = None
     for model_file in model_files:
+        if model_file.endswith("isolation_forest_model.pkl"):
+            isolation_forest_model = load_isolation_forest_model(model_file)
+
         # 各モデルファイルを読み込み、リストに追加
         with open(model_file, 'rb') as f:
             if model_file.endswith("_columns.pkl"):
                 columns = pickle.load(f)
-            else:
+            elif not model_file.endswith("isolation_forest_model.pkl"):
                 models.append(pickle.load(f))
 
     gc.collect()
@@ -170,7 +172,7 @@ def load_models(model_zip, job_id):
         except PermissionError:
             time.sleep(0.5)  # Wait 0.5 seconds before retrying
 
-    return models, columns
+    return models, columns, isolation_forest_model
 
 def load_isolation_forest_model(path: str) -> IsolationForest:
     """
@@ -208,7 +210,12 @@ def predict_isolation_forest(df: pd.DataFrame, pipeline: IsolationForest) -> pd.
         異常値フラグを追加したデータフレーム
     '''
 
-    df['異常値フラグ'] = pipeline.predict(df)
+    if 'iso_forest' in dict(pipeline.steps):
+        result = pipeline.predict(df)
+        df['異常値フラグ'] = pd.Series(result, index=df.index).map({-1: 1, 1: 0})
+    else:
+        df['異常値フラグ'] = 1
+
     return df
     
 def check_features(new_data, required_features, outcome_variable):
@@ -333,10 +340,10 @@ def insert_sqlite(input_data, data_set_result_id):
             '名寄せ元情報_touki_residence': 'registration_source_info',
             '住所_akiya_result_cleaned': 'vacant_house_address',
             '名寄せ元情報_akiya_result_cleaned': 'vacant_house_source_info',
-            '住所_geocoding_cleaned': 'geocoded_address',
-            'lat_geocoding_cleaned': 'geocoded_latitude',
-            'lon_geocoding_cleaned': 'geocoded_longitude',
-            '名寄せ元情報_geocoding_cleaned': 'geocoding_source_info',
+            '住所_geocoding': 'geocoded_address',
+            'lat_geocoding': 'geocoded_latitude',
+            'lon_geocoding': 'geocoded_longitude',
+            '名寄せ元情報_geocoding': 'geocoding_source_info',
             'suido_residence_flag': 'has_water_supply',
             'juki_residence_flag': 'has_juki_registry',
             'touki_residence_flag': 'has_touki_registry',
@@ -355,7 +362,7 @@ def insert_sqlite(input_data, data_set_result_id):
             'geometrySrcDesc': 'geometry_src_desc',
             'thematicSrcDesc': 'thematic_src_desc',
             'lod1HeightType': 'lod1_height_type',
-            'buildingID': 'building_id',
+            'building_id': 'building_id',
             'prefecture': 'prefecture',
             'city': 'city',
             'description': 'description',
@@ -389,10 +396,13 @@ def insert_sqlite(input_data, data_set_result_id):
             'areaType': 'area_type',
             'pred': 'predicted_label',
             'pred_proba': 'predicted_probability',
-            'S_NAME': 'area_group'
+            'S_NAME': 'area_group',
+            '異常値フラグ': 'outlier_flag',
+            '平屋長屋フラグ': 'single_story_row_house_flag',
+            '建物種別判定不可フラグ': 'buildingtype_determination_not_possible_flag'
         }
         # カラム名を変換
-        input_data = input_data.drop('geometry', axis=1, errors='ignore')
+        input_data['名寄せ元情報_geocoding'] = input_data['正規化住所']
         input_data = input_data.rename(columns=mapping_header)
         existing_columns = input_data.columns.tolist()
         mapped_columns = [col for col in mapping_header.values() if col in existing_columns]
@@ -447,7 +457,7 @@ def drop_duplicates(df, subset, keep="first"):
         """
         return df.drop_duplicates(subset=subset, keep=keep)
     
-def process_and_predict(input_folder, input_file, model_directory, isolation_forest_model_path, threshold, output_file, required_features, outcome_variable, job_id=None, db_path=None, process=0, data_set_result_id=0):
+def process_and_predict(input_folder, input_file, model_directory, threshold, output_file, required_features, outcome_variable, job_id=None, db_path=None, process=0, data_set_result_id=0):
     """
     入力データを処理し、予測を行い、結果を保存する
     """
@@ -502,7 +512,7 @@ def process_and_predict(input_folder, input_file, model_directory, isolation_for
         prediction_data = prediction_data.drop(columns=['geometry'], errors='ignore')
 
         # Get models and columns train
-        models, columns = load_models(model_directory, job_id)
+        models, columns, isolation_forest_model = load_models(model_directory, job_id)
         if not columns:
             columns = required_features
 
@@ -564,7 +574,6 @@ def process_and_predict(input_folder, input_file, model_directory, isolation_for
         input_data['geometry'] = geometry_data
         
         #Isolation Forestモデルの読み込みと予測
-        isolation_forest_model = load_isolation_forest_model(isolation_forest_model_path)
         input_data = predict_isolation_forest(input_data, isolation_forest_model)
         
         #保存
@@ -632,21 +641,3 @@ def normalize_dates(df, column, formats=['%Y/%m/%d', '%d/%m/%Y', '%Y-%m-%d', '%m
     df[column] = df[temp_column]
     
     return df.drop(f'{column}_normalized',axis=1)
-
-if __name__ == "__main__":
-    # Example usage
-    input_folder = "data/toyota/"
-    input_file = "E016.csv"
-    model_directory = "./data/toyota/E021_outputs/data/12345/E021/outputs/models.zip"
-    isolation_forest_model_path = "./data/toyota/E021_outputs/isolation_forest_model.pkl"
-    threshold = 0.5
-    output_file = "./data/toyota/E022_outputs/E022_output.csv"
-    required_features = ['世帯コード']
-    outcome_variable = 'akiya_result_cleaned_flag'
-    data_set_result_id = 1
-
-    result_message, output_path = process_and_predict(
-        input_folder, input_file, model_directory, isolation_forest_model_path,threshold, output_file,
-        required_features, outcome_variable, data_set_result_id=data_set_result_id
-    )
-    print(result_message)

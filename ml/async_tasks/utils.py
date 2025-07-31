@@ -196,8 +196,10 @@ def get_data_set_detail_buildings_or_area(view: dict):
         columns_name = "*"
         if columns is not None:
             columns_name = columns.get("value")
-            if "geometry" not in columns_name.split(","):
+            if columns_name and columns != "" and "geometry" not in columns_name.split(","):
                 columns_name += ", geometry"
+            else:
+                columns_name = "*"
 
         sql = f"SELECT {columns_name} FROM {table_name} WHERE data_set_result_id = ?"
         params = [data_set_result_id]

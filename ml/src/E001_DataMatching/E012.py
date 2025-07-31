@@ -53,15 +53,14 @@ INPUT_COLUMNS = {
     "touki": {
         "touki_address": None,
         "structure": None,
-        "registration_date": None
+        "registration_date": None,
+        "building_detail": None
     },
     "akiya_result": {
         "akiya_result_address": None,
     },
     "geocoding": {
-        "geocoding_address": None,
-        "geocoding_lat": None,
-        "geocofing_lon": None
+        "geocoding_address": None
     }
 }
 
@@ -92,7 +91,8 @@ OUTPUT_COLUMNS = {
         "touki_address": "住所",
         "structure": "登記構造",
         "registration_date": "登記日付",
-        "convert_touki_address": "正規化住所"
+        "building_detail": "建物情報_登記内容",
+        "convert_touki_address": "正規化住所",
     },
     "akiya_result": {
         "akiya_result_address": "住所",
@@ -100,8 +100,6 @@ OUTPUT_COLUMNS = {
     },
     "geocoding": {
         "geocoding_address": "住所",
-        "geocoding_lat": "lat",
-        "geocofing_lon": "lon",
         "convert_geo_address": "正規化住所"
     }
 }
@@ -453,36 +451,18 @@ class EachFileProcessor(DataProcessor):
         file_key : str
             処理対象のファイルキー
         """
-        # ファイルを読み込む
-        df = read_file(self.INPUT_PATHS[file_key], file_key)
-        if df is None:
-            return
         
         cols = INPUT_COLUMNS[file_key]
 
-        # Rename columns
-        rename_columns = {}
-        for key, input_col in cols.items():
-            new_col = OUTPUT_COLUMNS_INITIAL[file_key].get(key, input_col)
-            rename_columns[input_col] = new_col
-
-        if file_key == "suido_use":
-            df = df.rename(columns=rename_columns)
-            # 入力ファイルのすべてのカラム名を取得
-            all_columns = set(df.columns)
-
-            missing_cols = set(OUTPUT_COLUMNS_INITIAL[file_key].values()) - all_columns
-            if missing_cols:
-                set_error(ERROR_00035)
-                raise Exception("水道使用量のデータが異常です。もう一度データを確認ください。")
+        if file_key == "geocoding":
+            # ファイルを読み込む
+            df = read_file(self.INPUT_PATHS[file_key], file_key, True)
+            if df is None:
+                return
             
-            df = self.convert_japanese_era_to_gregorian(df, file_key)
-            
-            self.save_csv(df, self.OUTPUT_PATHS[file_key])
-        else:
             # 住所列が欠損している行を削除
             df = df.dropna(subset=[cols[f"{file_key}_address"]])
-            
+            df['住所_geocoding'] = df[cols[f"{file_key}_address"]]
             # 住所の正規化処理を適用
             df["正規化住所"] = (df[cols[f"{file_key}_address"]]
                         .apply(CleanData.normalize_text)
@@ -491,19 +471,58 @@ class EachFileProcessor(DataProcessor):
                         .apply(CleanData.replace_single_katakana)
                         .apply(CleanData.convert_address))
             
-            df = df.rename(columns=rename_columns)
-            # 入力ファイルのすべてのカラム名を取得
-            all_columns = set(df.columns)
-
-            missing_cols = set(OUTPUT_COLUMNS_INITIAL[file_key].values()) - all_columns
-            file_name = FILE_NAME_JP[file_key]
-            if missing_cols:
-                set_error(ERROR_00036, file_name)
-                raise Exception(f"{file_name}のデータが異常です。もう一度データを確認ください。")
-            
-            df = self.convert_japanese_era_to_gregorian(df, file_key)
             # 処理結果をCSVファイルとして保存
             self.save_csv(df, self.OUTPUT_PATHS[file_key])
+            
+        else:
+            # ファイルを読み込む
+            df = read_file(self.INPUT_PATHS[file_key], file_key)
+            if df is None:
+                return
+            # Rename columns
+            rename_columns = {}
+            for key, input_col in cols.items():
+                new_col = OUTPUT_COLUMNS_INITIAL[file_key].get(key, input_col)
+                rename_columns[input_col] = new_col
+
+            if file_key == "suido_use":
+                df = df.rename(columns=rename_columns)
+                # 入力ファイルのすべてのカラム名を取得
+                all_columns = set(df.columns)
+
+                missing_cols = set(OUTPUT_COLUMNS_INITIAL[file_key].values()) - all_columns
+                if missing_cols:
+                    set_error(ERROR_00035)
+                    raise Exception("水道使用量のデータが異常です。もう一度データを確認ください。")
+                
+                df = self.convert_japanese_era_to_gregorian(df, file_key)
+                
+                self.save_csv(df, self.OUTPUT_PATHS[file_key])
+            else:
+                # 住所列が欠損している行を削除
+                df = df.dropna(subset=[cols[f"{file_key}_address"]])
+                
+                # 住所の正規化処理を適用
+                df["正規化住所"] = (df[cols[f"{file_key}_address"]]
+                            .apply(CleanData.normalize_text)
+                            .apply(CleanData.convert_fullwidth_to_halfwidth_digits)
+                            .apply(CleanData.convert_halfwidth_to_fullwidth)
+                            .apply(CleanData.replace_single_katakana)
+                            .apply(CleanData.convert_address))
+                
+                df = df.rename(columns=rename_columns)
+                # 入力ファイルのすべてのカラム名を取得
+                all_columns = set(df.columns)
+
+                missing_cols = set(OUTPUT_COLUMNS_INITIAL[file_key].values()) - all_columns
+                file_name = FILE_NAME_JP[file_key]
+                if missing_cols:
+                    set_error(ERROR_00036, file_name)
+                    raise Exception(f"{file_name}のデータが異常です。もう一度データを確認ください。")
+                
+                df = self.convert_japanese_era_to_gregorian(df, file_key)
+                # 処理結果をCSVファイルとして保存
+                self.save_csv(df, self.OUTPUT_PATHS[file_key])
 
     def convert_japanese_era_to_gregorian(self, df, file_key):
         # 日付カラムの変換を実行
@@ -529,9 +548,9 @@ def set_columns(
     suido_number, usage_status, suido_status_address, usage_start_date, usage_end_date,
     suido_number2, meter_reading_date, suido_usage,
     setai_code, juki_address, birth, gender, move_date,
-    touki_address, structure, registration_date,
+    touki_address, structure, registration_date, building_detail,
     akiya_result_address,
-    geocoding_address, geocoding_lat, geocoding_lon
+    geocoding_address, gecoding_geometry
 ):
     """
     ユーザーが選択したカラムをINPUT_COLUMNSに反映
@@ -560,14 +579,13 @@ def set_columns(
     INPUT_COLUMNS["touki"]["touki_address"] = touki_address
     INPUT_COLUMNS["touki"]["structure"] = structure
     INPUT_COLUMNS["touki"]["registration_date"] = registration_date
+    INPUT_COLUMNS["touki"]["building_detail"] = building_detail
     
     # akiya_resultセクション
     INPUT_COLUMNS["akiya_result"]["akiya_result_address"] = akiya_result_address
     
     # geocodingセクション
     INPUT_COLUMNS["geocoding"]["geocoding_address"] = geocoding_address
-    INPUT_COLUMNS["geocoding"]["geocoding_lat"] = geocoding_lat
-    INPUT_COLUMNS["geocoding"]["geocofing_lon"] = geocoding_lon
     
     return INPUT_COLUMNS
 
@@ -616,7 +634,7 @@ def detect_encoding(file_path):
     return result['encoding']
 
 
-def read_file(path, key, **kwargs):
+def read_file(path, key, is_geocoding=None, **kwargs):
     """
     ファイルを読み込み、OUTPUT_COLUMNSに指定されたカラムのみを残す
 
@@ -662,13 +680,14 @@ def read_file(path, key, **kwargs):
             # サポートされていないファイル形式
             raise ValueError(f"サポートされていないファイル形式です: {file_extension}")
 
-        # 指定されたkeyのOUTPUT_COLUMNSに従ってカラムをフィルタリング
-        if key in OUTPUT_COLUMNS:
-            output_columns = list(OUTPUT_COLUMNS[key].values())  # OUTPUT_COLUMNSのカラム名リスト
-            # 存在しないカラムがあっても問題なく動作するように
-            df = df[df.columns.intersection(output_columns)]
-        else:
-            raise ValueError(f"指定されたキー '{key}' が OUTPUT_COLUMNS に存在しません。")
+        if not is_geocoding:
+            # 指定されたkeyのOUTPUT_COLUMNSに従ってカラムをフィルタリング
+            if key in OUTPUT_COLUMNS:
+                output_columns = list(OUTPUT_COLUMNS[key].values())  # OUTPUT_COLUMNSのカラム名リスト
+                # 存在しないカラムがあっても問題なく動作するように
+                df = df[df.columns.intersection(output_columns)]
+            else:
+                raise ValueError(f"指定されたキー '{key}' が OUTPUT_COLUMNS に存在しません。")
 
         return df
 
@@ -716,7 +735,8 @@ def generate_dummy_data(main_df, main_address_col, DATA_COLUMNS):
         "birth": 20100331, 
         "gender": 1, 
         "move_date": "2010/01/01",
-        "touki_address": "欠損"
+        "touki_address": "欠損",
+        "building_detail": ""
     }
     
     dummy_data = {}
@@ -811,7 +831,6 @@ def process_data(input_files, output_directory, main_data_type, job_id, columns,
         if input_files.get('touki'):
             touki_df = handle_optional_file(input_files.get('touki'), "touki", main_df, main_address_col, INPUT_COLUMNS)
         akiya_result_df = handle_optional_file(input_files.get('akiya_result'), "akiya_result", main_df, main_address_col, INPUT_COLUMNS)
-        geocoding_df = handle_optional_file(input_files.get('geocoding'), "geocoding", main_df, main_address_col, INPUT_COLUMNS)
         
         if job_id:
             create_or_update_job(job_id, "5")
@@ -822,7 +841,6 @@ def process_data(input_files, output_directory, main_data_type, job_id, columns,
                 suido_use_df.to_csv(f"{output_directory}/processed_suido_use.csv", index=False)
             if input_files.get('touki'):
                 touki_df.to_csv(f"{output_directory}/processed_touki.csv", index=False)
-            geocoding_df.to_csv(f"{output_directory}/processed_geocoding.csv", index=False)
             akiya_result_df.to_csv(f"{output_directory}/processed_akiya_result.csv", index=False)
         except:
             raise
@@ -830,7 +848,7 @@ def process_data(input_files, output_directory, main_data_type, job_id, columns,
         # 入力ファイルのパスを設定
         input_paths = {
             "akiya_result": f"{output_directory}/processed_akiya_result.csv",
-            "geocoding": f"{output_directory}/processed_geocoding.csv"
+            "geocoding": input_files.get('geocoding')
         }
         
         if input_files.get('suido_status'):
@@ -881,4 +899,3 @@ def set_error(value, param_st1=None, param_st2=None):
         ERROR_MSG = value['message']
         
 
-        
