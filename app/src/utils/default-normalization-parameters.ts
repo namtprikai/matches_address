@@ -11,7 +11,6 @@ export const defaultNormalizationParameters: z.infer<
   typeof normalizationSchema
 > = {
   settings: {
-    reference_data: "resident_registry",
     reference_date: "2021-01-01",
     advanced: {
       similarity_threshold: 0.95,
@@ -58,6 +57,7 @@ export const defaultNormalizationParameters: z.infer<
         address: "",
         structure_name: "",
         registration_date: "",
+        building_detail: "",
       },
     },
     vacant_house: {
@@ -67,24 +67,40 @@ export const defaultNormalizationParameters: z.infer<
         address: "",
       },
     },
-    geocoding: {
+    census: { id: 0, path: "" },
+    reverse_geocoded_building_polygon: {
       id: 0,
       path: "",
       columns: {
         address: "",
-        latitude: "",
-        longitude: "",
+        geometry: "",
       },
     },
-    building_polygon: {
+    residential_addresses: {
       id: 0,
       path: "",
       columns: {
-        geometry: "",
+        land_number_address: "",
+        residential_address: "",
       },
-      input_file_type: "csv",
-      data_type: "plateau",
     },
-    census: { id: 0, path: "" },
+    address_of_lot_number: {
+      id: 0,
+      path: "",
+      input_file_type: "csv",
+      columns: {
+        lat: "",
+        lon: "",
+      },
+    },
+    building_type_determination: {
+      id: 0,
+      path: "",
+      input_file_type: "csv",
+      columns: {
+        address: "",
+        building_type: "",
+      },
+    },
   },
 };

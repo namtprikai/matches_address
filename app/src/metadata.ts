@@ -1,5 +1,6 @@
 import { type PreprocessParameters } from "./@types/job-parameters";
 import { type result_views } from "./schema";
+import { type FormNormalizationType } from "./hooks/use-form-normalization";
 
 type ResultViewsStyle = (typeof result_views.style.enumValues)[number];
 const RESULT_VIEWS_STYLE: {
@@ -22,14 +23,16 @@ const RESULT_VIEWS_UNIT: {
 };
 
 type NormalizationParameterLabelKey =
-  keyof (PreprocessParameters["data"]["resident_registry"]["columns"] &
-    PreprocessParameters["data"]["water_status"]["columns"] &
-    PreprocessParameters["data"]["water_usage"]["columns"] &
-    PreprocessParameters["data"]["land_registry"]["columns"] &
-    PreprocessParameters["data"]["vacant_house"]["columns"] &
-    PreprocessParameters["data"]["geocoding"]["columns"] &
-    PreprocessParameters["data"]["building_polygon"]["columns"] &
-    Omit<PreprocessParameters["settings"], "advanced">);
+  | keyof (PreprocessParameters["data"]["resident_registry"]["columns"] &
+      PreprocessParameters["data"]["water_status"]["columns"] &
+      PreprocessParameters["data"]["water_usage"]["columns"] &
+      PreprocessParameters["data"]["land_registry"]["columns"] &
+      PreprocessParameters["data"]["vacant_house"]["columns"] &
+      Omit<PreprocessParameters["settings"], "advanced">)
+  | keyof FormNormalizationType["data"]["reverse_geocoded_building_polygon"]["columns"]
+  | keyof FormNormalizationType["data"]["residential_addresses"]["columns"]
+  | keyof FormNormalizationType["data"]["address_of_lot_number"]["columns"]
+  | keyof FormNormalizationType["data"]["building_type_determination"]["columns"];
 
 type NormalizationParameterLabel = Record<
   NormalizationParameterLabelKey,
@@ -38,8 +41,6 @@ type NormalizationParameterLabel = Record<
 
 const NORMALIZATION_PARAMETER_LABEL: NormalizationParameterLabel = {
   address: "住所",
-  latitude: "緯度",
-  longitude: "経度",
   household_code: "世帯番号",
   birth_date: "生年月日",
   gender: "性別",
@@ -52,25 +53,18 @@ const NORMALIZATION_PARAMETER_LABEL: NormalizationParameterLabel = {
   water_recorded_date: "水道検針年月日",
   structure_name: "建物構造名",
   registration_date: "登録年月日",
-  geometry: "ジオメトリー",
   reference_date: "推定したい日付",
-  reference_data: "基準データ",
-};
-
-const NORMALIZATION_DATA_LABEL = {
-  residentRegistry: "住民基本台帳データ",
-  waterStatus: "水道状況データ",
-  waterUsage: "水道使用量データ",
-  landRegistry: "土地登記データ",
-  vacantHouse: "空き家データ",
-  geocoding: "ジオコーディングデータ",
-  buildingPolygon: "建物ポリゴンデータ",
-  census: "国勢調査データ",
+  building_detail: "建物情報登記内容",
+  geometry: "ジオメトリ",
+  land_number_address: "地番住所",
+  residential_address: "住居表示住所",
+  lat: "緯度",
+  lon: "経度",
+  building_type: "建物種別",
 };
 
 export const LanguageMap = {
   RESULT_VIEWS_STYLE,
   RESULT_VIEWS_UNIT,
   NORMALIZATION_PARAMETER_LABEL,
-  NORMALIZATION_DATA_LABEL,
 };

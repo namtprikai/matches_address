@@ -1,10 +1,4 @@
-import {
-  Card,
-  makeStyles,
-  Radio,
-  RadioGroup,
-  tokens,
-} from "@fluentui/react-components";
+import { Card, makeStyles, tokens } from "@fluentui/react-components";
 import { LanguageMap } from "../metadata";
 import { type PreprocessParameters } from "../@types/job-parameters";
 import { Field } from "./ui/field";
@@ -57,27 +51,6 @@ export const FormNormalizationSettings = ({
             }}
             type="date"
           />
-        </Field>
-
-        <Field
-          label={LanguageMap.NORMALIZATION_PARAMETER_LABEL["reference_data"]}
-        >
-          <RadioGroup
-            defaultValue={value.reference_data}
-            layout="horizontal"
-            onChange={(_, data) => {
-              onChange({
-                ...value,
-                reference_data:
-                  data.value as PreprocessParameters["settings"]["reference_data"],
-              });
-            }}
-          >
-            <Radio
-              label={LanguageMap.NORMALIZATION_DATA_LABEL["residentRegistry"]}
-              value={"resident_registry"}
-            />
-          </RadioGroup>
         </Field>
       </div>
 

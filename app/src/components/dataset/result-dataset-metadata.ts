@@ -319,6 +319,31 @@ const buildingMetadata: Record<keyof SelectDataSetDetailBuilding, Item> = {
   // index_right: {
   //   label: "index_right",
   // },
+
+  /** R7追加カラム */
+  outlier_flag: {
+    label: "異常値フラグ",
+  },
+  single_story_row_house_flag: {
+    label: "平屋長屋フラグ",
+  },
+  buildingtype_determination_not_possible_flag: {
+    label: "建物種別判定不可フラグ",
+  },
+  elapsed_months_since_stop: {
+    label: "閉栓からの経過日",
+    unit: "日",
+  },
+  inheritance_status: {
+    label: "相続の有無",
+  },
+  extension_status: {
+    label: "増築の有無",
+  },
+  matched_data_flag: {
+    label: "結合不可フラグ",
+  },
+
   created_at: {
     label: "created_at",
   },
@@ -374,6 +399,12 @@ const areaMetadata: Record<keyof SelectDataSetDetailArea, Item> = {
     label: "空き家推定確率",
     unit: "%",
   },
+
+  unestimable_count: {
+    label: "推定不可件数",
+    unit: "件",
+  },
+
   created_at: {
     label: "created_at",
     unit: "",

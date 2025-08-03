@@ -204,6 +204,36 @@ export const lang = {
         description:
           "【任意】インプットしたデータのなかから、基準となるデータを示すカラム（項目名）を選択してください。",
       },
+      geometry: {
+        label: "ジオメトリカラム",
+        description:
+          "【必須】インプットしたデータのなかから、地理空間情報（ジオメトリ）を示すカラム（項目名）を選択してください。",
+      },
+      land_number_address: {
+        label: "地番住所カラム",
+        description:
+          "【必須】インプットしたデータのなかから、地番住所を示すカラム（項目名）を選択してください。",
+      },
+      residential_address: {
+        label: "住居表示住所カラム",
+        description:
+          "【必須】インプットしたデータのなかから、住居表示住所を示すカラム（項目名）を選択してください。",
+      },
+      lat: {
+        label: "緯度カラム",
+        description:
+          "【必須】インプットしたデータのなかから、緯度を示すカラム（項目名）を選択してください。※CSVファイルの場合のみ必須。",
+      },
+      lon: {
+        label: "経度カラム",
+        description:
+          "【必須】インプットしたデータのなかから、経度を示すカラム（項目名）を選択してください。※CSVファイルの場合のみ必須。",
+      },
+      building_type: {
+        label: "建物種別カラム",
+        description:
+          "【必須】インプットしたデータのなかから、建物種別を示すカラム（項目名）を選択してください。",
+      },
     },
     normalizationData: {
       residentRegistry: {
@@ -228,20 +258,26 @@ export const lang = {
         description:
           "【必須】過去に実施した地域内の空き家実態を調査した結果や、民間から購入可能な家屋使用状況に関連するデータ（電力使用量等）。",
       },
-      geocoding: {
-        label: "ジオコーディング済みデータ",
-        description:
-          "【必須】家屋の位置を地図上に表示するため、住所と緯度/経度を対応させるために必要なデータ。別途公開されている「ジオコーディングツール」等を用いて作成することができます。",
-      },
-      buildingPolygon: {
-        label: "建物ポリゴン",
-        description:
-          "【必須】家屋の形状を地図上に表示するために必要なデータ。PLATEAUの3D都市モデルデータや、家屋現況図のデータを入力してください。",
-      },
       census: {
         label: "国勢調査",
         description:
           "【必須】政府統計の窓口サイト「e-Stat」よりからダウンロードできる国勢調査データのうち、「町丁・字等境界データ」を使用します。",
+      },
+      reverseGeocodedBuildingPolygon: {
+        label: "リバースジオコーディング済みデータ",
+        description: "",
+      },
+      residentialAddresses: {
+        label: "地番住所-住居表示住所対応データ",
+        description: "",
+      },
+      addressOfLotNumber: {
+        label: "地番住所-緯度経度対応データ",
+        description: "",
+      },
+      buildingTypeDetermination: {
+        label: "建物種別判定データ",
+        description: "",
       },
     },
   },

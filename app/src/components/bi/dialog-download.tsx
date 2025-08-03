@@ -47,7 +47,7 @@ export function DownloadDialog({
 }): JSX.Element {
   const styles = useStyles();
   const { isOpen, setIsOpen } = useDialogState();
-  const [selectedFileType, setSelectedFileType] = useState(
+  const [selectedFileType, setSelectedFileType] = useState<string>(
     OUTPUT_FILE_TYPES[0].type,
   );
   const [selectedCoordinate, setSelectedCoordinate] = useState(

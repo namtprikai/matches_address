@@ -52,7 +52,7 @@ export function DownloadDialog({
   const { isOpen, setIsOpen } = useDialogState(false);
   const [selectedUnit, setSelectedUnit] =
     useState<ResultDataSetUnit>("building");
-  const [selectedFileType, setSelectedFileType] = useState(
+  const [selectedFileType, setSelectedFileType] = useState<string>(
     OUTPUT_FILE_TYPES[0].type,
   );
   const [selectedCoordinate, setSelectedCoordinate] = useState(

@@ -3,8 +3,6 @@ import {
   makeStyles,
   mergeClasses,
   Option,
-  Radio,
-  RadioGroup,
   tokens,
 } from "@fluentui/react-components";
 import { useEffect, useState } from "react";
@@ -13,14 +11,15 @@ import { type UseFormReturn } from "react-hook-form";
 import { type z } from "zod";
 import { THEME_COLORS } from "../config/theme-colors";
 import { type SelectRawDataSet } from "../schema";
-import { LanguageMap } from "../metadata";
 import { useDialogState } from "../hooks/use-dialog-state";
 import { useFetchDatasetColumns } from "../hooks/use-fetch-dataset-columns";
 import { type PreprocessParameters } from "../@types/job-parameters";
 import { useFetchDatasetWithFilePath } from "../hooks/use-fetch-dataset-with-file-path";
 import { lang } from "../lang";
+import { getNormalizationDatasetInfo } from "../utils/extract-dataset-columns-from-schema";
 import { type schema } from "../hooks/use-form-normalization";
-import { BUILDING_FILE_TYPES } from "../config/file-types";
+import { isSpecialDatasetSchemaKey } from "../config/dataset-configs";
+import { INPUT_FILE_TYPES } from "../config/file-types";
 import { Dropdown } from "./ui/dropdown";
 import { Field } from "./ui/field";
 import { DialogImportDataset } from "./dialog-import-dataset";
@@ -77,6 +76,7 @@ type FormType = z.infer<typeof schema>;
 interface Props {
   value: Value;
   dataKey: keyof typeof lang.components.normalizationData;
+  schemaKey: keyof FormType["data"];
   appearance?: "default" | "large";
   onChange: (value: Value) => void;
   form?: UseFormReturn<FormType>;
@@ -85,6 +85,7 @@ interface Props {
 export const FormDataset = ({
   value,
   dataKey,
+  schemaKey,
   appearance,
   onChange,
   form,
@@ -124,13 +125,9 @@ export const FormDataset = ({
   const datasetLabel = datasetInfo.label;
   const datasetDescription = datasetInfo.description || "";
 
-  /**
-   * buildingPolygon
-   */
-  const isBuildingPolygon = dataKey === "buildingPolygon";
-  const buildingPolygoninputFileType = form?.watch(
-    "data.building_polygon.input_file_type",
-  );
+  const inputFileType = isSpecialDatasetSchemaKey(schemaKey)
+    ? form?.watch(`data.${schemaKey}.input_file_type`)
+    : undefined;
 
   return (
     <Card>
@@ -147,13 +144,13 @@ export const FormDataset = ({
           role="button"
         >
           <SelectedDataSetView
-            filePath={value.path}
+            filePath={value?.path}
             onDelete={() => {
               onChange({
                 ...value,
                 path: undefined,
                 columns: Object.fromEntries(
-                  Object.keys(value.columns ?? {}).map((key) => [
+                  Object.keys(value?.columns ?? {}).map((key) => [
                     key,
                     undefined,
                   ]),
@@ -169,88 +166,69 @@ export const FormDataset = ({
             appearance === "large" && styles.dropdownContainer,
           )}
         >
-          {isBuildingPolygon && (
-            <>
-              <Field label="データの種類">
-                <RadioGroup>
-                  <Radio
-                    label="PLATEAUデータ"
-                    value="plateau"
-                    {...form?.register("data.building_polygon.data_type")}
-                  />
-                  <Radio
-                    label="家屋現況図"
-                    value="house_condition_report"
-                    {...form?.register("data.building_polygon.data_type")}
-                  />
-                </RadioGroup>
-              </Field>
-              <Field label="ファイル形式">
-                <Select
-                  {...form?.register("data.building_polygon.input_file_type")}
-                >
-                  {BUILDING_FILE_TYPES.map((option) => (
-                    <option key={option.type} value={option.type}>
-                      {option.name}
-                    </option>
-                  ))}
-                </Select>
-              </Field>
-            </>
+          {isSpecialDatasetSchemaKey(schemaKey) && (
+            <Field label="ファイル形式">
+              <Select {...form?.register(`data.${schemaKey}.input_file_type`)}>
+                {INPUT_FILE_TYPES.map((option) => (
+                  <option key={option.type} value={option.type}>
+                    {option.name}
+                  </option>
+                ))}
+              </Select>
+            </Field>
           )}
 
-          {value.columns
-            ? Object.entries(value.columns).map(([key]) => {
-                const noColumns =
-                  !dataSetColumns || dataSetColumns.length === 0;
+          {(() => {
+            // スキーマから動的にカラム情報を取得
+            const datasetInfo = getNormalizationDatasetInfo(schemaKey);
+            if (!datasetInfo || !datasetInfo.hasColumns) return null;
 
-                const noCSV =
-                  isBuildingPolygon && buildingPolygoninputFileType !== "csv";
+            return datasetInfo.columns.map((columnInfo) => {
+              const noColumns = !dataSetColumns || dataSetColumns.length === 0;
+              const noCSV = inputFileType && inputFileType !== "csv";
 
-                return (
-                  <Field
-                    key={key}
-                    className={styles.field}
-                    label={
-                      <TextWithTooltip
-                        textNode={
-                          LanguageMap.NORMALIZATION_PARAMETER_LABEL[
-                            key as keyof typeof LanguageMap.NORMALIZATION_PARAMETER_LABEL
-                          ] + "カラム"
-                        }
-                        tooltipContent={
-                          lang.components.normalizationParameters[
-                            key as keyof typeof lang.components.normalizationParameters
-                          ]?.description || ""
-                        }
-                      />
-                    }
+              return (
+                <Field
+                  key={columnInfo.key}
+                  className={styles.field}
+                  label={
+                    <TextWithTooltip
+                      textNode={columnInfo.label + "カラム"}
+                      tooltipContent={
+                        columnInfo.description ||
+                        lang.components.normalizationParameters[
+                          columnInfo.key as keyof typeof lang.components.normalizationParameters
+                        ]?.description ||
+                        ""
+                      }
+                    />
+                  }
+                >
+                  <Dropdown
+                    className={styles.dropdown}
+                    disabled={noColumns || noCSV}
+                    onOptionSelect={(_, data) => {
+                      onChange({
+                        ...value,
+                        columns: {
+                          ...value?.columns,
+                          [columnInfo.key]: data.optionValue,
+                        },
+                      });
+                    }}
+                    selectedOptions={[value?.columns?.[columnInfo.key] ?? ""]}
+                    value={value?.columns?.[columnInfo.key] ?? ""}
                   >
-                    <Dropdown
-                      className={styles.dropdown}
-                      disabled={noColumns || noCSV}
-                      onOptionSelect={(_, data) => {
-                        onChange({
-                          ...value,
-                          columns: {
-                            ...value.columns,
-                            [key]: data.optionValue,
-                          },
-                        });
-                      }}
-                      selectedOptions={[value.columns?.[key] ?? ""]}
-                      value={value.columns?.[key] ?? ""}
-                    >
-                      {dataSetColumns?.map((column) => (
-                        <Option key={column} text={column} value={column}>
-                          {column}
-                        </Option>
-                      ))}
-                    </Dropdown>
-                  </Field>
-                );
-              })
-            : null}
+                    {dataSetColumns?.map((column) => (
+                      <Option key={column} text={column} value={column}>
+                        {column}
+                      </Option>
+                    ))}
+                  </Dropdown>
+                </Field>
+              );
+            });
+          })()}
         </div>
       </div>
       <DialogImportDataset

@@ -1,0 +1,1 @@
+ALTER TABLE `data_set_detail_areas` ADD `unestimable_count` integer;

@@ -62,6 +62,8 @@ export function NormalizationCreate(): JSX.Element {
   const { data: job, isLoading: isJobLoading } = useFetchJob({
     id: Number(id),
   });
+
+  /** job経由再実行の場合のParameter */
   const preprocessParameters =
     job?.parameters.parameterType === "preprocess" ? job.parameters : undefined;
 

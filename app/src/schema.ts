@@ -441,6 +441,17 @@ export const data_set_detail_buildings = sqliteTable(
       "change_ratio_water_usage",
     ) /** 水道使用量変化率 */,
 
+    /** R7追加分 */
+    outlier_flag: integer("outlier_flag"), // 1: 外れ値 / 0: 外れ値でない
+    single_story_row_house_flag: integer("single_story_row_house_flag"), // 1: 平屋長屋 / 0: 平屋長屋でない
+    buildingtype_determination_not_possible_flag: integer(
+      "buildingtype_determination_not_possible_flag",
+    ), // 1: 建物種別の判定ができない / 0: 建物種別の判定ができる
+    elapsed_months_since_stop: integer("elapsed_months_since_stop"), // 経過月数
+    inheritance_status: integer("inheritance_status"), // 1: 相続がある / 0: 相続がない
+    extension_status: integer("extension_status"), // 1: 増築がある / 0: 増築がない
+    matched_data_flag: integer("matched_data_flag"), // 1: 結合不可 / 0: 結合成功
+
     created_at: text("created_at")
       .default(sql`(CURRENT_TIMESTAMP)`)
       .notNull(),
@@ -538,6 +549,11 @@ export const data_set_detail_areas = sqliteTable("data_set_detail_areas", {
    * 0~1の小数で表現（8byte 浮動小数点）
    */
   predicted_probability: real("predicted_probability"),
+
+  /**
+   * R7追加分
+   */
+  unestimable_count: integer("unestimable_count"), // 推定不可件数
 
   created_at: text("created_at")
     .default(sql`(CURRENT_TIMESTAMP)`)

@@ -5,8 +5,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 /** https://www.notion.so/eukarya/Python-40f49a4c1a3b498486dd0e13aaad5a4a */
 export const schema = z.object({
   settings: z.object({
-    // 設定値の変更
-    reference_data: z.enum(["resident_registry"]),
     reference_date: z.string(),
     advanced: z.object({
       similarity_threshold: z.coerce.number().default(0.95),
@@ -55,6 +53,7 @@ export const schema = z.object({
         address: z.string(),
         structure_name: z.string(),
         registration_date: z.string(),
+        building_detail: z.string(),
       }),
     }),
     vacant_house: z.object({
@@ -64,27 +63,43 @@ export const schema = z.object({
         address: z.string(),
       }),
     }),
-    geocoding: z.object({
+    census: z.object({
+      id: z.number(),
+      path: z.string(),
+    }),
+    reverse_geocoded_building_polygon: z.object({
       id: z.number(),
       path: z.string(),
       columns: z.object({
         address: z.string(),
-        latitude: z.string(),
-        longitude: z.string(),
+        geometry: z.string(),
       }),
     }),
-    building_polygon: z.object({
+    residential_addresses: z.object({
       id: z.number(),
       path: z.string(),
       columns: z.object({
-        geometry: z.string(),
+        land_number_address: z.string(),
+        residential_address: z.string(),
       }),
-      input_file_type: z.enum(["csv", "geopackage", "shapefile"]),
-      data_type: z.enum(["plateau", "house_condition_report"]),
     }),
-    census: z.object({
+    address_of_lot_number: z.object({
       id: z.number(),
       path: z.string(),
+      input_file_type: z.enum(["csv", "geopackage", "shapefile"]),
+      columns: z.object({
+        lat: z.string(), // 緯度 if csv file
+        lon: z.string(), // 経度 if csv file
+      }),
+    }),
+    building_type_determination: z.object({
+      id: z.number(),
+      path: z.string(),
+      input_file_type: z.enum(["csv", "geopackage", "shapefile"]),
+      columns: z.object({
+        address: z.string(), // 住所  if csv file
+        building_type: z.string(), // 建物種別
+      }),
     }),
   }),
 });
@@ -98,7 +113,6 @@ export const useFormNormalization = ({
   return useForm<FormNormalizationType>({
     defaultValues: defaultValues ?? {
       settings: {
-        reference_data: "resident_registry",
         reference_date: "2021-01-01",
         advanced: {
           similarity_threshold: 0.95,
@@ -145,6 +159,7 @@ export const useFormNormalization = ({
             address: "",
             structure_name: "",
             registration_date: "",
+            building_detail: "",
           },
         },
         vacant_house: {
@@ -154,25 +169,41 @@ export const useFormNormalization = ({
             address: "",
           },
         },
-        geocoding: {
+        census: { id: 0, path: "" },
+        reverse_geocoded_building_polygon: {
           id: 0,
           path: "",
           columns: {
             address: "",
-            latitude: "",
-            longitude: "",
+            geometry: "",
           },
         },
-        building_polygon: {
+        residential_addresses: {
           id: 0,
           path: "",
           columns: {
-            geometry: "",
+            land_number_address: "",
+            residential_address: "",
           },
-          input_file_type: "csv",
-          data_type: "plateau",
         },
-        census: { id: 0, path: "" },
+        address_of_lot_number: {
+          id: 0,
+          path: "",
+          input_file_type: "csv",
+          columns: {
+            lat: "",
+            lon: "",
+          },
+        },
+        building_type_determination: {
+          id: 0,
+          path: "",
+          input_file_type: "csv",
+          columns: {
+            address: "",
+            building_type: "",
+          },
+        },
       },
     },
     resolver: zodResolver(schema),
