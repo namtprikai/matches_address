@@ -98,7 +98,6 @@ export const EditResultViewFields = ({
 
               if (
                 item === "area" &&
-                style !== "map" &&
                 style !== "table" &&
                 style !== "map-with-table"
               ) {

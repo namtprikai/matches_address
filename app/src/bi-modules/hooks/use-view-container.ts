@@ -20,7 +20,7 @@ export const useViewContainer = ({ resultView }: Params): ReturnParams => {
   const isInvalidParameters =
     !resultView.style ||
     !resultView.unit ||
-    (resultView.style !== "map" && !resultView.parameters);
+    (resultView.style !== "map-with-table" && !resultView.parameters);
 
   const handleDownload = async (
     fileType: string,

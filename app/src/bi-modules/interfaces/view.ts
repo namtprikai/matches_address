@@ -19,12 +19,11 @@ import {
 } from "./parameter";
 
 export const VIEW_STYLES = [
+  "map-with-table",
   "bar",
   "line",
   "pie",
   "table",
-  "map",
-  "map-with-table",
 ] as const;
 
 /**
@@ -41,11 +40,6 @@ interface ViewBase {
    * yearプロパティはparameters.YearFilter と被っていそう
    * areasプロパティはparameters.AreaFilter と被っていそうかつ、更新されていなそう
    */
-}
-
-export interface MapView extends ViewBase {
-  style: "map";
-  parameters: (YearFilter | AreaFilter)[];
 }
 
 /** 棒グラフ */
@@ -109,10 +103,4 @@ export interface MapWithTableView extends ViewBase {
   parameters: (YearFilter | AreaFilter | FilterCondition | TableColumns)[];
 }
 
-export type View =
-  | BarView
-  | LineView
-  | PieView
-  | TableView
-  | MapView
-  | MapWithTableView;
+export type View = BarView | LineView | PieView | TableView | MapWithTableView;

@@ -7,15 +7,12 @@ import {
   type VacancyLevel,
   type VacancyLevels,
 } from "../vacancy-level-checkbox/types";
-import {
-  type MapWithTableView,
-  type MapView,
-} from "../../../../bi-modules/interfaces/view";
+import { type MapWithTableView } from "../../../../bi-modules/interfaces/view";
 import { type MapInitReturn } from "./hooks/use-map-init";
 import { type UpdateLayerEffectReturn } from "./hooks/use-update-layer-effect";
 
 export const PREDICTED_PROBABILITY: Record<
-  MapView["unit"],
+  MapWithTableView["unit"],
   Record<VacancyLevel, number>
 > = {
   building: {
@@ -38,7 +35,7 @@ const useStyles = makeStyles({
 });
 
 type Props = {
-  view: MapView | MapWithTableView;
+  view: MapWithTableView;
   vacancyLevels: VacancyLevels;
   mapInitState: MapInitReturn;
   updateLayerEffectState: UpdateLayerEffectReturn;

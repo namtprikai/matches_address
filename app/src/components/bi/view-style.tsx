@@ -3,7 +3,6 @@ import { ViewTable } from "./view-table";
 import { ViewBar } from "./view-bar";
 import { ViewLine } from "./view-line";
 import { ViewPie } from "./view-pie";
-import { Map } from "./view-map";
 import { ViewMapWithTable } from "./view-map-with-table";
 
 type Props = {
@@ -24,9 +23,6 @@ export const ViewStyle = ({ view, ...props }: Props): JSX.Element => {
       return <ViewLine view={view} {...props} />;
     case style === "table": {
       return <ViewTable view={view} {...props} />;
-    }
-    case style === "map": {
-      return <Map view={view} {...props} />;
     }
     case style === "map-with-table": {
       return <ViewMapWithTable view={view} {...props} />;

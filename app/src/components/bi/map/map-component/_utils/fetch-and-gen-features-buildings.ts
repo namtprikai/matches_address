@@ -1,8 +1,5 @@
 import { wktToGeoJSON } from "betterknown";
-import {
-  type MapView,
-  type MapWithTableView,
-} from "../../../../../bi-modules/interfaces/view";
+import { type MapWithTableView } from "../../../../../bi-modules/interfaces/view";
 import { type FilterCondition } from "../../../../../bi-modules/interfaces/parameter";
 import { type BuildingProperties } from "../building-popup";
 import { type FeatureData } from "../_types";
@@ -15,7 +12,7 @@ export const fetchAndGenFeaturesBuildings = async ({
 }: {
   selectedDate: string;
   lastId: number;
-  view: MapView | MapWithTableView;
+  view: MapWithTableView;
 }): Promise<FeatureData[]> => {
   const areaFilter = parameters.find((p) => p.key === "area");
   const areas = areaFilter?.value as string[] | undefined;

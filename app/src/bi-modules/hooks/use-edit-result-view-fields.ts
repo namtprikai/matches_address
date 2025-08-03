@@ -51,7 +51,7 @@ export const useEditResultViewFields = ({
     setValue("style", value);
     // 集計単位の初期値を設定する
     const unit =
-      value === "map"
+      value === "map-with-table"
         ? "building"
         : TILE_VIEW_CONFIG[value].fields[0].option[0].unit;
     setValue("unit", unit);

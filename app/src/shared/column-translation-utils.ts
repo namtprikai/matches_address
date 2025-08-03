@@ -56,4 +56,3 @@ export function translateColumnToEnglish(
 
   return reverseMap[japaneseName] || japaneseName;
 }
-

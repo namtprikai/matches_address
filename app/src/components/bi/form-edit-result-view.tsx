@@ -57,7 +57,7 @@ export const FormEditResultView = (): JSX.Element | null => {
       defaultValues={{
         dataSetResultId: selectedResultView?.data_set_result_id ?? undefined,
         title: selectedResultView?.title ?? "",
-        style: selectedResultView?.style ?? "map",
+        style: selectedResultView?.style ?? "map-with-table",
         unit: selectedResultView?.unit ?? "building",
         parameters: floatToPercent(selectedResultView?.parameters || []) ?? [],
       }}

@@ -1,10 +1,7 @@
 import { Popup, type Map } from "maplibre-gl";
 import { useEffect, useRef, useState } from "react";
 import { renderToString } from "react-dom/server";
-import {
-  type MapView,
-  type MapWithTableView,
-} from "../../../../../bi-modules/interfaces/view";
+import { type MapWithTableView } from "../../../../../bi-modules/interfaces/view";
 import { BuildingPopup, type BuildingProperties } from "../building-popup";
 
 import { addLayerEffect } from "../add-layer-effect";
@@ -17,7 +14,7 @@ import { getFeatures } from "../_utils/get-features";
 type Props = {
   mapInstance: Map | null;
   selectedDate: string | undefined;
-  view: MapView | MapWithTableView;
+  view: MapWithTableView;
 };
 
 export type UpdateLayerEffectReturn = {
@@ -141,7 +138,7 @@ const _usePopupEffectWithFeature = ({
   view: { unit, parameters },
 }: {
   mapInstance: Map | null;
-  view: MapView | MapWithTableView;
+  view: MapWithTableView;
 }): UsePopupEffectWithFeatureReturn => {
   const popupRef = useRef<Popup | null>(null);
   const [selectedFeature, setSelectedFeature] = useState<FeatureData | null>(

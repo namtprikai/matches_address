@@ -76,7 +76,7 @@ export const EditResultViewFilterFields = ({
       <Field label="期間">
         <div className={styles.year}>
           <Select
-            disabled={style === "map"}
+            disabled={style === "map-with-table"}
             onChange={(e) => {
               const yearStart = e.target.value;
               const excludedYearParameters = currentParameters.filter((f) => {
@@ -98,7 +98,7 @@ export const EditResultViewFilterFields = ({
                 },
               ]);
             }}
-            value={style === "map" ? "" : currentYear?.value.start}
+            value={style === "map-with-table" ? "" : currentYear?.value.start}
           >
             <option value="">下限なし</option>
             {yearItems
@@ -111,7 +111,7 @@ export const EditResultViewFilterFields = ({
           </Select>
           <span>〜</span>
           <Select
-            disabled={style === "map"}
+            disabled={style === "map-with-table"}
             onChange={(e) => {
               const yearEnd = e.target.value;
               const excludedYearParameters = currentParameters.filter((f) => {
@@ -132,7 +132,7 @@ export const EditResultViewFilterFields = ({
                 },
               ]);
             }}
-            value={style === "map" ? "" : currentYear?.value.end}
+            value={style === "map-with-table" ? "" : currentYear?.value.end}
           >
             <option value="">上限なし</option>
             {yearItems

@@ -1,7 +1,4 @@
-import {
-  type MapView,
-  type MapWithTableView,
-} from "../../../../../bi-modules/interfaces/view";
+import { type MapWithTableView } from "../../../../../bi-modules/interfaces/view";
 import { type FeatureData } from "../_types";
 import { fetchAndGenFeaturesAreas } from "./fetch-and-gen-features-areas";
 import { fetchAndGenFeaturesBuildings } from "./fetch-and-gen-features-buildings";
@@ -9,7 +6,7 @@ import { fetchAndGenFeaturesBuildings } from "./fetch-and-gen-features-buildings
 export const getFeatures = async (params: {
   selectedDate: string;
   lastId: number;
-  view: MapView | MapWithTableView;
+  view: MapWithTableView;
 }): Promise<FeatureData[]> => {
   const { unit } = params.view;
   switch (unit) {

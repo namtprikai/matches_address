@@ -6,12 +6,11 @@ type ResultViewsStyle = (typeof result_views.style.enumValues)[number];
 const RESULT_VIEWS_STYLE: {
   [key in ResultViewsStyle]: string;
 } = {
-  map: "地図",
   bar: "棒グラフ",
   line: "折れ線グラフ",
   pie: "円グラフ",
   table: "表",
-  "map-with-table": "地図と表",
+  "map-with-table": "地図",
 };
 
 type ResultViewsUnit = (typeof result_views.unit.enumValues)[number];
