@@ -75,6 +75,17 @@
 - コメントは日本語で記述可
 - ファイル修正後は必ずPrettierで整形を実施（app/ディレクトリ内のTypeScript/JavaScriptファイル）
 
+#### スタイル記述ルール
+
+- **makeStyles APIを優先使用**: CSSモジュール（.module.css）ではなく、`@fluentui/react-components`の`makeStyles`を利用してスタイルを記述する
+- **CSSの省略記法（shorthand）を必須使用**: 以下のプロパティは省略記法で記述する
+  - `padding`: `paddingTop`, `paddingRight`, `paddingBottom`, `paddingLeft` → `padding`
+  - `margin`: `marginTop`, `marginRight`, `marginBottom`, `marginLeft` → `margin`
+  - `border`: `borderWidth`, `borderStyle`, `borderColor` → `border`
+  - `transition`: `transitionProperty`, `transitionDuration`, `transitionTimingFunction` → `transition`
+  - その他、省略記法が利用可能なプロパティは積極的に使用
+- **Fluent UIのデザイントークンを活用**: `tokens.spacingVerticalM`, `tokens.colorNeutralBackground1`などを使用して一貫性のあるデザインを実現
+
 ### 4. データベース変更
 
 1. `app/src/schema.ts`を編集
