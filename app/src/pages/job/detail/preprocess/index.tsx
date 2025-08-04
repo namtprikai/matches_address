@@ -120,15 +120,12 @@ const useStyles = makeStyles({
   },
 });
 
-/**
- * @todo PreprocessTypeの日本語表現を追加する
- * https://github.com/eukarya-inc/links-akiya/issues/447
- * */
 const PreprocessTypeMap: {
   [key in Exclude<SelectJobTask["preprocess_type"], null>]: string;
 } = {
   e014: "テキストマッチング機能",
   e016: "空間結合機能",
+  e015: "建物種別判定機能",
 };
 
 const PreprocessPercentTypeMap: {
@@ -136,6 +133,7 @@ const PreprocessPercentTypeMap: {
 } = {
   e014: "結合率",
   e016: "結合率",
+  e015: "結合率",
 };
 
 const MESSAGE = {

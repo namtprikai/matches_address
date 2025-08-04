@@ -645,6 +645,7 @@ export const job_tasks = sqliteTable("job_tasks", {
     enum: [
       "e014",
       "e016",
+      "e015",
     ] /** 実際にはバックエンドはこれ以外の値も保存する。FEはこの値しか使用しないのでこの定義とする */,
   }),
   error_code: text("error_code", { enum: ["undefined_error"] }),
