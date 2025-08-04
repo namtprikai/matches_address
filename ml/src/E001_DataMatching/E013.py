@@ -832,40 +832,96 @@ class TatemonoProcessor(DataProcessor):
         return df
 
 
-    def extract_inheritance_info(self, series:pd.Series, search_word:str) -> pd.Series:
+    def extract_touki_info(self, series:pd.Series, search_word:str, base_date: datetime = pd.to_datetime('today')) -> pd.Series:
         """
-        相続日などを抽出
-        
+        相続日や増築日などを抽出して、指定日(指定しなければ今日)までの経過日を計算する関数
+
         Parameters
         ----------
         df : pandas.Series
             登記内容カラム
         search_word : string
             抽出したいイベント
-            
+            例) '相続'、'増築'
+        base_date : datetime, optional
+            基準日。指定しなければ今日の日付を使用。
+            例) pd.to_datetime('2023-10-01')
         Returns
         -------
         pandas.Series
             抽出結果Series
         """
+        def convert_wareki_to_datetime(wareki_str):
+            """
+            和暦の文字列をdatetimeオブジェクトに変換する
+            Parameters
+            ----------
+            wareki_str : str
+                和暦の文字列（例: '昭和55年10月1日'）
+            Returns
+            -------
+            datetime.datetime or None
+                変換後のdatetimeオブジェクト、変換できない場合はNone
+            """
+            try:
+                if '昭和' in wareki_str:
+                    era_year = int(re.search(r'昭和(\d+)年', wareki_str).group(1))
+                    year = 1925 + era_year
+                    seireki_str = wareki_str.replace(f'昭和{era_year}年', f'{year}年')
+                elif '平成' in wareki_str:
+                    era_year = int(re.search(r'平成(\d+)年', wareki_str).group(1))
+                    year = 1988 + era_year
+                    seireki_str = wareki_str.replace(f'平成{era_year}年', f'{year}年')
+                elif '令和' in wareki_str:
+                    era_year = int(re.search(r'令和(\d+)年', wareki_str).group(1))
+                    year = 2018 + era_year
+                    seireki_str = wareki_str.replace(f'令和{era_year}年', f'{year}年')        
+                else:
+                    return None
+            except AttributeError:
+                return None
+            try:
+                return pd.to_datetime(seireki_str, format='%Y年%m月%d日')
+            except ValueError:
+                return None
+
         def get_souzoku_info(record, search_word):
+            """
+            相続や増築の情報を抽出する関数
+            
+            Parameters
+            ----------
+            record : str
+                登記内容の文字列
+            search_word : str
+                抽出したいイベント（例: '相続', '増築'）
+            
+            Returns
+            -------
+            str or np.nan
+                抽出された相続や増築の情報。該当がない場合はnp.nan。
+            """
             if pd.isna(record):
                 return np.nan
             pattern = r'[　、／]|(?=昭和|平成|令和|明治|大正)'
             record_list = [item for item in re.split(pattern, record) if item]
             inherit_list = []
             for single_record in record_list:
-                if search_word in single_record and '不存在' not in single_record:
-                    inherit_list.append(single_record)
+                if search_word in single_record and '不存在' not in single_record and '不詳' not in single_record:
+                    inherit_list.append(single_record.replace(search_word, '').strip())
             if inherit_list:
-                return ' '.join(inherit_list)
+                new_inherit_list = [convert_wareki_to_datetime(item) for item in inherit_list if convert_wareki_to_datetime(item) is not None]
+                if new_inherit_list:
+                    latest_inherit_date = max(new_inherit_list)
+                    days_since_inherit = (base_date - latest_inherit_date).days
+                    return int(days_since_inherit)
             else:
                 return np.nan
+            
         series_copied = series.copy()
         souzoku_series = series_copied.apply(get_souzoku_info, args=(search_word, ))
-        souzoku_series.name = f'{search_word}の有無'
         return souzoku_series
-
+    
     def process(self):
         """
         建物データを処理し、構造分類を追加して出力する
@@ -898,8 +954,8 @@ class TatemonoProcessor(DataProcessor):
             # 重複データを削除
             df_tatemono = self.drop_duplicates(df_tatemono, subset=cols["tatemono_address"], keep="first")
             # イベント発生日抽出
-            df_tatemono['相続の有無'] = self.extract_inheritance_info(df_tatemono['建物情報_登記内容'], search_word = '相続')
-            df_tatemono['増築の有無'] = self.extract_inheritance_info(df_tatemono['建物情報_登記内容'], search_word = '増築')
+            df_tatemono['相続の有無'] = self.extract_touki_info(df_tatemono['建物情報_登記内容'], search_word = '相続')
+            df_tatemono['増築の有無'] = self.extract_touki_info(df_tatemono['建物情報_登記内容'], search_word = '増築')
             # 出力カラムの選択
             df_tatemono = df_tatemono[self.OUTPUT_COLUMNS["tatemono"]]
             df_tatemono["reference_date"] = self.reference_date

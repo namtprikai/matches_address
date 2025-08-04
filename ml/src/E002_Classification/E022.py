@@ -482,11 +482,7 @@ def process_and_predict(input_folder, input_file, model_directory, threshold, ou
         input_path = os.path.join(input_folder, input_file)
         input_data = read_csv(input_path)
 
-        # '世帯コード'の重複を確認し、重複するレコードを削除
-        input_data = input_data.drop_duplicates(subset=['世帯コード'], keep='first').reset_index(drop=True)
-        condition = (input_data['住定期間'] < 1000)
-        if any(condition) and len(condition) > 0:
-            input_data = input_data[~condition].reset_index(drop=True)
+
 
         # '正規化住所'の重複を確認し、3件以上の重複がある場合、該当するすべてのレコードを削除
         duplicate_counts = input_data['正規化住所'].value_counts()  # 各値の出現回数を取得

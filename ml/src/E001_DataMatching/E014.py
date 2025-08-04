@@ -270,15 +270,6 @@ def embedding_address(main_csv: io.BytesIO | str, sub_csv: io.BytesIO | str, mai
             sub_df = normalize_dates(sub_df,sub_start_date_col)
             sub_df['開始月'] = pd.to_datetime(sub_df[sub_start_date_col]).dt.strftime('%Y-%m')
 
-            # 住基の住所に閾値以上の世帯コードが結びつく住所のデータを住基、水道双方から除外
-            family_thresh = 4
-            if '世帯コード' in main_df.columns:
-                mlt_family_address_list = main_df.groupby(main_column)['世帯コード'].nunique()[main_df.groupby(main_column)['世帯コード'].nunique()>=family_thresh].index
-            else:
-                mlt_family_address_list = sub_df.groupby(main_column)['世帯コード'].nunique()[sub_df.groupby(main_column)['世帯コード'].nunique()>=family_thresh].index
-
-            main_df = main_df.loc[~main_df[main_column].isin(mlt_family_address_list)].reset_index(drop=False)
-            sub_df = sub_df.loc[~sub_df[sub_column].isin(mlt_family_address_list)].reset_index(drop=False)
 
         # データの行数、完全一致割合の計算に使用
         data_rows = len(main_df)
@@ -355,8 +346,6 @@ def embedding_address(main_csv: io.BytesIO | str, sub_csv: io.BytesIO | str, mai
                 elif len(tar_sub) == 1:
                     tar_merged = tar_main.iloc[[-1]].merge(tar_sub, on=main_column, how='inner')
                     main_multi_sub_merge = pd.concat([main_multi_sub_merge,tar_merged ])
-                elif len(tar_sub) >= family_thresh:
-                    over_thresh_building.append(address)
                 else:
                     tar_merged = tar_main.merge(tar_sub.drop(main_column, axis=1), left_on=merged_df_col_dict['開始月'], right_on=f"開始月_{sub_csv_name}",  how='inner')
                     main_multi_sub_merge = pd.concat([main_multi_sub_merge,tar_merged ])
