@@ -399,7 +399,21 @@ def insert_sqlite(input_data, data_set_result_id):
             'S_NAME': 'area_group',
             '異常値フラグ': 'outlier_flag',
             '平屋長屋フラグ': 'single_story_row_house_flag',
-            '建物種別判定不可フラグ': 'buildingtype_determination_not_possible_flag'
+            '建物種別判定不可フラグ': 'buildingtype_determination_not_possible_flag',
+            '閉栓からの経過日_suido_residence': 'elapsed_months_since_stop',
+            '相続の有無_touki_residence': 'inheritance_status',
+            '増築の有無_touki_residence': 'extension_status',
+            'matched_data_flag': 'matched_data_flag',
+            '緯度_building_type_determination': 'latitude_for_building_type',
+            '経度_building_type_determination': 'longitude_for_building_type',
+            '地番住所_building_type_determination': 'lot_number_address_for_building_type',
+            '住居表示住所': 'residential_address_plain',
+            '地番住所': 'lot_number_address_plain',
+            'building_id_address_of_lot_number': 'building_id_from_lot_number_source',
+            '経度_address_of_lot_number': 'longitude_from_lot_number_source',
+            '緯度_address_of_lot_number': 'latitude_from_lot_number_source',
+            '地番住所_address_of_lot_number': 'lot_number_address_from_source',
+            'distance': 'distance'
         }
         # カラム名を変換
         input_data['名寄せ元情報_geocoding'] = input_data['正規化住所']

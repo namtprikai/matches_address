@@ -192,7 +192,7 @@ def prepare_learning_data(df, explanatory_variables, explanatory_variables_dict)
         learning_data = learning_data[CONSTANTS['explanatory_variables']]
 
     if 'matched_data_flag' in learning_data.columns:
-        learning_data = learning_data[learning_data['matched_data_flag'] == 1]
+        learning_data = learning_data[learning_data['matched_data_flag'] == 0]
         learning_data.drop(columns=['matched_data_flag'], inplace=True)
 
     learning_data.reset_index(drop=True, inplace=True)

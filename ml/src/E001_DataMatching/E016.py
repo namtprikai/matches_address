@@ -696,7 +696,7 @@ def _drop_z(geom):
         return wkb.loads(wkb.dumps(geom, output_dimension=2))
     return geom  # 無効なジオメトリまたは空のジオメトリはそのまま返す
 
-def assign_polygon_to_points(buildings_gdf, points_gdf, mul, point_selected_column, option):
+def assign_polygon_to_points(buildings_gdf, points_gdf, mul, point_selected_column, option, file_name):
     """
     建物のジオメトリとポイントのジオメトリを結合し、ポイントを建物に割り当てる
     
@@ -835,20 +835,25 @@ def assign_polygon_to_points(buildings_gdf, points_gdf, mul, point_selected_colu
             combined_gdf = gpd.GeoDataFrame(combined_gdf, geometry='geometry')
 
             # 不要な列を削除
-            columns_to_drop = ["centroid", "area", "index_left", "index_right", "buffer", "distance"]
+            columns_to_drop = ["centroid", "area", "index_left", "index_right", "buffer"]
             combined_gdf = combined_gdf.drop(columns=[col for col in columns_to_drop if col in combined_gdf.columns])
+            if "distance_left" in combined_gdf.columns:
+                combined_gdf = combined_gdf.rename(columns={'distance_left': 'distance'})
+                combined_gdf = combined_gdf.drop(columns=['distance_right'], errors='ignore')
 
         combined_gdf.to_crs(4326, inplace=True)
 
         # 結合率の算出
-        num_points = points_gdf.shape[0]
         unique_values_count = combined_gdf["ID"].nunique()
-        join_ratio = round(unique_values_count / num_points * 100, 2)
+        join_ratio = round(unique_values_count / len(combined_gdf) * 100, 2)
+        
+        matched_count = combined_gdf['ID'].notna().sum()
+        success_rate = f"{matched_count}件/{len(combined_gdf)}件中"
 
         # ID列を削除（最後に実行）-
         combined_gdf = combined_gdf.drop(columns=["ID"], errors="ignore")
 
-        return combined_gdf, join_ratio
+        return combined_gdf, join_ratio, success_rate
     except Exception as e:
         print(e)
         traceback.print_exc()
@@ -1005,9 +1010,13 @@ def extend_columns(path, columns):
     data = read_file(path)
     for col in columns:
         data[col] = None
+    if "建物種別" in columns:
+        data['building_type'] = 0
+    if "building_id_address_of_lot_number" in columns:
+        data['building_id_address_of_lot_number'] = data['building_id']
     data.to_csv(path)
 
-def process_spatial_join(main_path, sub_path, ken, sikuchoson, option, output_path=None, columns=None, file_type='csv', file_name='', file_name_jp=''):
+def process_spatial_join(main_path, sub_path, ken, sikuchoson, option, output_path=None, columns=None, file_type='csv', file_name='', file_name_jp='', column_building_type_determination=None, building_type_values=[]):
     try:
         # 座標系を設定
         crs = get_transformer(ken, sikuchoson)
@@ -1030,7 +1039,7 @@ def process_spatial_join(main_path, sub_path, ken, sikuchoson, option, output_pa
         polygon = load_and_process_data(main_path, crs, 'geometry_plateau', 'csv', None, None)
         # 建物データと水道データを結合
         try:
-            result, join_ratio = assign_polygon_to_points(polygon, point, 2, point_selected_column, option)
+            result, join_ratio, success_rate = assign_polygon_to_points(polygon, point, 2, point_selected_column, option, file_name_jp)
         except:
             set_error(ERROR_00031)
             raise
@@ -1045,9 +1054,48 @@ def process_spatial_join(main_path, sub_path, ken, sikuchoson, option, output_pa
         if not os.path.exists(output_dir):
             os.makedirs(output_dir)
 
+        if file_name_jp == "地番住所-緯度経度対応データ":
+            # 地番住所-緯度経度対応データの場合、building_id_address_of_lot_numberを追加
+            result['building_id_address_of_lot_number'] = result['building_id']
+
+        # Create building_type when run DT119 (建物種別判定データ)
+        if file_name_jp == "建物種別判定データ":
+            if column_building_type_determination in result.columns:
+                # 新しいbuilding_typeカラムを作成
+                def determine_building_type(row):
+                    # 建物種別の値を取得（どちらかの列から）
+                    value = None
+                    if column_building_type_determination in result.columns:
+                        value = row[column_building_type_determination]
+                    
+                    # 値がbuilding_type_valuesに含まれているかチェック
+                    if pd.isna(value) or value not in building_type_values:
+                        return 0
+                    else:
+                        return 1
+                
+                # building_typeカラムを作成
+                result['building_type'] = result.apply(determine_building_type, axis=1)
+                
+                # building_type_valuesに含まれていない値の行を削除（nullは保持）
+                def should_keep_row(row):
+                    value = row[column_building_type_determination]
+                    # nullの場合は保持
+                    if pd.isna(value):
+                        return True
+                    # building_type_valuesに含まれている場合は保持
+                    if value in building_type_values:
+                        return True
+                    # それ以外は削除
+                    return False
+                
+                # 条件に合う行のみを保持
+                result = result[result.apply(should_keep_row, axis=1)].reset_index(drop=True)
+            
+
         save_geodataframe(result, output_path, 'csv')
 
-        return output_path, join_ratio
+        return output_path, join_ratio, success_rate
 
     except Exception as e:
         print(e)
@@ -1073,7 +1121,7 @@ def merge_residential_addresses(main_file_path: str, sub_file_path: str, output_
     return output_path
 
 
-def merge_building_type_determination(main_file_path: str, sub_file_path: str, output_directory: str, columns: dict):
+def merge_building_type_determination(main_file_path: str, sub_file_path: str, output_directory: str, columns: dict, building_type_values: list):
     building_type_determination = read_file(sub_file_path)
     main_data = read_file(main_file_path)
     building_type_determination.rename(
@@ -1083,6 +1131,50 @@ def merge_building_type_determination(main_file_path: str, sub_file_path: str, o
     right_key = columns.get("address", "地番住所")
     right_key = f"{right_key}_building_type_determination"
     result = main_data.merge(building_type_determination, left_on='正規化住所', right_on=right_key, how='left')
+    building_type_col = columns.get("building_type", "建物種別")
+    building_type_col_renamed = f"{building_type_col}_building_type_determination"
+
+    if "建物種別" in result.columns or building_type_col_renamed in result.columns:
+        # 新しいbuilding_typeカラムを作成
+        def determine_building_type(row):
+            # 建物種別の値を取得（どちらかの列から）
+            value = None
+            if "建物種別" in result.columns:
+                value = row["建物種別"]
+            elif building_type_col_renamed in result.columns:
+                value = row[building_type_col_renamed]
+            
+            # 値がbuilding_type_valuesに含まれているかチェック
+            if pd.isna(value) or value not in building_type_values:
+                return 0
+            else:
+                return 1
+        
+        # building_typeカラムを作成
+        result['building_type'] = result.apply(determine_building_type, axis=1)
+        
+        # building_type_valuesに含まれていない値の行を削除（nullは保持）
+        def should_keep_row(row):
+            # どちらかの列から値を取得（1つしか存在しない）
+            if "建物種別" in result.columns:
+                value = row["建物種別"]
+            elif building_type_col_renamed in result.columns:
+                value = row[building_type_col_renamed]
+            else:
+                return True  # どちらの列もない場合は保持
+            
+            # nullの場合は保持
+            if pd.isna(value):
+                return True
+            # building_type_valuesに含まれている場合は保持
+            if value in building_type_values:
+                return True
+            # それ以外は削除
+            return False
+        
+        # 条件に合う行のみを保持
+        result = result[result.apply(should_keep_row, axis=1)].reset_index(drop=True)
+        
     output_path = f"{output_directory}/DT119.csv"
     save_geodataframe(result, output_path, 'csv')
     

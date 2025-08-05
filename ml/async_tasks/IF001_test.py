@@ -68,15 +68,7 @@ def main():
                     "water_recorded_date": "検針日"
                 }
             },
-            "land_registry": {
-                "id": 0,
-                "path": "",
-                "columns": {
-                    "address": "",
-                    "structure_name": "",
-                    "registration_date": ""
-                }
-            },
+            "land_registry": {},
             "vacant_house": {
                 "id": 1,
                 "path": "akiya_result.csv",
@@ -166,6 +158,7 @@ def main():
             'building_type_determination': json_dict.get('data', {}).get('building_type_determination', {}).get('path', None),
             'building_type_determination_columns': json_dict.get('data', {}).get('building_type_determination', {}).get('columns', {}),
             'building_type_determination_type_file': json_dict.get('data', {}).get('building_type_determination', {}).get('type_file', 'csv'),
+            'building_type_determination_values': json_dict.get('data', {}).get('building_type_determination', {}).get('residential_values', ['戸建', '共同住宅']),
         }
 
         columns = {
@@ -220,7 +213,7 @@ def main():
             'suido_status': '水道',
             'touki': '建物情報',
             'akiya_result': '空き家調査',
-            'geocoding': 'ジオコーディングデータ',
+            'geocoding': '建物ポリゴンデータ',
         }
 
         main_data_type = 'suido_status'
@@ -303,8 +296,7 @@ def main():
             progress_percent_job = int(progress_percent_job) + progress_percent
             create_or_update_job(job_id, str(progress_percent_job))
 
-        building_type = params.get("building_type_determination_columns", {}).get("building_type", "建物種別")
-        filter_building_usage(output_e014, f"{output_directory}.csv", str(job_id), params.get('db_path'), building_type)
+        filter_building_usage(output_e014, f"{output_directory}.csv", str(job_id), params.get('db_path'))
 
         create_or_update_job(job_id, "complete")
         create_job_results(job_id, f"{random_str}.csv")
@@ -394,7 +386,7 @@ def e011(join_option, params, output_directory, job_id, columns):
 
         type_file = params.get('address_of_lot_number_type_file', 'csv')
 
-        output_path, join_ratio = process_spatial_join(
+        output_path, join_ratio, success_rate = process_spatial_join(
             output_path,
             address_of_lot_number,
             '愛知県',
@@ -407,6 +399,12 @@ def e011(join_option, params, output_directory, job_id, columns):
             '地番住所-緯度経度対応データ'
         )
 
+        res = {
+            'joining_rate': join_ratio,
+            'input_source': ["建物ポリゴンデータ", "地番住所-緯度経度対応データ"],
+            'success_rate': success_rate
+        }
+
         if job_id and task_id:
             create_or_update_job(job_id, '40')
             create_or_update_job_task(
@@ -415,26 +413,28 @@ def e011(join_option, params, output_directory, job_id, columns):
                 preprocess_type="e011",
                 error_code=None,
                 error_msg=None,
-                result=None,
+                result=json.dumps(res, ensure_ascii=False),
                 id=task_id,
             )
     else:
-        columns.extend(['地番住所_address_of_lot_number', '緯度_address_of_lot_number', '経度_address_of_lot_number'])
+        columns.extend(['building_id_address_of_lot_number', '地番住所_address_of_lot_number', '緯度_address_of_lot_number', '経度_address_of_lot_number'])
 
     building_type_determination = params.get('building_type_determination', None)
     if building_type_determination:
         building_type_determination = concatenate(params.get('output_path'), building_type_determination)
-        if params.get("building_type_determination_type_file") == 'csv':
-            column_building_type_determination = {
-                "address": params.get("building_type_determination_columns", {}).get("address", "地番住所"),
-                "building_type": params.get("building_type_determination_columns", {}).get("building_type", "建物種別")
-            }
+        column_building_type_determination = {
+            "address": params.get("building_type_determination_columns", {}).get("address", "地番住所"),
+            "building_type": params.get("building_type_determination_columns", {}).get("building_type", "建物種別"),
+        }
+        building_type_values = params.get("building_type_determination_values", [])
 
+        if params.get("building_type_determination_type_file") == 'csv':
             output_path = merge_building_type_determination(
                 output_path,
                 building_type_determination,
                 output_directory,
-                column_building_type_determination
+                column_building_type_determination,
+                building_type_values
             )
             
         else:
@@ -448,7 +448,9 @@ def e011(join_option, params, output_directory, job_id, columns):
                 None,
                 params.get("building_type_determination_type_file", "shp"),
                 "_building_type_determination",
-                '建物種別判定データ'
+                '建物種別判定データ',
+                column_building_type_determination,
+                building_type_values
             )
     else:
         columns.extend(['地番住所_building_type_determination', '緯度_building_type_determination', '経度_building_type_determination', '建物種別'])

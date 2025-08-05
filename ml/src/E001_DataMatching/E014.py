@@ -154,7 +154,7 @@ def normalize_dates(df, column, formats=['%Y/%m/%d', '%d/%m/%Y', '%Y-%m-%d', '%m
     
     return df.drop(f'{column}_normalized',axis=1)
 
-def filter_building_usage(input_path: str, output_path: str, job_id: str, db_path: str, building_type: str):
+def filter_building_usage(input_path: str, output_path: str, job_id: str, db_path: str):
     if db_path:
         connect_sqllite(db_path)
     task_id = None
@@ -163,10 +163,7 @@ def filter_building_usage(input_path: str, output_path: str, job_id: str, db_pat
         task_id = create_or_update_job_task(job_id, progress_percent="10", preprocess_type="e015", error_code=None, error_msg=None, result=None)
 
     df = read_data(input_path)
-    if '建物種別' in df.columns:
-        df['buildingtype_determination_not_possible_flag'] = df['建物種別'].isna().astype(int)
-    elif building_type in df.columns:
-        df['buildingtype_determination_not_possible_flag'] = df[building_type].isna().astype(int)
+    df['buildingtype_determination_not_possible_flag'] = 1 - df['building_type'].astype(int)
 
     if job_id:
         create_or_update_job(job_id, '96')
@@ -174,8 +171,8 @@ def filter_building_usage(input_path: str, output_path: str, job_id: str, db_pat
 
     df['single_story_row_house_flag'] = 0
     if 'usage' in df.columns:
-        # Basic condition: usage must be '住宅' or '戸建'
-        basic_condition = df['usage'].isin(['住宅', '戸建'])
+        # Basic condition: usage must be '戸建'
+        basic_condition = df['usage'].isin(['戸建'])
         
         # Additional condition: 世帯コード or 水道番号_suido_residence duplicates on 正規化住所 greater than 2
         additional_condition = False
@@ -261,7 +258,7 @@ def embedding_address(main_csv: io.BytesIO | str, sub_csv: io.BytesIO | str, mai
         else:
             sub_df = read_data(sub_csv)
 
-        if 'ジオコーディングデータ' in input_source and '水道' in input_source:
+        if '建物ポリゴンデータ' in input_source and '水道' in input_source:
             # 日付のNormalize化をし、年月を取得
             main_start_date_col = [col for col in ['使用開始日', '住定異動年月日', '登記日付' ] if col in main_df.columns][0]
             main_df = normalize_dates(main_df,main_start_date_col)
@@ -302,8 +299,8 @@ def embedding_address(main_csv: io.BytesIO | str, sub_csv: io.BytesIO | str, mai
         main_flag_name = f'{main_csv_name}_flag'
         sub_flag_name = f'{sub_csv_name}_flag'
         # 初期値は全て1
-        main_df[main_flag_name] = 1
-        main_df[sub_flag_name] = 1
+        main_df[main_flag_name] = 0
+        main_df[sub_flag_name] = 0
 
         # 名寄せ対象になる行を元情報として残す
         sub_df[f'名寄せ元情報_{sub_csv_name}'] = sub_df[sub_column]
@@ -313,7 +310,7 @@ def embedding_address(main_csv: io.BytesIO | str, sub_csv: io.BytesIO | str, mai
             progress_percent_job = progress_percent_job + progress_percent
             create_or_update_job(job_id, progress_percent_job)
             create_or_update_job_task(job_id, progress_percent="30", preprocess_type="e014", error_code=None, error_msg=None, result=None, id= task_id)
-        if 'ジオコーディングデータ' in input_source and '水道' in input_source:
+        if '建物ポリゴンデータ' in input_source and '水道' in input_source:
             # 水道で1つの住所に複数の水道番号が結びついている住所を取り出す
             multi_address_in_main = main_df[main_column].value_counts()[main_df[main_column].value_counts()>1].index
             main_df_single = main_df.loc[~main_df[main_column].isin(multi_address_in_main)].copy().reset_index(drop=True)
@@ -438,7 +435,7 @@ def embedding_address(main_csv: io.BytesIO | str, sub_csv: io.BytesIO | str, mai
                         else:
                             row_index = start + i
                             main_df.at[row_index, f'名寄せ元情報_{sub_csv_name}'] = ""
-                            main_df.at[row_index, f'{sub_flag_name}'] = 0
+                            main_df.at[row_index, f'{sub_flag_name}'] = 1
                             similarity_scores.append(similarities[top_indices[0]])  # 閾値未満の場合スコアは0
                         
                 # 類似度スコアを結果データフレームに追加
@@ -462,6 +459,21 @@ def embedding_address(main_csv: io.BytesIO | str, sub_csv: io.BytesIO | str, mai
                 result_df = df_merge
         else:
             result_df = df_merge
+
+        # Check if 空き家調査 is in input_source, indicating this is the final data run of E014
+        if '空き家調査' in input_source:
+            # matched_data_flagを更新: 2つのflagがすべて0の場合は0、それ以外は1
+            required_flags = ['suido_residence_flag', 'touki_residence_flag']
+            existing_flags = [flag for flag in required_flags if flag in result_df.columns]
+            
+            if len(existing_flags) > 0:
+                # matched_data_flagの計算
+                def calculate_matched_flag(row):
+                    # すべての存在するflagが0かチェック
+                    all_zero = all(row.get(flag, 0) == 0 for flag in existing_flags)
+                    return 0 if all_zero else 1
+                
+                result_df['matched_data_flag'] = result_df.apply(calculate_matched_flag, axis=1)
 
         if job_id:
             # progress_percent_job = progress_percent_job + progress_percent

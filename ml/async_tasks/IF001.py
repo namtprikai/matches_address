@@ -66,6 +66,7 @@ def main():
             'address_of_lot_number_type_file': json_dict.get('data', {}).get('address_of_lot_number', {}).get('type_file', 'csv'),
             'building_type_determination': json_dict.get('data', {}).get('building_type_determination', {}).get('path', None),
             'building_type_determination_columns': json_dict.get('data', {}).get('building_type_determination', {}).get('columns', {}),
+            'building_type_determination_values': json_dict.get('data', {}).get('building_type_determination', {}).get('residential_values', []),
             'building_type_determination_type_file': json_dict.get('data', {}).get('building_type_determination', {}).get('type_file', 'csv'),
         }
 
@@ -93,7 +94,7 @@ def main():
                 "touki_address": params.get("touki_columns", {}).get("address"),
                 "structure":  params.get("touki_columns", {}).get("structure_name"),
                 "registration_date":  params.get("touki_columns", {}).get("registration_date"),
-                "building_detail": params.get("touki_columns", {}).get("building_detail")
+                "building_detail": params.get("touki_columns", {}).get("building_detail", "建物情報_登記内容")
             },
             "akiya_result": {
                 "akiya_result_address": params.get("akiya_result_columns", {}).get("address", "住所")
@@ -121,7 +122,7 @@ def main():
             'suido_status': '水道',
             'touki': '建物情報',
             'akiya_result': '空き家調査',
-            'geocoding': 'ジオコーディングデータ',
+            'geocoding': '建物ポリゴンデータ',
         }
 
         main_data_type = 'suido_status'
@@ -203,8 +204,8 @@ def main():
             main_csv = output_e014
             progress_percent_job = progress_percent_job + progress_percent
             create_or_update_job(job_id, progress_percent_job)
-        building_type = params.get("building_type_determination_columns", {}).get("building_type", "建物種別")
-        filter_building_usage(output_e014, f"{output_directory}.csv", str(job_id), params.get('db_path'), building_type)
+
+        filter_building_usage(output_e014, f"{output_directory}.csv", str(job_id), params.get('db_path'))
 
         create_or_update_job(job_id, "complete")
         create_job_results(job_id, f"{random_str}.csv")
@@ -292,7 +293,7 @@ def e011(join_option, params, output_directory, job_id, columns):
 
         type_file = params.get('address_of_lot_number_type_file', 'csv')
 
-        output_path, join_ratio = process_spatial_join(
+        output_path, join_ratio, success_rate = process_spatial_join(
             output_path,
             address_of_lot_number,
             '愛知県',
@@ -305,6 +306,12 @@ def e011(join_option, params, output_directory, job_id, columns):
             '地番住所-緯度経度対応データ'
         )
 
+        res = {
+            'joining_rate': join_ratio,
+            'input_source': ["建物ポリゴンデータ", "地番住所-緯度経度対応データ"],
+            'success_rate': success_rate
+        }
+
         if job_id and task_id:
             create_or_update_job(job_id, 40)
             create_or_update_job_task(
@@ -313,7 +320,7 @@ def e011(join_option, params, output_directory, job_id, columns):
                 preprocess_type="e011",
                 error_code=None,
                 error_msg=None,
-                result=None,
+                result=json.dumps(res, ensure_ascii=False),
                 id=task_id,
             )
     else:
@@ -325,14 +332,16 @@ def e011(join_option, params, output_directory, job_id, columns):
         if params.get("building_type_determination_type_file") == 'csv':
             column_building_type_determination = {
                 "address": params.get("building_type_determination_columns", {}).get("address", "地番住所"),
-                "building_type": params.get("building_type_determination_columns", {}).get("building_type", "建物種別")
+                "building_type": params.get("building_type_determination_columns", {}).get("building_type", "建物種別"),
             }
+            building_type_values = params.get("building_type_determination_values", [])
 
             output_path = merge_building_type_determination(
                 output_path,
                 building_type_determination,
                 output_directory,
-                column_building_type_determination
+                column_building_type_determination,
+                building_type_values
             )
             
         else:
