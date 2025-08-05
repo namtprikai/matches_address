@@ -10,6 +10,8 @@ import { AreaPopup, type AreaProperties } from "../area-popup";
 import { type FeatureData } from "../_types";
 import { BATCH_SIZE } from "../_const";
 import { getFeatures } from "../_utils/get-features";
+import { createToggleClickHandler } from "../_utils/popup-dom-utils";
+import { POPUP_ELEMENT_IDS } from "../_const/popup-constants";
 
 type Props = {
   mapInstance: Map | null;
@@ -178,17 +180,25 @@ const _usePopupEffectWithFeature = ({
     );
 
     // 新たにポップアップ表示
-    const popup = new Popup()
-      .setLngLat(coordinates)
-      .setHTML(popupContent)
-      .addTo(mapInstance);
+    const popup = new Popup();
+    popup.on("open", () => {
+      const popupElement = popup.getElement();
+      const toggleButton = popupElement?.querySelector(
+        `#${POPUP_ELEMENT_IDS.TOGGLE_BUTTON}`,
+      ) as HTMLButtonElement;
+      if (toggleButton) {
+        const handleToggleClick = createToggleClickHandler(popup);
+        toggleButton.addEventListener("click", handleToggleClick);
+      }
+    });
+    popup.setLngLat(coordinates).setHTML(popupContent).addTo(mapInstance);
 
     popupRef.current = popup;
 
     // 移動する
     mapInstance.flyTo({
       center: coordinates,
-      padding: { bottom: 200 },
+      padding: { bottom: 280 },
     });
 
     return () => {
