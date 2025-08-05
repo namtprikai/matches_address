@@ -397,7 +397,7 @@ TRANSLATE_COLUMNS_BUILDING = {
     "lot_number_address_for_building_type": "地番住所_building_type_determination",
     "residential_address_plain": "住居表示住所",
     "lot_number_address_plain": "地番住所",
-    "building_id_address_of_lot_number": "building_id_from_lot_number_source",
+    "building_id_from_lot_number_source": "building_id_address_of_lot_number",
     "longitude_from_lot_number_source": "経度_address_of_lot_number",
     "latitude_from_lot_number_source": "緯度_address_of_lot_number",
     "lot_number_address_from_source": "地番住所_address_of_lot_number",
