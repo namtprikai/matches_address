@@ -2,6 +2,7 @@ import { basename } from "path";
 import { Open } from "unzipper";
 import { readCSVColumnValues } from "../utils/read-csv-column-values";
 import { getFilePathInDatabaseDirectory } from "../utils/get-file-path-in-database-directory";
+import { readShpColumnValues } from "../utils/read-shp-column-values";
 import { type IpcMainListener } from ".";
 
 export type readDatasetColumnValuesArgs = {
@@ -63,12 +64,12 @@ export const readDatasetColumnValues = (async (
     //   const result = await readGPKGColumnValues(filePath, columnName);
     //   return result;
     // }
-    // case "citygml":
-    //   return undefined;
-    // case "shapefile": {
-    //   const result = await readShpColumnValues(filePath, columnName);
-    //   return result;
-    // }
+    case "citygml":
+      return undefined;
+    case "shapefile": {
+      const result = await readShpColumnValues(filePath, columnName);
+      return result;
+    }
     default: {
       return undefined;
     }
