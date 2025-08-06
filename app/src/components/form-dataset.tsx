@@ -254,9 +254,14 @@ export const FormDataset = ({
             <Field
               label={
                 <TextWithTooltip
-                  /** @todo langを利用する */
-                  textNode="建物種別"
-                  tooltipContent="建物種別カラムから取得した値から利用するものを複数選択してください"
+                  textNode={
+                    lang.components.normalizationParameters.building_type_values
+                      .label
+                  }
+                  tooltipContent={
+                    lang.components.normalizationParameters.building_type_values
+                      .description
+                  }
                 />
               }
               style={{

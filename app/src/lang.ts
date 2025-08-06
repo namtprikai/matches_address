@@ -234,6 +234,11 @@ export const lang = {
         description:
           "【必須】インプットしたデータのなかから、建物種別を示すカラム（項目名）を選択してください。",
       },
+      building_type_values: {
+        label: "建物種別",
+        description:
+          "建物種別カラムから取得した値から利用するものを複数選択してください",
+      },
     },
     normalizationData: {
       residentRegistry: {
