@@ -13,6 +13,7 @@ import { THEME_COLORS } from "../config/theme-colors";
 import { type SelectRawDataSet } from "../schema";
 import { useDialogState } from "../hooks/use-dialog-state";
 import { useFetchDatasetColumns } from "../hooks/use-fetch-dataset-columns";
+import { useFetchDatasetColumnValues } from "../hooks/use-fetch-dataset-column-values";
 import { type PreprocessParameters } from "../@types/job-parameters";
 import { useFetchDatasetWithFilePath } from "../hooks/use-fetch-dataset-with-file-path";
 import { lang } from "../lang";
@@ -129,6 +130,28 @@ export const FormDataset = ({
     ? form?.watch(`data.${schemaKey}.input_file_type`)
     : undefined;
 
+  const noColumns = !dataSetColumns || dataSetColumns.length === 0;
+  const noCSV = inputFileType && inputFileType !== "csv";
+
+  /** 建物種別 */
+  const [residentialValueOptions, setResidentialValueOptions] = useState<
+    string[] | false
+  >(false);
+
+  // building_type カラムが選択されたときにその値を取得
+  const buildingTypeColumn = value?.columns?.building_type;
+  const { data: buildingTypeValues } = useFetchDatasetColumnValues({
+    filename: value?.path,
+    columnName: buildingTypeColumn,
+  });
+
+  // buildingTypeValues が更新されたら residentialValueOptions を更新
+  useEffect(() => {
+    if (schemaKey === "building_type_determination" && buildingTypeValues) {
+      setResidentialValueOptions(buildingTypeValues);
+    }
+  }, [buildingTypeValues, schemaKey]);
+
   return (
     <Card>
       <TextWithTooltip
@@ -184,9 +207,6 @@ export const FormDataset = ({
             if (!datasetInfo || !datasetInfo.hasColumns) return null;
 
             return datasetInfo.columns.map((columnInfo) => {
-              const noColumns = !dataSetColumns || dataSetColumns.length === 0;
-              const noCSV = inputFileType && inputFileType !== "csv";
-
               return (
                 <Field
                   key={columnInfo.key}
@@ -229,6 +249,35 @@ export const FormDataset = ({
               );
             });
           })()}
+
+          {schemaKey === "building_type_determination" && (
+            <Field
+              label={
+                <TextWithTooltip
+                  /** @todo langを利用する */
+                  textNode="建物種別"
+                  tooltipContent="建物種別カラムから取得した値から利用するものを複数選択してください"
+                />
+              }
+              style={{
+                marginLeft: tokens.spacingHorizontalL,
+              }}
+            >
+              <Dropdown
+                className={styles.dropdown}
+                disabled={!residentialValueOptions || noCSV}
+                multiselect
+                {...form?.register(`data.${schemaKey}.residential_values`)}
+              >
+                {residentialValueOptions &&
+                  residentialValueOptions.map((column) => (
+                    <Option key={column} text={column} value={column}>
+                      {column}
+                    </Option>
+                  ))}
+              </Dropdown>
+            </Field>
+          )}
         </div>
       </div>
       <DialogImportDataset

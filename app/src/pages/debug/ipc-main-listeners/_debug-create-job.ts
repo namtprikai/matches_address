@@ -264,6 +264,7 @@ const mockE001: PreprocessParameters = {
         address: "",
         building_type: "",
       },
+      residential_values: [],
     },
   },
 };

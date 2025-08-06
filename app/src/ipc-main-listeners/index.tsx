@@ -56,6 +56,7 @@ import { evaluateData } from "./ml/evaluate-data";
 import { selectBuildingsWithPagination } from "./select-buildings-with-pagination";
 import { selectAreasWithPagination } from "./select-areas-with-pagination";
 import { readDatasetColumns } from "./read-dataset-columns";
+import { readDatasetColumnValues } from "./read-dataset-column-values";
 import { execE001 } from "./ml/exec-e001";
 import { selectJobResults } from "./select-job-results";
 import { createNormalizedDatasets } from "./create-normalized-datasets";
@@ -91,6 +92,7 @@ export const ipcMainListeners = {
   updateResultViews,
   readResultViews,
   readDatasetColumns,
+  readDatasetColumnValues,
   selectResultView,
   deleteResultView,
   filterDataSetForTable,

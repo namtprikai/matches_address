@@ -100,6 +100,7 @@ export const schema = z.object({
         address: z.string(), // 住所  if csv file
         building_type: z.string(), // 建物種別
       }),
+      residential_values: z.array(z.string()), // 住宅地の値
     }),
   }),
 });

@@ -101,6 +101,7 @@ export const defaultNormalizationParameters: z.infer<
         address: "",
         building_type: "",
       },
+      residential_values: [],
     },
   },
 };
