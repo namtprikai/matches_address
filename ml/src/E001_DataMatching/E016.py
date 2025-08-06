@@ -1145,10 +1145,11 @@ def merge_building_type_determination(main_file_path: str, sub_file_path: str, o
                 value = row[building_type_col_renamed]
             
             # 値がbuilding_type_valuesに含まれているかチェック
-            if pd.isna(value) or value not in building_type_values:
+            if pd.isna(value):
                 return 0
-            else:
-                return 1
+            if building_type_values and value not in building_type_values:
+                return 0
+            return 1
         
         # building_typeカラムを作成
         result['building_type'] = result.apply(determine_building_type, axis=1)
@@ -1167,7 +1168,7 @@ def merge_building_type_determination(main_file_path: str, sub_file_path: str, o
             if pd.isna(value):
                 return True
             # building_type_valuesに含まれている場合は保持
-            if value in building_type_values:
+            if value in building_type_values or len(building_type_values) < 1:
                 return True
             # それ以外は削除
             return False
