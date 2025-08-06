@@ -315,8 +315,11 @@ class Summarization:
                     if file_extension == '.csv':
                         return pd.read_csv(path, encoding=encoding, **kwargs)
                     else:
-                        with fiona.Env(encoding=encoding):
-                            return gpd.read_file(path)
+                        try:
+                            return gpd.read_file(path, encoding=encoding)
+                        except:
+                            with fiona.Env(encoding=encoding):
+                                return gpd.read_file(path)
 
                 except UnicodeDecodeError:
                     # デコードエラーが発生した場合、次のエンコーディングを試す
@@ -324,6 +327,13 @@ class Summarization:
                 except ParserError:
                     # ParserErrorが発生した場合、次のエンコーディングを試す
                     continue
+
+            detected_encoding = detect_encoding(path)
+            if detected_encoding:
+                if file_extension == '.csv':
+                    return pd.read_csv(path, encoding=detected_encoding, **kwargs)
+                else:
+                    return gpd.read_file(path, encoding=encoding)
             
             # 適切なエンコーディングが見つからない場合、エラーを発生させる
             set_error(ERROR_00025, path)
@@ -415,7 +425,7 @@ def detect_encoding(file_path):
     """
     # ファイルの内容を読み込む
     with open(file_path, 'rb') as file:
-        raw_data = file.read()
+        raw_data = file.read(1000)
     # エンコーディングを検出して返す
     result = chardet.detect(raw_data)
     return result['encoding']
