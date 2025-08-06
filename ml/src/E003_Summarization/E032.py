@@ -347,6 +347,8 @@ class Summarization:
     def process(self):
         residence_gdf = pd.read_csv(self.INPUT_PATHS["akiya_pred"], encoding='utf-8-sig')
         # 'geometry'列をWKT形式からジオメトリに変換
+        if 'geometry_plateau' not in residence_gdf.columns:
+            residence_gdf['geometry_plateau'] = residence_gdf['geometry']
         residence_gdf['geometry'] = residence_gdf['geometry_plateau'].apply(wkt.loads)
         # GeoDataFrameに変換
         residence_gdf = gpd.GeoDataFrame(residence_gdf, geometry='geometry')
