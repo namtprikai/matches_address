@@ -95,7 +95,7 @@ export const fetchBuildingLineChartData = async ({
 
   // クエリのベース作成
   let query = db
-    .select({
+    .selectDistinct({
       /** data_set_detail_buildingsのColumn名とそれぞれのvalueに定義された値が一致していることが前提でrawを利用 */
       [xAxis.value]: sql.raw(`${xAxis.value}`).as(xAxis.value),
       [yAxis.value]: sql.raw(`${yAxis.value}`).as(yAxis.value),
