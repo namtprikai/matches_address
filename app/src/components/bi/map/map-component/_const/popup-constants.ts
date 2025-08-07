@@ -77,5 +77,9 @@ export const CURRENTLY_DISPLAYED_COLUMNS = {
     "water_disconnection_flag",
     "registration_date",
     "structure_name",
+    "outlier_flag",
+    "single_story_row_house_flag",
+    "matched_data_flag",
+    "buildingtype_determination_not_possible_flag",
   ] as const,
 } as const;

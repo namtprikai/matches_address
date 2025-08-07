@@ -67,6 +67,16 @@ const formatValue = (key: string, value: unknown): string => {
     return value === 0 ? "開" : "閉";
   }
 
+  // R7フラグの場合
+  if (
+    key === "outlier_flag" ||
+    key === "single_story_row_house_flag" ||
+    key === "matched_data_flag" ||
+    key === "buildingtype_determination_not_possible_flag"
+  ) {
+    return value === 1 ? "該当" : "非該当";
+  }
+
   // 数値の場合
   if (typeof value === "number") {
     // 小数点がある場合は適切に丸める

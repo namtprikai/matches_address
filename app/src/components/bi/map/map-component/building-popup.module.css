@@ -185,3 +185,13 @@
   overflow-y: auto;
   transition: transform 0.3s ease-in-out;
 }
+
+/* 推定不可時のグレーアウトスタイル */
+.unestimable {
+  color: #999;
+  background-color: #f5f5f5;
+}
+
+.unestimable > span {
+  background-color: #999;
+}

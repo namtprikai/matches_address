@@ -19,6 +19,48 @@ export const BuildingPopup = forwardRef<HTMLDivElement, Props>(
   ({ properties }, ref) => {
     const { predicted_probability } = properties;
 
+    // 推定不可の判定
+    const isUnestimable =
+      properties.outlier_flag === 1 ||
+      properties.single_story_row_house_flag === 1 ||
+      properties.matched_data_flag === 1;
+
+    // ツールチップのコンテンツを生成
+    const generateTooltipContent = (): JSX.Element => {
+      const flags = [
+        { label: "異常値フラグ", value: properties.outlier_flag },
+        {
+          label: "平屋長屋フラグ",
+          value: properties.single_story_row_house_flag,
+        },
+        {
+          label: "マッチングデータフラグ",
+          value: properties.matched_data_flag,
+        },
+        {
+          label: "建物種別判定不可フラグ",
+          value: properties.buildingtype_determination_not_possible_flag,
+        },
+      ];
+
+      return (
+        <div style={{ padding: "0px 4px" }}>
+          {flags.map((flag, index) => (
+            <div
+              key={index}
+              style={{
+                fontSize: "0.8em",
+                lineHeight: "normal",
+              }}
+            >
+              <strong>{flag.label}:</strong>{" "}
+              {flag.value === 1 ? "該当" : "非該当"}
+            </div>
+          ))}
+        </div>
+      );
+    };
+
     const {
       predictedProbabilityColorStyle,
       formattedPredictedProbability,
@@ -112,13 +154,24 @@ export const BuildingPopup = forwardRef<HTMLDivElement, Props>(
             predictedProbabilityColorStyle
               ? styles[predictedProbabilityColorStyle]
               : undefined,
+            isUnestimable ? styles.unestimable : undefined,
           )}
         >
           <span className={styles.circleIcon} />
           <div>
-            <span className={styles.predictedProbability}>
-              {formattedPredictedProbability}
-            </span>
+            {isUnestimable ? (
+              <div>
+                <span className={styles.predictedProbability}>推定不可</span>
+                <details>
+                  <summary>詳細</summary>
+                  {generateTooltipContent()}
+                </details>
+              </div>
+            ) : (
+              <span className={styles.predictedProbability}>
+                {formattedPredictedProbability}
+              </span>
+            )}
             <div className={styles.address}>
               {properties.normalized_address}
             </div>
