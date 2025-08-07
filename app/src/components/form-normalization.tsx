@@ -1,13 +1,18 @@
-import { Controller, useController } from "react-hook-form";
+import { Controller, type FieldErrors, useController } from "react-hook-form";
 import { makeStyles, tokens } from "@fluentui/react-components";
-import { useFormNormalization } from "../hooks/use-form-normalization";
+import {
+  type FormNormalizationType,
+  useFormNormalization,
+} from "../hooks/use-form-normalization";
 import { type PreprocessParameters } from "../@types/job-parameters";
 import {
   CATEGORY_DEFAULT_DATASETS,
   CATEGORY_ADDRESS_DATASETS,
   CATEGORY_DEFAULT_DATASETS_WITH_LARGE,
   CATEGORY_ADDRESS_DATASETS_WITH_LARGE,
+  dataKeyMapping,
 } from "../config/dataset-configs";
+import { lang } from "../lang";
 import { FormDataset } from "./form-dataset";
 import { FormNormalizationSettings } from "./form-normalization-settings";
 import { ErrorMessage } from "./error-message";
@@ -58,8 +63,6 @@ export const FormNormalization = ({
     formState: { errors },
   } = form;
 
-  const hasErrors = Object.keys(errors).length > 0;
-
   const onSubmit = handleSubmit(async (data) => {
     await window.ipcRenderer.invoke("execE001", {
       parameters: {
@@ -80,11 +83,14 @@ export const FormNormalization = ({
     control,
   });
 
+  const errorMessages = handleErrorMessage(errors);
+
   return (
     <form className={styles.root} id={formId} onSubmit={onSubmit}>
-      {hasErrors && (
-        <ErrorMessage msg="エラーが発生しました。フォームの内容を確認してください。" />
-      )}
+      {errorMessages &&
+        errorMessages.map((msg, index) => (
+          <ErrorMessage key={index} msg={msg} />
+        ))}
       <div className={styles.category}>
         <div className={styles.categoryTitle}>基本処理</div>
         {CATEGORY_DEFAULT_DATASETS_WITH_LARGE.map((config) => (
@@ -171,4 +177,41 @@ export const FormNormalization = ({
       />
     </form>
   );
+};
+
+const handleErrorMessage = (
+  errors: FieldErrors<FormNormalizationType>,
+): string[] | null => {
+  if (Object.keys(errors).length === 0) {
+    return null;
+  }
+
+  const messages: string[] = [];
+  // 設定エラーの処理
+  if (errors.settings) {
+    const settingsMessages = {
+      required: "設定項目は必須です。内容を入力してください。",
+      invalid: "設定項目に無効な値があります。内容を確認してください。",
+    };
+    const message =
+      settingsMessages[errors.settings.type as keyof typeof settingsMessages] ||
+      "設定にエラーが発生しました。内容を確認してください。";
+    messages.push(message);
+  }
+
+  // データエラーの処理
+  if (errors.data) {
+    Object.entries(dataKeyMapping).forEach(([field, labelKey]) => {
+      if (errors.data?.[field as keyof typeof errors.data]) {
+        const label = lang.components.normalizationData[labelKey].label;
+        messages.push(
+          `${label}の入力にエラーが発生しました。内容を確認してください。`,
+        );
+      }
+    });
+  }
+
+  return messages.length > 0
+    ? messages
+    : ["不明のエラーが発生しました。フォームの内容を確認してください。"];
 };

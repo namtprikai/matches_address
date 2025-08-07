@@ -272,7 +272,12 @@ export const FormDataset = ({
                 className={styles.dropdown}
                 disabled={!residentialValueOptions || noCSV}
                 multiselect
-                {...form?.register(`data.${schemaKey}.residential_values`)}
+                onOptionSelect={(_, data) => {
+                  form?.setValue(
+                    `data.${schemaKey}.residential_values`,
+                    data.selectedOptions,
+                  );
+                }}
               >
                 {residentialValueOptions &&
                   residentialValueOptions.map((column) => (

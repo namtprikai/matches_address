@@ -11,7 +11,7 @@ import { extractNormalizationDatasetColumns } from "../utils/extract-dataset-col
 type DataKeys = keyof FormNormalizationType["data"];
 
 // データキーのマッピング（スキーマのスネークケース → UIのキャメルケース）
-const dataKeyMapping = {
+export const dataKeyMapping = {
   resident_registry: "residentRegistry",
   water_status: "waterStatus",
   water_usage: "waterUsage",
