@@ -497,12 +497,6 @@ def process_and_predict(input_folder, input_file, model_directory, threshold, ou
         input_data = read_csv(input_path)
 
 
-
-        # '正規化住所'の重複を確認し、3件以上の重複がある場合、該当するすべてのレコードを削除
-        duplicate_counts = input_data['正規化住所'].value_counts()  # 各値の出現回数を取得
-        to_remove = duplicate_counts[duplicate_counts >= 2].index  # 3件以上の値を取得
-        if any(to_remove) and len(to_remove) > 0:
-            input_data = input_data[~input_data['正規化住所'].isin(to_remove)].reset_index(drop=True)  # 該当値を除外
         # トレーニング時との一貫性を保つため、gml_idが存在しない場合はインデックスから作成
         if 'gml_id' not in input_data.columns:
             input_data['gml_id'] = input_data.index

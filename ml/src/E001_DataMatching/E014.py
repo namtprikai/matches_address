@@ -136,6 +136,35 @@ def get_column_names(csv_file: str) -> List[str]:
         # エラーが発生した場合、メッセージを表示して空のリストを返す
         return []
 
+
+def normalize_text(text):
+    """
+    テキストを正規化する（空白文字の除去）
+    
+    Parameters
+    ----------
+    text : str
+        正規化するテキスト
+    
+    Returns
+    -------
+    str
+        正規化されたテキスト
+    """
+    if pd.isna(text) or text is None:
+        return text
+    
+    # 文字列に変換
+    text = str(text)
+    
+    # 先頭末尾の空白文字を除去
+    text = text.strip()
+    
+    # 連続する空白文字を単一の空白に置換
+    text = re.sub(r'\s+', ' ', text)
+    
+    return text
+
 def normalize_dates(df, column, formats=['%Y/%m/%d', '%d/%m/%Y', '%Y-%m-%d', '%m/%d/%Y', '%Y%m%d']):
     # Initialize the temporary column with NaN values
     temp_column = f'{column}_normalized'
@@ -171,8 +200,8 @@ def filter_building_usage(input_path: str, output_path: str, job_id: str, db_pat
 
     df['single_story_row_house_flag'] = 0
     if 'usage' in df.columns:
-        # Basic condition: usage must be '戸建'
-        basic_condition = df['usage'].isin(['戸建'])
+        # Basic condition: usage must be '戸建' or '住宅'
+        basic_condition = df['usage'].isin(['戸建', '住宅'])
         
         # Additional condition: 世帯コード or 水道番号_suido_residence duplicates on 正規化住所 greater than 2
         additional_condition = False
@@ -258,19 +287,8 @@ def embedding_address(main_csv: io.BytesIO | str, sub_csv: io.BytesIO | str, mai
         else:
             sub_df = read_data(sub_csv)
 
-        if '建物ポリゴンデータ' in input_source and '水道' in input_source:
-            # 日付のNormalize化をし、年月を取得
-            main_start_date_col = [col for col in ['使用開始日', '住定異動年月日', '登記日付' ] if col in main_df.columns][0]
-            main_df = normalize_dates(main_df,main_start_date_col)
-            main_df['開始月'] = pd.to_datetime(main_df[main_start_date_col]).dt.strftime("%Y-%m")
-            sub_start_date_col = [col for col in ['使用開始日', '住定異動年月日', '登記日付' ] if col in sub_df.columns][0]
-            sub_df = normalize_dates(sub_df,sub_start_date_col)
-            sub_df['開始月'] = pd.to_datetime(sub_df[sub_start_date_col]).dt.strftime('%Y-%m')
-
-
         # データの行数、完全一致割合の計算に使用
         data_rows = len(main_df)
-        sub_data_rows = len(sub_df)
         
         # アップロードされた元のファイル名を使用して拡張子を除去
         if hasattr(main_csv, 'name'):
@@ -302,6 +320,10 @@ def embedding_address(main_csv: io.BytesIO | str, sub_csv: io.BytesIO | str, mai
         main_df[main_flag_name] = 0
         main_df[sub_flag_name] = 0
 
+        # テキスト正規化を適用
+        main_df[main_column] = main_df[main_column].apply(normalize_text)
+        sub_df[sub_column] = sub_df[sub_column].apply(normalize_text)
+        
         # 名寄せ対象になる行を元情報として残す
         sub_df[f'名寄せ元情報_{sub_csv_name}'] = sub_df[sub_column]
         sub_df.rename(columns={sub_column: main_column}, inplace=True)
@@ -310,88 +332,33 @@ def embedding_address(main_csv: io.BytesIO | str, sub_csv: io.BytesIO | str, mai
             progress_percent_job = progress_percent_job + progress_percent
             create_or_update_job(job_id, progress_percent_job)
             create_or_update_job_task(job_id, progress_percent="30", preprocess_type="e014", error_code=None, error_msg=None, result=None, id= task_id)
-        if '建物ポリゴンデータ' in input_source and '水道' in input_source:
-            # 水道で1つの住所に複数の水道番号が結びついている住所を取り出す
-            multi_address_in_main = main_df[main_column].value_counts()[main_df[main_column].value_counts()>1].index
-            main_df_single = main_df.loc[~main_df[main_column].isin(multi_address_in_main)].copy().reset_index(drop=True)
-            main_df_multi = main_df.loc[main_df[main_column].isin(multi_address_in_main)].copy().reset_index(drop=True)
-
-            # 単一住所のレコードを住基と完全一致で結合させる
-            main_single_sub_merge = main_df_single.merge(sub_df, on=main_column, how='inner')
-
-            search_cols = [ "世帯コード", "水道番号", "使用開始日" , "使用中止日", "閉栓フラグ", "最大使用水量",
-                        "平均使用水量", "最小使用水量", "合計使用水量", "水道使用量変化率", "開始月"]
-
-            merged_df_col_dict = {}
-
-            for colname in search_cols:
-                tar_colname_list = [ col for col in main_single_sub_merge.columns if colname in col ]
-                if len(tar_colname_list) > 0:
-                    merged_df_col_dict[colname] = tar_colname_list[0]
-                else:
-                    merged_df_col_dict[colname] = colname
-
-            # 複数住所のレコードを水道使用開始月と住定年月が同じのレコードのみで結びつける（family_thresh以上は排除）
-            main_multi_sub_merge = pd.DataFrame(columns = main_single_sub_merge.columns)
-            no_juki = []
-            over_thresh_building = []
-            for address in multi_address_in_main:
-                tar_main = main_df_multi.loc[main_df_multi[main_column]==address].sort_values([main_column,merged_df_col_dict['開始月']]).reset_index(drop=True)
-                tar_sub = sub_df.loc[sub_df[main_column]==address].sort_values([main_column,f"開始月_{sub_csv_name}"]).reset_index(drop=True)
-                if len(tar_sub) == 0:
-                    no_juki.append(address)
-                elif len(tar_sub) == 1:
-                    tar_merged = tar_main.iloc[[-1]].merge(tar_sub, on=main_column, how='inner')
-                    main_multi_sub_merge = pd.concat([main_multi_sub_merge,tar_merged ])
-                else:
-                    tar_merged = tar_main.merge(tar_sub.drop(main_column, axis=1), left_on=merged_df_col_dict['開始月'], right_on=f"開始月_{sub_csv_name}",  how='inner')
-                    main_multi_sub_merge = pd.concat([main_multi_sub_merge,tar_merged ])
-
-            # 上記二つのマージ済みデータを合算
-            try:
-                juki_suido_merged = pd.concat([main_single_sub_merge.loc[main_single_sub_merge[merged_df_col_dict["世帯コード"]].notnull()],
-                                          main_multi_sub_merge.loc[main_multi_sub_merge[merged_df_col_dict["世帯コード"]].notnull()]], ignore_index=True)
-            except NameError:
-                juki_suido_merged = main_single_sub_merge.loc[main_single_sub_merge[merged_df_col_dict["世帯コード"]].notnull()].reset_index()
-
-            # 一つの世帯コードに複数の水道番号が紐づいている場合、水道番号を一つに集計
-            setai_multi_ids = juki_suido_merged.groupby(merged_df_col_dict["世帯コード"])[merged_df_col_dict['水道番号']].count()[juki_suido_merged.groupby(merged_df_col_dict["世帯コード"])[merged_df_col_dict['水道番号']].count()>1].index
-
-            juki_suido_merged_single = juki_suido_merged.loc[~juki_suido_merged[merged_df_col_dict["世帯コード"]].isin(setai_multi_ids)]
-            juki_suido_merged_multi = juki_suido_merged.loc[juki_suido_merged[merged_df_col_dict["世帯コード"]].isin(setai_multi_ids)]
-
-            suido_groupby_calcs = {
-                merged_df_col_dict['水道番号']:'first', '正規化住所':pd.Series.mode, merged_df_col_dict['使用開始日']:'max',
-                merged_df_col_dict['使用中止日']:'max', merged_df_col_dict['閉栓フラグ']:'max',
-                merged_df_col_dict['最大使用水量']:'max', merged_df_col_dict['平均使用水量']:'mean',
-                merged_df_col_dict['最小使用水量']:'min', merged_df_col_dict['合計使用水量']:'sum', merged_df_col_dict['水道使用量変化率']:'mean',
-                merged_df_col_dict['開始月']:'min'
-            }
-            juki_suido_merged_multi[merged_df_col_dict["使用開始日"]] = pd.to_datetime(juki_suido_merged_multi[merged_df_col_dict["使用開始日"]])
-            juki_suido_merged_multi[merged_df_col_dict["使用中止日"]] = pd.to_datetime(juki_suido_merged_multi[merged_df_col_dict["使用中止日"]])
-            juki_suido_merged_multi[merged_df_col_dict["開始月"]] = pd.to_datetime(juki_suido_merged_multi[merged_df_col_dict["開始月"]])
-            juki_suido_merged_multi[merged_df_col_dict["閉栓フラグ"]] = juki_suido_merged_multi[merged_df_col_dict["閉栓フラグ"]].astype('bool')
-
-            juki_suido_merged_multi_grpd = juki_suido_merged_multi.groupby(merged_df_col_dict["世帯コード"])[list(suido_groupby_calcs.keys())].agg(suido_groupby_calcs).reset_index(drop=False)
-            juki_suido_merged_multi_organized = juki_suido_merged_multi.drop(list(suido_groupby_calcs.keys()),axis=1).drop_duplicates(merged_df_col_dict["世帯コード"]).merge(juki_suido_merged_multi_grpd, on=merged_df_col_dict["世帯コード"])
-
-            df_merge = pd.concat([juki_suido_merged_single,juki_suido_merged_multi_organized], ignore_index=True)
-
+        
+        # 完全一致による結合
+        sub_column_nenamed = [ col for col in sub_df.columns if new_sub_column in col ][0]
+        sub_df = sub_df.drop_duplicates(sub_column_nenamed, keep='first')
+        sub_data_rows = len(sub_df)
+        if ngram == 0:
+            df_merge = main_df.merge(sub_df, on=main_column, how='left')
         else:
-            # 完全一致による結合
-            sub_column_nenamed = [ col for col in sub_df.columns if new_sub_column in col ][0]
-            sub_df = sub_df.drop_duplicates(sub_column_nenamed, keep='first')
-            if ngram == 0:
-                df_merge = main_df.merge(sub_df, on=main_column, how='left')
-            else:
-                df_merge = main_df.merge(sub_df, on=main_column, how='inner')
-
+            df_merge = main_df.merge(sub_df, on=main_column, how='inner')
 
         merged_rows = len(df_merge)
         # N-gramで名寄せできた行数をカウント
         ngram_rows = 0
         similarity_scores = []  # 類似度スコアを保存するリスト
         matched_rows = 0
+        
+        # N-gramで使用されたsub recordsを追跡する変数を初期化
+        used_sub_indices = set()
+        
+        # sub側の参加率計算用: 完全一致で使われたユニークなsub recordsをカウント
+        if ngram == 0:
+            # left joinの場合、マッチしたユニークなアドレス数をカウント
+            matched_addresses = df_merge[df_merge[f'名寄せ元情報_{sub_csv_name}'].notna()][main_column]
+            sub_matched_count = matched_addresses.nunique()
+        else:
+            # inner joinの場合、マッチしたユニークなアドレス数をカウント
+            sub_matched_count = df_merge[main_column].nunique()
 
         if ngram != 0:
             # 未結合のデータを抽出
@@ -414,6 +381,9 @@ def embedding_address(main_csv: io.BytesIO | str, sub_csv: io.BytesIO | str, mai
                 # 疎行列に変換してメモリ効率を改善
                 main_df_ngram_matrix = csr_matrix(main_df_ngram_matrix)
                 sub_df_ngram_matrix = csr_matrix(sub_df_ngram_matrix)
+                
+                # N-gramで使用されたsub recordsを追跡
+                used_sub_indices = set()
 
                 # バッチ処理による類似度計算
                 for start in range(0, main_df_ngram_matrix.shape[0], batch_size):
@@ -425,18 +395,19 @@ def embedding_address(main_csv: io.BytesIO | str, sub_csv: io.BytesIO | str, mai
                     # バッチ内の各行ごとに処理
                     for i, similarities in enumerate(batch_similarities):
                         top_indices = similarities.argsort()[-3:][::-1]  # 上位3件を取得
-        
-                        if similarities[top_indices[0]] >= threshold:
+                        best_sub_index = top_indices[0]
+                        if similarities[best_sub_index] >= threshold:
                             row_index = start + i  # バッチの中での行番号をグローバルに変換
                             for col in sub_df.columns:
-                                main_df.at[row_index, col] = sub_df.iloc[top_indices[0]][col]
-                            similarity_scores.append(similarities[top_indices[0]])  # 類似度スコアを追加
+                                main_df.at[row_index, col] = sub_df.iloc[best_sub_index][col]
+                            similarity_scores.append(similarities[best_sub_index])  # 類似度スコアを追加
                             ngram_rows += 1  # この行が正しく名寄せされた場合にカウント
+                            used_sub_indices.add(best_sub_index)  # 使用されたsub recordを記録
                         else:
                             row_index = start + i
                             main_df.at[row_index, f'名寄せ元情報_{sub_csv_name}'] = ""
                             main_df.at[row_index, f'{sub_flag_name}'] = 1
-                            similarity_scores.append(similarities[top_indices[0]])  # 閾値未満の場合スコアは0
+                            similarity_scores.append(similarities[best_sub_index])  # 閾値未満の場合スコアは0
                         
                 # 類似度スコアを結果データフレームに追加
                 main_df[f'similarity_score_{sub_csv_name}'] = similarity_scores
@@ -476,37 +447,31 @@ def embedding_address(main_csv: io.BytesIO | str, sub_csv: io.BytesIO | str, mai
                 result_df['matched_data_flag'] = result_df.apply(calculate_matched_flag, axis=1)
 
         if job_id:
-            # progress_percent_job = progress_percent_job + progress_percent
+            progress_percent_job = progress_percent_job + progress_percent
             create_or_update_job(job_id, progress_percent_job)
             create_or_update_job_task(job_id, progress_percent="90", preprocess_type="e014", error_code=None, error_msg=None, result=None, id= task_id)
         # 結果をCSVファイルとして保存
         saved_file_path = save_csv(result_df, output_path)
-
-        # 結果の表示
-        complete_match_ratio = f'結合元データとの完全一致割合: {(merged_rows) / data_rows * 100:.2f}%'
-        threshold_match_ratio = f'結合元データとの閾値以上結合割合: {(merged_rows + matched_rows) / data_rows * 100:.2f}%'
-        sub_complete_match_ratio = f'結合先データとの完全一致割合: {(merged_rows + matched_rows) / sub_data_rows * 100:.2f}%'
-
-        # 結果の表示
-        complete_match_ratio = f'結合元データとの完全一致割合: {merged_rows / data_rows * 100:.2f}%'
-        if ngram != 0:
-            threshold_match_ratio = f'結合元データとの閾値以上結合割合: {(merged_rows + ngram_rows) / data_rows * 100:.2f}%'
-        else:
-            threshold_match_ratio = f'結合元データとの閾値以上結合割合: {merged_rows / data_rows * 100:.2f}%'
-        sub_complete_match_ratio = f'結合先データとの完全一致割合: {merged_rows / sub_data_rows * 100:.2f}%'
         
-        if ngram == 0:
-            ngram_rows = 0
-            threshold_match_ratio = complete_match_ratio
+        # sub側の参加率を正しく計算
+        ngram_sub_used = len(used_sub_indices) if ngram != 0 else 0
+        total_sub_matched = sub_matched_count + ngram_sub_used
+        
+        # 論理的にありえない場合の修正
+        if total_sub_matched > sub_data_rows:
+            total_sub_matched = min(total_sub_matched, sub_data_rows)
+        
+        sub_participation_rate = total_sub_matched / sub_data_rows * 100 if sub_data_rows > 0 else 0
+        
         res = {
-            'joining_rate': (merged_rows + ngram_rows) / data_rows * 100,
+            'joining_rate': sub_participation_rate,  # sub側の参加率
             'input_source': input_source,
-            'success_rate': f"{(merged_rows + ngram_rows)}件/{data_rows}件中"
+            'success_rate': f"{total_sub_matched}件/{sub_data_rows}件中"
         }
         if job_id:
             create_or_update_job_task(job_id, progress_percent="100", preprocess_type="e014", error_code=None, error_msg=None, result=json.dumps(res, ensure_ascii=False), id= task_id, is_finish=True)
 
-        return saved_file_path, f"{complete_match_ratio}\n{threshold_match_ratio}\n{sub_complete_match_ratio}"
+        return saved_file_path
     except Exception as e:
         if ERROR_CODE is None:
             set_error(ERROR_00013)

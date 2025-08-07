@@ -241,51 +241,70 @@ class CleanData:
         str
             変換された住所
         """
-        if isinstance(address, str):        
-            # 都道府県名リスト
-            prefectures = [
-                "北海道", "青森県", "岩手県", "宮城県", "秋田県", "山形県", "福島県",
-                "茨城県", "栃木県", "群馬県", "埼玉県", "千葉県", "東京都", "神奈川県",
-                "新潟県", "富山県", "石川県", "福井県", "山梨県", "長野県", "岐阜県",
-                "静岡県", "愛知県", "三重県", "滋賀県", "京都府", "大阪府", "兵庫県",
-                "奈良県", "和歌山県", "鳥取県", "島根県", "岡山県", "広島県", "山口県",
-                "徳島県", "香川県", "愛媛県", "高知県", "福岡県", "佐賀県", "長崎県",
-                "熊本県", "大分県", "宮崎県", "鹿児島県", "沖縄県"
-            ]
-            # 都道府県名を削除
-            pattern = "^(" + "|".join(map(re.escape, prefectures)) + ")"
-            address = re.sub(pattern, "", address)
-            
-            # 市名を削除（最初に出現する[市]で終わる部分）
-            address = re.sub(r'[^\s]+?[市]', '', address, count=1)
-            
-            # 全角・半角スペースを削除
-            address = re.sub(r'[\s　]+', '', address)
-            
-            # ハイフンを半角ハイフン（U+002D）に変換
-            address = re.sub(r'[－—―−]', '-', address)
+        try:
+            if isinstance(address, str):        
+                # 都道府県名リスト
+                prefectures = [
+                    "北海道", "青森県", "岩手県", "宮城県", "秋田県", "山形県", "福島県",
+                    "茨城県", "栃木県", "群馬県", "埼玉県", "千葉県", "東京都", "神奈川県",
+                    "新潟県", "富山県", "石川県", "福井県", "山梨県", "長野県", "岐阜県",
+                    "静岡県", "愛知県", "三重県", "滋賀県", "京都府", "大阪府", "兵庫県",
+                    "奈良県", "和歌山県", "鳥取県", "島根県", "岡山県", "広島県", "山口県",
+                    "徳島県", "香川県", "愛媛県", "高知県", "福岡県", "佐賀県", "長崎県",
+                    "熊本県", "大分県", "宮崎県", "鹿児島県", "沖縄県"
+                ]
+                # 都道府県名を削除
+                pattern = "^(" + "|".join(map(re.escape, prefectures)) + ")"
+                address = re.sub(pattern, "", address)
                 
-            # 丁目をハイフンに変換
-            address = re.sub(r"(\d+)丁目", r"\1-", address)
-            
-            # 番地をハイフンに変換
-            address = re.sub(r"(\d+)番地の(\d+号?)", r"\1-\2", address)
-            address = re.sub(r"(\d+)番地?(\d+号?)", r"\1-\2", address)
-            address = re.sub(r"(\d+)番地?$", r"\1", address)
-            
-            # 連続する半角ハイフンを一つに統合
-            address = re.sub(r'-+', '-', address)
-            
-            # 末尾のハイフンを削除
-            address = re.sub(r'-$', '', address)
-            
-            # すべてのピリオド（半角と全角）を削除
-            address = re.sub(r'[\u002E\uFF0E]', '', address)
-            
-            # 「〇丁目」の漢数字部分を半角数字に変換
-            address = re.sub(r'([一二三四五六七八九十]+)丁目', kanji_to_chome, address)
+                # 市名を削除（最初に出現する[市]で終わる部分）
+                address = re.sub(r'[^\s]+?[市]', '', address, count=1)
+                
+                # 全角・半角スペースを削除
+                address = re.sub(r'[\s　]+', '', address)
+                
+                # ハイフンを半角ハイフン（U+002D）に変換
+                address = re.sub(r'[－—―−]', '-', address)
 
-        return address
+                # 3丁目45-21 → 3-45-21 の場合
+                address = re.sub(r"(\d+)丁目(\d+)-", r"\1-\2-", address)
+                # 3丁目45 → 3-45 の場合（ハイフンなし）
+                address = re.sub(r"(\d+)丁目(\d+)", r"\1-\2", address)
+                # 丁目をハイフンに変換
+                address = re.sub(r"(\d+)丁目", r"\1-", address)
+                
+                # 番地をハイフンに変換
+                address = re.sub(r"(\d+)番地の(\d+号?)", r"\1-\2", address)
+                address = re.sub(r"(\d+)番地?(\d+号?)", r"\1-\2", address)
+                address = re.sub(r"(\d+)番地?$", r"\1", address)
+
+                # 号を除去
+                address = re.sub(r"(\d+)号", r"\1", address)
+
+                # 字を正規化 (東幸町字大山 → 東幸町大山)
+                address = re.sub(r"字", "", address)
+                
+                # 連続する半角ハイフンを一つに統合
+                address = re.sub(r'-+', '-', address)
+                
+                # 末尾のハイフンを削除
+                address = re.sub(r'-$', '', address)
+                
+                # すべてのピリオド（半角と全角）を削除
+                address = re.sub(r'[\u002E\uFF0E]', '', address)
+                
+                # 「〇丁目」の漢数字部分を半角数字に変換
+                address = re.sub(r'([一二三四五六七八九十]+)丁目', kanji_to_chome, address)
+                
+                # 先頭末尾の空白文字を除去
+                address = address.strip()
+                
+                # 連続する空白文字を単一の空白に置換
+                address = re.sub(r'\s+', ' ', address)
+
+            return address
+        except:
+            return address
 
     @staticmethod
     def normalize_text(text):
@@ -469,6 +488,7 @@ class EachFileProcessor(DataProcessor):
                         .apply(CleanData.convert_fullwidth_to_halfwidth_digits)
                         .apply(CleanData.convert_halfwidth_to_fullwidth)
                         .apply(CleanData.replace_single_katakana)
+                        .apply(CleanData.convert_address)
                         .apply(CleanData.convert_address))
             
             # 処理結果をCSVファイルとして保存
@@ -508,6 +528,7 @@ class EachFileProcessor(DataProcessor):
                             .apply(CleanData.convert_fullwidth_to_halfwidth_digits)
                             .apply(CleanData.convert_halfwidth_to_fullwidth)
                             .apply(CleanData.replace_single_katakana)
+                            .apply(CleanData.convert_address)
                             .apply(CleanData.convert_address))
                 
                 df = df.rename(columns=rename_columns)

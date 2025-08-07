@@ -122,7 +122,7 @@ def main():
             'suido_status': '水道',
             'touki': '建物情報',
             'akiya_result': '空き家調査',
-            'geocoding': '建物ポリゴンデータ',
+            'geocoding': 'リバースジオコーディング済建物ポリゴンデータ',
         }
 
         main_data_type = 'suido_status'
@@ -308,7 +308,7 @@ def e011(join_option, params, output_directory, job_id, columns):
 
         res = {
             'joining_rate': join_ratio,
-            'input_source': ["建物ポリゴンデータ", "地番住所-緯度経度対応データ"],
+            'input_source': ["リバースジオコーディング済建物ポリゴンデータ", "地番住所-緯度経度対応データ"],
             'success_rate': success_rate
         }
 
