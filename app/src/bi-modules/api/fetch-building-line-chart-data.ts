@@ -10,6 +10,7 @@ import {
   or,
   type SQL,
   sql,
+  isNull,
 } from "drizzle-orm";
 import { db } from "../../utils/db";
 import { type LineView } from "../interfaces/view";
@@ -105,10 +106,43 @@ export const fetchBuildingLineChartData = async ({
 
   const queryWheres: (SQL<unknown> | undefined)[] = [
     eq(data_set_detail_buildings.data_set_result_id, dataSetResultId),
+    // 推定不可データを除外（outlier_flag, single_story_row_house_flag, matched_data_flagがすべて0または null）
+    and(
+      or(
+        eq(data_set_detail_buildings.outlier_flag, 0),
+        isNull(data_set_detail_buildings.outlier_flag),
+      ),
+      or(
+        eq(data_set_detail_buildings.single_story_row_house_flag, 0),
+        isNull(data_set_detail_buildings.single_story_row_house_flag),
+      ),
+      or(
+        eq(data_set_detail_buildings.matched_data_flag, 0),
+        isNull(data_set_detail_buildings.matched_data_flag),
+      ),
+    ),
   ];
 
   const allQuery = query
-    .where(eq(data_set_detail_buildings.data_set_result_id, dataSetResultId))
+    .where(
+      and(
+        eq(data_set_detail_buildings.data_set_result_id, dataSetResultId),
+        and(
+          or(
+            eq(data_set_detail_buildings.outlier_flag, 0),
+            isNull(data_set_detail_buildings.outlier_flag),
+          ),
+          or(
+            eq(data_set_detail_buildings.single_story_row_house_flag, 0),
+            isNull(data_set_detail_buildings.single_story_row_house_flag),
+          ),
+          or(
+            eq(data_set_detail_buildings.matched_data_flag, 0),
+            isNull(data_set_detail_buildings.matched_data_flag),
+          ),
+        ),
+      ),
+    )
     .as("allQuery");
   const allCount = await db.select({ count: count() }).from(allQuery);
 
