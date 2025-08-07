@@ -452,6 +452,21 @@ export const data_set_detail_buildings = sqliteTable(
     extension_status: integer("extension_status"), // 1: 増築がある / 0: 増築がない
     matched_data_flag: integer("matched_data_flag"), // 1: 結合不可 / 0: 結合成功
 
+    latitude_for_building_type: text("latitude_for_building_type"), // 緯度_building_type_determination
+    longitude_for_building_type: text("longitude_for_building_type"), // 経度_building_type_determination
+    lot_number_address_for_building_type: text(
+      "lot_number_address_for_building_type",
+    ), // 地番住所_building_type_determination
+    residential_address_plain: text("residential_address_plain"), // 住居表示住所
+    lot_number_address_plain: text("lot_number_address_plain"), // 地番住所
+    building_id_from_lot_number_source: text(
+      "building_id_from_lot_number_source",
+    ), // building_id_address_of_lot_number
+    longitude_from_lot_number_source: text("longitude_from_lot_number_source"), // 経度_address_of_lot_number
+    latitude_from_lot_number_source: text("latitude_from_lot_number_source"), // 緯度_address_of_lot_number
+    lot_number_address_from_source: text("lot_number_address_from_source"), // 地番住所_address_of_lot_number
+    distance: text("distance"), // distance
+
     created_at: text("created_at")
       .default(sql`(CURRENT_TIMESTAMP)`)
       .notNull(),

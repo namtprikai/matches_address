@@ -344,6 +344,38 @@ const buildingMetadata: Record<keyof SelectDataSetDetailBuilding, Item> = {
     label: "結合不可フラグ",
   },
 
+  /** 新規追加カラム */
+  latitude_for_building_type: {
+    label: "緯度_building_type_determination",
+  },
+  longitude_for_building_type: {
+    label: "経度_building_type_determination",
+  },
+  lot_number_address_for_building_type: {
+    label: "地番住所_building_type_determination",
+  },
+  residential_address_plain: {
+    label: "住居表示住所",
+  },
+  lot_number_address_plain: {
+    label: "地番住所",
+  },
+  building_id_from_lot_number_source: {
+    label: "building_id_address_of_lot_number",
+  },
+  longitude_from_lot_number_source: {
+    label: "経度_address_of_lot_number",
+  },
+  latitude_from_lot_number_source: {
+    label: "緯度_address_of_lot_number",
+  },
+  lot_number_address_from_source: {
+    label: "地番住所_address_of_lot_number",
+  },
+  distance: {
+    label: "distance",
+  },
+
   created_at: {
     label: "created_at",
   },
