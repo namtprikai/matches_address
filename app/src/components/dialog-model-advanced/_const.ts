@@ -1,0 +1,183 @@
+import { type FieldPath } from "react-hook-form";
+import { type z } from "zod";
+import { type schema as formModelCreateSchema } from "../../hooks/use-form-model-create";
+import { lang } from "../../lang";
+
+export type FormType = z.infer<typeof formModelCreateSchema>;
+
+type AdvancedField = {
+  key: FieldPath<FormType["settings"]["advanced"]>;
+  label: string;
+  placeholder: string;
+  step?: string;
+  type: "number" | "checkbox";
+  description?: string;
+  category?: string;
+  max?: number;
+  min?: number;
+};
+
+export const FIELDS: AdvancedField[] = [
+  {
+    key: "test_size",
+    label: lang.components["dialog-model-advanced"].test_size.label,
+    description: lang.components["dialog-model-advanced"].test_size.description,
+    placeholder: "0.0",
+    step: "0.1",
+    type: "number",
+  },
+  {
+    key: "n_splits",
+    label: lang.components["dialog-model-advanced"].n_splits.label,
+    description: lang.components["dialog-model-advanced"].n_splits.description,
+    placeholder: "0",
+    step: "1",
+    type: "number",
+  },
+  {
+    key: "undersample",
+    label: lang.components["dialog-model-advanced"].undersample.label,
+    description:
+      lang.components["dialog-model-advanced"].undersample.description,
+    placeholder: "false",
+    step: "1",
+    type: "checkbox",
+  },
+  {
+    key: "undersample_ratio",
+    label: lang.components["dialog-model-advanced"].undersample_ratio.label,
+    description:
+      lang.components["dialog-model-advanced"].undersample_ratio.description,
+    placeholder: "0.0",
+    step: "0.1",
+    type: "number",
+  },
+  {
+    key: "threshold",
+    label: lang.components["dialog-model-advanced"].threshold.label,
+    description: lang.components["dialog-model-advanced"].threshold.description,
+    placeholder: "0.0",
+    step: "0.1",
+    type: "number",
+  },
+  {
+    key: "hyperparameter_flag",
+    label: lang.components["dialog-model-advanced"].hyperparameter_flag.label,
+    description:
+      lang.components["dialog-model-advanced"].hyperparameter_flag.description,
+    placeholder: "false",
+    step: "1",
+    type: "checkbox",
+  },
+  {
+    key: "n_trials",
+    label: lang.components["dialog-model-advanced"].n_trials.label,
+    description: lang.components["dialog-model-advanced"].n_trials.description,
+    placeholder: "0",
+    step: "1",
+    type: "number",
+  },
+  {
+    key: "lambda_l1",
+    label: lang.components["dialog-model-advanced"].lambda_l1.label,
+    description: lang.components["dialog-model-advanced"].lambda_l1.description,
+    placeholder: "0.0",
+    step: "0.1",
+    type: "number",
+  },
+  {
+    key: "lambda_l2",
+    label: lang.components["dialog-model-advanced"].lambda_l2.label,
+    description: lang.components["dialog-model-advanced"].lambda_l2.description,
+    placeholder: "0.0",
+    step: "0.1",
+    type: "number",
+  },
+  {
+    key: "num_leaves",
+    label: lang.components["dialog-model-advanced"].num_leaves.label,
+    description:
+      lang.components["dialog-model-advanced"].num_leaves.description,
+    placeholder: "0",
+    step: "1",
+    type: "number",
+  },
+  {
+    key: "feature_fraction",
+    label: lang.components["dialog-model-advanced"].feature_fraction.label,
+    description:
+      lang.components["dialog-model-advanced"].feature_fraction.description,
+    placeholder: "0.0",
+    step: "0.1",
+    type: "number",
+  },
+  {
+    key: "bagging_fraction",
+    label: lang.components["dialog-model-advanced"].bagging_fraction.label,
+    description:
+      lang.components["dialog-model-advanced"].bagging_fraction.description,
+    placeholder: "0.0",
+    step: "0.1",
+    type: "number",
+  },
+  {
+    key: "bagging_freq",
+    label: lang.components["dialog-model-advanced"].bagging_freq.label,
+    description:
+      lang.components["dialog-model-advanced"].bagging_freq.description,
+    placeholder: "0",
+    step: "1",
+    type: "number",
+  },
+
+  {
+    key: "outlinear_threshold_max",
+    label:
+      lang.components["dialog-model-advanced"].outlinear_threshold_max.label,
+    description:
+      lang.components["dialog-model-advanced"].outlinear_threshold_max
+        .description,
+    placeholder: "0",
+    step: "0.1" /** 0-0.1の間を取りうる(UIとしては0~10%) */,
+    type: "number",
+    category: "outlier",
+    max: 10,
+    min: 0,
+  },
+  {
+    key: "outlinear_threshold_min",
+    label:
+      lang.components["dialog-model-advanced"].outlinear_threshold_min.label,
+    description:
+      lang.components["dialog-model-advanced"].outlinear_threshold_min
+        .description,
+    placeholder: "0",
+    step: "0.1" /** 0-0.1の間を取りうる(UIとしては0~10%) */,
+    type: "number",
+    category: "outlier",
+    max: 10,
+    min: 0,
+  },
+  {
+    key: "outlinear_threshold_step",
+    label:
+      lang.components["dialog-model-advanced"].outlinear_threshold_step.label,
+    description:
+      lang.components["dialog-model-advanced"].outlinear_threshold_step
+        .description,
+    placeholder: "0.1",
+    step: "0.1" /** 0.001-0.05の間を取りうる(UIとしては0.1-5%) */,
+    type: "number",
+    category: "outlier",
+    max: 5,
+    min: 0.1,
+  },
+];
+
+export const DEFAULT_CATEGORY_FIELDS = FIELDS.filter(
+  (field) => field.category === undefined,
+);
+
+export const OUTLIER_CATEGORY_FIELDS = FIELDS.filter(
+  (field) => field.category === "outlier",
+);

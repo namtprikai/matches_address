@@ -3,11 +3,12 @@ import {
   Card,
   makeStyles,
   Subtitle2,
+  Tag,
   Text,
   tokens,
 } from "@fluentui/react-components";
 import { ArrowLeftFilled } from "@fluentui/react-icons";
-import { Fragment, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { type z } from "zod";
 import { useParams } from "react-router-dom";
 import { Button } from "../../../components/ui/button";
@@ -31,6 +32,7 @@ import {
   BreadcrumbItem,
 } from "../../../components/ui/breadcrumb";
 import { ROUTES } from "../../../routes";
+import { FIELDS } from "../../../components/dialog-model-advanced/_const";
 
 const useStyles = makeStyles({
   root: {
@@ -57,6 +59,11 @@ const useStyles = makeStyles({
     justifyContent: "flex-end",
     gap: tokens.spacingHorizontalXL,
     height: "68px",
+  },
+  tagContainer: {
+    display: "flex",
+    gap: "8px",
+    flexWrap: "wrap",
   },
 });
 
@@ -189,14 +196,11 @@ export const ModelCreate = (): JSX.Element => {
           </Subtitle2>
 
           {normalizedDataSet?.file_name && explanatoryVariables.length > 0 && (
-            <div>
+            <div className={styles.tagContainer}>
               {explanatoryVariables.map((column, index) => (
-                <Fragment key={column}>
+                <Tag key={index} size="small">
                   <Caption1>{column}</Caption1>
-                  {index !== explanatoryVariables.length - 1 && (
-                    <Caption1>,</Caption1>
-                  )}
-                </Fragment>
+                </Tag>
               ))}
             </div>
           )}
@@ -233,13 +237,20 @@ export const ModelCreate = (): JSX.Element => {
             />
           </Subtitle2>
           {modelAdvanced && (
-            <span>
+            <div className={styles.tagContainer}>
               {Object.entries(modelAdvanced)
                 .filter(([, value]) => value)
-                /** @todo keyを日本語に置き換えたい */
-                .map(([key, value]) => `${key}: ${value || "未設定"}`)
-                .join(" / ")}
-            </span>
+                .map(([key, value]) => {
+                  const field = FIELDS.find((field) => field.key === key);
+                  return (
+                    <Tag key={key} size="small">
+                      <Caption1
+                        key={key}
+                      >{`${field?.label || key}: ${value || "未設定"}`}</Caption1>
+                    </Tag>
+                  );
+                })}
+            </div>
           )}
           <div>
             <Button

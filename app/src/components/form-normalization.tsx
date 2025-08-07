@@ -28,9 +28,9 @@ const useStyles = makeStyles({
     display: "flex",
     flexDirection: "column",
     gap: "20px",
-    color: tokens.colorBrandForeground1,
   },
   categoryTitle: {
+    color: tokens.colorBrandForeground1,
     fontSize: "16px",
     fontWeight: "bold",
     marginBottom: "8px",

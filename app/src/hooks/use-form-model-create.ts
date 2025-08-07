@@ -21,6 +21,11 @@ export const schema = z.object({
       bagging_fraction: z.coerce.number().optional(),
       bagging_freq: z.coerce.number().optional(),
       min_data_in_leaf: z.coerce.number().optional(),
+
+      /** R7追加分 */
+      outlinear_threshold_max: z.coerce.number().optional(),
+      outlinear_threshold_min: z.coerce.number().optional(),
+      outlinear_threshold_step: z.coerce.number().optional(),
     }),
   }),
 });
@@ -45,6 +50,9 @@ export const DEFAULT_SELECTED_COLUMNS = [
   "閉栓フラグ_suido_residence",
   "構造名称_touki_residence",
   "登記日付_touki_residence",
+  "相続状況",
+  "増築状況",
+  "停止からの経過月数",
 ];
 
 export const useFormModelCreate = (): UseFormReturn<FormType> => {

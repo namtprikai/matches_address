@@ -55,6 +55,10 @@ export const lang = {
   },
   components: {
     "dialog-model-advanced": {
+      dialogTitle: "高度な設定を変更",
+      outlierSectionTitle: "外れ値検出の設定",
+      outlierSectionDescription:
+        "（Outlier Detection）外れ値を検出するための設定を行います。外れ値は、データの中で異常に大きい値や小さい値を指し、分析結果に影響を与える可能性があります。",
       test_size: {
         label: "テストサイズ",
         description: `（Test Size）モデルの評価に使う「テストデータ」の割合のこと。データを学習用（トレーニングデータ）と評価用（テストデータ）に分ける際、テストデータが全体のどれくらいの割合かを指定します。`,
@@ -107,6 +111,19 @@ export const lang = {
         label: "バギング頻度",
         description: `（Bagging Frequency）勾配ブースティングモデルで、何回ごとにバギングを行うかを指定します。`,
       },
+      outlinear_threshold_max: {
+        label: "しきい値の最大値",
+        description: `（Outlier Threshold Max）外れ値を検出する際の最大しきい値を設定します。これを超える値は外れ値として扱われます。`,
+      },
+      outlinear_threshold_min: {
+        label: "しきい値の最小値",
+        description: `（Outlier Threshold Min）外れ値を検出する際の最小しきい値を設定します。これを下回る値は外れ値として扱われます。`,
+      },
+      outlinear_threshold_step: {
+        label: "しきい値のステップ",
+        description: `（Outlier Threshold Step）外れ値を検出する際のしきい値の増分を設定します。これにより、外れ値の検出の精度を調整できます。`,
+      },
+      saveButton: "保存",
     },
     normalizationParameters: {
       address: {
