@@ -59,6 +59,13 @@ export type BUILDING_DATASET_COLUMN = keyof Pick<
   | "vacant_house_address"
   | "predicted_probability"
   | "predicted_label"
+  | "outlier_flag"
+  | "single_story_row_house_flag"
+  | "buildingtype_determination_not_possible_flag"
+  | "elapsed_months_since_stop"
+  | "inheritance_status"
+  | "extension_status"
+  | "matched_data_flag"
 >;
 
 export type ColumnMetadataValue = {
@@ -443,5 +450,67 @@ export const BUILDING_DATASET_COLUMN_METADATA: ColumnMetadata<BUILDING_DATASET_C
       groupable: true,
       unit: "m",
       description: "PLATEAUの建物モデルデータに含まれる、浸水深",
+    },
+    outlier_flag: {
+      label: translateColumnToJapanese("outlier_flag", "building"),
+      type: "boolean",
+      groupable: true,
+      unit: "",
+      description:
+        "空き家推定の結果、外れ値として扱われるかどうかを示すフラグ。外れ値は「1」、外れ値でない場合は「0」で示す。",
+    },
+    single_story_row_house_flag: {
+      label: translateColumnToJapanese(
+        "single_story_row_house_flag",
+        "building",
+      ),
+      type: "boolean",
+      groupable: true,
+      unit: "",
+      description:
+        "空き家推定の結果、単身世帯の長屋であるかどうかを示すフラグ。単身世帯の長屋は「1」、それ以外は「0」で示す。",
+    },
+    buildingtype_determination_not_possible_flag: {
+      label: translateColumnToJapanese(
+        "buildingtype_determination_not_possible_flag",
+        "building",
+      ),
+      type: "boolean",
+      groupable: true,
+      unit: "",
+      description:
+        "空き家推定の結果、建物種別の判定が不可能であるかどうかを示すフラグ。判定不可能な場合は「1」、それ以外は「0」で示す。",
+    },
+    elapsed_months_since_stop: {
+      label: translateColumnToJapanese("elapsed_months_since_stop", "building"),
+      type: "integer",
+      groupable: true,
+      unit: "ヶ月",
+      description:
+        "水道開閉栓状況データにおいて、閉栓からの経過月数を示す。閉栓していない場合は「0」、閉栓している場合は閉栓からの経過月数を示す。",
+    },
+    inheritance_status: {
+      label: translateColumnToJapanese("inheritance_status", "building"),
+      type: "boolean",
+      groupable: true,
+      unit: "",
+      description:
+        "空き家調査結果データに記載された、相続の有無を示す。相続が完了している場合は「1」、相続が未完了の場合は「0」で示す。",
+    },
+    extension_status: {
+      label: translateColumnToJapanese("extension_status", "building"),
+      type: "boolean",
+      groupable: true,
+      unit: "",
+      description:
+        "空き家調査結果データに記載された、建物の増改築の有無を示す。増改築が行われている場合は「1」、行われていない場合は「0」で示す。",
+    },
+    matched_data_flag: {
+      label: translateColumnToJapanese("matched_data_flag", "building"),
+      type: "boolean",
+      groupable: true,
+      unit: "",
+      description:
+        "空き家調査結果データにおいて、空き家推定結果と一致するデータが存在するかどうかを示すフラグ。一致する場合は「1」、一致しない場合は「0」で示す。",
     },
   };

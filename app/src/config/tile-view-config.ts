@@ -152,6 +152,34 @@ const TABLE_FIELDS: TileViewFieldOption[] = [
         value: "river_flooding_risk_desc",
       },
       {
+        unit: "building",
+        value: "outlier_flag",
+      },
+      {
+        unit: "building",
+        value: "single_story_row_house_flag",
+      },
+      {
+        unit: "building",
+        value: "buildingtype_determination_not_possible_flag",
+      },
+      {
+        unit: "building",
+        value: "elapsed_months_since_stop",
+      },
+      {
+        unit: "building",
+        value: "inheritance_status",
+      },
+      {
+        unit: "building",
+        value: "extension_status",
+      },
+      {
+        unit: "building",
+        value: "matched_data_flag",
+      },
+      {
         unit: "area",
         value: "area",
       },
