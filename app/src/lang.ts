@@ -111,15 +111,15 @@ export const lang = {
         label: "バギング頻度",
         description: `（Bagging Frequency）勾配ブースティングモデルで、何回ごとにバギングを行うかを指定します。`,
       },
-      outlinear_threshold_max: {
+      outlier_threshold_max: {
         label: "しきい値の最大値",
         description: `（Outlier Threshold Max）外れ値を検出する際の最大しきい値を設定します。これを超える値は外れ値として扱われます。`,
       },
-      outlinear_threshold_min: {
+      outlier_threshold_min: {
         label: "しきい値の最小値",
         description: `（Outlier Threshold Min）外れ値を検出する際の最小しきい値を設定します。これを下回る値は外れ値として扱われます。`,
       },
-      outlinear_threshold_step: {
+      outlier_threshold_step: {
         label: "しきい値のステップ",
         description: `（Outlier Threshold Step）外れ値を検出する際のしきい値の増分を設定します。これにより、外れ値の検出の精度を調整できます。`,
       },

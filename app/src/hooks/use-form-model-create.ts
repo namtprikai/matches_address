@@ -23,9 +23,9 @@ export const schema = z.object({
       min_data_in_leaf: z.coerce.number().optional(),
 
       /** R7追加分 */
-      outlinear_threshold_max: z.coerce.number().optional(),
-      outlinear_threshold_min: z.coerce.number().optional(),
-      outlinear_threshold_step: z.coerce.number().optional(),
+      outlier_threshold_max: z.coerce.number().optional(),
+      outlier_threshold_min: z.coerce.number().optional(),
+      outlier_threshold_step: z.coerce.number().optional(),
     }),
   }),
 });

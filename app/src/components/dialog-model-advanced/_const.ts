@@ -131,11 +131,10 @@ export const FIELDS: AdvancedField[] = [
   },
 
   {
-    key: "outlinear_threshold_max",
-    label:
-      lang.components["dialog-model-advanced"].outlinear_threshold_max.label,
+    key: "outlier_threshold_max",
+    label: lang.components["dialog-model-advanced"].outlier_threshold_max.label,
     description:
-      lang.components["dialog-model-advanced"].outlinear_threshold_max
+      lang.components["dialog-model-advanced"].outlier_threshold_max
         .description,
     placeholder: "0",
     step: "0.1" /** 0-0.1の間を取りうる(UIとしては0~10%) */,
@@ -145,11 +144,10 @@ export const FIELDS: AdvancedField[] = [
     min: 0,
   },
   {
-    key: "outlinear_threshold_min",
-    label:
-      lang.components["dialog-model-advanced"].outlinear_threshold_min.label,
+    key: "outlier_threshold_min",
+    label: lang.components["dialog-model-advanced"].outlier_threshold_min.label,
     description:
-      lang.components["dialog-model-advanced"].outlinear_threshold_min
+      lang.components["dialog-model-advanced"].outlier_threshold_min
         .description,
     placeholder: "0",
     step: "0.1" /** 0-0.1の間を取りうる(UIとしては0~10%) */,
@@ -159,11 +157,11 @@ export const FIELDS: AdvancedField[] = [
     min: 0,
   },
   {
-    key: "outlinear_threshold_step",
+    key: "outlier_threshold_step",
     label:
-      lang.components["dialog-model-advanced"].outlinear_threshold_step.label,
+      lang.components["dialog-model-advanced"].outlier_threshold_step.label,
     description:
-      lang.components["dialog-model-advanced"].outlinear_threshold_step
+      lang.components["dialog-model-advanced"].outlier_threshold_step
         .description,
     placeholder: "0.1",
     step: "0.1" /** 0.001-0.05の間を取りうる(UIとしては0.1-5%) */,
