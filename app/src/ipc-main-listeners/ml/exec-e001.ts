@@ -35,7 +35,15 @@ export const execE001 = (async (
     // childProcessに入れてバックグラウンド実行
     const cp = spawn(
       binaryPath("IF001"),
-      ["--parameters", JSON.stringify(JSON.stringify(postParameters))],
+      [
+        "--parameters",
+        JSON.stringify(
+          JSON.stringify({
+            ...postParameters,
+            job_id: jobProcess.data.jobId,
+          }),
+        ),
+      ],
       {
         detached: true,
       },
