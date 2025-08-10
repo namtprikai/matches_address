@@ -1111,6 +1111,7 @@ def merge_residential_addresses(main_file_path: str, sub_file_path: str, output_
     )
     main_data = read_file(main_file_path)
     right_key = columns.get("land_number_address", "地番住所")
+    residential_addresses = residential_addresses.drop_duplicates(right_key, keep='first')
     result = main_data.merge(residential_addresses, left_on='正規化住所', right_on=right_key, how='left')
     result[right_key] = result.apply(
         lambda row: '' if pd.notna(row[right_key]) else row['正規化住所'],
@@ -1130,6 +1131,7 @@ def merge_building_type_determination(main_file_path: str, sub_file_path: str, o
     )
     right_key = columns.get("address", "地番住所")
     right_key = f"{right_key}_building_type_determination"
+    building_type_determination = building_type_determination.drop_duplicates(right_key, keep='first')
     result = main_data.merge(building_type_determination, left_on='正規化住所', right_on=right_key, how='left')
     building_type_col = columns.get("building_type", "建物種別")
     building_type_col_renamed = f"{building_type_col}_building_type_determination"

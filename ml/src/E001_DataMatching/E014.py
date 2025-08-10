@@ -327,15 +327,13 @@ def embedding_address(main_csv: io.BytesIO | str, sub_csv: io.BytesIO | str, mai
         # 名寄せ対象になる行を元情報として残す
         sub_df[f'名寄せ元情報_{sub_csv_name}'] = sub_df[sub_column]
         sub_df.rename(columns={sub_column: main_column}, inplace=True)
-        new_sub_column = main_column
         if job_id:
             progress_percent_job = progress_percent_job + progress_percent
             create_or_update_job(job_id, progress_percent_job)
             create_or_update_job_task(job_id, progress_percent="30", preprocess_type="e014", error_code=None, error_msg=None, result=None, id= task_id)
         
         # 完全一致による結合
-        sub_column_nenamed = [ col for col in sub_df.columns if new_sub_column in col ][0]
-        sub_df = sub_df.drop_duplicates(sub_column_nenamed, keep='first')
+        sub_df = sub_df.drop_duplicates(main_column, keep='first')
         sub_data_rows = len(sub_df)
         if ngram == 0:
             df_merge = main_df.merge(sub_df, on=main_column, how='left')
