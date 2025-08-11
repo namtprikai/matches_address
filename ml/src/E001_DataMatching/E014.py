@@ -318,7 +318,10 @@ def embedding_address(main_csv: io.BytesIO | str, sub_csv: io.BytesIO | str, mai
         sub_flag_name = f'{sub_csv_name}_flag'
         # 初期値は全て1
         main_df[main_flag_name] = 0
-        main_df[sub_flag_name] = 0
+        if '空き家調査' in input_source:
+            main_df[sub_flag_name] = 1
+        else:
+            main_df[sub_flag_name] = 0
 
         # テキスト正規化を適用
         main_df[main_column] = main_df[main_column].apply(normalize_text)
@@ -404,7 +407,10 @@ def embedding_address(main_csv: io.BytesIO | str, sub_csv: io.BytesIO | str, mai
                         else:
                             row_index = start + i
                             main_df.at[row_index, f'名寄せ元情報_{sub_csv_name}'] = ""
-                            main_df.at[row_index, f'{sub_flag_name}'] = 1
+                            if '空き家調査' in input_source:
+                                main_df.at[row_index, f'{sub_flag_name}'] = 0
+                            else:
+                                main_df.at[row_index, f'{sub_flag_name}'] = 1
                             similarity_scores.append(similarities[best_sub_index])  # 閾値未満の場合スコアは0
                         
                 # 類似度スコアを結果データフレームに追加
