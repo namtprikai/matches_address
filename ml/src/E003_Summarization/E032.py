@@ -360,13 +360,13 @@ class Summarization:
                 city_block_gdf = self.read_file(self.INPUT_PATHS["city_block"])
             except:
                 set_error(ERROR_20017)
-                raise("Shapefile形式の場合、座標系情報が正しくZIP内に保存されているかなどをご確認ください。Shapefileの読み込みにはshp, shx, prj, dbfの４種類のファイルが必要となります。")
+                raise("地域集計用データ（Shapefile形式）に不備がある場合")
         elif "gpkg" in self.INPUT_PATHS["city_block"]:
             try:
                 city_block_gdf = self.read_file(self.INPUT_PATHS["city_block"])
             except:
                 set_error(ERROR_20016)
-                raise("Geopackage形式の場合、座標系情報が正しくZIP内に保存されているかなどをご確認ください。他に複数レイヤが入っている場合にデータ提供元に問い合わせを推奨します。")
+                raise("地域集計用データ（gpkg形式）に不備がある場合")
         elif "geojson" in self.INPUT_PATHS["city_block"]:
             city_block_gdf = self.read_file(self.INPUT_PATHS["city_block"])
         elif "csv" in self.INPUT_PATHS["city_block"]:
@@ -384,7 +384,7 @@ class Summarization:
 
         if city_block_gdf is None:
             set_error(ERROR_20011)
-            raise ValueError("エンコーディングやファイル形式などに異常がないかご確認ください。")
+            raise ValueError("地域集計用データが適切に読み込まれていません。")
         
         # 座標系変換
         residence_gdf = residence_gdf.to_crs("EPSG:4326")
@@ -462,7 +462,7 @@ def extract_zip(zip_file, extract_to):
         shp_file = [os.path.join(extract_to, f) for f in files if f.endswith(".shp")][0]
     except:
         set_error(ERROR_20015)
-        raise Exception("地域集計用データがzipに含まれていない可能性があります。shapefileの読み込みにはshp, shx, prj, dbfの４種類のファイルが必要となります。")
+        raise Exception("地域集計用データ（shp形式）のデータが異常です。")
     return shp_file
 
 
@@ -554,7 +554,7 @@ def process_summarization(akiya_pred_file, spatial_file, output_dir, key_column,
             set_error(ERROR_20012)
         if task_id is not None:
             create_or_update_job_task(job_id, progress_percent="", preprocess_type=None, error_code=ERROR_CODE, error_msg=ERROR_MSG, result=json.dumps({}), id= task_id, is_finish=True)
-        raise Exception("集計に用いているデータに型の不一致や欠損がないかご確認ください")
+        raise Exception("地域集計処理においてエラーが発生しています。")
 
 def set_error(value, param_st1=None, param_st2=None):
     global ERROR_CODE

@@ -207,8 +207,8 @@ def read_data(file_path, columns):
 
     file_extension = file_path.split('.')[-1].lower()
     if file_extension != "csv":
-        set_error(ERROR_00041)
-        raise KeyError("ファイル形式のデータが異常です。誤ったファイルを読み込んでいないかもう一度データを確認ください。")
+        set_error(ERROR_00048)
+        raise KeyError("建物ポリゴンデータ形式にCSV形式が指定されていますが、読み込まれたファイルはCSV形式ではありません。")
 
     # CSVファイルを読み込む
     poly_gdf = read_file(file_path)
@@ -235,7 +235,7 @@ def read_data(file_path, columns):
     # 無効なジオメトリを除外
     centroid_gdf = centroid_gdf[centroid_gdf['geometry'].notnull()]
     if centroid_gdf is None:
-        set_error(ERROR_00042)
+        set_error(ERROR_00049)
         raise KeyError("ジオメトリーカラムのデータが異常です。誤ったファイルを読み込んでいないかもう一度データを確認ください。")
     centroid_gdf['building_id'] = centroid_gdf['buildingID'].astype(str)
     del centroid_gdf['buildingID']
@@ -264,8 +264,8 @@ def load_and_process_data(file_path, crs, geometry, file_type, data_type, column
     if not file_extension:
         file_extension = detect_ext
     if detect_ext is not None and file_extension == "csv" and detect_ext != file_extension:
-        set_error(ERROR_00041)
-        raise KeyError("ファイル形式のデータが異常です。誤ったファイルを読み込んでいないかもう一度データを確認ください。")
+        set_error(ERROR_00048)
+        raise KeyError("建物ポリゴンデータ形式にCSV形式が指定されていますが、読み込まれたファイルはCSV形式ではありません。")
 
     if file_extension == 'csv':
         # CSVファイルを読み込む
@@ -307,7 +307,7 @@ def load_and_process_data(file_path, crs, geometry, file_type, data_type, column
         df = df[df['geometry'].notnull()]
         if df is None:
             set_error(ERROR_00042)
-            raise KeyError("ジオメトリーカラムのデータが異常です。誤ったファイルを読み込んでいないかもう一度データを確認ください。")
+            raise KeyError("建物ポリゴンデータ（CSV形式）のジオメトリーカラムのデータが異常です。")
         
         if "buildingID" in df.columns:
             try:
@@ -1100,7 +1100,7 @@ def process_spatial_join(main_path, sub_path, ken, sikuchoson, option, output_pa
     except Exception as e:
         print(e)
         if ERROR_CODE is None:
-            set_error(ERROR_00019)
+            set_error(ERROR_00047)
         raise Exception("空間結合処理中にエラーが発生しました。ジオメトリに不正がないか、ご確認ください。")
     
 def merge_residential_addresses(main_file_path: str, sub_file_path: str, output_directory: str, columns: dict):
@@ -1237,7 +1237,7 @@ def process_data(tatemono_path, abrg_geocode_path, gpkg_path, ken, sikuchoson, o
         except Exception as e:
             if ERROR_CODE is None:
                 set_error(ERROR_00043)
-                raise Exception(f"建物ポリゴンのデータが異常です。もう一度データを確認ください。")
+                raise Exception(f"建物ポリゴンのデータが異常です。")
             raise Exception(e)
         abrg_geocode = load_and_process_data(abrg_geocode_path, crs, None, 'csv', None, columns)
 

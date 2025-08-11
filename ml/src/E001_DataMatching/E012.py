@@ -513,7 +513,7 @@ class EachFileProcessor(DataProcessor):
                 missing_cols = set(OUTPUT_COLUMNS_INITIAL[file_key].values()) - all_columns
                 if missing_cols:
                     set_error(ERROR_00035)
-                    raise Exception("水道使用量のデータが異常です。もう一度データを確認ください。")
+                    raise Exception("水道使用量のデータが異常です。")
                 
                 df = self.convert_japanese_era_to_gregorian(df, file_key)
                 
@@ -539,7 +539,7 @@ class EachFileProcessor(DataProcessor):
                 file_name = FILE_NAME_JP[file_key]
                 if missing_cols:
                     set_error(ERROR_00036, file_name)
-                    raise Exception(f"{file_name}のデータが異常です。もう一度データを確認ください。")
+                    raise Exception(f"{file_name}のデータが異常です。")
                 
                 df = self.convert_japanese_era_to_gregorian(df, file_key)
                 # 処理結果をCSVファイルとして保存

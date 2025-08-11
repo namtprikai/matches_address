@@ -229,7 +229,7 @@ class SuidoProcessor(DataProcessor):
             df_cleaned = df.groupby([cols["suido_number"], "検針年月"])[cols["suido_usage"]].sum().reset_index()
         except:
             set_error(ERROR_00037)
-            raise Exception("水道番号のデータが異常です。もう一度データを確認ください。")
+            raise Exception("水道番号のデータが異常です。")
         
         return df_cleaned
 
@@ -578,7 +578,7 @@ class SuidoProcessor(DataProcessor):
         except Exception as e:
             if ERROR_CODE is None:
                 set_error(ERROR_00038)
-                raise Exception("建物情報のデータが異常です。もう一度データを確認ください。")
+                raise Exception("建物情報のデータが異常です。")
 
             raise Exception(e)
 
@@ -619,7 +619,7 @@ class JukiProcessor(DataProcessor):
             df["年齢"] = (self.reference_date - df[cols["birth"]]).dt.days // 365
         except:
             set_error(ERROR_00039)
-            raise Exception("生年月日のデータが異常です。もう一度データを確認ください。")
+            raise Exception("生年月日のデータが異常です。")
 
         # 年齢別グループを作成
         age_groups = {
@@ -736,7 +736,7 @@ class JukiProcessor(DataProcessor):
             df["住定期間"] = (self.reference_date - df[cols["move_date"]]).dt.days
         except:
             set_error(ERROR_00040)
-            raise Exception("住定異動年月日のデータが異常です。もう一度データを確認ください。")
+            raise Exception("住定異動年月日のデータが異常です。")
         
         # 各世帯で最大の住定期間を取得
         return df.groupby([cols["setai_code"], cols["juki_address"]])["住定期間"].max().reset_index()
